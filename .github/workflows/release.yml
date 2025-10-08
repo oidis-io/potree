@@ -1,0 +1,80 @@
+# * ******************************************************************************************************* *
+# *
+# * Copyright 2025 Oidis
+# *
+# * SPDX-License-Identifier: BSD-2-Clause
+# * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
+# * or at https://spdx.org/licenses/BSD-2-Clause.html#licenseText
+# *
+# * ********************************************************************************************************* */
+
+name: Release
+
+on:
+  push:
+    branches:
+      - release
+      - main
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run release
+        run: npm run release
+
+      - name: Get version from package.json
+        id: version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Find ZIP file
+        id: find_zip
+        run: |
+          VERSION=$VERSION
+          VERSION_DASH=${VERSION//./-}
+          echo "VERSION_DASH=$VERSION_DASH" >> $GITHUB_ENV
+          ZIP_FILE=$(ls build/*.zip | grep "^build/Potree-$VERSION_DASH.*\.zip$")
+          echo "ZIP_FILE=$ZIP_FILE" >> $GITHUB_ENV
+
+      - name: Set release type
+        id: release_type
+        run: |
+          if [[ "${GITHUB_REF##*/}" == "main" ]]; then
+            echo "RELEASE_NAME=$VERSION" >> $GITHUB_ENV
+            echo "TAG_NAME=$VERSION" >> $GITHUB_ENV
+            echo "PRERELEASE=false" >> $GITHUB_ENV
+          else
+            echo "RELEASE_NAME=EAP $VERSION" >> $GITHUB_ENV
+            echo "TAG_NAME=eap-$VERSION" >> $GITHUB_ENV
+            echo "PRERELEASE=true" >> $GITHUB_ENV
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ${{ env.RELEASE_NAME }}
+          tag_name: ${{ env.TAG_NAME }}
+          draft: false
+          prerelease: ${{ env.PRERELEASE }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ env.ZIP_FILE }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
