@@ -1,7 +1,16 @@
-
+/*! ******************************************************************************************************** *
+ *
+ * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
+ * or at https://spdx.org/licenses/BSD-2-Clause.html#licenseText
+ *
+ * ********************************************************************************************************* */
 
 // import {Version} from "../../Version.js";
-import {PointAttributes, PointAttribute, PointAttributeTypes} from "../../../loader/PointAttributes.js";
+import { PointAttribute, PointAttributeTypes} from "../../../loader/PointAttributes.js";
 
 const typedArrayMapping = {
 	"int8":   Int8Array,

@@ -1,3 +1,13 @@
+/*! ******************************************************************************************************** *
+ *
+ * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
+ * or at https://spdx.org/licenses/BSD-2-Clause.html#licenseText
+ *
+ * ********************************************************************************************************* */
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
 import {EventDispatcher} from "../EventDispatcher.js";
@@ -297,7 +307,7 @@ export class VRControls extends EventDispatcher{
 			
 			const light = new THREE.PointLight( 0xffffff, 5, 0, 1 );
 			light.position.set(0, 2, 0);
-			this.viewer.sceneVR.add(light)
+			this.viewer.sceneVR.add(light);
 		}
 
 		this.menu = null;
@@ -352,8 +362,8 @@ export class VRControls extends EventDispatcher{
 				// initInfo(controller);
 			});
 
-			controller.addEventListener( 'selectstart', () => {this.onTriggerStart(controller)});
-			controller.addEventListener( 'selectend', () => {this.onTriggerEnd(controller)});
+			controller.addEventListener( 'selectstart', () => {this.onTriggerStart(controller);});
+			controller.addEventListener( 'selectend', () => {this.onTriggerEnd(controller);});
 
 			this.cPrimary =  controller;
 
@@ -402,8 +412,8 @@ export class VRControls extends EventDispatcher{
 				this.initMenu(controller);
 			});
 
-			controller.addEventListener( 'selectstart', () => {this.onTriggerStart(controller)});
-			controller.addEventListener( 'selectend', () => {this.onTriggerEnd(controller)});
+			controller.addEventListener( 'selectstart', () => {this.onTriggerStart(controller);});
+			controller.addEventListener( 'selectend', () => {this.onTriggerEnd(controller);});
 
 			this.cSecondary =  controller;
 		}

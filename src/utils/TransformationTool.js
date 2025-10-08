@@ -1,3 +1,13 @@
+/*! ******************************************************************************************************** *
+ *
+ * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
+ * or at https://spdx.org/licenses/BSD-2-Clause.html#licenseText
+ *
+ * ********************************************************************************************************* */
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
 import {Utils} from "../utils.js";
@@ -357,8 +367,8 @@ export class TransformationTool {
 				t.start();
 			};
 
-			pickVolume.addEventListener("drag", (e) => {this.dragTranslationHandle(e)});
-			pickVolume.addEventListener("drop", (e) => {this.dropTranslationHandle(e)});
+			pickVolume.addEventListener("drag", (e) => {this.dragTranslationHandle(e);});
+			pickVolume.addEventListener("drop", (e) => {this.dropTranslationHandle(e);});
 		}
 	}
 
@@ -429,8 +439,8 @@ export class TransformationTool {
 			//	console.log(pickVolume.getWorldDirection(new THREE.Vector3()));
 			//});
 			
-			pickVolume.addEventListener("drag", (e) => {this.dragRotationHandle(e)});
-			pickVolume.addEventListener("drop", (e) => {this.dropRotationHandle(e)});
+			pickVolume.addEventListener("drag", (e) => {this.dragRotationHandle(e);});
+			pickVolume.addEventListener("drop", (e) => {this.dropRotationHandle(e);});
 		}
 	}
 
@@ -440,7 +450,7 @@ export class TransformationTool {
 		let camera = this.viewer.scene.getActiveCamera();
 
 		if(!handle){
-			return
+			return;
 		};
 
 		let localNormal = new THREE.Vector3(...handle.alignment);
@@ -669,7 +679,7 @@ export class TransformationTool {
 			if(this.activeHandle === handle){
 				handle.node.setOpacity(1.0);
 			}else{
-				handle.node.setOpacity(0.4)
+				handle.node.setOpacity(0.4);
 			}
 		}
 
@@ -679,7 +689,7 @@ export class TransformationTool {
 			if(this.activeHandle === handle){
 				handle.node.setOpacity(1.0);
 			}else{
-				handle.node.setOpacity(0.4)
+				handle.node.setOpacity(0.4);
 			}
 		}
 
@@ -717,7 +727,7 @@ export class TransformationTool {
 
 
 			}else{
-				handle.node.setOpacity(0.4)
+				handle.node.setOpacity(0.4);
 			}
 		}
 

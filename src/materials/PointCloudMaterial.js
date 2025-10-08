@@ -1,3 +1,13 @@
+/*! ******************************************************************************************************** *
+ *
+ * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
+ * or at https://spdx.org/licenses/BSD-2-Clause.html#licenseText
+ *
+ * ********************************************************************************************************* */
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
 import {Utils} from "../utils.js";
@@ -27,7 +37,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			}else{
 				return b;
 			}
-		}
+		};
 
 		let pointSize = getValid(parameters.size, 1.0);
 		let minSize = getValid(parameters.minSize, 2.0);
@@ -191,13 +201,13 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		let fsVersionIndex = fs.indexOf("#version ");
 
 		if(vsVersionIndex >= 0){
-			vs = vs.replace(/(#version .*)/, `$1\n${definesString}`)
+			vs = vs.replace(/(#version .*)/, `$1\n${definesString}`);
 		}else{
 			vs = `${definesString}\n${vs}`;
 		}
 
 		if(fsVersionIndex >= 0){
-			fs = fs.replace(/(#version .*)/, `$1\n${definesString}`)
+			fs = fs.replace(/(#version .*)/, `$1\n${definesString}`);
 		}else{
 			fs = `${definesString}\n${fs}`;
 		}

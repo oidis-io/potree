@@ -1,3 +1,13 @@
+/*! ******************************************************************************************************** *
+ *
+ * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
+ * or at https://spdx.org/licenses/BSD-2-Clause.html#licenseText
+ *
+ * ********************************************************************************************************* */
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
 import {Utils} from "../utils.js";
@@ -67,7 +77,7 @@ class ProfileFakeOctree extends PointCloudTree{
 		this.material.pointSizeType = PointSizeType.FIXED;
 
 		this.batchSize = 100 * 1000;
-		this.currentBatch = null
+		this.currentBatch = null;
 	}
 
 	getAttribute(name){
@@ -587,7 +597,7 @@ export class ProfileWindow extends EventDispatcher {
 				}
 
 				numTested++;
-				numTestedPoints += points.numPoints
+				numTestedPoints += points.numPoints;
 
 				for (let i = 0; i < points.numPoints; i++) {
 
@@ -962,9 +972,9 @@ export class ProfileWindowController {
 			if(!isNaN(str)){
 				const value = parseFloat(str);
 				this.rotateAmount = value;
-				$("#potree_profile_rotate_amount").css("background-color", "")
+				$("#potree_profile_rotate_amount").css("background-color", "");
 			}else{
-				$("#potree_profile_rotate_amount").css("background-color", "#ff9999")
+				$("#potree_profile_rotate_amount").css("background-color", "#ff9999");
 			}
 
 		});
@@ -989,7 +999,7 @@ export class ProfileWindowController {
 			for(let i = 0; i < points.length; i++){
 				profile.setPosition(i, rotatedPoints[i]);
 			}
-		}
+		};
 
 		$("#potree_profile_rotate_cw").click( () => {
 			const radians = THREE.Math.degToRad(this.rotateAmount);

@@ -1,7 +1,16 @@
-
+/*! ******************************************************************************************************** *
+ *
+ * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
+ * or at https://spdx.org/licenses/BSD-2-Clause.html#licenseText
+ *
+ * ********************************************************************************************************* */
 
 // import {Version} from "../../Version.js";
-import {PointAttributes, PointAttribute, PointAttributeTypes} from "../../../loader/PointAttributes.js";
+import { PointAttribute, PointAttributeTypes} from "../../../loader/PointAttributes.js";
 import {BrotliDecode} from "../../../../libs/brotli/decode.js";
 
 const typedArrayMapping = {
@@ -123,11 +132,11 @@ onmessage = function (event) {
 						| (dealign24b(((mc_3 >>> 24) | (mc_2 << 8)) >>> 0) << 8);
 
 				let Y = dealign24b((mc_3 & 0x00FFFFFF) >>> 1) 
-						| (dealign24b(((mc_3 >>> 24) | (mc_2 << 8)) >>> 1) << 8)
+						| (dealign24b(((mc_3 >>> 24) | (mc_2 << 8)) >>> 1) << 8);
 						
 
 				let Z = dealign24b((mc_3 & 0x00FFFFFF) >>> 2) 
-						| (dealign24b(((mc_3 >>> 24) | (mc_2 << 8)) >>> 2) << 8)
+						| (dealign24b(((mc_3 >>> 24) | (mc_2 << 8)) >>> 2) << 8);
 						
 
 				if(mc_1 != 0 || mc_2 != 0){

@@ -1,8 +1,16 @@
+/*! ******************************************************************************************************** *
+ *
+ * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
+ * or at https://spdx.org/licenses/BSD-2-Clause.html#licenseText
+ *
+ * ********************************************************************************************************* */
 
 import * as THREE from "../libs/three.js/build/three.module.js";
 import {PointCloudTree} from "./PointCloudTree.js";
-import {PointCloudOctreeNode} from "./PointCloudOctree.js";
-import {PointCloudArena4DNode} from "./arena4d/PointCloudArena4D.js";
 import {PointSizeType, ClipTask, ElevationGradientRepeat} from "./defines.js";
 
 // Copied from three.js: WebGLRenderer.js
@@ -841,7 +849,7 @@ export class Renderer {
 
 					let worldViewMatrices = shadowMaps
 						.map(sm => sm.camera.matrixWorldInverse)
-						.map(view => new THREE.Matrix4().multiplyMatrices(view, world))
+						.map(view => new THREE.Matrix4().multiplyMatrices(view, world));
 
 					let flattenedMatrices = [].concat(...worldViewMatrices.map(c => c.elements));
 					const lWorldView = shader.uniformLocations["uShadowWorldView[0]"];
@@ -857,7 +865,7 @@ export class Renderer {
 
 			const geometry = node.geometryNode.geometry;
 
-			if (!geometry) console.log('Missing geometry', node)
+			if (!geometry) console.log('Missing geometry', node);
 			if(geometry.attributes["gps-time"]){
 				const bufferAttribute = geometry.attributes["gps-time"];
 				const attGPS = octree.getAttribute("gps-time");
@@ -1134,13 +1142,13 @@ export class Renderer {
 				let fsVersionIndex = fs.indexOf("#version ");
 
 				if(vsVersionIndex >= 0){
-					vs = vs.replace(/(#version .*)/, `$1\n${definesString}`)
+					vs = vs.replace(/(#version .*)/, `$1\n${definesString}`);
 				}else{
 					vs = `${definesString}\n${vs}`;
 				}
 
 				if(fsVersionIndex >= 0){
-					fs = fs.replace(/(#version .*)/, `$1\n${definesString}`)
+					fs = fs.replace(/(#version .*)/, `$1\n${definesString}`);
 				}else{
 					fs = `${definesString}\n${fs}`;
 				}
@@ -1272,7 +1280,7 @@ export class Renderer {
 
 					//let clipToWorld = new THREE.Matrix4().multiplyMatrices(mTranslate, mScale);
 					let clipToWorld = clipSphere.matrixWorld;
-					let viewToWorld = camera.matrixWorld
+					let viewToWorld = camera.matrixWorld;
 					let worldToClip = clipToWorld.clone().invert();
 
 					let viewToClip = new THREE.Matrix4().multiplyMatrices(worldToClip, viewToWorld);

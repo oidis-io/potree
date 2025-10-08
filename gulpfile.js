@@ -1,3 +1,12 @@
+/*! ******************************************************************************************************** *
+ *
+ * Copyright 2011-2020 Markus Schütz
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
+ * or at https://spdx.org/licenses/BSD-2-Clause.html#licenseText
+ *
+ * ********************************************************************************************************* */
 
 const path = require('path');
 const gulp = require('gulp');
@@ -162,7 +171,7 @@ gulp.task("shaders", async function(){
 	fs.writeFileSync(targetPath, content, {flag: "w"});
 });
 
-gulp.task('build', 
+gulp.task('build',
 	gulp.series(
 		gulp.parallel("workers", "lazylibs", "shaders", "icons_viewer", "examples_page"),
 		async function(done){

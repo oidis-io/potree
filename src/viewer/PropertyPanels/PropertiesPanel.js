@@ -1,3 +1,13 @@
+/*! ******************************************************************************************************** *
+ *
+ * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
+ * or at https://spdx.org/licenses/BSD-2-Clause.html#licenseText
+ *
+ * ********************************************************************************************************* */
 
 import * as THREE from "../../../libs/three.js/build/three.module.js";
 import {Utils} from "../../utils.js";
@@ -5,12 +15,11 @@ import {PointCloudTree} from "../../PointCloudTree.js";
 import {Annotation} from "../../Annotation.js";
 import {Measure} from "../../utils/Measure.js";
 import {Profile} from "../../utils/Profile.js";
-import {Volume, BoxVolume, SphereVolume} from "../../utils/Volume.js";
+import {Volume} from "../../utils/Volume.js";
 import {CameraAnimation} from "../../modules/CameraAnimation/CameraAnimation.js";
 import {PointSizeType, PointShape, ElevationGradientRepeat} from "../../defines.js";
 import {Gradients} from "../../materials/Gradients.js";
 
-import {MeasurePanel} from "./MeasurePanel.js";
 import {DistancePanel} from "./DistancePanel.js";
 import {PointPanel} from "./PointPanel.js";
 import {AreaPanel} from "./AreaPanel.js";
@@ -623,37 +632,37 @@ export class PropertiesPanel{
 			panel.find('#sldRGBGamma').slider({
 				value: material.rgbGamma,
 				min: 0, max: 4, step: 0.01,
-				slide: (event, ui) => {material.rgbGamma = ui.value}
+				slide: (event, ui) => {material.rgbGamma = ui.value;}
 			});
 
 			panel.find('#sldRGBContrast').slider({
 				value: material.rgbContrast,
 				min: -1, max: 1, step: 0.01,
-				slide: (event, ui) => {material.rgbContrast = ui.value}
+				slide: (event, ui) => {material.rgbContrast = ui.value;}
 			});
 
 			panel.find('#sldRGBBrightness').slider({
 				value: material.rgbBrightness,
 				min: -1, max: 1, step: 0.01,
-				slide: (event, ui) => {material.rgbBrightness = ui.value}
+				slide: (event, ui) => {material.rgbBrightness = ui.value;}
 			});
 
 			panel.find('#sldExtraGamma').slider({
 				value: material.extraGamma,
 				min: 0, max: 4, step: 0.01,
-				slide: (event, ui) => {material.extraGamma = ui.value}
+				slide: (event, ui) => {material.extraGamma = ui.value;}
 			});
 
 			panel.find('#sldExtraBrightness').slider({
 				value: material.extraBrightness,
 				min: -1, max: 1, step: 0.01,
-				slide: (event, ui) => {material.extraBrightness = ui.value}
+				slide: (event, ui) => {material.extraBrightness = ui.value;}
 			});
 
 			panel.find('#sldExtraContrast').slider({
 				value: material.extraContrast,
 				min: -1, max: 1, step: 0.01,
-				slide: (event, ui) => {material.extraContrast = ui.value}
+				slide: (event, ui) => {material.extraContrast = ui.value;}
 			});
 
 			panel.find('#sldHeightRange').slider({
@@ -669,55 +678,55 @@ export class PropertiesPanel{
 			panel.find('#sldIntensityGamma').slider({
 				value: material.intensityGamma,
 				min: 0, max: 4, step: 0.01,
-				slide: (event, ui) => {material.intensityGamma = ui.value}
+				slide: (event, ui) => {material.intensityGamma = ui.value;}
 			});
 
 			panel.find('#sldIntensityContrast').slider({
 				value: material.intensityContrast,
 				min: -1, max: 1, step: 0.01,
-				slide: (event, ui) => {material.intensityContrast = ui.value}
+				slide: (event, ui) => {material.intensityContrast = ui.value;}
 			});
 
 			panel.find('#sldIntensityBrightness').slider({
 				value: material.intensityBrightness,
 				min: -1, max: 1, step: 0.01,
-				slide: (event, ui) => {material.intensityBrightness = ui.value}
+				slide: (event, ui) => {material.intensityBrightness = ui.value;}
 			});
 
 			panel.find('#sldWeightRGB').slider({
 				value: material.weightRGB,
 				min: 0, max: 1, step: 0.01,
-				slide: (event, ui) => {material.weightRGB = ui.value}
+				slide: (event, ui) => {material.weightRGB = ui.value;}
 			});
 
 			panel.find('#sldWeightIntensity').slider({
 				value: material.weightIntensity,
 				min: 0, max: 1, step: 0.01,
-				slide: (event, ui) => {material.weightIntensity = ui.value}
+				slide: (event, ui) => {material.weightIntensity = ui.value;}
 			});
 
 			panel.find('#sldWeightElevation').slider({
 				value: material.weightElevation,
 				min: 0, max: 1, step: 0.01,
-				slide: (event, ui) => {material.weightElevation = ui.value}
+				slide: (event, ui) => {material.weightElevation = ui.value;}
 			});
 
 			panel.find('#sldWeightClassification').slider({
 				value: material.weightClassification,
 				min: 0, max: 1, step: 0.01,
-				slide: (event, ui) => {material.weightClassification = ui.value}
+				slide: (event, ui) => {material.weightClassification = ui.value;}
 			});
 
 			panel.find('#sldWeightReturnNumber').slider({
 				value: material.weightReturnNumber,
 				min: 0, max: 1, step: 0.01,
-				slide: (event, ui) => {material.weightReturnNumber = ui.value}
+				slide: (event, ui) => {material.weightReturnNumber = ui.value;}
 			});
 
 			panel.find('#sldWeightSourceID').slider({
 				value: material.weightSourceID,
 				min: 0, max: 1, step: 0.01,
-				slide: (event, ui) => {material.weightSourceID = ui.value}
+				slide: (event, ui) => {material.weightSourceID = ui.value;}
 			});
 
 			panel.find(`#materials\\.color\\.picker`).spectrum({
@@ -949,7 +958,7 @@ export class PropertiesPanel{
 	}
 
 	setCameraAnimation(animation){
-		let panel = new CameraAnimationPanel(this.viewer, this, animation)
+		let panel = new CameraAnimationPanel(this.viewer, this, animation);
 		this.container.append(panel.elContent);
 	}
 

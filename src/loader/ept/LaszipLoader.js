@@ -1,12 +1,23 @@
+/*! ******************************************************************************************************** *
+ *
+ * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
+ * or at https://spdx.org/licenses/BSD-2-Clause.html#licenseText
+ *
+ * ********************************************************************************************************* */
+
 import * as THREE from "../../../libs/three.js/build/three.module.js";
 
 export class EptLaszipLoader {
 	async load(node) {
 		if (node.loaded) return;
 
-		const { Key } = window.Copc
+		const { Key } = window.Copc;
 
-		const url = `${node.owner.base}/ept-data/${Key.toString(node.key)}.laz`
+		const url = `${node.owner.base}/ept-data/${Key.toString(node.key)}.laz`;
 		const response = await fetch(url);
 		const buffer = await response.arrayBuffer();
 		this.parse(node, buffer);
@@ -16,15 +27,15 @@ export class EptLaszipLoader {
 		let handler = new EptLazBatcher(node);
 
 		try {
-			const { Bounds, Las } = Copc
+			const { Bounds, Las } = Copc;
 
-			const get = (begin, end) => new Uint8Array(compressed, begin, end - begin)
+			const get = (begin, end) => new Uint8Array(compressed, begin, end - begin);
 
-			const header = Las.Header.parse(new Uint8Array(compressed))
-			const vlrs = await Las.Vlr.walk(get, header)
-			let eb = []
-			const ebVlr = Las.Vlr.find(vlrs, 'LASF_Spec', 4)
-			if (ebVlr) eb = Las.ExtraBytes.parse(await Las.Vlr.fetch(get, ebVlr))
+			const header = Las.Header.parse(new Uint8Array(compressed));
+			const vlrs = await Las.Vlr.walk(get, header);
+			let eb = [];
+			const ebVlr = Las.Vlr.find(vlrs, 'LASF_Spec', 4);
+			if (ebVlr) eb = Las.ExtraBytes.parse(await Las.Vlr.fetch(get, ebVlr));
 
 			const message = {
 				isFullFile: true,
@@ -33,10 +44,10 @@ export class EptLaszipLoader {
 				eb,
 				pointCount: header.pointCount,
 				nodemin: Bounds.min(node.bounds),
-			}
-			handler.push(message)
+			};
+			handler.push(message);
 		} catch (e) {
-			console.log('Failed:', e)
+			console.log('Failed:', e);
 		}
 	}
 };
@@ -49,17 +60,17 @@ export class CopcLaszipLoader {
 		// however we must split things out a bit to accommodate the expensive
 		// calls to go in the worker.  So in this non-worker context, we just
 		// isolate the compressed data buffer, which is passed to the worker.
-		// The time-consuming decompression and extracting the data into 
+		// The time-consuming decompression and extracting the data into
 		// GPU-compatible buffers happens in the worker.
-		const { pointCount, pointDataOffset, pointDataLength } = node.nodeinfo
+		const { pointCount, pointDataOffset, pointDataLength } = node.nodeinfo;
 
 		// Note that COPC explicitly allows nodes to exist with no data.  They
 		// may have children, but there is no point cloud data.  Make sure we
 		// don't try to fetch a slice of point data in this case.
-		if (!pointCount) return this.parse(node, new ArrayBuffer())
+		if (!pointCount) return this.parse(node, new ArrayBuffer());
 		const compressed = await node.owner.getter(
-			pointDataOffset, 
-			pointDataOffset + pointDataLength)
+			pointDataOffset,
+			pointDataOffset + pointDataLength);
 		this.parse(node, compressed.buffer);
 	}
 
@@ -74,9 +85,9 @@ export class CopcLaszipLoader {
 				eb: node.owner.copc.eb,
 				pointCount: node.nodeinfo.pointCount,
 				nodemin: node.bounds.slice(0, 3),
-			})
+			});
 		} catch (e) {
-			console.log('Failed:', e)
+			console.log('Failed:', e);
 		}
 	}
 };
@@ -85,7 +96,7 @@ export class EptLazBatcher {
 	constructor(node) { this.node = node; }
 
 	push(las) {
-		const { isFullFile, compressed, header, eb, pointCount, nodemin } = las
+		const { isFullFile, compressed, header, eb, pointCount, nodemin } = las;
 
 		let workerPath = Potree.scriptPath +
 			'/workers/EptLaszipDecoderWorker.js';
@@ -97,7 +108,7 @@ export class EptLazBatcher {
 
 			let positions = new Float32Array(e.data.position);
 			let colors = new Uint8Array(e.data.color);
-			
+
 			let intensities = new Float32Array(e.data.intensity);
 			let classifications = new Uint8Array(e.data.classification);
 			let returnNumbers = new Uint8Array(e.data.returnNumber);
@@ -137,7 +148,7 @@ export class EptLazBatcher {
 
 					// May not be right, but we need something here or we crash.
 					if (!attribute.initialRange) {
-						attribute.initialRange = attribute.range
+						attribute.initialRange = attribute.range;
 					}
 				}
 			}

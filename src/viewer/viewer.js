@@ -1,3 +1,13 @@
+/*! ******************************************************************************************************** *
+ *
+ * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
+ * or at https://spdx.org/licenses/BSD-2-Clause.html#licenseText
+ *
+ * ********************************************************************************************************* */
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
 import {ClipTask, ClipMethod, CameraMode, LengthUnits, ElevationGradientRepeat} from "../defines.js";
@@ -736,7 +746,7 @@ export class Viewer extends EventDispatcher{
 	}
 
 	setFilterPointSourceIDRange(from, to){
-		this.filterPointSourceIDRange = [from, to]
+		this.filterPointSourceIDRange = [from, to];
 		this.dispatchEvent({'type': 'filter_point_source_id_range_changed', 'viewer': this});
 	}
 
@@ -1623,7 +1633,7 @@ export class Viewer extends EventDispatcher{
 		
 		const scene = this.scene;
 		const camera = scene.getActiveCamera();
-		const visiblePointClouds = this.scene.pointclouds.filter(pc => pc.visible)
+		const visiblePointClouds = this.scene.pointclouds.filter(pc => pc.visible);
 		
 		Potree.pointLoadLimit = Potree.pointBudget * 2;
 
@@ -2046,7 +2056,7 @@ export class Viewer extends EventDispatcher{
 				let inv = proj.clone().invert();
 
 				let p1 = new THREE.Vector4(0, 1, -1, 1).applyMatrix4(inv);
-				let rad = p1.y
+				let rad = p1.y;
 				let fov = 180 * (rad / Math.PI);
 
 				xrCamera.fov = fov;
@@ -2174,7 +2184,7 @@ export class Viewer extends EventDispatcher{
 				for(let [key, value] of glQueries){
 
 					let group = {
-						measures: value.map(v => {return {duration: v}}),
+						measures: value.map(v => {return {duration: v};}),
 						sum: value.reduce( (a, i) => a + i, 0),
 						n: value.length,
 						min: Math.min(...value),
@@ -2310,7 +2320,7 @@ export class Viewer extends EventDispatcher{
 					opacity: 0	
 				}, fadeDuration);
 				message.element.slideToggle(slideOutDuration);
-			}, params.duration)
+			}, params.duration);
 		}
 
 		return message;
