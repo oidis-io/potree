@@ -16,18 +16,21 @@
     "build": "gulp build pack",
     "postinstall": "npm run build",
     "lint": "eslint .",
-    "lint-fix": "eslint . --fix"
+    "lint-fix": "eslint . --fix",
+    "release": "npm run lint && gulp release"
   },
   "dependencies": {
     "gulp": "^5.0.1",
     "gulp-concat": "^2.6.1",
     "gulp-connect": "^5.7.0",
+    "del": "^8.0.1",
     "json5": "^2.2.3",
     "rollup": "^4.52.4",
     "through": "~2.3.8",
     "@eslint/js": "^9.35.0",
     "eslint": "^9.37.0",
-    "eslint-plugin-unused-imports": "^4.2.0"
+    "eslint-plugin-unused-imports": "^4.2.0",
+    "archiver": "^7.0.1"
   },
   "author": "Michal Kelnar",
   "license": "BSD-2-CLAUSE"
