@@ -99,7 +99,8 @@ gulp.task("archive", async () => {
     const outDir = path.dirname("build");
     fs.mkdirSync(outDir, {recursive: true});
 
-    const output = fs.createWriteStream(`build/Potree-${pkg.version.replace(/\./gm, "-")}.zip`);
+    const baseName = `Potree-${pkg.version.replace(/\./gm, "-")}`;
+    const output = fs.createWriteStream(`build/${baseName}.zip`);
     const archive = archiver('zip', {zlib: {level: 9}});
 
     output.on('close', () => {
@@ -121,9 +122,9 @@ gulp.task("archive", async () => {
         if (fs.existsSync(asset)) {
             const name = path.basename(asset);
             if (fs.statSync(asset).isDirectory()) {
-                archive.directory(asset, name, null);
+                archive.directory(asset, `${baseName}/${name}`, null);
             } else {
-                archive.file(asset, {name});
+                archive.file(asset, {name: `${baseName}/${name}`});
             }
         }
     }
