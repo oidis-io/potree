@@ -17,6 +17,7 @@ const exec = require('child_process').exec;
 const fs = require("fs");
 const fsp = fs.promises;
 const concat = require('gulp-concat');
+const merge = require('merge-stream');
 const connect = require('gulp-connect');
 const {watch} = gulp;
 
@@ -153,15 +154,19 @@ gulp.task('test', async () => {
     console.log("asdfiae8ofh");
 });
 
-gulp.task("workers", async () => {
-    for (let workerName of Object.keys(workers)) {
-        gulp.src(workers[workerName])
+gulp.task('workers', function () {
+    const merge = require('merge-stream');
+
+    const workerStreams = Object.keys(workers).map(workerName => {
+        return gulp.src(workers[workerName])
             .pipe(concat(`${workerName}.js`))
             .pipe(gulp.dest('build/potree/workers'));
-    }
+    });
 
-    gulp.src('./libs/copc/laz-perf.wasm')
+    const wasmStream = gulp.src('./libs/copc/laz-perf.wasm', { encoding: false })
         .pipe(gulp.dest('./build/potree/workers'));
+
+    return merge(...workerStreams, wasmStream);
 });
 
 gulp.task("lazylibs", async () => {
@@ -202,9 +207,17 @@ gulp.task("shaders", async () => {
 });
 
 gulp.task("pack", async () => {
-    exec('rollup -c', function (err, stdout, stderr) {
-        console.log(stdout);
-        console.log(stderr);
+    return new Promise((resolve, reject) => {
+        exec('rollup -c', (err, stdout, stderr) => {
+            console.log(stdout);
+            console.error(stderr);
+
+            if (err) {
+                reject(err);
+            } else {
+                resolve();
+            }
+        });
     });
 });
 
@@ -225,6 +238,7 @@ gulp.task('release',
     gulp.series(
         "clean",
         "build",
+        "pack",
         "archive"
     )
 );
