@@ -63,14 +63,19 @@ jobs:
             echo "PRERELEASE=true" >> $GITHUB_ENV
           fi
 
-      - name: Create and push tag
+      - name: Delete remote tag if exists
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag $TAG_NAME
-          git push origin $TAG_NAME
+          git tag -d $TAG_NAME || true
+          git push origin :refs/tags/$TAG_NAME || true
 
-      - name: Create GitHub Release
+      - name: Create and force-push tag
+        run: |
+          git tag $TAG_NAME
+          git push origin $TAG_NAME --force
+
+      - name: Create or update GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           name: ${{ env.RELEASE_NAME }}
