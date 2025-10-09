@@ -208,7 +208,7 @@ gulp.task("shaders", async () => {
 
 gulp.task("pack", async () => {
     return new Promise((resolve, reject) => {
-        const process = exec('rollup -c', (err, stdout, stderr) => {
+        exec('rollup -c', (err, stdout, stderr) => {
             console.log(stdout);
             console.error(stderr);
 
@@ -218,8 +218,6 @@ gulp.task("pack", async () => {
                 resolve();
             }
         });
-        process.stdout.pipe(process.stdout);
-        process.stderr.pipe(process.stderr);
     });
 });
 
