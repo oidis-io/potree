@@ -209,11 +209,11 @@ export class NavigationCube extends THREE.Object3D {
             this.navRenderer.setSize(this.width, this.width);
         });
 
-        this.viewer.renderer.domElement.addEventListener("mousemove", (event)=>{
+        this.viewer.renderer.domElement.addEventListener("mousemove", (event) => {
             this.onMouseMove(event);
         });
 
-        this.viewer.renderer.domElement.addEventListener('mousedown', (event)=>{
+        this.viewer.renderer.domElement.addEventListener('mousedown', (event) => {
             this.onMouseDown(event);
         }, false);
     }
@@ -331,20 +331,27 @@ export class NavigationCube extends THREE.Object3D {
         return group;
     };
 
-    onMouseMove(event) {
+    fitToContainer(event) {
         if (!this.visible) {
             return;
         }
-
         let mouse = new THREE.Vector2();
-        mouse.x = event.clientX - (window.innerWidth - this.width);
-        mouse.y = event.clientY;
-        if (mouse.x < 0 || mouse.y > this.width) {
+        const rect = event.currentTarget.getBoundingClientRect();
+        const x = event.clientX - (rect.width + rect.left - this.width);
+        const y = event.clientY - rect.top;
+        if (x < 0 || y < 0 || x > this.width || y > this.width) {
             return;
         }
+        mouse.x = (x / this.width) * 2 - 1;
+        mouse.y = -(y / this.width) * 2 + 1;
+        return mouse;
+    }
 
-        mouse.x = (mouse.x / this.width) * 2 - 1;
-        mouse.y = -(mouse.y / this.width) * 2 + 1;
+    onMouseMove(event) {
+        let mouse = this.fitToContainer(event);
+        if (!mouse) {
+            return;
+        }
 
         let raycaster = new THREE.Raycaster();
         raycaster.setFromCamera(mouse, this.camera);
@@ -414,19 +421,10 @@ export class NavigationCube extends THREE.Object3D {
     }
 
     onMouseDown(event) {
-        if (!this.visible) {
+        let mouse = this.fitToContainer(event);
+        if (!mouse) {
             return;
         }
-
-        let mouse = new THREE.Vector2();
-        mouse.x = event.clientX - (window.innerWidth - this.width);
-        mouse.y = event.clientY;
-        if (mouse.x < 0 || mouse.y > this.width) {
-            return;
-        }
-
-        mouse.x = (mouse.x / this.width) * 2 - 1;
-        mouse.y = -(mouse.y / this.width) * 2 + 1;
 
         let raycaster = new THREE.Raycaster();
         raycaster.setFromCamera(mouse, this.camera);
