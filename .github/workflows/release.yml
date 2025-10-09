@@ -57,23 +57,21 @@ jobs:
             echo "RELEASE_NAME=$VERSION" >> $GITHUB_ENV
             echo "TAG_NAME=$VERSION" >> $GITHUB_ENV
             echo "PRERELEASE=false" >> $GITHUB_ENV
+            echo "CREATE_TAG=true" >> $GITHUB_ENV
           else
             echo "RELEASE_NAME=EAP $VERSION" >> $GITHUB_ENV
-            echo "TAG_NAME=eap-$VERSION" >> $GITHUB_ENV
+            echo "TAG_NAME=eap" >> $GITHUB_ENV
             echo "PRERELEASE=true" >> $GITHUB_ENV
+            echo "CREATE_TAG=false" >> $GITHUB_ENV
           fi
 
-      - name: Delete remote tag if exists
+      - name: Create tag (only on main)
+        if: env.CREATE_TAG == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -d $TAG_NAME || true
-          git push origin :refs/tags/$TAG_NAME || true
-
-      - name: Create and force-push tag
-        run: |
           git tag $TAG_NAME
-          git push origin $TAG_NAME --force
+          git push origin $TAG_NAME
 
       - name: Create or update GitHub Release
         uses: softprops/action-gh-release@v1
