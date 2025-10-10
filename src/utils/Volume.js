@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -15,7 +16,7 @@ export class Volume extends THREE.Object3D {
 	constructor (args = {}) {
 		super();
 
-		if(this.constructor.name === "Volume"){
+		if (this.constructor.name === "Volume") {
 			console.warn("Can't create object of class Volume directly. Use classes BoxVolume or SphereVolume instead.");
 		}
 
@@ -54,15 +55,14 @@ export class Volume extends THREE.Object3D {
 			this.addEventListener('select', e => {});
 			this.addEventListener('deselect', e => {});
 		}
-
 	}
 
-	get visible(){
+	get visible() {
 		return this._visible;
 	}
 
-	set visible(value){
-		if(this._visible !== value){
+	set visible(value) {
+		if (this._visible !== value) {
 			this._visible = value;
 
 			this.dispatchEvent({type: "visibility_changed", object: this});
@@ -74,8 +74,8 @@ export class Volume extends THREE.Object3D {
 	}
 
 	update () {
-		
-	};
+
+	}
 
 	raycast (raycaster, intersects) {
 
@@ -86,8 +86,7 @@ export class Volume extends THREE.Object3D {
 	}
 
 	set clip (value) {
-
-		if(this._clip !== value){
+		if (this._clip !== value) {
 			this._clip = value;
 
 			this.update();
@@ -97,7 +96,6 @@ export class Volume extends THREE.Object3D {
 				object: this
 			});
 		}
-		
 	}
 
 	get modifieable () {
@@ -109,12 +107,10 @@ export class Volume extends THREE.Object3D {
 
 		this.update();
 	}
-};
+}
 
-
-export class BoxVolume extends Volume{
-
-	constructor(args = {}){
+export class BoxVolume extends Volume {
+	constructor(args = {}) {
 		super(args);
 
 		this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
@@ -158,7 +154,6 @@ export class BoxVolume extends Volume{
 				new Vector3(-0.5, 0.5, -0.5),
 
 			);
-
 		}
 
 		this.material = new THREE.MeshBasicMaterial({
@@ -179,7 +174,7 @@ export class BoxVolume extends Volume{
 		this.update();
 	}
 
-	update(){
+	update() {
 		this.boundingBox = this.box.geometry.boundingBox;
 		this.boundingSphere = this.boundingBox.getBoundingSphere(new THREE.Sphere());
 
@@ -206,15 +201,13 @@ export class BoxVolume extends Volume{
 		}
 	}
 
-	getVolume(){
+	getVolume() {
 		return Math.abs(this.scale.x * this.scale.y * this.scale.z);
 	}
+}
 
-};
-
-export class SphereVolume extends Volume{
-
-	constructor(args = {}){
+export class SphereVolume extends Volume {
+	constructor(args = {}) {
 		super(args);
 
 		this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
@@ -237,7 +230,6 @@ export class SphereVolume extends Volume{
 
 		this.label.visible = false;
 
-
 		let frameGeometry = new THREE.Geometry();
 		{
 			let steps = 64;
@@ -245,13 +237,12 @@ export class SphereVolume extends Volume{
 			let vSegments = 5;
 			let r = 1;
 
-			for(let uSegment = 0; uSegment < uSegments; uSegment++){
-
+			for (let uSegment = 0; uSegment < uSegments; uSegment++) {
 				let alpha = (uSegment / uSegments) * Math.PI * 2;
 				let dirx = Math.cos(alpha);
 				let diry = Math.sin(alpha);
 
-				for(let i = 0; i <= steps; i++){
+				for (let i = 0; i <= steps; i++) {
 					let v = (i / steps) * Math.PI * 2;
 					let vNext = v + 2 * Math.PI / steps;
 
@@ -270,8 +261,7 @@ export class SphereVolume extends Volume{
 			}
 
 			// creates rings at poles, just because it's easier to implement
-			for(let vSegment = 0; vSegment <= vSegments + 1; vSegment++){
-
+			for (let vSegment = 0; vSegment <= vSegments + 1; vSegment++) {
 				//let height = (vSegment / (vSegments + 1)) * 2 - 1; // -1 to 1
 				let uh = (vSegment / (vSegments + 1)); // -1 to 1
 				uh = (1 - uh) * (-Math.PI / 2) + uh *(Math.PI / 2);
@@ -279,7 +269,7 @@ export class SphereVolume extends Volume{
 
 				console.log(uh, height);
 
-				for(let i = 0; i <= steps; i++){
+				for (let i = 0; i <= steps; i++) {
 					let u = (i / steps) * Math.PI * 2;
 					let uNext = u + 2 * Math.PI / steps;
 
@@ -314,7 +304,7 @@ export class SphereVolume extends Volume{
 		this.update();
 	}
 
-	update(){
+	update() {
 		this.boundingBox = this.sphere.geometry.boundingBox;
 		this.boundingSphere = this.boundingBox.getBoundingSphere(new THREE.Sphere());
 
@@ -340,10 +330,9 @@ export class SphereVolume extends Volume{
 			});
 		}
 	}
-	
+
 	// see https://en.wikipedia.org/wiki/Ellipsoid#Volume
-	getVolume(){
+	getVolume() {
 		return (4 / 3) * Math.PI * this.scale.x * this.scale.y * this.scale.z;
 	}
-
-};
+}

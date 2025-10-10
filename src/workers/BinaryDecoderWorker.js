@@ -28,7 +28,6 @@ const typedArrayMapping = {
 Potree = {};
 
 onmessage = function (event) {
-
 	performance.mark("binary-decoder-start");
 	
 	let buffer = event.data.buffer;
@@ -45,12 +44,10 @@ onmessage = function (event) {
 	let tightBoxMin = [ Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY ];
 	let tightBoxMax = [ Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY ];
 	let mean = [0, 0, 0];
-	
 
 	let attributeBuffers = {};
 	let inOffset = 0;
 	for (let pointAttribute of pointAttributes.attributes) {
-		
 		if (pointAttribute.name === "POSITION_CARTESIAN") {
 			let buff = new ArrayBuffer(numPoints * 4 * 3);
 			let positions = new Float32Array(buff);
@@ -202,33 +199,29 @@ onmessage = function (event) {
 			const getter = getterMap[pointAttribute.type.name].bind(view);
 
 			// compute offset and scale to pack larger types into 32 bit floats
-			if(pointAttribute.type.size > 4){
-				for(let j = 0; j < numPoints; j++){
+			if (pointAttribute.type.size > 4) {
+				for (let j = 0; j < numPoints; j++) {
 					let value = getter(inOffset + j * pointAttributes.byteSize, true);
 
-					if(!Number.isNaN(value)){
+					if (!Number.isNaN(value)) {
 						min = Math.min(min, value);
 						max = Math.max(max, value);
 					}
 				}
 
-				
-
-				if(pointAttribute.initialRange != null){
+				if (pointAttribute.initialRange != null) {
 					offset = pointAttribute.initialRange[0];
 					scale = 1 / (pointAttribute.initialRange[1] - pointAttribute.initialRange[0]);
-				}else{
+				} else {
 					offset = min;
 					scale = 1 / (max - min);
 				}
 			}
 
-			
-
-			for(let j = 0; j < numPoints; j++){
+			for (let j = 0; j < numPoints; j++) {
 				let value = getter(inOffset + j * pointAttributes.byteSize, true);
 
-				if(!Number.isNaN(value)){
+				if (!Number.isNaN(value)) {
 					min = Math.min(min, value);
 					max = Math.max(max, value);
 				}
@@ -265,22 +258,21 @@ onmessage = function (event) {
 	{ // handle attribute vectors
 		let vectors = pointAttributes.vectors;
 
-		for(let vector of vectors){
-
+		for (let vector of vectors) {
 			let {name, attributes} = vector;
 			let numVectorElements = attributes.length;
 			let buffer = new ArrayBuffer(numVectorElements * numPoints * 4);
 			let f32 = new Float32Array(buffer);
 
 			let iElement = 0;
-			for(let sourceName of attributes){
+			for (let sourceName of attributes) {
 				let sourceBuffer = attributeBuffers[sourceName];
 				let {offset, scale} = sourceBuffer;
 				let view = new DataView(sourceBuffer.buffer);
 
 				const getter = view.getFloat32.bind(view);
 
-				for(let j = 0; j < numPoints; j++){
+				for (let j = 0; j < numPoints; j++) {
 					let value = getter(j * 4, true);
 
 					f32[j * numVectorElements + iElement] = (value / scale) + offset;
@@ -295,9 +287,7 @@ onmessage = function (event) {
 				buffer: buffer, 
 				attribute: vecAttribute,
 			};
-
 		}
-
 	}
 
 	performance.mark("binary-decoder-end");

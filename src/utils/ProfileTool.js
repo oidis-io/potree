@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -12,7 +13,6 @@ import * as THREE from "../../libs/three.js/build/three.module.js";
 import {Profile} from "./Profile.js";
 import {Utils} from "../utils.js";
 import { EventDispatcher } from "../EventDispatcher.js";
-
 
 export class ProfileTool extends EventDispatcher {
 	constructor (viewer) {
@@ -37,7 +37,7 @@ export class ProfileTool extends EventDispatcher {
 		this.onRemove = e => this.scene.remove(e.profile);
 		this.onAdd = e => this.scene.add(e.profile);
 
-		for(let profile of viewer.scene.profiles){
+		for (let profile of viewer.scene.profiles) {
 			this.onAdd({profile: profile});
 		}
 
@@ -49,8 +49,8 @@ export class ProfileTool extends EventDispatcher {
 		viewer.scene.addEventListener('profile_removed', this.onRemove);
 	}
 
-	onSceneChange(e){
-		if(e.oldScene){
+	onSceneChange(e) {
+		if (e.oldScene) {
 			e.oldScene.removeEventListeners('profile_added', this.onAdd);
 			e.oldScene.removeEventListeners('profile_removed', this.onRemove);
 		}
@@ -77,8 +77,8 @@ export class ProfileTool extends EventDispatcher {
 		};
 
 		let insertionCallback = (e) => {
-			if(e.button === THREE.MOUSE.LEFT){
-				if(profile.points.length <= 1){
+			if (e.button === THREE.MOUSE.LEFT) {
+				if (profile.points.length <= 1) {
 					let camera = this.viewer.scene.getActiveCamera();
 					let distance = camera.position.distanceTo(profile.points[0]);
 					let clientSize = this.viewer.renderer.getSize(new THREE.Vector2());
@@ -114,8 +114,8 @@ export class ProfileTool extends EventDispatcher {
 
 		return profile;
 	}
-	
-	update(){
+
+	update() {
 		let camera = this.viewer.scene.getActiveCamera();
 		let profiles = this.viewer.scene.profiles;
 		let renderAreaSize = this.viewer.renderer.getSize(new THREE.Vector2());
@@ -125,8 +125,8 @@ export class ProfileTool extends EventDispatcher {
 		this.light.position.copy(camera.position);
 
 		// make size independant of distance
-		for(let profile of profiles){
-			for(let sphere of profile.spheres){				
+		for (let profile of profiles) {
+			for (let sphere of profile.spheres) {
 				let distance = camera.position.distanceTo(sphere.getWorldPosition(new THREE.Vector3()));
 				let pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
 				let scale = (15 / pr);
@@ -135,8 +135,7 @@ export class ProfileTool extends EventDispatcher {
 		}
 	}
 
-	render(){
+	render() {
 		this.viewer.renderer.render(this.scene, this.viewer.scene.getActiveCamera());
 	}
-
 }

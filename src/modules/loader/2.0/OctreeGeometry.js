@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -10,9 +11,8 @@
 
 import * as THREE from "../../../../libs/three.js/build/three.module.js";
 
-export class OctreeGeometry{
-
-	constructor(){
+export class OctreeGeometry {
+	constructor() {
 		this.url = null;
 		this.spacing = 0;
 		this.boundingBox = null;
@@ -20,12 +20,10 @@ export class OctreeGeometry{
 		this.pointAttributes = null;
 		this.loader = null;
 	}
+}
 
-};
-
-export class OctreeGeometryNode{
-
-	constructor(name, octreeGeometry, boundingBox){
+export class OctreeGeometryNode {
+	constructor(name, octreeGeometry, boundingBox) {
 		this.id = OctreeGeometryNode.IDCount++;
 		this.name = name;
 		this.index = parseInt(name.charAt(name.length - 1));
@@ -38,31 +36,31 @@ export class OctreeGeometryNode{
 		this.oneTimeDisposeHandlers = [];
 	}
 
-	isGeometryNode(){
+	isGeometryNode() {
 		return true;
 	}
 
-	getLevel(){
+	getLevel() {
 		return this.level;
 	}
 
-	isTreeNode(){
+	isTreeNode() {
 		return false;
 	}
 
-	isLoaded(){
+	isLoaded() {
 		return this.loaded;
 	}
 
-	getBoundingSphere(){
+	getBoundingSphere() {
 		return this.boundingSphere;
 	}
 
-	getBoundingBox(){
+	getBoundingBox() {
 		return this.boundingBox;
 	}
 
-	getChildren(){
+	getChildren() {
 		let children = [];
 
 		for (let i = 0; i < 8; i++) {
@@ -74,12 +72,11 @@ export class OctreeGeometryNode{
 		return children;
 	}
 
-	getBoundingBox(){
+	getBoundingBox() {
 		return this.boundingBox;
 	}
 
-	load(){
-
+	load() {
 		if (Potree.numNodesLoading >= Potree.maxNodesLoading) {
 			return;
 		}
@@ -87,11 +84,11 @@ export class OctreeGeometryNode{
 		this.octreeGeometry.loader.load(this);
 	}
 
-	getNumPoints(){
+	getNumPoints() {
 		return this.numPoints;
 	}
 
-	dispose(){
+	dispose() {
 		if (this.geometry && this.parent != null) {
 			this.geometry.dispose();
 			this.geometry = null;
@@ -105,7 +102,6 @@ export class OctreeGeometryNode{
 			this.oneTimeDisposeHandlers = [];
 		}
 	}
-
-};
+}
 
 OctreeGeometryNode.IDCount = 0;

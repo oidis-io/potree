@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -8,9 +9,8 @@
  *
  * ********************************************************************************************************* */
 
-export class Version{
-
-	constructor(version){
+export class Version {
+	constructor(version) {
 		this.version = version;
 		let vmLength = (version.indexOf('.') === -1) ? version.length : version.indexOf('.');
 		this.versionMajor = parseInt(version.substr(0, vmLength));
@@ -20,7 +20,7 @@ export class Version{
 		}
 	}
 
-	newerThan(version){
+	newerThan(version) {
 		let v = new Version(version);
 
 		if (this.versionMajor > v.versionMajor) {
@@ -32,7 +32,7 @@ export class Version{
 		}
 	}
 
-	equalOrHigher(version){
+	equalOrHigher(version) {
 		let v = new Version(version);
 
 		if (this.versionMajor > v.versionMajor) {
@@ -44,10 +44,7 @@ export class Version{
 		}
 	}
 
-	upTo(version){
+	upTo(version) {
 		return !this.newerThan(version);
 	}
-
 }
-
-

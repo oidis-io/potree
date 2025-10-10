@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -10,8 +11,8 @@
 
 import {MeasurePanel} from "./MeasurePanel.js";
 
-export class AnglePanel extends MeasurePanel{
-	constructor(viewer, measurement, propertiesPanel){
+export class AnglePanel extends MeasurePanel {
+	constructor(viewer, measurement, propertiesPanel) {
 		super(viewer, measurement, propertiesPanel);
 
 		let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
@@ -53,13 +54,13 @@ export class AnglePanel extends MeasurePanel{
 		this.update();
 	}
 
-	update(){
+	update() {
 		let elCoordiantesContainer = this.elContent.find('.coordinates_table_container');
 		elCoordiantesContainer.empty();
 		elCoordiantesContainer.append(this.createCoordinatesTable(this.measurement.points.map(p => p.position)));
 
 		let angles = [];
-		for(let i = 0; i < this.measurement.points.length; i++){
+		for (let i = 0; i < this.measurement.points.length; i++) {
 			angles.push(this.measurement.getAngle(i) * (180.0 / Math.PI));
 		}
 		angles = angles.map(a => a.toFixed(1) + '\u00B0');
@@ -72,4 +73,4 @@ export class AnglePanel extends MeasurePanel{
 		elBetta.html(angles[1]);
 		elGamma.html(angles[2]);
 	}
-};
+}

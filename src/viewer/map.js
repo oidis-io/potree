@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -35,8 +36,7 @@ proj4.defs([
 	['EPSG:26919', '+proj=utm +zone=19 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs '],
 ]);
 
-export class MapView{
-
+export class MapView {
 	constructor (viewer) {
 		this.viewer = viewer;
 
@@ -105,8 +105,7 @@ export class MapView{
 	}
 
 	init () {
-
-		if(typeof ol === "undefined"){
+		if (typeof ol === "undefined") {
 			return;
 		}
 
@@ -354,7 +353,7 @@ export class MapView{
 	setScene (scene) {
 		if (this.scene === scene) {
 			return;
-		};
+		}
 
 		if (this.scene) {
 			this.scene.removeEventListener('pointcloud_added', this.onPointcloudAdded);
@@ -376,7 +375,7 @@ export class MapView{
 			this.onAnnotationAdded({annotation: annotation});
 		});
 
-		for(let images of this.viewer.scene.images360){
+		for (let images of this.viewer.scene.images360) {
 			this.on360ImagesAdded({images: images});
 		}
 	}
@@ -484,8 +483,8 @@ export class MapView{
 		return this.toolLayer;
 	}
 
-	getImages360Layer(){
-		if(this.images360Layer){
+	getImages360Layer() {
+		if (this.images360Layer) {
 			return this.images360Layer;
 		}
 
@@ -501,7 +500,7 @@ export class MapView{
 				})
 			})
 		});
-		
+
 		let layer = new ol.layer.Vector({
 			source: new ol.source.Vector({}),
 			style: style,
@@ -561,7 +560,7 @@ export class MapView{
 		this.sceneProjection = sceneProjection;
 		this.toMap = proj4(this.sceneProjection, this.mapProjection);
 		this.toScene = proj4(this.mapProjection, this.sceneProjection);
-	};
+	}
 
 	getMapExtent () {
 		let bb = this.viewer.getBoundingBox();
@@ -579,7 +578,7 @@ export class MapView{
 		};
 
 		return extent;
-	};
+	}
 
 	getMapCenter () {
 		let mapExtent = this.getMapExtent();
@@ -590,7 +589,7 @@ export class MapView{
 		];
 
 		return mapCenter;
-	};
+	}
 
 	updateToolDrawings () {
 		this.toolLayer.getSource().clear();
@@ -632,12 +631,11 @@ export class MapView{
 		}
 	}
 
-	addImages360(images){
+	addImages360(images) {
 		let transform = this.toMap.forward;
 		let layer = this.getImages360Layer();
 
-		for(let image of images.images){
-
+		for (let image of images.images) {
 			let p = transform([image.position[0], image.position[1]]);
 
 			let feature = new ol.Feature({
@@ -664,7 +662,7 @@ export class MapView{
 		if (!this.sceneProjection) {
 			try {
 				this.setSceneProjection(pointcloud.projection);
-			}catch (e) {
+			} catch (e) {
 				console.log('Failed projection:', e);
 
 				if (pointcloud.fallbackProjection) {
@@ -672,13 +670,13 @@ export class MapView{
 						console.log('Trying fallback projection...');
 						this.setSceneProjection(pointcloud.fallbackProjection);
 						console.log('Set projection from fallback');
-					}catch (e) {
+					} catch (e) {
 						console.log('Failed fallback projection:', e);
 						return;
 					}
-				}else{
+				} else {
 					return;
-				};
+				}
 			}
 		}
 
@@ -700,7 +698,7 @@ export class MapView{
 			constrainResolution: false
 		});
 
-		if (pointcloud.pcoGeometry.type == 'ept'){ 
+		if (pointcloud.pcoGeometry.type == 'ept') {
 			return;
 		}
 
@@ -709,7 +707,7 @@ export class MapView{
 
 		fetch(url).then(async (response) => {
 			let data = await response.json();
-		
+
 			let sources = data.sources;
 
 			for (let i = 0; i < sources.length; i++) {
@@ -749,9 +747,8 @@ export class MapView{
 				this.sourcesLabelLayer.getSource().addFeature(feature);
 			}
 		}).catch(() => {
-			
-		});
 
+		});
 	}
 
 	toggle () {
@@ -813,5 +810,4 @@ export class MapView{
 	set sourcesVisible (value) {
 		this.getSourcesLayer().setVisible(value);
 	}
-
 }

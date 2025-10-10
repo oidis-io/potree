@@ -15,8 +15,8 @@ import { BoxVolume, SphereVolume} from "../../utils/Volume.js";
 
 import {MeasurePanel} from "./MeasurePanel.js";
 
-export class VolumePanel extends MeasurePanel{
-	constructor(viewer, measurement, propertiesPanel){
+export class VolumePanel extends MeasurePanel {
+	constructor(viewer, measurement, propertiesPanel) {
 		super(viewer, measurement, propertiesPanel);
 
 		let copyIconPath = Potree.resourcePath + '/icons/copy.svg';
@@ -116,7 +116,7 @@ export class VolumePanel extends MeasurePanel{
 		{ // download
 			this.elDownloadButton = this.elContent.find("input[name=download_volume]");
 
-			if(this.propertiesPanel.viewer.server){
+			if (this.propertiesPanel.viewer.server) {
 				this.elDownloadButton.click(() => this.download());
 			} else {
 				this.elDownloadButton.hide();
@@ -177,8 +177,7 @@ export class VolumePanel extends MeasurePanel{
 		this.update();
 	}
 
-	async download(){
-
+	async download() {
 		let clipBox = this.measurement;
 
 		let regions = [];
@@ -210,7 +209,7 @@ export class VolumePanel extends MeasurePanel{
 			];
 
 			let planeQueryParts = [];
-			for(let plane of planes){
+			for (let plane of planes) {
 				let part = [plane.normal.toArray(), plane.constant].join(",");
 				part = `[${part}]`;
 				planeQueryParts.push(part);
@@ -222,8 +221,8 @@ export class VolumePanel extends MeasurePanel{
 		let regionsArg = regions.join(",");
 
 		let pointcloudArgs = [];
-		for(let pointcloud of this.viewer.scene.pointclouds){
-			if(!pointcloud.visible){
+		for (let pointcloud of this.viewer.scene.pointclouds) {
+			if (!pointcloud.visible) {
 				continue;
 			}
 
@@ -267,10 +266,10 @@ export class VolumePanel extends MeasurePanel{
 			let jsResponse = await response.json();
 			//console.log(jsResponse);
 
-			if(!jsResponse.handle){
+			if (!jsResponse.handle) {
 				error(jsResponse.message);
 				return;
-			}else{
+			} else {
 				handle = jsResponse.handle;
 			}
 		}
@@ -278,7 +277,7 @@ export class VolumePanel extends MeasurePanel{
 		{ // WAIT, CHECK PROGRESS, HANDLE FINISH
 			let url = `${viewer.server}/check_regions_filter?handle=${handle}`;
 
-			let sleep = (function(duration){
+			let sleep = (function(duration) {
 				return new Promise( (res, rej) => {
 					setTimeout(() => {
 						res();
@@ -299,7 +298,7 @@ export class VolumePanel extends MeasurePanel{
 				let message = "downloads ready: <br>";
 				message += "<ul>";
 
-				for(let i = 0; i < jsResponse.pointclouds.length; i++){
+				for (let i = 0; i < jsResponse.pointclouds.length; i++) {
 					let url = `${viewer.server}/download_regions_filter_result?handle=${handle}&index=${i}`;
 
 					message += `<li><a href="${url}">result_${i}.las</a> </li>\n`;
@@ -326,19 +325,19 @@ export class VolumePanel extends MeasurePanel{
 
 			let start = Date.now();
 
-			while(true){
+			while (true) {
 				let response = await fetch(url);
 				let jsResponse = await response.json();
 
-				if(jsResponse.status === "ERROR"){
+				if (jsResponse.status === "ERROR") {
 					handleError(jsResponse);
-				}else if(jsResponse.status === "FILTERING"){
+				} else if (jsResponse.status === "FILTERING") {
 					handleFiltering(jsResponse);
-				}else if(jsResponse.status === "FINISHED"){
+				} else if (jsResponse.status === "FINISHED") {
 					handleFinish(jsResponse);
 
 					break;
-				}else{
+				} else {
 					handleUnexpected(jsResponse);
 				}
 
@@ -348,10 +347,9 @@ export class VolumePanel extends MeasurePanel{
 				await sleep(sleepAmountMS);
 			}
 		}
-
 	}
 
-	update(){
+	update() {
 		let elCoordiantesContainer = this.elContent.find('.coordinates_table_container');
 		elCoordiantesContainer.empty();
 		elCoordiantesContainer.append(this.createCoordinatesTable([this.measurement.position]));
@@ -393,6 +391,5 @@ export class VolumePanel extends MeasurePanel{
 
 		this.elCheckClip.prop("checked", this.measurement.clip);
 		this.elCheckShow.prop("checked", this.measurement.visible);
-
 	}
-};
+}

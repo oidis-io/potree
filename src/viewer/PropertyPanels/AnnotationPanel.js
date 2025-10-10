@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -10,8 +11,8 @@
 
 import {Utils} from "../../utils.js";
 
-export class AnnotationPanel{
-	constructor(viewer, propertiesPanel, annotation){
+export class AnnotationPanel {
+	constructor(viewer, propertiesPanel, annotation) {
 		this.viewer = viewer;
 		this.propertiesPanel = propertiesPanel;
 		this.annotation = annotation;
@@ -73,7 +74,6 @@ export class AnnotationPanel{
 		this.elTitle[0].addEventListener("input", () => {
 			const title = this.elTitle.html();
 			annotation.title = title;
-
 		}, false);
 
 		this.elDescription[0].addEventListener("input", () => {
@@ -84,7 +84,7 @@ export class AnnotationPanel{
 		this.update();
 	}
 
-	update(){
+	update() {
 		const {annotation, elContent, elTitle, elDescription} = this;
 
 		let pos = annotation.position.toArray().map(c => Utils.addCommas(c.toFixed(3)));
@@ -94,7 +94,5 @@ export class AnnotationPanel{
 
 		elTitle.html(annotation.title);
 		elDescription.html(annotation.description);
-
-
 	}
-};
+}

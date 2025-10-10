@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -10,8 +11,8 @@
 
 import {MeasurePanel} from "./MeasurePanel.js";
 
-export class AreaPanel extends MeasurePanel{
-	constructor(viewer, measurement, propertiesPanel){
+export class AreaPanel extends MeasurePanel {
+	constructor(viewer, measurement, propertiesPanel) {
 		super(viewer, measurement, propertiesPanel);
 
 		let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
@@ -43,7 +44,7 @@ export class AreaPanel extends MeasurePanel{
 		this.update();
 	}
 
-	update(){
+	update() {
 		let elCoordiantesContainer = this.elContent.find('.coordinates_table_container');
 		elCoordiantesContainer.empty();
 		elCoordiantesContainer.append(this.createCoordinatesTable(this.measurement.points.map(p => p.position)));
@@ -51,4 +52,4 @@ export class AreaPanel extends MeasurePanel{
 		let elArea = this.elContent.find(`#measurement_area`);
 		elArea.html(this.measurement.getArea().toFixed(3));
 	}
-};
+}

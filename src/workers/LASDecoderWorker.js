@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -9,7 +10,6 @@
  * ********************************************************************************************************* */
 
 function readUsingTempArrays(event) {
-
 	performance.mark("laslaz-start");
 
 	let buffer = event.data.buffer;
@@ -133,7 +133,6 @@ function readUsingTempArrays(event) {
 			colors[4 * i + 0] = r;
 			colors[4 * i + 1] = g;
 			colors[4 * i + 2] = b;
-
 		}
 	}
 
@@ -180,11 +179,9 @@ function readUsingTempArrays(event) {
 	debugger;
 
 	postMessage(message, transferables);
-};
-
+}
 
 function readUsingDataView(event) {
-
 	performance.mark("laslaz-start");
 
 	let buffer = event.data.buffer;
@@ -218,7 +215,7 @@ function readUsingDataView(event) {
 	let returnNumbers = new Uint8Array(rnBuff);
 	let numberOfReturns = new Uint8Array(nrBuff);
 	let pointSourceIDs = new Uint16Array(psBuff);
-	
+
 	const rangeIntensity = [Infinity, -Infinity];
 	const rangeClassification = [Infinity, -Infinity];
 	const rangeReturnNumber = [Infinity, -Infinity];
@@ -345,9 +342,7 @@ function readUsingDataView(event) {
 		message.indices];
 
 	postMessage(message, transferables);
-};
-
-
+}
 
 onmessage = readUsingDataView;
 //onmessage = readUsingTempArrays;

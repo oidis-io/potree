@@ -9,8 +9,8 @@
  *
  * ********************************************************************************************************* */
 
-export class CameraAnimationPanel{
-	constructor(viewer, propertiesPanel, animation){
+export class CameraAnimationPanel {
+	constructor(viewer, propertiesPanel, animation) {
 		this.viewer = viewer;
 		this.propertiesPanel = propertiesPanel;
 		this.animation = animation;
@@ -155,12 +155,10 @@ export class CameraAnimationPanel{
 
 			addNewKeyframeItem(index);
 
-			for(const cp of animation.controlPoints){
-				
+			for (const cp of animation.controlPoints) {
 				addKeyframeItem(index);
 				index++;
 				addNewKeyframeItem(index);
-
 			}
 		};
 
@@ -169,15 +167,12 @@ export class CameraAnimationPanel{
 		animation.addEventListener("controlpoint_added", updateKeyframes);
 		animation.addEventListener("controlpoint_removed", updateKeyframes);
 
-
-
-
 		// this._update = () => { this.update(); };
 
 		// this.update();
 	}
 
-	update(){
+	update() {
 		
 	}
-};
+}

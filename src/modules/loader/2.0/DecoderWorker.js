@@ -28,7 +28,6 @@ const typedArrayMapping = {
 Potree = {};
 
 onmessage = function (event) {
-
 	let {buffer, pointAttributes, scale, name, min, max, size, offset, numPoints} = event.data;
 
 	let tStart = performance.now();
@@ -66,13 +65,11 @@ onmessage = function (event) {
 
 	let numOccupiedCells = 0;
 	for (let pointAttribute of pointAttributes.attributes) {
-		
-		if(["POSITION_CARTESIAN", "position"].includes(pointAttribute.name)){
+		if (["POSITION_CARTESIAN", "position"].includes(pointAttribute.name)) {
 			let buff = new ArrayBuffer(numPoints * 4 * 3);
 			let positions = new Float32Array(buff);
 		
 			for (let j = 0; j < numPoints; j++) {
-				
 				let pointOffset = j * bytesPerPoint;
 
 				let x = (view.getInt32(pointOffset + attributeOffset + 0, true) * scale[0]) + offset[0] - min.x;
@@ -81,7 +78,7 @@ onmessage = function (event) {
 
 				let index = toIndex(x, y, z);
 				let count = grid[index]++;
-				if(count === 0){
+				if (count === 0) {
 					numOccupiedCells++;
 				}
 
@@ -91,7 +88,7 @@ onmessage = function (event) {
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		}else if(["RGBA", "rgba"].includes(pointAttribute.name)){
+		} else if (["RGBA", "rgba"].includes(pointAttribute.name)) {
 			let buff = new ArrayBuffer(numPoints * 4);
 			let colors = new Uint8Array(buff);
 
@@ -108,7 +105,7 @@ onmessage = function (event) {
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		}else{
+		} else {
 			let buff = new ArrayBuffer(numPoints * 4);
 			let f32 = new Float32Array(buff);
 
@@ -132,13 +129,13 @@ onmessage = function (event) {
 			const getter = getterMap[pointAttribute.type.name].bind(view);
 
 			// compute offset and scale to pack larger types into 32 bit floats
-			if(pointAttribute.type.size > 4){
+			if (pointAttribute.type.size > 4) {
 				let [amin, amax] = pointAttribute.range;
 				offset = amin;
 				scale = 1 / (amax - amin);
 			}
 
-			for(let j = 0; j < numPoints; j++){
+			for (let j = 0; j < numPoints; j++) {
 				let pointOffset = j * bytesPerPoint;
 				let value = getter(pointOffset + attributeOffset, true);
 
@@ -156,8 +153,6 @@ onmessage = function (event) {
 		}
 
 		attributeOffset += pointAttribute.byteSize;
-
-
 	}
 
 	let occupancy = parseInt(numPoints / numOccupiedCells);
@@ -174,26 +169,24 @@ onmessage = function (event) {
 		attributeBuffers["INDICES"] = { buffer: buff, attribute: PointAttribute.INDICES };
 	}
 
-
 	{ // handle attribute vectors
 		let vectors = pointAttributes.vectors;
 
-		for(let vector of vectors){
-
+		for (let vector of vectors) {
 			let {name, attributes} = vector;
 			let numVectorElements = attributes.length;
 			let buffer = new ArrayBuffer(numVectorElements * numPoints * 4);
 			let f32 = new Float32Array(buffer);
 
 			let iElement = 0;
-			for(let sourceName of attributes){
+			for (let sourceName of attributes) {
 				let sourceBuffer = attributeBuffers[sourceName];
 				let {offset, scale} = sourceBuffer;
 				let view = new DataView(sourceBuffer.buffer);
 
 				const getter = view.getFloat32.bind(view);
 
-				for(let j = 0; j < numPoints; j++){
+				for (let j = 0; j < numPoints; j++) {
 					let value = getter(j * 4, true);
 
 					f32[j * numVectorElements + iElement] = (value / scale) + offset;
@@ -208,9 +201,7 @@ onmessage = function (event) {
 				buffer: buffer, 
 				attribute: vecAttribute,
 			};
-
 		}
-
 	}
 
 	// let duration = performance.now() - tStart;

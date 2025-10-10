@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -22,7 +23,6 @@ import {XHRFactory} from "../XHRFactory.js";
  */
 
 export class LasLazLoader {
-
 	constructor (version, extension) {
 		if (typeof (version) === 'string') {
 			this.version = new Version(version);
@@ -66,14 +66,14 @@ export class LasLazLoader {
 		xhr.send(null);
 	}
 
-	async parse(node, buffer){
+	async parse(node, buffer) {
 		let lf = new LASFile(buffer);
 		let handler = new LasLazBatcher(node);
 
-		try{
+		try {
 			 await lf.open();
 			 lf.isOpen = true;
-		}catch(e){
+		} catch (e) {
 			console.log("failed to open file. :(");
 
 			return;
@@ -87,7 +87,7 @@ export class LasLazLoader {
 
 		let hasMoreData = true;
 
-		while(hasMoreData){
+		while (hasMoreData) {
 			let data = await lf.readData(1000 * 1000, 0, skip);
 
 			handler.push(new LASDecoder(data.buffer,
@@ -110,13 +110,13 @@ export class LasLazLoader {
 
 		LasLazLoader.progressCB(1);
 
-		try{
+		try {
 			await lf.close();
 
 			lf.isOpen = false;
-		}catch(e){
+		} catch (e) {
 			console.error("failed to close las/laz file!!!");
-			
+
 			throw e;
 		}
 	}
@@ -124,10 +124,9 @@ export class LasLazLoader {
 	handle (node, url) {
 
 	}
-};
+}
 
-export class LasLazBatcher{
-
+export class LasLazBatcher {
 	constructor (node) {
 		this.node = node;
 	}
@@ -161,7 +160,7 @@ export class LasLazBatcher{
 			geometry.setAttribute('indices', new THREE.BufferAttribute(indices, 4));
 			geometry.attributes.indices.normalized = true;
 
-			for(const key in e.data.ranges){
+			for (const key in e.data.ranges) {
 				const range = e.data.ranges[key];
 
 				const attribute = pointAttributes.attributes.find(a => a.name === key);
@@ -198,5 +197,5 @@ export class LasLazBatcher{
 			maxs: lasBuffer.maxs
 		};
 		worker.postMessage(message, [message.buffer]);
-	};
+	}
 }

@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -12,10 +13,8 @@ import * as THREE from "../../libs/three.js/build/three.module.js";
 import {Version} from "../Version.js";
 import {XHRFactory} from "../XHRFactory.js";
 
-
-export class BinaryLoader{
-
-	constructor(version, boundingBox, scale){
+export class BinaryLoader {
+	constructor(version, boundingBox, scale) {
 		if (typeof (version) === 'string') {
 			this.version = new Version(version);
 		} else {
@@ -26,7 +25,7 @@ export class BinaryLoader{
 		this.scale = scale;
 	}
 
-	load(node){
+	load(node) {
 		if (node.loaded) {
 			return;
 		}
@@ -43,7 +42,7 @@ export class BinaryLoader{
 		xhr.overrideMimeType('text/plain; charset=x-user-defined');
 		xhr.onreadystatechange = () => {
 			if (xhr.readyState === 4) {
-				if((xhr.status === 200 || xhr.status === 0) &&  xhr.response !== null){
+				if ((xhr.status === 200 || xhr.status === 0) &&  xhr.response !== null) {
 					let buffer = xhr.response;
 					this.parse(node, buffer);
 				} else {
@@ -52,15 +51,15 @@ export class BinaryLoader{
 				}
 			}
 		};
-		
+
 		try {
 			xhr.send(null);
 		} catch (e) {
 			console.log('fehler beim laden der punktwolke: ' + e);
 		}
-	};
+	}
 
-	parse(node, buffer){
+	parse(node, buffer) {
 		let pointAttributes = node.pcoGeometry.pointAttributes;
 		let numPoints = buffer.byteLength / node.pcoGeometry.pointAttributes.byteSize;
 
@@ -72,7 +71,6 @@ export class BinaryLoader{
 		let worker = Potree.workerPool.getWorker(workerPath);
 
 		worker.onmessage = function (e) {
-
 			let data = e.data;
 			let buffers = data.attributeBuffers;
 			let tightBoundingBox = new THREE.Box3(
@@ -84,7 +82,7 @@ export class BinaryLoader{
 
 			let geometry = new THREE.BufferGeometry();
 
-			for(let property in buffers){
+			for (let property in buffers) {
 				let buffer = buffers[property].buffer;
 				let batchAttribute = buffers[property].attribute;
 
@@ -121,10 +119,9 @@ export class BinaryLoader{
 					attribute.range[0] = Math.min(attribute.range[0], batchAttribute.range[0]);
 					attribute.range[1] = Math.max(attribute.range[1], batchAttribute.range[1]);
 
-					if(node.getLevel() === 0){
+					if (node.getLevel() === 0) {
 						attribute.initialRange = batchAttribute.range;
 					}
-
 				}
 			}
 
@@ -132,7 +129,7 @@ export class BinaryLoader{
 			tightBoundingBox.min.set(0, 0, 0);
 
 			let numPoints = e.data.buffer.byteLength / pointAttributes.byteSize;
-			
+
 			node.numPoints = numPoints;
 			node.geometry = geometry;
 			node.mean = new THREE.Vector3(...data.mean);
@@ -155,8 +152,5 @@ export class BinaryLoader{
 			name: node.name
 		};
 		worker.postMessage(message, [message.buffer]);
-	};
-
-	
+	}
 }
-

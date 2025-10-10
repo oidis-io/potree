@@ -25,31 +25,29 @@ const defaultColors = {
 	"default":   [0.9, 0.6, 0.1],
 };
 
-function getColor(feature){
+function getColor(feature) {
 	let color = defaultColors[feature];
 
-	if(!color){
+	if (!color) {
 		color = defaultColors["default"];
 	}
 
 	return color;
 }
 
-export class Geopackage{
-	constructor(){
+export class Geopackage {
+	constructor() {
 		this.path = null;
 		this.node = null;
 	}
-};
+}
 
-export class GeoPackageLoader{
-
-	constructor(){
+export class GeoPackageLoader {
+	constructor() {
 
 	}
 
-	static async loadUrl(url, params){
-
+	static async loadUrl(url, params) {
 		await Promise.all([
 			Utils.loadScript(`${Potree.scriptPath}/lazylibs/geopackage/geopackage.js`),
 			Utils.loadScript(`${Potree.scriptPath}/lazylibs/sql.js/sql-wasm.js`),
@@ -65,8 +63,7 @@ export class GeoPackageLoader{
 		return GeoPackageLoader.loadBuffer(buffer, params);
 	}
 
-	static async loadBuffer(buffer, params){
-
+	static async loadBuffer(buffer, params) {
 		await Promise.all([
 			Utils.loadScript(`${Potree.scriptPath}/lazylibs/geopackage/geopackage.js`),
 			Utils.loadScript(`${Potree.scriptPath}/lazylibs/sql.js/sql-wasm.js`),
@@ -75,9 +72,8 @@ export class GeoPackageLoader{
 		params = params || {};
 
 		const resolver = async (resolve) => {
-			
 			let transform = params.transform;
-			if(!transform){
+			if (!transform) {
 				transform = {forward: (arg) => arg};
 			}
 
@@ -101,7 +97,7 @@ export class GeoPackageLoader{
 
 			const tables = data.getTables();
 
-			for(const table of tables.features){
+			for (const table of tables.features) {
 				const dao = data.getFeatureDao(table);
 
 				let boundingBox = dao.getBoundingBox();
@@ -119,7 +115,7 @@ export class GeoPackageLoader{
 				node.name = table;
 				geo.node.add(node);
 
-				for(const [index, feature] of Object.entries(geoJson)){
+				for (const [index, feature] of Object.entries(geoJson)) {
 					//const featureNode = GeoPackageLoader.featureToSceneNode(feature, matLine, transform);
 					const featureNode = GeoPackageLoader.featureToSceneNode(feature, matLine, dao.projection, transform);
 					node.add(featureNode);
@@ -132,12 +128,12 @@ export class GeoPackageLoader{
 		return new Promise(resolver);
 	}
 
-	static featureToSceneNode(feature, matLine, geopackageProjection, transform){
+	static featureToSceneNode(feature, matLine, geopackageProjection, transform) {
 		let geometry = feature.geometry;
 		
 		let color = new THREE.Color(1, 1, 1);
 		
-		if(feature.geometry.type === "Point"){
+		if (feature.geometry.type === "Point") {
 			let sg = new THREE.SphereGeometry(1, 18, 18);
 			let sm = new THREE.MeshNormalMaterial();
 			let s = new THREE.Mesh(sg, sm);
@@ -150,11 +146,11 @@ export class GeoPackageLoader{
 			s.scale.set(10, 10, 10);
 			
 			return s;
-		}else if(geometry.type === "LineString"){
+		} else if (geometry.type === "LineString") {
 			let coordinates = [];
 			
 			let min = new THREE.Vector3(Infinity, Infinity, Infinity);
-			for(let i = 0; i < geometry.coordinates.length; i++){
+			for (let i = 0; i < geometry.coordinates.length; i++) {
 				let [long, lat] = geometry.coordinates[i];
 				let pos = transform.forward(geopackageProjection.forward([long, lat]));
 				
@@ -163,12 +159,12 @@ export class GeoPackageLoader{
 				min.z = Math.min(min.z, 20);
 				
 				coordinates.push(...pos, 20);
-				if(i > 0 && i < geometry.coordinates.length - 1){
+				if (i > 0 && i < geometry.coordinates.length - 1) {
 					coordinates.push(...pos, 20);
 				}
 			}
 			
-			for(let i = 0; i < coordinates.length; i += 3){
+			for (let i = 0; i < coordinates.length; i += 3) {
 				coordinates[i+0] -= min.x;
 				coordinates[i+1] -= min.y;
 				coordinates[i+2] -= min.z;
@@ -183,12 +179,12 @@ export class GeoPackageLoader{
 			line.position.copy(min);
 			
 			return line;
-		}else if(geometry.type === "Polygon"){
-			for(let pc of geometry.coordinates){
+		} else if (geometry.type === "Polygon") {
+			for (let pc of geometry.coordinates) {
 				let coordinates = [];
 				
 				let min = new THREE.Vector3(Infinity, Infinity, Infinity);
-				for(let i = 0; i < pc.length; i++){
+				for (let i = 0; i < pc.length; i++) {
 					let [long, lat] = pc[i];
 					
 					let pos = transform.forward(geopackageProjection.forward([long, lat]));
@@ -198,12 +194,12 @@ export class GeoPackageLoader{
 					min.z = Math.min(min.z, 20);
 					
 					coordinates.push(...pos, 20);
-					if(i > 0 && i < pc.length - 1){
+					if (i > 0 && i < pc.length - 1) {
 						coordinates.push(...pos, 20);
 					}
 				}
 				
-				for(let i = 0; i < coordinates.length; i += 3){
+				for (let i = 0; i < coordinates.length; i += 3) {
 					coordinates[i+0] -= min.x;
 					coordinates[i+1] -= min.y;
 					coordinates[i+2] -= min.z;
@@ -219,9 +215,8 @@ export class GeoPackageLoader{
 				
 				return line;
 			}
-		}else{
+		} else {
 			console.log("unhandled feature: ", feature);
 		}
 	}
-
-};
+}

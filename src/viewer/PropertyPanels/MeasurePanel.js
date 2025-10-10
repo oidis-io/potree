@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -10,9 +11,8 @@
 
 import {Utils} from "../../utils.js";
 
-export class MeasurePanel{
-
-	constructor(viewer, measurement, propertiesPanel){
+export class MeasurePanel {
+	constructor(viewer, measurement, propertiesPanel) {
 		this.viewer = viewer;
 		this.measurement = measurement;
 		this.propertiesPanel = propertiesPanel;
@@ -20,7 +20,7 @@ export class MeasurePanel{
 		this._update = () => { this.update(); };
 	}
 
-	createCoordinatesTable(points){
+	createCoordinatesTable(points) {
 		let table = $(`
 			<table class="measurement_value_table">
 				<tr>
@@ -64,17 +64,17 @@ export class MeasurePanel{
 		}
 
 		return table;
-	};
+	}
 
-	createAttributesTable(){
+	createAttributesTable() {
 		let elTable = $('<table class="measurement_value_table"></table>');
 
 		let point = this.measurement.points[0];
-		
-		for(let attributeName of Object.keys(point)){
-			if(attributeName === "position"){
-			
-			}else if(attributeName === "rgba"){
+
+		for (let attributeName of Object.keys(point)) {
+			if (attributeName === "position") {
+
+			} else if (attributeName === "rgba") {
 				let color = point.rgba;
 				let text = color.join(', ');
 
@@ -84,7 +84,7 @@ export class MeasurePanel{
 						<td>${text}</td>
 					</tr>
 				`));
-			}else{
+			} else {
 				let value = point[attributeName];
 				let text = value.join(', ');
 
@@ -100,7 +100,7 @@ export class MeasurePanel{
 		return elTable;
 	}
 
-	update(){
+	update() {
 
 	}
-};
+}

@@ -15,7 +15,6 @@
 
 export class EptLoader {
 	static async load(file, callback) {
-
 		let response = await fetch(file);
 		let json = await response.json();
 
@@ -28,7 +27,7 @@ export class EptLoader {
 
 		callback(geometry);
 	}
-};
+}
 
 export class CopcLoader {
 	static async load(file, callback) {

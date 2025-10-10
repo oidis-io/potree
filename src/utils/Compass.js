@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -12,9 +13,8 @@ import * as THREE from "../../libs/three.js/build/three.module.js";
 
 import {Utils} from "../utils.js";
 
-export class Compass{
-
-	constructor(viewer){
+export class Compass {
+	constructor(viewer) {
 		this.viewer = viewer;
 
 		this.visible = false;
@@ -32,7 +32,7 @@ export class Compass{
 
 			const projection = viewer.getProjection();
 			const azimuth = Utils.computeAzimuth(p1, p2, projection);
-			
+
 			this.dom.css("transform", `rotateZ(${-azimuth}rad)`);
 		});
 
@@ -46,22 +46,21 @@ export class Compass{
 		this.setVisible(this.visible);
 	}
 
-	setVisible(visible){
+	setVisible(visible) {
 		this.visible = visible;
 
 		const value = visible ? "" : "none";
 		this.dom.css("display", value);
 	}
 
-	isVisible(){
+	isVisible() {
 		return this.visible;
 	}
 
-	createElement(){
+	createElement() {
 		const style = `style="position: absolute; top: 10px; right: 10px; z-index: 10000; width: 64px;"`;
 		const img = $(`<img src="${Potree.resourcePath}/images/compas.svg" ${style} />`);
 
 		return img;
 	}
-
-};
+}

@@ -209,6 +209,6 @@ async function readUsingDataView(event) {
 	let transferables = Object.values(buffers);
 
 	postMessage(message, transferables);
-};
+}
 
 onmessage = readUsingDataView;

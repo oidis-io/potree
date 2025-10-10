@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -18,8 +19,7 @@
 
 import {Measure} from "../utils/Measure.js";
 
-export class GeoJSONExporter{
-
+export class GeoJSONExporter {
 	static measurementToFeatures (measurement) {
 		let coords = measurement.points.map(e => e.position.toArray());
 
@@ -119,5 +119,4 @@ export class GeoJSONExporter{
 
 		return JSON.stringify(geojson, null, '\t');
 	}
-
 }

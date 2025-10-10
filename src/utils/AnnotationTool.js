@@ -14,7 +14,7 @@ import {Annotation} from "../Annotation.js";
 import {Utils} from "../utils.js";
 import {EventDispatcher} from "../EventDispatcher.js";
 
-export class AnnotationTool extends EventDispatcher{
+export class AnnotationTool extends EventDispatcher {
 	constructor (viewer) {
 		super();
 
@@ -94,7 +94,7 @@ export class AnnotationTool extends EventDispatcher{
 		return annotation;
 	}
 	
-	update(){
+	update() {
 		// let camera = this.viewer.scene.getActiveCamera();
 		// let domElement = this.renderer.domElement;
 		// let measurements = this.viewer.scene.measurements;
@@ -105,7 +105,7 @@ export class AnnotationTool extends EventDispatcher{
 
 	}
 
-	render(){
+	render() {
 		//this.viewer.renderer.render(this.scene, this.viewer.scene.getActiveCamera());
 	}
-};
+}

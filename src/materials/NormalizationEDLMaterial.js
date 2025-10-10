@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -11,10 +12,8 @@
 import * as THREE from "../../libs/three.js/build/three.module.js";
 import {Shaders} from "../../build/shaders/shaders.js";
 
-
-export class NormalizationEDLMaterial extends THREE.RawShaderMaterial{
-
-	constructor(parameters = {}){
+export class NormalizationEDLMaterial extends THREE.RawShaderMaterial {
+	constructor(parameters = {}) {
 		super();
 
 		let uniforms = {
@@ -46,7 +45,6 @@ export class NormalizationEDLMaterial extends THREE.RawShaderMaterial{
 	}
 
 	updateShaderSource() {
-
 		let vs = this.getDefines() + Shaders['normalize.vs'];
 		let fs = this.getDefines() + Shaders['normalize_and_edl.fs'];
 
@@ -60,11 +58,11 @@ export class NormalizationEDLMaterial extends THREE.RawShaderMaterial{
 		this.needsUpdate = true;
 	}
 
-	get neighbourCount(){
+	get neighbourCount() {
 		return this._neighbourCount;
 	}
 
-	set neighbourCount(value){
+	set neighbourCount(value) {
 		if (this._neighbourCount !== value) {
 			this._neighbourCount = value;
 			this.neighbours = new Float32Array(this._neighbourCount * 2);
@@ -76,6 +74,4 @@ export class NormalizationEDLMaterial extends THREE.RawShaderMaterial{
 			this.updateShaderSource();
 		}
 	}
-	
 }
-

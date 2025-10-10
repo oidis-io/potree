@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -11,10 +12,9 @@
 let ftCanvas = document.createElement('canvas');
 
 export const Features = (function () {
-
 	let gl = ftCanvas.getContext('webgl') || ftCanvas.getContext('experimental-webgl');
-	if (gl === null){ 
-		return null; 
+	if (gl === null) {
+		return null;
 	}
 
 	// -- code taken from THREE.WebGLRenderer --
@@ -84,4 +84,3 @@ export const Features = (function () {
 		precision: precision
 	};
 }());
-

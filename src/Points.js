@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -11,7 +12,6 @@
 import * as THREE from "../libs/three.js/build/three.module.js";
 
 export class Points {
-	
 	constructor () {
 		this.boundingBox = new THREE.Box3();
 		this.numPoints = 0;

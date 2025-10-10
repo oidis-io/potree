@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -34,10 +35,8 @@ for (let obj in PointAttributeTypes) {
 
 export {PointAttributeTypes};
 
-
-class PointAttribute{
-	
-	constructor(name, type, numElements){
+class PointAttribute {
+	constructor(name, type, numElements) {
 		this.name = name;
 		this.type = type;
 		this.numElements = numElements;
@@ -45,8 +44,7 @@ class PointAttribute{
 		this.description = "";
 		this.range = [Infinity, -Infinity];
 	}
-
-};
+}
 
 PointAttribute.POSITION_CARTESIAN = new PointAttribute(
 	"POSITION_CARTESIAN", PointAttributeTypes.DATA_TYPE_FLOAT, 3);
@@ -76,13 +74,13 @@ PointAttribute.NORMAL_OCT16 = new PointAttribute(
 
 PointAttribute.NORMAL = new PointAttribute(
 	"NORMAL", PointAttributeTypes.DATA_TYPE_FLOAT, 3);
-	
+
 PointAttribute.RETURN_NUMBER = new PointAttribute(
 	"RETURN_NUMBER", PointAttributeTypes.DATA_TYPE_UINT8, 1);
-	
+
 PointAttribute.NUMBER_OF_RETURNS = new PointAttribute(
 	"NUMBER_OF_RETURNS", PointAttributeTypes.DATA_TYPE_UINT8, 1);
-	
+
 PointAttribute.SOURCE_ID = new PointAttribute(
 	"SOURCE_ID", PointAttributeTypes.DATA_TYPE_UINT16, 1);
 
@@ -97,9 +95,8 @@ PointAttribute.GPS_TIME = new PointAttribute(
 
 export {PointAttribute};
 
-export class PointAttributes{
-
-	constructor(pointAttributes){
+export class PointAttributes {
+	constructor(pointAttributes) {
 		this.attributes = [];
 		this.byteSize = 0;
 		this.size = 0;
@@ -116,18 +113,17 @@ export class PointAttributes{
 		}
 	}
 
-
-	add(pointAttribute){
+	add(pointAttribute) {
 		this.attributes.push(pointAttribute);
 		this.byteSize += pointAttribute.byteSize;
 		this.size++;
-	};
+	}
 
-	addVector(vector){
+	addVector(vector) {
 		this.vectors.push(vector);
 	}
 
-	hasNormals(){
+	hasNormals() {
 		for (let name in this.attributes) {
 			let pointAttribute = this.attributes[name];
 			if (
@@ -140,6 +136,5 @@ export class PointAttributes{
 		}
 
 		return false;
-	};
-
+	}
 }

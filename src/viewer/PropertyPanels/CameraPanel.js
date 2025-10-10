@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -10,8 +11,8 @@
 
 import {Utils} from "../../utils.js";
 
-export class CameraPanel{
-	constructor(viewer, propertiesPanel){
+export class CameraPanel {
+	constructor(viewer, propertiesPanel) {
 		this.viewer = viewer;
 		this.propertiesPanel = propertiesPanel;
 
@@ -76,7 +77,7 @@ export class CameraPanel{
 		this.update();
 	}
 
-	update(){
+	update() {
 		//console.log("updating camera panel");
 
 		let camera = this.viewer.scene.getActiveCamera();
@@ -92,4 +93,4 @@ export class CameraPanel{
 		this.elContent.find("#camera_target_y").html(target[1]);
 		this.elContent.find("#camera_target_z").html(target[2]);
 	}
-};
+}

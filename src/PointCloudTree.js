@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -11,10 +12,8 @@
 import * as THREE from "../libs/three.js/build/three.module.js";
 import { EventDispatcher } from "./EventDispatcher.js";
 
-
-export class PointCloudTreeNode extends EventDispatcher{
-
-	constructor(){
+export class PointCloudTreeNode extends EventDispatcher {
+	constructor() {
 		super();
 		this.needsTransformUpdate = true;
 	}
@@ -46,7 +45,7 @@ export class PointCloudTreeNode extends EventDispatcher{
 	getBoundingSphere () {
 		throw new Error('override function');
 	}
-};
+}
 
 export class PointCloudTree extends THREE.Object3D {
 	constructor () {
@@ -56,4 +55,4 @@ export class PointCloudTree extends THREE.Object3D {
 	initialized () {
 		return this.root !== null;
 	}
-};
+}

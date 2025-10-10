@@ -329,7 +329,7 @@ export class NavigationCube extends THREE.Object3D {
 
         faceMesh.add(textMesh);
         return group;
-    };
+    }
 
     fitToContainer(event) {
         if (!this.visible) {

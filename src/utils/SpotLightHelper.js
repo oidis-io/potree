@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -10,9 +11,8 @@
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
 
-export class SpotLightHelper extends THREE.Object3D{
-
-	constructor(light, color){
+export class SpotLightHelper extends THREE.Object3D {
+	constructor(light, color) {
 		super();
 
 		this.light = light;
@@ -31,8 +31,6 @@ export class SpotLightHelper extends THREE.Object3D{
 		}
 
 		{ // LINES
-			
-
 			let positions = new Float32Array([
 				+0, +0, +0,     +0, +0, -1,
 
@@ -54,21 +52,19 @@ export class SpotLightHelper extends THREE.Object3D{
 
 			this.frustum = new THREE.LineSegments(geometry, material);
 			this.add(this.frustum);
-
 		}
 
 		this.update();
 	}
 
-	update(){
-
+	update() {
 		this.light.updateMatrix();
 		this.light.updateMatrixWorld();
 
 		let position = this.light.position;
 		let target = new THREE.Vector3().addVectors(
 			this.light.position, this.light.getWorldDirection(new THREE.Vector3()).multiplyScalar(-1));
-		
+
 		let quat = new THREE.Quaternion().setFromRotationMatrix(
 			new THREE.Matrix4().lookAt( position, target, new THREE.Vector3( 0, 0, 1 ) )
 		);
@@ -76,12 +72,9 @@ export class SpotLightHelper extends THREE.Object3D{
 		this.setRotationFromQuaternion(quat);
 		this.position.copy(position);
 
-
 		let coneLength = (this.light.distance > 0) ? this.light.distance : 1000;
 		let coneWidth = coneLength * Math.tan( this.light.angle * 0.5 );
 
 		this.frustum.scale.set(coneWidth, coneWidth, coneLength);
-
 	}
-
 }

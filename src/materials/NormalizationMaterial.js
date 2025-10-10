@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -11,9 +12,8 @@
 import * as THREE from "../../libs/three.js/build/three.module.js";
 import {Shaders} from "../../build/shaders/shaders.js";
 
-export class NormalizationMaterial extends THREE.RawShaderMaterial{
-
-	constructor(parameters = {}){
+export class NormalizationMaterial extends THREE.RawShaderMaterial {
+	constructor(parameters = {}) {
 		super();
 
 		let uniforms = {
@@ -35,7 +35,6 @@ export class NormalizationMaterial extends THREE.RawShaderMaterial{
 	}
 
 	updateShaderSource() {
-
 		let vs = this.getDefines() + Shaders['normalize.vs'];
 		let fs = this.getDefines() + Shaders['normalize.fs'];
 
@@ -46,6 +45,4 @@ export class NormalizationMaterial extends THREE.RawShaderMaterial{
 
 		this.needsUpdate = true;
 	}
-
 }
-

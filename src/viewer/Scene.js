@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -15,14 +16,12 @@ import {View} from "./View.js";
 import {Utils} from "../utils.js";
 import {EventDispatcher} from "../EventDispatcher.js";
 
-
-export class Scene extends EventDispatcher{
-
-	constructor(){
+export class Scene extends EventDispatcher {
+	constructor() {
 		super();
 
 		this.annotations = new Annotation();
-		
+
 		this.scene = new THREE.Scene();
 		this.sceneBG = new THREE.Scene();
 		this.scenePointCloud = new THREE.Scene();
@@ -44,7 +43,7 @@ export class Scene extends EventDispatcher{
 		this.orientedImages = [];
 		this.images360 = [];
 		this.geopackages = [];
-		
+
 		this.fpControls = null;
 		this.orbitControls = null;
 		this.earthControls = null;
@@ -111,8 +110,8 @@ export class Scene extends EventDispatcher{
 
 		return height;
 	}
-	
-	getBoundingBox(pointclouds = this.pointclouds){
+
+	getBoundingBox(pointclouds = this.pointclouds) {
 		let box = new THREE.Box3();
 
 		this.scenePointCloud.updateMatrixWorld(true);
@@ -148,7 +147,7 @@ export class Scene extends EventDispatcher{
 		});
 	}
 
-	addOrientedImages(images){
+	addOrientedImages(images) {
 		this.orientedImages.push(images);
 		this.scene.add(images.node);
 
@@ -157,9 +156,9 @@ export class Scene extends EventDispatcher{
 			'scene': this,
 			'images': images
 		});
-	};
+	}
 
-	removeOrientedImages(images){
+	removeOrientedImages(images) {
 		let index = this.orientedImages.indexOf(images);
 		if (index > -1) {
 			this.orientedImages.splice(index, 1);
@@ -170,9 +169,9 @@ export class Scene extends EventDispatcher{
 				'images': images
 			});
 		}
-	};
+	}
 
-	add360Images(images){
+	add360Images(images) {
 		this.images360.push(images);
 		this.scene.add(images.node);
 
@@ -183,7 +182,7 @@ export class Scene extends EventDispatcher{
 		});
 	}
 
-	remove360Images(images){
+	remove360Images(images) {
 		let index = this.images360.indexOf(images);
 		if (index > -1) {
 			this.images360.splice(index, 1);
@@ -196,7 +195,7 @@ export class Scene extends EventDispatcher{
 		}
 	}
 
-	addGeopackage(geopackage){
+	addGeopackage(geopackage) {
 		this.geopackages.push(geopackage);
 		this.scene.add(geopackage.node);
 
@@ -205,9 +204,9 @@ export class Scene extends EventDispatcher{
 			'scene': this,
 			'geopackage': geopackage
 		});
-	};
+	}
 
-	removeGeopackage(geopackage){
+	removeGeopackage(geopackage) {
 		let index = this.geopackages.indexOf(geopackage);
 		if (index > -1) {
 			this.geopackages.splice(index, 1);
@@ -218,7 +217,7 @@ export class Scene extends EventDispatcher{
 				'geopackage': geopackage
 			});
 		}
-	};
+	}
 
 	removeVolume (volume) {
 		let index = this.volumes.indexOf(volume);
@@ -231,7 +230,7 @@ export class Scene extends EventDispatcher{
 				'volume': volume
 			});
 		}
-	};
+	}
 
 	addCameraAnimation(animation) {
 		this.cameraAnimations.push(animation);
@@ -240,9 +239,9 @@ export class Scene extends EventDispatcher{
 			'scene': this,
 			'animation': animation
 		});
-	};
+	}
 
-	removeCameraAnimation(animation){
+	removeCameraAnimation(animation) {
 		let index = this.cameraAnimations.indexOf(volume);
 		if (index > -1) {
 			this.cameraAnimations.splice(index, 1);
@@ -253,18 +252,18 @@ export class Scene extends EventDispatcher{
 				'animation': animation
 			});
 		}
-	};
+	}
 
-	addPolygonClipVolume(volume){
+	addPolygonClipVolume(volume) {
 		this.polygonClipVolumes.push(volume);
 		this.dispatchEvent({
 			"type": "polygon_clip_volume_added",
 			"scene": this,
 			"volume": volume
 		});
-	};
-	
-	removePolygonClipVolume(volume){
+	}
+
+	removePolygonClipVolume(volume) {
 		let index = this.polygonClipVolumes.indexOf(volume);
 		if (index > -1) {
 			this.polygonClipVolumes.splice(index, 1);
@@ -274,9 +273,9 @@ export class Scene extends EventDispatcher{
 				"volume": volume
 			});
 		}
-	};
-	
-	addMeasurement(measurement){
+	}
+
+	addMeasurement(measurement) {
 		measurement.lengthUnit = this.lengthUnit;
 		measurement.lengthUnitDisplay = this.lengthUnitDisplay;
 		this.measurements.push(measurement);
@@ -285,7 +284,7 @@ export class Scene extends EventDispatcher{
 			'scene': this,
 			'measurement': measurement
 		});
-	};
+	}
 
 	removeMeasurement (measurement) {
 		let index = this.measurements.indexOf(measurement);
@@ -334,36 +333,34 @@ export class Scene extends EventDispatcher{
 		}
 	}
 
-	removeAllClipVolumes(){
+	removeAllClipVolumes() {
 		let clipVolumes = this.volumes.filter(volume => volume.clip === true);
-		for(let clipVolume of clipVolumes){
+		for (let clipVolume of clipVolumes) {
 			this.removeVolume(clipVolume);
 		}
 
-		while(this.polygonClipVolumes.length > 0){
+		while (this.polygonClipVolumes.length > 0) {
 			this.removePolygonClipVolume(this.polygonClipVolumes[0]);
 		}
 	}
 
 	getActiveCamera() {
-
-		if(this.overrideCamera){
+		if (this.overrideCamera) {
 			return this.overrideCamera;
 		}
 
-		if(this.cameraMode === CameraMode.PERSPECTIVE){
+		if (this.cameraMode === CameraMode.PERSPECTIVE) {
 			return this.cameraP;
-		}else if(this.cameraMode === CameraMode.ORTHOGRAPHIC){
+		} else if (this.cameraMode === CameraMode.ORTHOGRAPHIC) {
 			return this.cameraO;
-		}else if(this.cameraMode === CameraMode.VR){
+		} else if (this.cameraMode === CameraMode.VR) {
 			return this.cameraVR;
 		}
 
 		return null;
 	}
-	
-	initialize(){
-		
+
+	initialize() {
 		this.referenceFrame = new THREE.Object3D();
 		this.referenceFrame.matrixAutoUpdate = false;
 		this.scenePointCloud.add(this.referenceFrame);
@@ -375,12 +372,12 @@ export class Scene extends EventDispatcher{
 		//this.camera.rotation.y = -Math.PI / 4;
 		//this.camera.rotation.x = -Math.PI / 6;
 		this.cameraScreenSpace.lookAt(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1), new THREE.Vector3(0, 1, 0));
-		
+
 		this.directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
 		this.directionalLight.position.set( 10, 10, 10 );
 		this.directionalLight.lookAt( new THREE.Vector3(0, 0, 0));
 		this.scenePointCloud.add( this.directionalLight );
-		
+
 		let light = new THREE.AmbientLight( 0x555555 ); // soft white light
 		this.scenePointCloud.add( light );
 
@@ -423,9 +420,9 @@ export class Scene extends EventDispatcher{
 		// 	}
 		// }
 	}
-	
-	addAnnotation(position, args = {}){		
-		if(position instanceof Array){
+
+	addAnnotation(position, args = {}) {
+		if (position instanceof Array) {
 			args.position = new THREE.Vector3().fromArray(position);
 		} else if (position.x != null) {
 			args.position = position;
@@ -438,9 +435,9 @@ export class Scene extends EventDispatcher{
 
 	getAnnotations () {
 		return this.annotations;
-	};
+	}
 
 	removeAnnotation(annotationToRemove) {
 		this.annotations.remove(annotationToRemove);
 	}
-};
+}

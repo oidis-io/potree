@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -24,5 +25,5 @@ export const KeyCodes = {
 	E: 'E'.charCodeAt(0),
 	R: 'R'.charCodeAt(0),
 	F: 'F'.charCodeAt(0)
-	
+
 };

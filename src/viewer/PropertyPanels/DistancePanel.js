@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -11,8 +12,8 @@
 import {MeasurePanel} from "./MeasurePanel.js";
 import {Profile} from "./../../utils/Profile.js";
 
-export class DistancePanel extends MeasurePanel{
-	constructor(viewer, measurement, propertiesPanel){
+export class DistancePanel extends MeasurePanel {
+	constructor(viewer, measurement, propertiesPanel) {
 		super(viewer, measurement, propertiesPanel);
 
 		let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
@@ -37,7 +38,7 @@ export class DistancePanel extends MeasurePanel{
 		this.elRemove.click( () => {
 			this.viewer.scene.removeMeasurement(measurement);
 		});
-		
+
 		this.elMakeProfile = this.elContent.find("input[name=make_profile]");
 		this.elMakeProfile.click( () => {
 			//measurement.points;
@@ -46,12 +47,11 @@ export class DistancePanel extends MeasurePanel{
 			profile.name = measurement.name;
 			profile.width = measurement.getTotalDistance() / 50;
 
-			for(const point of measurement.points){
+			for (const point of measurement.points) {
 				profile.addMarker(point.position.clone());
 			}
 
 			this.viewer.scene.addProfile(profile);
-
 		});
 
 		this.propertiesPanel.addVolatileListener(measurement, "marker_added", this._update);
@@ -61,7 +61,7 @@ export class DistancePanel extends MeasurePanel{
 		this.update();
 	}
 
-	update(){
+	update() {
 		let elCoordiantesContainer = this.elContent.find('.coordinates_table_container');
 		elCoordiantesContainer.empty();
 		elCoordiantesContainer.append(this.createCoordinatesTable(this.measurement.points.map(p => p.position)));
@@ -94,4 +94,4 @@ export class DistancePanel extends MeasurePanel{
 			</tr>`);
 		elDistanceTable.append(elTotal);
 	}
-};
+}

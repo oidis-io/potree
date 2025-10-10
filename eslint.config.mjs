@@ -32,7 +32,17 @@ export default [
             }
         },
         rules: {
-            semi: "error",
+            semi: ["error", "always"],
+            "semi-spacing": ["error", { "before": false, "after": true }],
+            "semi-style": ["error", "last"],
+            "no-extra-semi": "error",
+            "no-multiple-empty-lines": ["error", { "max": 1, "maxEOF": 0 }],
+            "eol-last": ["error", "always"],
+            "padded-blocks": ["error", "never"],
+            "keyword-spacing": ["error", { "before": true, "after": true }],
+            "space-before-blocks": ["error", "always"],
+            // "quotes": ["error", "double", { "allowTemplateLiterals": true }],
+
             "no-unused-imports": "off",
             "no-unused-vars": "off",
             "unused-imports/no-unused-imports": "error",

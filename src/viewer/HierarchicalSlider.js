@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -8,7 +9,7 @@
  *
  * ********************************************************************************************************* */
 
-function addCommas(nStr){
+function addCommas(nStr) {
 	nStr += '';
 	let x = nStr.split('.');
 	let x1 = x[0];
@@ -18,16 +19,14 @@ function addCommas(nStr){
 		x1 = x1.replace(rgx, '$1' + ',' + '$2');
 	}
 	return x1 + x2;
-};
+}
 
-function format(value){
+function format(value) {
 	return addCommas(value.toFixed(3));
-};
+}
 
-export class HierarchicalSlider{
-
-	constructor(params = {}){
-		
+export class HierarchicalSlider {
+	constructor(params = {}) {
 		this.element = document.createElement("div");
 
 		this.labels = [];
@@ -38,13 +37,12 @@ export class HierarchicalSlider{
 
 		let levels = params.levels != null ? params.levels : 1;
 
-		for(let level = 0; level < levels; level++){
+		for (let level = 0; level < levels; level++) {
 			this.addLevel();
 		}
-
 	}
 
-	setRange(range){
+	setRange(range) {
 		this.range = [...range];
 
 		{ // root slider
@@ -56,7 +54,7 @@ export class HierarchicalSlider{
 			});
 		}
 
-		for(let i = 1; i < this.sliders.length; i++){
+		for (let i = 1; i < this.sliders.length; i++) {
 			let parentSlider = this.sliders[i - 1];
 			let slider = this.sliders[i];
 
@@ -68,12 +66,12 @@ export class HierarchicalSlider{
 				max: childRange[1],
 			});
 		}
-		
+
 		this.updateLabels();
 	}
 
-	setValues(values){
-		for(let slider of this.sliders){
+	setValues(values) {
+		for (let slider of this.sliders) {
 			$(slider).slider({
 				values: [...values],
 			});
@@ -82,7 +80,7 @@ export class HierarchicalSlider{
 		this.updateLabels();
 	}
 
-	addLevel(){
+	addLevel() {
 		const elLevel = document.createElement("li");
 		const elRange = document.createTextNode("Range: ");
 		const label = document.createElement("span");
@@ -91,24 +89,23 @@ export class HierarchicalSlider{
 		let level = this.sliders.length;
 		let [min, max] = [0, 0];
 
-		if(this.sliders.length === 0){
+		if (this.sliders.length === 0) {
 			[min, max] = this.range;
-		}else{
+		} else {
 			let parentSlider = this.sliders[this.sliders.length - 1];
 			[min, max] = $(parentSlider).slider("option", "values");
 		}
-		
+
 		$(slider).slider({
-			range: true, 
-			min: min, 
+			range: true,
+			min: min,
 			max: max,
 			step: this.step,
 			values: [min, max],
 			slide: (event, ui) => {
-				
 				// set all descendants to same range
 				let levels = this.sliders.length;
-				for(let i = level + 1; i < levels; i++){
+				for (let i = level + 1; i < levels; i++) {
 					let descendant = this.sliders[i];
 
 					$(descendant).slider({
@@ -119,11 +116,11 @@ export class HierarchicalSlider{
 					});
 				}
 
-				if(this.slide){
+				if (this.slide) {
 					let values = [...ui.values];
 
 					this.slide({
-						target: this, 
+						target: this,
 						range: this.range,
 						values: values,
 					});
@@ -142,20 +139,18 @@ export class HierarchicalSlider{
 		this.updateLabels();
 	}
 
-	removeLevel(){
+	removeLevel() {
 
 	}
 
-	updateSliders(){
+	updateSliders() {
 
 	}
 
-	updateLabels(){
-
+	updateLabels() {
 		let levels = this.sliders.length;
 
-		for(let i = 0; i < levels; i++){
-
+		for (let i = 0; i < levels; i++) {
 			let slider = this.sliders[i];
 			let label = this.labels[i];
 
@@ -166,9 +161,5 @@ export class HierarchicalSlider{
 
 			label.innerHTML = strLabel;
 		}
-
 	}
-
-
 }
-

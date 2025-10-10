@@ -34,9 +34,8 @@ import * as THREE from "../../libs/three.js/build/three.module.js";
 import {EventDispatcher} from "../EventDispatcher.js";
 import {KeyCodes} from "../KeyCodes.js";
 
-export class GeoControls extends EventDispatcher{
-
-	constructor(object, domElement){
+export class GeoControls extends EventDispatcher {
+	constructor(object, domElement) {
 		super();
 
 		console.log("deprecated?");
@@ -100,7 +99,6 @@ export class GeoControls extends EventDispatcher{
 		}
 		this.domElement.addEventListener('keydown', this.onKeyDown.bind(this), false);
 		this.domElement.addEventListener('keyup', this.onKeyUp.bind(this), false);
-
 	}
 
 	setTrack(track) {
@@ -108,9 +106,9 @@ export class GeoControls extends EventDispatcher{
 			this.track = track;
 			this.trackPos = null;
 		}
-	};
+	}
 
-	setTrackPos(trackPos, _preserveRelativeRotation){
+	setTrackPos(trackPos, _preserveRelativeRotation) {
 		// TODO Unused: let preserveRelativeRotation = _preserveRelativeRotation || false;
 
 		let newTrackPos = Math.max(0, Math.min(1, trackPos));
@@ -160,24 +158,24 @@ export class GeoControls extends EventDispatcher{
 		}
 	}
 
-	stop(){
+	stop() {
 		
 	}
 
-	getTrackPos(){
+	getTrackPos() {
 		return this.trackPos;
 	}
 
-	rotateLeft(angle){
+	rotateLeft(angle) {
 		thetaDelta -= angle;
 	}
 
-	rotateUp(angle){
+	rotateUp(angle) {
 		phiDelta -= angle;
 	}
 
 	// pass in distance in world space to move left
-	panLeft(distance){
+	panLeft(distance) {
 		let te = this.object.matrix.elements;
 
 		// get X column of matrix
@@ -188,7 +186,7 @@ export class GeoControls extends EventDispatcher{
 	}
 
 	// pass in distance in world space to move up
-	panUp(distance){
+	panUp(distance) {
 		let te = this.object.matrix.elements;
 
 		// get Y column of matrix
@@ -199,7 +197,7 @@ export class GeoControls extends EventDispatcher{
 	}
 
 	// pass in distance in world space to move forward
-	panForward(distance){
+	panForward(distance) {
 		if (this.track) {
 			this.setTrackPos(this.getTrackPos() - distance / this.track.getLength());
 		} else {
@@ -214,7 +212,7 @@ export class GeoControls extends EventDispatcher{
 		}
 	}
 
-	pan(deltaX, deltaY){
+	pan(deltaX, deltaY) {
 		let element = this.domElement === document ? this.domElement.body : this.domElement;
 
 		if (this.object.fov !== undefined) {
@@ -239,7 +237,7 @@ export class GeoControls extends EventDispatcher{
 		}
 	}
 
-	update(delta){
+	update(delta) {
 		this.object.rotation.order = 'ZYX';
 
 		let object = this.object;
@@ -357,13 +355,13 @@ export class GeoControls extends EventDispatcher{
 		}
 	}
 
-	reset(){
+	reset() {
 		state = STATE.NONE;
 
 		this.object.position.copy(this.position0);
 	}
 
-	onMouseDown(){
+	onMouseDown() {
 		if (this.enabled === false) return;
 		event.preventDefault();
 
@@ -386,7 +384,7 @@ export class GeoControls extends EventDispatcher{
 		this.dispatchEvent(startEvent);
 	}
 
-	onMouseMove(event){
+	onMouseMove(event) {
 		if (this.enabled === false) return;
 
 		event.preventDefault();
@@ -416,7 +414,7 @@ export class GeoControls extends EventDispatcher{
 		}
 	}
 
-	onMouseUp(event){
+	onMouseUp(event) {
 		if (this.enabled === false) return;
 
 		// console.log(event.which);
@@ -431,7 +429,7 @@ export class GeoControls extends EventDispatcher{
 		}
 	}
 
-	onMouseWheel(event){
+	onMouseWheel(event) {
 		if (this.enabled === false || this.noZoom === true) return;
 
 		event.preventDefault();
@@ -446,7 +444,7 @@ export class GeoControls extends EventDispatcher{
 		this.dispatchEvent(endEvent);
 	}
 
-	setMoveSpeed(value){
+	setMoveSpeed(value) {
 		if (this.moveSpeed !== value) {
 			this.moveSpeed = value;
 			this.dispatchEvent({
@@ -456,7 +454,7 @@ export class GeoControls extends EventDispatcher{
 		}
 	}
 
-	onKeyDown(event){
+	onKeyDown(event) {
 		if (this.enabled === false) return;
 
 		this.shiftDown = event.shiftKey;
@@ -477,7 +475,7 @@ export class GeoControls extends EventDispatcher{
 		}
 	}
 
-	onKeyUp(event){
+	onKeyUp(event) {
 		this.shiftDown = event.shiftKey;
 
 		switch (event.keyCode) {
@@ -496,4 +494,3 @@ export class GeoControls extends EventDispatcher{
 		}
 	}
 }
-

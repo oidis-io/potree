@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -13,9 +14,7 @@ const fs = require("fs");
 const fsp = fs.promises;
 const JSON5 = require('json5');
 
-
-async function createExamplesPage(){
-
+async function createExamplesPage() {
 	const content = await fsp.readFile("./examples/page.json", 'utf8');
 	const settings = JSON5.parse(content);
 
@@ -29,16 +28,15 @@ async function createExamplesPage(){
 	{
 		let urls = settings.examples.map(e => e.url);
 		let unhandled = [];
-		for(let file of files){
+		for (let file of files) {
 			let isHandled = false;
-			for(let url of urls){
-
-				if(file.indexOf(url) !== -1){
+			for (let url of urls) {
+				if (file.indexOf(url) !== -1) {
 					isHandled = true;
 				}
 			}
 
-			if(!isHandled){
+			if (!isHandled) {
 				unhandled.push(file);
 			}
 		}
@@ -46,15 +44,14 @@ async function createExamplesPage(){
 			.filter(file => file.indexOf(".html") > 0)
 			.filter(file => file !== "page.html");
 
-
-		for(let file of unhandled){
+		for (let file of unhandled) {
 			unhandledCode += `
 				<a href="${file}" class="unhandled">${file}</a>
 			`;
 		}
 	}
 
-	for(let example of settings.examples){
+	for (let example of settings.examples) {
 		exampleCode += `
 		<a href="${example.url}" target="_blank" style="display: inline-block">
 			<div class="thumb" style="background-image: url('${example.thumb}'); ">
@@ -64,7 +61,7 @@ async function createExamplesPage(){
 		`;
 	}
 
-	for(let showcaseItem of settings.showcase){
+	for (let showcaseItem of settings.showcase) {
 		showcaseCode += `<a href="${showcaseItem.url}" target="_blank" style="display: inline-block">
 			<div class="thumb" style="background-image: url('${showcaseItem.thumb}'); ">
 				<div class="thumb-label">${showcaseItem.label}</div>
@@ -73,7 +70,7 @@ async function createExamplesPage(){
 		`;
 	}
 
-	for(let item of settings.thirdparty){
+	for (let item of settings.thirdparty) {
 		thirdpartyCode += `<a href="${item.url}" target="_blank" style="display: inline-block">
 			<div class="thumb" style="background-image: url('${item.thumb}'); ">
 				<div class="thumb-label">${item.label}</div>
@@ -81,7 +78,6 @@ async function createExamplesPage(){
 		</a>
 		`;
 	}
-
 
 	let page = `
 		<html>
@@ -225,15 +221,12 @@ async function createExamplesPage(){
 	`;
 
 	fs.writeFile(`examples/page.html`, page, (err) => {
-		if(err){
+		if (err) {
 			console.log(err);
-		}else{
+		} else {
 			console.log(`created examples/page.html`);
 		}
 	});
 }
-
-
-
 
 exports.createExamplesPage = createExamplesPage;

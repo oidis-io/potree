@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -10,9 +11,8 @@
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
 
-export class PolygonClipVolume extends THREE.Object3D{
-	
-	constructor(camera){
+export class PolygonClipVolume extends THREE.Object3D {
+	constructor(camera) {
 		super();
 
 		this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
@@ -34,7 +34,6 @@ export class PolygonClipVolume extends THREE.Object3D{
 	}
 
 	addMarker() {
-
 		let marker = new THREE.Mesh();
 
 		let cancel;
@@ -49,27 +48,25 @@ export class PolygonClipVolume extends THREE.Object3D{
 
 			marker.position.copy(projectedPos);
 		};
-		
-		let drop = e => {	
+
+		let drop = e => {
 			cancel();
 		};
-		
+
 		cancel = e => {
 			marker.removeEventListener("drag", drag);
 			marker.removeEventListener("drop", drop);
 		};
-		
+
 		marker.addEventListener("drag", drag);
 		marker.addEventListener("drop", drop);
-
 
 		this.markers.push(marker);
 	}
 
 	removeLastMarker() {
-		if(this.markers.length > 0) {
+		if (this.markers.length > 0) {
 			this.markers.splice(this.markers.length - 1, 1);
 		}
 	}
-
-};
+}

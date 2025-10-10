@@ -22,7 +22,6 @@ import {PointSizeType, PointShape, TreeType, ElevationGradientRepeat} from "../d
 // http://stackoverflow.com/questions/3717226/radius-of-projected-sphere
 //
 
-
 export class PointCloudMaterial extends THREE.RawShaderMaterial {
 	constructor (parameters = {}) {
 		super();
@@ -32,9 +31,9 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		this.visibleNodesTexture.magFilter = THREE.NearestFilter;
 
 		let getValid = (a, b) => {
-			if(a !== undefined){
+			if (a !== undefined) {
 				return a;
-			}else{
+			} else {
 				return b;
 			}
 		};
@@ -176,23 +175,22 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		this.updateShaderSource();
 	}
 
-	setDefine(key, value){
-		if(value !== undefined && value !== null){
-			if(this.defines.get(key) !== value){
+	setDefine(key, value) {
+		if (value !== undefined && value !== null) {
+			if (this.defines.get(key) !== value) {
 				this.defines.set(key, value);
 				this.updateShaderSource();
 			}
-		}else{
+		} else {
 			this.removeDefine(key);
 		}
 	}
 
-	removeDefine(key){
+	removeDefine(key) {
 		this.defines.delete(key);
 	}
 
 	updateShaderSource () {
-
 		let vs = Shaders['pointcloud.vs'];
 		let fs = Shaders['pointcloud.fs'];
 		let definesString = this.getDefines();
@@ -200,15 +198,15 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		let vsVersionIndex = vs.indexOf("#version ");
 		let fsVersionIndex = fs.indexOf("#version ");
 
-		if(vsVersionIndex >= 0){
+		if (vsVersionIndex >= 0) {
 			vs = vs.replace(/(#version .*)/, `$1\n${definesString}`);
-		}else{
+		} else {
 			vs = `${definesString}\n${vs}`;
 		}
 
-		if(fsVersionIndex >= 0){
+		if (fsVersionIndex >= 0) {
 			fs = fs.replace(/(#version .*)/, `$1\n${definesString}`);
-		}else{
+		} else {
 			fs = `${definesString}\n${fs}`;
 		}
 
@@ -262,15 +260,15 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			defines.push('#define use_edl');
 		}
 
-		if(this.activeAttributeName){
+		if (this.activeAttributeName) {
 			let attributeName = this.activeAttributeName.replace(/[^a-zA-Z0-9]/g, '_');
 
 			defines.push(`#define color_type_${attributeName}`);
 		}
 		
-		if(this._treeType === TreeType.OCTREE){
+		if (this._treeType === TreeType.OCTREE) {
 			defines.push('#define tree_type_octree');
-		}else if(this._treeType === TreeType.KDTREE){
+		} else if (this._treeType === TreeType.KDTREE) {
 			defines.push('#define tree_type_kdtree');
 		}
 
@@ -278,7 +276,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			defines.push('#define weighted_splats');
 		}
 
-		for(let [key, value] of this.defines){
+		for (let [key, value] of this.defines) {
 			defines.push(value);
 		}
 
@@ -315,7 +313,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 	}
 
 	setClipPolygons(clipPolygons, maxPolygonVertices) {
-		if(!clipPolygons){
+		if (!clipPolygons) {
 			return;
 		}
 
@@ -323,12 +321,12 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 
 		let doUpdate = (this.clipPolygons.length !== clipPolygons.length);
 
-		if(doUpdate){
+		if (doUpdate) {
 			this.updateShaderSource();
 		}
 	}
 	
-	get gradient(){
+	get gradient() {
 		return this._gradient;
 	}
 
@@ -340,7 +338,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		}
 	}
 
-	get matcap(){
+	get matcap() {
 		return this._matcap;
 	}
 
@@ -356,7 +354,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 	}
 
 	set useOrthographicCamera(value) {
-		if(this.uniforms.useOrthographicCamera.value !== value){
+		if (this.uniforms.useOrthographicCamera.value !== value) {
 			this.uniforms.useOrthographicCamera.value = value;
 		}
 	}
@@ -365,7 +363,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 	}
 
 	set backfaceCulling(value) {
-		if(this.uniforms.backfaceCulling.value !== value){
+		if (this.uniforms.backfaceCulling.value !== value) {
 			this.uniforms.backfaceCulling.value = value;
 			this.dispatchEvent({type: 'backface_changed', target: this});
 		}
@@ -381,7 +379,6 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		let valuesChanged = false;
 
 		for (let i = 0; i < width; i++) {
-
 			let color;
 			let visible = true;
 
@@ -391,10 +388,10 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			} else if (classification[i % 32]) {
 				color = classification[i % 32].color;
 				visible = classification[i % 32].visible;
-			} else if(classification.DEFAULT) {
+			} else if (classification.DEFAULT) {
 				color = classification.DEFAULT.color;
 				visible = classification.DEFAULT.visible;
-			}else{
+			} else {
 				color = black;
 			}
 
@@ -403,29 +400,28 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			const b = parseInt(255 * color[2]);
 			const a = visible ? parseInt(255 * color[3]) : 0;
 
-
-			if(data[4 * i + 0] !== r){
+			if (data[4 * i + 0] !== r) {
 				data[4 * i + 0] = r;
 				valuesChanged = true;
 			}
 
-			if(data[4 * i + 1] !== g){
+			if (data[4 * i + 1] !== g) {
 				data[4 * i + 1] = g;
 				valuesChanged = true;
 			}
 
-			if(data[4 * i + 2] !== b){
+			if (data[4 * i + 2] !== b) {
 				data[4 * i + 2] = b;
 				valuesChanged = true;
 			}
 
-			if(data[4 * i + 3] !== a){
+			if (data[4 * i + 3] !== a) {
 				data[4 * i + 3] = a;
 				valuesChanged = true;
 			}
 		}
 
-		if(valuesChanged){
+		if (valuesChanged) {
 			this.classificationTexture.needsUpdate = true;
 
 			this.dispatchEvent({
@@ -456,31 +452,31 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		}
 	}
 
-	get clipTask(){
+	get clipTask() {
 		return this.uniforms.clipTask.value;
 	}
 
-	set clipTask(mode){
+	set clipTask(mode) {
 		this.uniforms.clipTask.value = mode;
 	}
 
-	get elevationGradientRepat(){
+	get elevationGradientRepat() {
 		return this.uniforms.elevationGradientRepat.value;
 	}
 
-	set elevationGradientRepat(mode){
+	set elevationGradientRepat(mode) {
 		this.uniforms.elevationGradientRepat.value = mode;
 	}
 
-	get clipMethod(){
+	get clipMethod() {
 		return this.uniforms.clipMethod.value;
 	}
 
-	set clipMethod(mode){
+	set clipMethod(mode) {
 		this.uniforms.clipMethod.value = mode;
 	}
 
-	get weighted(){
+	get weighted() {
 		return this._weighted;
 	}
 
@@ -544,7 +540,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		}
 	}
 	
-	get opacity(){
+	get opacity() {
 		return this.uniforms.uOpacity.value;
 	}
 
@@ -565,11 +561,11 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		}
 	}
 
-	get activeAttributeName(){
+	get activeAttributeName() {
 		return this._activeAttributeName;
 	}
 
-	set activeAttributeName(value){
+	set activeAttributeName(value) {
 		if (this._activeAttributeName !== value) {
 			this._activeAttributeName = value;
 
@@ -605,7 +601,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		}
 	}
 
-	get useEDL(){
+	get useEDL() {
 		return this._useEDL;
 	}
 
@@ -689,11 +685,11 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		}
 	}
 
-	get minSize(){
+	get minSize() {
 		return this.uniforms.minSize.value;
 	}
 
-	set minSize(value){
+	set minSize(value) {
 		if (this.uniforms.minSize.value !== value) {
 			this.uniforms.minSize.value = value;
 
@@ -716,7 +712,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		let changed = this.uniforms.elevationRange.value[0] !== value[0]
 			|| this.uniforms.elevationRange.value[1] !== value[1];
 
-		if(changed){
+		if (changed) {
 			this.uniforms.elevationRange.value = value;
 
 			this._defaultElevationRangeChanged = true;
@@ -859,7 +855,6 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			});
 		}
 	}
-
 	
 	get extraGamma () {
 		return this.uniforms.uExtraGammaBrightContr.value[0];
@@ -903,25 +898,24 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		}
 	}
 
-	getRange(attributeName){
+	getRange(attributeName) {
 		return this.ranges.get(attributeName);
 	}
 
-	setRange(attributeName, newRange){
-
+	setRange(attributeName, newRange) {
 		let rangeChanged = false;
 
 		let oldRange = this.ranges.get(attributeName);
 
-		if(oldRange != null && newRange != null){
+		if (oldRange != null && newRange != null) {
 			rangeChanged = oldRange[0] !== newRange[0] || oldRange[1] !== newRange[1];
-		}else{
+		} else {
 			rangeChanged = true;
 		}
 
 		this.ranges.set(attributeName, newRange);
 
-		if(rangeChanged){
+		if (rangeChanged) {
 			this.dispatchEvent({
 				type: 'material_property_changed',
 				target: this
@@ -958,7 +952,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 	}
 
 	set weightRGB (value) {
-		if(this.uniforms.wRGB.value !== value){
+		if (this.uniforms.wRGB.value !== value) {
 			this.uniforms.wRGB.value = value;
 			this.dispatchEvent({
 				type: 'material_property_changed',
@@ -972,7 +966,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 	}
 
 	set weightIntensity (value) {
-		if(this.uniforms.wIntensity.value !== value){
+		if (this.uniforms.wIntensity.value !== value) {
 			this.uniforms.wIntensity.value = value;
 			this.dispatchEvent({
 				type: 'material_property_changed',
@@ -986,7 +980,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 	}
 
 	set weightElevation (value) {
-		if(this.uniforms.wElevation.value !== value){
+		if (this.uniforms.wElevation.value !== value) {
 			this.uniforms.wElevation.value = value;
 			this.dispatchEvent({
 				type: 'material_property_changed',
@@ -1000,7 +994,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 	}
 
 	set weightClassification (value) {
-		if(this.uniforms.wClassification.value !== value){
+		if (this.uniforms.wClassification.value !== value) {
 			this.uniforms.wClassification.value = value;
 			this.dispatchEvent({
 				type: 'material_property_changed',
@@ -1014,7 +1008,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 	}
 
 	set weightReturnNumber (value) {
-		if(this.uniforms.wReturnNumber.value !== value){
+		if (this.uniforms.wReturnNumber.value !== value) {
 			this.uniforms.wReturnNumber.value = value;
 			this.dispatchEvent({
 				type: 'material_property_changed',
@@ -1028,7 +1022,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 	}
 
 	set weightSourceID (value) {
-		if(this.uniforms.wSourceID.value !== value){
+		if (this.uniforms.wSourceID.value !== value) {
 			this.uniforms.wSourceID.value = value;
 			this.dispatchEvent({
 				type: 'material_property_changed',
@@ -1084,17 +1078,17 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		return texture; 
 	}
 
-	disableEvents(){
-		if(this._hiddenListeners === undefined){
+	disableEvents() {
+		if (this._hiddenListeners === undefined) {
 			this._hiddenListeners = this._listeners;
 			this._listeners = {};
 		}
-	};
+	}
 
-	enableEvents(){
+	enableEvents() {
 		this._listeners = this._hiddenListeners;
 		this._hiddenListeners = undefined;
-	};
+	}
 
 	// copyFrom(from){
 
@@ -1108,5 +1102,4 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 	// copy(from){
 	// 	this.copyFrom(from);
 	// }
-
 }

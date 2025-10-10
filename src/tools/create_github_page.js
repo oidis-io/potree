@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -13,30 +14,27 @@ const fs = require("fs");
 const fsp = fs.promises;
 const JSON5 = require('json5');
 
-function toCode(files, data){
-
+function toCode(files, data) {
 	let code = "";
 
 	{
 		let urls = data.map(e => e.url);
 		let unhandled = [];
-		for(let file of files){
+		for (let file of files) {
 			let isHandled = false;
-			for(let url of urls){
-
-				if(file.indexOf(url) !== -1){
+			for (let url of urls) {
+				if (file.indexOf(url) !== -1) {
 					isHandled = true;
 				}
 			}
 
-			if(!isHandled){
+			if (!isHandled) {
 				unhandled.push(file);
 			}
 		}
 		unhandled = unhandled
 			.filter(file => file.indexOf(".html") > 0)
 			.filter(file => file !== "page.html");
-
 
 		// for(let file of unhandled){
 		// 	unhandledCode += `
@@ -47,33 +45,31 @@ function toCode(files, data){
 
 	const rows = [];
 	let row = [];
-	for(let example of data){
+	for (let example of data) {
 		row.push(example);
 
-		if(row.length >= 6){
+		if (row.length >= 6) {
 			rows.push(row);
 			row = [];
 		}
-	};
+	}
 	rows.push(row);
 
-	for(const row of rows){
-
+	for (const row of rows) {
 		let thumbnails = "";
 		let labels = "";
 
-		for(let example of row){
-
-			let url = example.url.startsWith("http") ? 
-				example.url : 
+		for (let example of row) {
+			let url = example.url.startsWith("http") ?
+				example.url :
 				`http://potree.org/potree/examples/${example.url}`;
-			
+
 			thumbnails += `<td>
 					<a href="${url}" target="_blank">
 						<img src="examples/${example.thumb}" width="100%" />
 					</a>
 				</td>`;
-			
+
 			labels += `<th>${example.label}</th>`;
 		}
 
@@ -88,8 +84,7 @@ function toCode(files, data){
 	return code;
 }
 
-
-async function createGithubPage(){
+async function createGithubPage() {
 	const content = await fsp.readFile("./examples/page.json", 'utf8');
 	const settings = JSON5.parse(content);
 
@@ -129,15 +124,12 @@ async function createGithubPage(){
 		</table>`;
 
 	fs.writeFile(`examples/github.html`, page, (err) => {
-		if(err){
+		if (err) {
 			console.log(err);
-		}else{
+		} else {
 			console.log(`created examples/github.html`);
 		}
 	});
 }
-
-
-
 
 exports.createGithubPage = createGithubPage;

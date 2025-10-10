@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -55,7 +56,7 @@ export class ProfileData {
 
 		return size;
 	}
-};
+}
 
 export class ProfileRequest {
 	constructor (pointcloud, profile, maxDepth, callback) {
@@ -74,7 +75,7 @@ export class ProfileRequest {
 
 	initialize () {
 		this.priorityQueue.push({node: this.pointcloud.pcoGeometry.root, weight: Infinity});
-	};
+	}
 
 	// traverse the node and add intersecting descendants to queue
 	traverse (node) {
@@ -104,18 +105,18 @@ export class ProfileRequest {
 		}
 	}
 
-	update(){
-		if(!this.updateGeneratorInstance){
+	update() {
+		if (!this.updateGeneratorInstance) {
 			this.updateGeneratorInstance = this.updateGenerator();
 		}
 
 		let result = this.updateGeneratorInstance.next();
-		if(result.done){
+		if (result.done) {
 			this.updateGeneratorInstance = null;
 		}
 	}
 
-	* updateGenerator(){
+	* updateGenerator() {
 		// load nodes in queue
 		// if hierarchy expands, also load nodes from expanded hierarchy
 		// once loaded, add data to this.points and remove node from queue
@@ -130,7 +131,7 @@ export class ProfileRequest {
 			let element = this.priorityQueue.pop();
 			let node = element.node;
 
-			if(node.level > this.maxDepth){
+			if (node.level > this.maxDepth) {
 				continue;
 			}
 
@@ -156,9 +157,8 @@ export class ProfileRequest {
 		}
 
 		if (intersectedNodes.length > 0) {
-
-			for(let done of this.getPointsInsideProfile(intersectedNodes, this.temporaryResult)){
-				if(!done){
+			for (let done of this.getPointsInsideProfile(intersectedNodes, this.temporaryResult)) {
+				if (!done) {
 					//console.log("updateGenerator yields");
 					yield false;
 				}
@@ -188,9 +188,9 @@ export class ProfileRequest {
 		}
 
 		yield true;
-	};
+	}
 
-	* getAccepted(numPoints, node, matrix, segment, segmentDir, points, totalMileage){
+	* getAccepted(numPoints, node, matrix, segment, segmentDir, points, totalMileage) {
 		let checkpoint = performance.now();
 
 		let accepted = new Uint32Array(numPoints);
@@ -204,7 +204,6 @@ export class ProfileRequest {
 		let view = new Float32Array(node.geometry.attributes.position.array);
 
 		for (let i = 0; i < numPoints; i++) {
-
 			pos.set(
 				view[i * 3 + 0],
 				view[i * 3 + 1],
@@ -231,9 +230,9 @@ export class ProfileRequest {
 				numAccepted++;
 			}
 
-			if((i % 1000) === 0){
+			if ((i % 1000) === 0) {
 				let duration = performance.now() - checkpoint;
-				if(duration > 4){
+				if (duration > 4) {
 					//console.log(`getAccepted yield after ${duration}ms`);
 					yield false;
 					checkpoint = performance.now();
@@ -254,7 +253,7 @@ export class ProfileRequest {
 		yield [accepted, mileage, acceptedPositions];
 	}
 
-	* getPointsInsideProfile(nodes, target){
+	* getPointsInsideProfile(nodes, target) {
 		let checkpoint = performance.now();
 		let totalMileage = 0;
 
@@ -265,7 +264,7 @@ export class ProfileRequest {
 				let numPoints = node.numPoints;
 				let geometry = node.geometry;
 
-				if(!numPoints){
+				if (!numPoints) {
 					continue;
 				}
 
@@ -281,7 +280,7 @@ export class ProfileRequest {
 
 					let intersects = (distance < (bsWorld.radius + target.profile.width));
 
-					if(!intersects){
+					if (!intersects) {
 						continue;
 					}
 				}
@@ -309,19 +308,19 @@ export class ProfileRequest {
 				let accepted = null;
 				let mileage = null;
 				let acceptedPositions = null;
-				for(let result of this.getAccepted(numPoints, node, matrix, segment, segmentDir, points,totalMileage)){
-					if(!result){
+				for (let result of this.getAccepted(numPoints, node, matrix, segment, segmentDir, points,totalMileage)) {
+					if (!result) {
 						let duration = performance.now() - checkpoint;
 						//console.log(`getPointsInsideProfile yield after ${duration}ms`);
 						yield false;
 						checkpoint = performance.now();
-					}else{
+					} else {
 						[accepted, mileage, acceptedPositions] = result;
 					}
 				}
 
 				let duration = performance.now() - checkpoint;
-				if(duration > 4){
+				if (duration > 4) {
 					//console.log(`getPointsInsideProfile yield after ${duration}ms`);
 					yield false;
 					checkpoint = performance.now();
@@ -330,12 +329,11 @@ export class ProfileRequest {
 				points.data.position = acceptedPositions;
 
 				let relevantAttributes = Object.keys(geometry.attributes).filter(a => !["position", "indices"].includes(a));
-				for(let attributeName of relevantAttributes){
-
+				for (let attributeName of relevantAttributes) {
 					let attribute = geometry.attributes[attributeName];
 					let numElements = attribute.array.length / numPoints;
 
-					if(numElements !== parseInt(numElements)){
+					if (numElements !== parseInt(numElements)) {
 						debugger;
 					}
 
@@ -346,8 +344,7 @@ export class ProfileRequest {
 					let source = attribute.array;
 					let target = filteredBuffer;
 
-					for(let i = 0; i < accepted.length; i++){
-
+					for (let i = 0; i < accepted.length; i++) {
 						let index = accepted[i];
 
 						let start = index * numElements;
@@ -375,7 +372,7 @@ export class ProfileRequest {
 
 		//console.log(`getPointsInsideProfile finished`);
 		yield true;
-	};
+	}
 
 	finishLevelThenCancel () {
 		if (this.cancelRequested) {
@@ -386,7 +383,7 @@ export class ProfileRequest {
 		this.cancelRequested = true;
 
 		//console.log(`maxDepth: ${this.maxDepth}`);
-	};
+	}
 
 	cancel () {
 		this.callback.onCancel();
@@ -397,5 +394,5 @@ export class ProfileRequest {
 		if (index >= 0) {
 			this.pointcloud.profileRequests.splice(index, 1);
 		}
-	};
+	}
 }

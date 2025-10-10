@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -121,12 +122,12 @@ if (document.currentScript && document.currentScript.src) {
 	if (scriptPath.slice(-1) === '/') {
 		scriptPath = scriptPath.slice(0, -1);
 	}
-} else if(import.meta){
+} else if (import.meta) {
 	scriptPath = new URL(import.meta.url + "/..").href;
 	if (scriptPath.slice(-1) === '/') {
 		scriptPath = scriptPath.slice(0, -1);
 	}
-}else {
+} else {
 	console.error('Potree was unable to find its script path using document.currentScript. Is Potree included with a script tag? Does your browser support this function?');
 }
 
@@ -136,17 +137,15 @@ let resourcePath = scriptPath + '/resources';
 // resourcePath:build/potree/resources
 export {scriptPath, resourcePath};
 
-
-export function loadPointCloud(path, name, callback){
-	let loaded = function(e){
+export function loadPointCloud(path, name, callback) {
+	let loaded = function(e) {
 		e.pointcloud.name = name;
 		callback(e);
 	};
 
 	let promise = new Promise( resolve => {
-
 		// load pointcloud
-		if (!path){
+		if (!path) {
 			// TODO: callback? comment? Hello? Bueller? Anyone?
 		} else if (path.includes('ept.json')) {
 			EptLoader.load(path, function(geometry) {
@@ -183,9 +182,9 @@ export function loadPointCloud(path, name, callback){
 			Potree.OctreeLoader.load(path).then(e => {
 				let geometry = e.geometry;
 
-				if(!geometry){
+				if (!geometry) {
 					console.error(new Error(`failed to load point cloud from URL: ${path}`));
-				}else{
+				} else {
 					let pointcloud = new PointCloudOctree(geometry);
 
 					let aPosition = pointcloud.getAttribute("position");
@@ -228,21 +227,19 @@ export function loadPointCloud(path, name, callback){
 		}
 	});
 
-	if(callback){
+	if (callback) {
 		promise.then(pointcloud => {
 			loaded(pointcloud);
 		});
-	}else{
+	} else {
 		return promise;
 	}
-};
-
+}
 
 // add selectgroup
-(function($){
+(function($) {
 	$.fn.extend({
-		selectgroup: function(args = {}){
-
+		selectgroup: function(args = {}) {
 			let elGroup = $(this);
 			let rootID = elGroup.prop("id");
 			let groupID = `${rootID}`;
@@ -266,9 +263,9 @@ export function loadPointCloud(path, name, callback){
 				elInput.change( () => {
 					elGroup.find("label").removeClass("ui-state-active");
 					elGroup.find("label").addClass("ui-state-default");
-					if(elInput.is(":checked")){
+					if (elInput.is(":checked")) {
 						elLabel.addClass("ui-state-active");
-					}else{
+					} else {
 						//elLabel.addClass("ui-state-default");
 					}
 				});
@@ -286,7 +283,7 @@ export function loadPointCloud(path, name, callback){
 			`);
 
 			let elButtonContainer = elFieldset.find("span");
-			for(let elButton of elButtons){
+			for (let elButton of elButtons) {
 				elButtonContainer.append(elButton);
 			}
 
@@ -298,7 +295,6 @@ export function loadPointCloud(path, name, callback){
 			});
 			elButtonContainer.find("label:first").each( (index, value) => {
 				$(value).css("border-radius", "4px 0px 0px 4px");
-
 			});
 			elButtonContainer.find("label:last").each( (index, value) => {
 				$(value).css("border-radius", "0px 4px 4px 0px");
@@ -307,9 +303,6 @@ export function loadPointCloud(path, name, callback){
 
 			elGroup.empty();
 			elGroup.append(elFieldset);
-
-
-
 		}
 	});
 })(jQuery);

@@ -15,7 +15,6 @@ import {PointSizeType, ClipTask, ElevationGradientRepeat} from "./defines.js";
 
 // Copied from three.js: WebGLRenderer.js
 function paramThreeToGL(_gl, p) {
-
 	let extension;
 
 	if (p === THREE.RepeatWrapping) return _gl.REPEAT;
@@ -43,11 +42,9 @@ function paramThreeToGL(_gl, p) {
 	if (p === THREE.FloatType) return _gl.FLOAT;
 
 	if (p === THREE.HalfFloatType) {
-
 		extension = extensions.get('OES_texture_half_float');
 
 		if (extension !== null) return extension.HALF_FLOAT_OES;
-
 	}
 
 	if (p === THREE.AlphaFormat) return _gl.ALPHA;
@@ -77,68 +74,51 @@ function paramThreeToGL(_gl, p) {
 
 	if (p === THREE.RGB_S3TC_DXT1_Format || p === RGBA_S3TC_DXT1_Format ||
 		p === THREE.RGBA_S3TC_DXT3_Format || p === RGBA_S3TC_DXT5_Format) {
-
 		extension = extensions.get('WEBGL_compressed_texture_s3tc');
 
 		if (extension !== null) {
-
 			if (p === THREE.RGB_S3TC_DXT1_Format) return extension.COMPRESSED_RGB_S3TC_DXT1_EXT;
 			if (p === THREE.RGBA_S3TC_DXT1_Format) return extension.COMPRESSED_RGBA_S3TC_DXT1_EXT;
 			if (p === THREE.RGBA_S3TC_DXT3_Format) return extension.COMPRESSED_RGBA_S3TC_DXT3_EXT;
 			if (p === THREE.RGBA_S3TC_DXT5_Format) return extension.COMPRESSED_RGBA_S3TC_DXT5_EXT;
-
 		}
-
 	}
 
 	if (p === THREE.RGB_PVRTC_4BPPV1_Format || p === THREE.RGB_PVRTC_2BPPV1_Format ||
 		p === THREE.RGBA_PVRTC_4BPPV1_Format || p === THREE.RGBA_PVRTC_2BPPV1_Format) {
-
 		extension = extensions.get('WEBGL_compressed_texture_pvrtc');
 
 		if (extension !== null) {
-
 			if (p === THREE.RGB_PVRTC_4BPPV1_Format) return extension.COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
 			if (p === THREE.RGB_PVRTC_2BPPV1_Format) return extension.COMPRESSED_RGB_PVRTC_2BPPV1_IMG;
 			if (p === THREE.RGBA_PVRTC_4BPPV1_Format) return extension.COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
 			if (p === THREE.RGBA_PVRTC_2BPPV1_Format) return extension.COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
-
 		}
-
 	}
 
 	if (p === THREE.RGB_ETC1_Format) {
-
 		extension = extensions.get('WEBGL_compressed_texture_etc1');
 
 		if (extension !== null) return extension.COMPRESSED_RGB_ETC1_WEBGL;
-
 	}
 
 	if (p === THREE.MinEquation || p === THREE.MaxEquation) {
-
 		extension = extensions.get('EXT_blend_minmax');
 
 		if (extension !== null) {
-
 			if (p === THREE.MinEquation) return extension.MIN_EXT;
 			if (p === THREE.MaxEquation) return extension.MAX_EXT;
-
 		}
-
 	}
 
 	if (p === UnsignedInt248Type) {
-
 		extension = extensions.get('WEBGL_depth_texture');
 
 		if (extension !== null) return extension.UNSIGNED_INT_24_8_WEBGL;
-
 	}
 
 	return 0;
-
-};
+}
 
 let attributeLocations = {
 	"position": {name: "position", location: 0},
@@ -162,7 +142,6 @@ let attributeLocations = {
 };
 
 class Shader {
-
 	constructor(gl, name, vsSource, fsSource) {
 		this.gl = gl;
 		this.name = name;
@@ -191,7 +170,7 @@ class Shader {
 		this.linkProgram();
 	}
 
-	compileShader(shader, source){
+	compileShader(shader, source) {
 		let gl = this.gl;
 
 		gl.shaderSource(shader, source);
@@ -207,7 +186,6 @@ class Shader {
 	}
 
 	linkProgram() {
-
 		const tStart = performance.now();
 
 		let gl = this.gl;
@@ -230,12 +208,11 @@ class Shader {
 
 			return;
 		} else {
-
 			this.vs = gl.createShader(gl.VERTEX_SHADER);
 			this.fs = gl.createShader(gl.FRAGMENT_SHADER);
 			this.program = gl.createProgram();
 
-			for(let name of Object.keys(attributeLocations)){
+			for (let name of Object.keys(attributeLocations)) {
 				let location = attributeLocations[name].location;
 				let glslName = attributeLocations[name].name;
 				gl.bindAttribLocation(this.program, location, glslName);
@@ -289,7 +266,7 @@ class Shader {
 			}
 
 			// uniform blocks
-			if(gl instanceof WebGL2RenderingContext){ 
+			if (gl instanceof WebGL2RenderingContext) { 
 				let numBlocks = gl.getProgramParameter(program, gl.ACTIVE_UNIFORM_BLOCKS);
 
 				for (let i = 0; i < numBlocks; i++) {
@@ -316,7 +293,6 @@ class Shader {
 						dataSize: dataSize,
 						buffer: uBuffer
 					};
-
 				}
 			}
 
@@ -337,8 +313,6 @@ class Shader {
 		const duration = tEnd - tStart;
 
 		console.log(`shader compile duration: ${duration.toFixed(3)}`);
-
-
 	}
 
 	setUniformMatrix4(name, value) {
@@ -361,7 +335,7 @@ class Shader {
 			return;
 		}
 
-		if(uniform.value === value){
+		if (uniform.value === value) {
 			return;
 		}
 
@@ -378,7 +352,7 @@ class Shader {
 			return;
 		}
 
-		if(uniform.value === value){
+		if (uniform.value === value) {
 			return;
 		}
 
@@ -421,7 +395,6 @@ class Shader {
 	}
 
 	setUniform(name, value) {
-
 		if (value.constructor === THREE.Matrix4) {
 			this.setUniformMatrix4(name, value);
 		} else if (typeof value === "number") {
@@ -431,19 +404,15 @@ class Shader {
 		} else if (value instanceof WebGLTexture) {
 			this.setUniformTexture(name, value);
 		} else if (value instanceof Array) {
-
 			if (value.length === 2) {
 				this.setUniform2f(name, value);
 			} else if (value.length === 3) {
 				this.setUniform3f(name, value);
 			}
-
 		} else {
 			console.error("unhandled uniform type: ", name, value);
 		}
-
 	}
-
 
 	setUniform1i(name, value) {
 		let gl = this.gl;
@@ -455,11 +424,9 @@ class Shader {
 
 		gl.uniform1i(location, value);
 	}
-
-};
+}
 
 class WebGLTexture {
-
 	constructor(gl, texture) {
 		this.gl = gl;
 
@@ -473,7 +440,6 @@ class WebGLTexture {
 	}
 
 	update() {
-
 		if (!this.texture.image) {
 			this.version = this.texture.version;
 
@@ -535,21 +501,17 @@ class WebGLTexture {
 
 		this.version = texture.version;
 	}
-
-};
+}
 
 class WebGLBuffer {
-
 	constructor() {
 		this.numElements = 0;
 		this.vao = null;
 		this.vbos = new Map();
 	}
-
-};
+}
 
 export class Renderer {
-
 	constructor(threeRenderer) {
 		this.threeRenderer = threeRenderer;
 		this.gl = this.threeRenderer.getContext();
@@ -567,7 +529,6 @@ export class Renderer {
 	}
 
 	deleteBuffer(geometry) {
-
 		let gl = this.gl;
 		let webglBuffer = this.buffers.get(geometry);
 		if (webglBuffer != null) {
@@ -578,7 +539,7 @@ export class Renderer {
 		}
 	}
 
-	createBuffer(geometry){
+	createBuffer(geometry) {
 		let gl = this.gl;
 		let webglBuffer = new WebGLBuffer();
 		webglBuffer.vao = gl.createVertexArray();
@@ -586,7 +547,7 @@ export class Renderer {
 
 		gl.bindVertexArray(webglBuffer.vao);
 
-		for(let attributeName in geometry.attributes){
+		for (let attributeName in geometry.attributes) {
 			let bufferAttribute = geometry.attributes[attributeName];
 
 			let vbo = gl.createBuffer();
@@ -596,15 +557,14 @@ export class Renderer {
 			let normalized = bufferAttribute.normalized;
 			let type = this.glTypeMapping.get(bufferAttribute.array.constructor);
 
-			if(attributeLocations[attributeName] === undefined){
+			if (attributeLocations[attributeName] === undefined) {
 				//attributeLocation = attributeLocations["aExtra"];
-			}else{
+			} else {
 				let attributeLocation = attributeLocations[attributeName].location;
 
 				gl.vertexAttribPointer(attributeLocation, bufferAttribute.itemSize, type, normalized, 0, 0);
 				gl.enableVertexAttribArray(attributeLocation);
 			}
-
 
 			webglBuffer.vbos.set(attributeName, {
 				handle: vbo,
@@ -628,21 +588,21 @@ export class Renderer {
 		return webglBuffer;
 	}
 
-	updateBuffer(geometry){
+	updateBuffer(geometry) {
 		let gl = this.gl;
 
 		let webglBuffer = this.buffers.get(geometry);
 
 		gl.bindVertexArray(webglBuffer.vao);
 
-		for(let attributeName in geometry.attributes){
+		for (let attributeName in geometry.attributes) {
 			let bufferAttribute = geometry.attributes[attributeName];
 
 			let normalized = bufferAttribute.normalized;
 			let type = this.glTypeMapping.get(bufferAttribute.array.constructor);
 
 			let vbo = null;
-			if(!webglBuffer.vbos.has(attributeName)){
+			if (!webglBuffer.vbos.has(attributeName)) {
 				vbo = gl.createBuffer();
 
 				webglBuffer.vbos.set(attributeName, {
@@ -653,7 +613,7 @@ export class Renderer {
 					type: geometry.attributes.position.array.constructor,
 					version: bufferAttribute.version
 				});
-			}else{
+			} else {
 				vbo = webglBuffer.vbos.get(attributeName).handle;
 				webglBuffer.vbos.get(attributeName).version = bufferAttribute.version;
 			}
@@ -661,9 +621,9 @@ export class Renderer {
 			gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
 			gl.bufferData(gl.ARRAY_BUFFER, bufferAttribute.array, gl.STATIC_DRAW);
 
-			if(attributeLocations[attributeName] === undefined){
+			if (attributeLocations[attributeName] === undefined) {
 				//attributeLocation = attributeLocations["aExtra"];
-			}else{
+			} else {
 				let attributeLocation = attributeLocations[attributeName].location;
 				
 				gl.vertexAttribPointer(attributeLocation, bufferAttribute.itemSize, type, normalized, 0, 0);
@@ -676,12 +636,10 @@ export class Renderer {
 	}
 
 	traverse(scene) {
-
 		let octrees = [];
 
 		let stack = [scene];
 		while (stack.length > 0) {
-
 			let node = stack.pop();
 
 			if (node instanceof PointCloudTree) {
@@ -691,7 +649,6 @@ export class Renderer {
 
 			let visibleChildren = node.children.filter(c => c.visible);
 			stack.push(...visibleChildren);
-
 		}
 
 		let result = {
@@ -701,10 +658,7 @@ export class Renderer {
 		return result;
 	}
 
-
-
 	renderNodes(octree, nodes, visibilityTextureData, camera, target, shader, params) {
-
 		if (exports.measureTimings) performance.mark("renderNodes-start");
 
 		let gl = this.gl;
@@ -713,7 +667,7 @@ export class Renderer {
 		let shadowMaps = params.shadowMaps == null ? [] : params.shadowMaps;
 		let view = camera.matrixWorldInverse;
 
-		if(params.viewOverride){
+		if (params.viewOverride) {
 			view = params.viewOverride;
 		}
 
@@ -723,9 +677,8 @@ export class Renderer {
 
 		let i = 0;
 		for (let node of nodes) {
-
-			if(exports.debug.allowedNodes !== undefined){
-				if(!exports.debug.allowedNodes.includes(node.name)){
+			if (exports.debug.allowedNodes !== undefined) {
+				if (!exports.debug.allowedNodes.includes(node.name)) {
 					continue;
 				}
 			}
@@ -738,12 +691,11 @@ export class Renderer {
 				shader.setUniform1f("uVNStart", vnStart);
 			}
 
-
 			let level = node.getLevel();
 
-			if(node.debug){
+			if (node.debug) {
 				shader.setUniform("uDebug", true);
-			}else{
+			} else {
 				shader.setUniform("uDebug", false);
 			}
 
@@ -760,7 +712,6 @@ export class Renderer {
 			// 	continue;
 			// }
 
-
 			// TODO consider passing matrices in an array to avoid uniformMatrix4fv overhead
 			const lModel = shader.uniformLocations["modelMatrix"];
 			if (lModel) {
@@ -771,19 +722,17 @@ export class Renderer {
 			const lModelView = shader.uniformLocations["modelViewMatrix"];
 			//mat4holder.set(worldView.elements);
 			// faster then set in chrome 63
-			for(let j = 0; j < 16; j++){
+			for (let j = 0; j < 16; j++) {
 				mat4holder[j] = worldView.elements[j];
 			}
 			gl.uniformMatrix4fv(lModelView, false, mat4holder);
 
 			{ // Clip Polygons
-				if(material.clipPolygons && material.clipPolygons.length > 0){
-
+				if (material.clipPolygons && material.clipPolygons.length > 0) {
 					let clipPolygonVCount = [];
 					let worldViewProjMatrices = [];
 
-					for(let clipPolygon of material.clipPolygons){
-
+					for (let clipPolygon of material.clipPolygons) {
 						let view = clipPolygon.viewMatrix;
 						let proj = clipPolygon.projMatrix;
 
@@ -796,9 +745,9 @@ export class Renderer {
 					let flattenedMatrices = [].concat(...worldViewProjMatrices.map(m => m.elements));
 
 					let flattenedVertices = new Array(8 * 3 * material.clipPolygons.length);
-					for(let i = 0; i < material.clipPolygons.length; i++){
+					for (let i = 0; i < material.clipPolygons.length; i++) {
 						let clipPolygon = material.clipPolygons[i];
-						for(let j = 0; j < clipPolygon.markers.length; j++){
+						for (let j = 0; j < clipPolygon.markers.length; j++) {
 							flattenedVertices[i * 24 + (j * 3 + 0)] = clipPolygon.markers[j].position.x;
 							flattenedVertices[i * 24 + (j * 3 + 1)] = clipPolygon.markers[j].position.y;
 							flattenedVertices[i * 24 + (j * 3 + 2)] = clipPolygon.markers[j].position.z;
@@ -813,10 +762,8 @@ export class Renderer {
 
 					const lClipPolygons = shader.uniformLocations["uClipPolygonVertices[0]"];
 					gl.uniform3fv(lClipPolygons, flattenedVertices);
-
 				}
 			}
-
 
 			//shader.setUniformMatrix4("modelMatrix", world);
 			//shader.setUniformMatrix4("modelViewMatrix", worldView);
@@ -827,7 +774,6 @@ export class Renderer {
 			// uBBSize
 
 			if (shadowMaps.length > 0) {
-
 				const lShadowMap = shader.uniformLocations["uShadowMap[0]"];
 
 				shader.setUniform3f("uShadowColor", material.uniforms.uShadowColor.value);
@@ -846,7 +792,6 @@ export class Renderer {
 				}
 
 				{
-
 					let worldViewMatrices = shadowMaps
 						.map(sm => sm.camera.matrixWorldInverse)
 						.map(view => new THREE.Matrix4().multiplyMatrices(view, world));
@@ -866,7 +811,7 @@ export class Renderer {
 			const geometry = node.geometryNode.geometry;
 
 			if (!geometry) console.log('Missing geometry', node);
-			if(geometry.attributes["gps-time"]){
+			if (geometry.attributes["gps-time"]) {
 				const bufferAttribute = geometry.attributes["gps-time"];
 				const attGPS = octree.getAttribute("gps-time");
 
@@ -898,8 +843,6 @@ export class Renderer {
 
 				shader.setUniform2f("uFilterGPSTimeClipRange", normalizedClipRange);
 
-
-
 				// // ranges in full gps coordinate system
 				// const globalRange = attGPS.range;
 				// const bufferRange = bufferAttribute.potree.range;
@@ -929,23 +872,21 @@ export class Renderer {
 				let uFilterNumberOfReturnsRange = material.uniforms.uFilterNumberOfReturnsRange.value;
 				let uFilterPointSourceIDClipRange = material.uniforms.uFilterPointSourceIDClipRange.value;
 				
-				
-				
 				shader.setUniform2f("uFilterReturnNumberRange", uFilterReturnNumberRange);
 				shader.setUniform2f("uFilterNumberOfReturnsRange", uFilterNumberOfReturnsRange);
 				shader.setUniform2f("uFilterPointSourceIDClipRange", uFilterPointSourceIDClipRange);
 			}
 
 			let webglBuffer = null;
-			if(!this.buffers.has(geometry)){
+			if (!this.buffers.has(geometry)) {
 				webglBuffer = this.createBuffer(geometry);
 				this.buffers.set(geometry, webglBuffer);
-			}else{
+			} else {
 				webglBuffer = this.buffers.get(geometry);
-				for(let attributeName in geometry.attributes){
+				for (let attributeName in geometry.attributes) {
 					let attribute = geometry.attributes[attributeName];
 
-					if(attribute.version > webglBuffer.vbos.get(attributeName).version){
+					if (attribute.version > webglBuffer.vbos.get(attributeName).version) {
 						this.updateBuffer(geometry);
 					}
 				}
@@ -957,11 +898,10 @@ export class Renderer {
 				attributeLocations[material.activeAttributeName] === undefined
 				&& Object.keys(geometry.attributes).includes(material.activeAttributeName);
 
-			if(isExtraAttribute){
-
+			if (isExtraAttribute) {
 				const attributeLocation = attributeLocations["aExtra"].location;
 
-				for(const attributeName in geometry.attributes){
+				for (const attributeName in geometry.attributes) {
 					const bufferAttribute = geometry.attributes[attributeName];
 					const vbo = webglBuffer.vbos.get(attributeName);
 					
@@ -973,7 +913,7 @@ export class Renderer {
 				const bufferAttribute = geometry.attributes[attName];
 				const vbo = webglBuffer.vbos.get(attName);
 
-				if(bufferAttribute !== undefined && vbo !== undefined){
+				if (bufferAttribute !== undefined && vbo !== undefined) {
 					let type = this.glTypeMapping.get(bufferAttribute.array.constructor);
 					let normalized = bufferAttribute.normalized;
 
@@ -982,19 +922,16 @@ export class Renderer {
 					gl.enableVertexAttribArray(attributeLocation);
 				}
 
-
-
-
 				{
 					const attExtra = octree.pcoGeometry.pointAttributes.attributes
 						.find(a => a.name === attName);
 
 					let range = material.getRange(attName);
-					if(!range){
+					if (!range) {
 						range = attExtra.range;
 					}
 
-					if(!range){
+					if (!range) {
 						range = [0, 1];
 					}
 
@@ -1013,15 +950,12 @@ export class Renderer {
 					shader.setUniform1f("uExtraScale", scale);
 					shader.setUniform1f("uExtraOffset", offset);					
 				}
-
-			}else{
-
-				for(const attributeName in geometry.attributes){
+			} else {
+				for (const attributeName in geometry.attributes) {
 					const bufferAttribute = geometry.attributes[attributeName];
 					const vbo = webglBuffer.vbos.get(attributeName);
 
-
-					if(attributeLocations[attributeName] !== undefined){
+					if (attributeLocations[attributeName] !== undefined) {
 						const attributeLocation = attributeLocations[attributeName].location;
 
 						let type = this.glTypeMapping.get(bufferAttribute.array.constructor);
@@ -1030,7 +964,6 @@ export class Renderer {
 						gl.bindBuffer(gl.ARRAY_BUFFER, vbo.handle);
 						gl.vertexAttribPointer(attributeLocation, bufferAttribute.itemSize, type, normalized, 0, 0);
 						gl.enableVertexAttribArray(attributeLocation);
-						
 					}
 				}
 			}
@@ -1049,8 +982,7 @@ export class Renderer {
 		}
 	}
 
-	renderOctree(octree, nodes, camera, target, params = {}){
-
+	renderOctree(octree, nodes, camera, target, params = {}) {
 		let gl = this.gl;
 
 		let material = params.material ? params.material : octree.material;
@@ -1058,7 +990,7 @@ export class Renderer {
 		let view = camera.matrixWorldInverse;
 		let viewInv = camera.matrixWorld;
 
-		if(params.viewOverride){
+		if (params.viewOverride) {
 			view = params.viewOverride;
 			viewInv = view.clone().invert();
 		}
@@ -1075,7 +1007,6 @@ export class Renderer {
 		if (material.pointSizeType >= 0) {
 			if (material.pointSizeType === PointSizeType.ADAPTIVE ||
 				material.activeAttributeName === "level of detail") {
-
 				let vnNodes = (params.vnTextureNodes != null) ? params.vnTextureNodes : nodes;
 				visibilityTextureData = octree.computeVisibilityTextureData(vnNodes, camera);
 
@@ -1083,7 +1014,6 @@ export class Renderer {
 				const data = vnt.image.data;
 				data.set(visibilityTextureData.data);
 				vnt.needsUpdate = true;
-
 			}
 		}
 
@@ -1114,26 +1044,24 @@ export class Renderer {
 					`#define num_clippolygons ${numClipPolygons}`,
 				];
 
-
-				if(octree.pcoGeometry.root.isLoaded()){
+				if (octree.pcoGeometry.root.isLoaded()) {
 					let attributes = octree.pcoGeometry.root.geometry.attributes;
 
-					if(attributes["gps-time"]){
+					if (attributes["gps-time"]) {
 						defines.push("#define clip_gps_enabled");
 					}
 
-					if(attributes["return number"]){
+					if (attributes["return number"]) {
 						defines.push("#define clip_return_number_enabled");
 					}
 
-					if(attributes["number of returns"]){
+					if (attributes["number of returns"]) {
 						defines.push("#define clip_number_of_returns_enabled");
 					}
 
-					if(attributes["source id"] || attributes["point source id"]){
+					if (attributes["source id"] || attributes["point source id"]) {
 						defines.push("#define clip_point_source_id_enabled");
 					}
-
 				}
 
 				let definesString = defines.join("\n");
@@ -1141,18 +1069,17 @@ export class Renderer {
 				let vsVersionIndex = vs.indexOf("#version ");
 				let fsVersionIndex = fs.indexOf("#version ");
 
-				if(vsVersionIndex >= 0){
+				if (vsVersionIndex >= 0) {
 					vs = vs.replace(/(#version .*)/, `$1\n${definesString}`);
-				}else{
+				} else {
 					vs = `${definesString}\n${vs}`;
 				}
 
-				if(fsVersionIndex >= 0){
+				if (fsVersionIndex >= 0) {
 					fs = fs.replace(/(#version .*)/, `$1\n${definesString}`);
-				}else{
+				} else {
 					fs = `${definesString}\n${fs}`;
 				}
-
 
 				shader.update(vs, fs);
 
@@ -1163,7 +1090,6 @@ export class Renderer {
 				let uniform = material.uniforms[uniformName];
 
 				if (uniform.type == "t") {
-
 					let texture = uniform.value;
 
 					if (!texture) {
@@ -1178,8 +1104,6 @@ export class Renderer {
 
 					let webGLTexture = this.textures.get(texture);
 					webGLTexture.update();
-
-
 				}
 			}
 		}
@@ -1187,13 +1111,13 @@ export class Renderer {
 		gl.useProgram(shader.program);
 
 		let transparent = false;
-		if(params.transparent !== undefined){
+		if (params.transparent !== undefined) {
 			transparent = params.transparent && material.opacity < 1;
-		}else{
+		} else {
 			transparent = material.opacity < 1;
 		}
 
-		if (transparent){
+		if (transparent) {
 			gl.enable(gl.BLEND);
 			gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
 			gl.depthMask(false);
@@ -1204,28 +1128,26 @@ export class Renderer {
 			gl.enable(gl.DEPTH_TEST);
 		}
 
-		if(params.blendFunc !== undefined){
+		if (params.blendFunc !== undefined) {
 			gl.enable(gl.BLEND);
 			gl.blendFunc(...params.blendFunc);
 		}
 
-		if(params.depthTest !== undefined){
-			if(params.depthTest === true){
+		if (params.depthTest !== undefined) {
+			if (params.depthTest === true) {
 				gl.enable(gl.DEPTH_TEST);
-			}else{
+			} else {
 				gl.disable(gl.DEPTH_TEST);
 			}
 		}
 
-		if(params.depthWrite !== undefined){
-			 if(params.depthWrite === true){
+		if (params.depthWrite !== undefined) {
+			 if (params.depthWrite === true) {
 				 gl.depthMask(true);
-			 }else{
+			 } else {
 				 gl.depthMask(false);
 			 }
-			 
 		}
-
 
 		{ // UPDATE UNIFORMS
 			shader.setUniformMatrix4("projectionMatrix", proj);
@@ -1242,17 +1164,17 @@ export class Renderer {
 			shader.setUniform1f("near", camera.near);
 			shader.setUniform1f("far", camera.far);
 			
-			if(camera instanceof THREE.OrthographicCamera){
+			if (camera instanceof THREE.OrthographicCamera) {
 				shader.setUniform("uUseOrthographicCamera", true);
 				shader.setUniform("uOrthoWidth", camera.right - camera.left); 
 				shader.setUniform("uOrthoHeight", camera.top - camera.bottom);
-			}else{
+			} else {
 				shader.setUniform("uUseOrthographicCamera", false);
 			}
 
-			if(material.clipBoxes.length + material.clipPolygons.length === 0){
+			if (material.clipBoxes.length + material.clipPolygons.length === 0) {
 				shader.setUniform1i("clipTask", ClipTask.NONE);
-			}else{
+			} else {
 				shader.setUniform1i("clipTask", material.clipTask);
 			}
 
@@ -1269,12 +1191,11 @@ export class Renderer {
 			}
 
 			// TODO CLIPSPHERES
-			if(params.clipSpheres && params.clipSpheres.length > 0){
-
+			if (params.clipSpheres && params.clipSpheres.length > 0) {
 				let clipSpheres = params.clipSpheres;
 
 				let matrices = [];
-				for(let clipSphere of clipSpheres){
+				for (let clipSphere of clipSpheres) {
 					//let mScale = new THREE.Matrix4().makeScale(...clipSphere.scale.toArray());
 					//let mTranslate = new THREE.Matrix4().makeTranslation(...clipSphere.position.toArray());
 
@@ -1297,16 +1218,13 @@ export class Renderer {
 				//gl.uniformMatrix4fv(lClipSpheres, false, material.uniforms.clipSpheres.value);
 			}
 
-
 			shader.setUniform1f("size", material.size);
 			shader.setUniform1f("maxSize", material.uniforms.maxSize.value);
 			shader.setUniform1f("minSize", material.uniforms.minSize.value);
 
-
 			// uniform float uPCIndex
 			shader.setUniform1f("uOctreeSpacing", material.spacing);
 			shader.setUniform("uOctreeSize", material.uniforms.octreeSize.value);
-
 
 			//uniform vec3 uColor;
 			shader.setUniform3f("uColor", material.color.toArray());
@@ -1315,7 +1233,6 @@ export class Renderer {
 
 			shader.setUniform2f("elevationRange", material.elevationRange);
 			shader.setUniform2f("intensityRange", material.intensityRange);
-
 
 			shader.setUniform3f("uIntensity_gbc", [
 				material.intensityGamma, 
@@ -1340,7 +1257,7 @@ export class Renderer {
 			shader.setUniform("backfaceCulling", material.uniforms.backfaceCulling.value);
 
 			let vnWebGLTexture = this.textures.get(material.visibleNodesTexture);
-			if(vnWebGLTexture){
+			if (vnWebGLTexture) {
 				shader.setUniform1i("visibleNodesTexture", currentTextureBindingPoint);
 				gl.activeTexture(gl.TEXTURE0 + currentTextureBindingPoint);
 				gl.bindTexture(vnWebGLTexture.target, vnWebGLTexture.id);
@@ -1353,13 +1270,13 @@ export class Renderer {
 			gl.bindTexture(gradientTexture.target, gradientTexture.id);
 
 			const repeat = material.elevationGradientRepeat;
-			if(repeat === ElevationGradientRepeat.REPEAT){
+			if (repeat === ElevationGradientRepeat.REPEAT) {
 				gl.texParameteri(gradientTexture.target, gl.TEXTURE_WRAP_S, gl.REPEAT);
 				gl.texParameteri(gradientTexture.target, gl.TEXTURE_WRAP_T, gl.REPEAT);
-			}else if(repeat === ElevationGradientRepeat.MIRRORED_REPEAT){
+			} else if (repeat === ElevationGradientRepeat.MIRRORED_REPEAT) {
 				gl.texParameteri(gradientTexture.target, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
 				gl.texParameteri(gradientTexture.target, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
-			}else{
+			} else {
 				gl.texParameteri(gradientTexture.target, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 				gl.texParameteri(gradientTexture.target, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 			}
@@ -1377,9 +1294,7 @@ export class Renderer {
 			gl.bindTexture(matcapTexture.target, matcapTexture.id);
 			currentTextureBindingPoint++;
 
-
 			if (material.snapEnabled === true) {
-
 				{
 					const lSnapshot = shader.uniformLocations["uSnapshot[0]"];
 					const lSnapshotDepth = shader.uniformLocations["uSnapshotDepth[0]"];
@@ -1436,7 +1351,6 @@ export class Renderer {
 					const lSnapViewInv = shader.uniformLocations["uSnapViewInv[0]"];
 					gl.uniformMatrix4fv(lSnapViewInv, false, flattenedMatrices);
 				}
-
 			}
 		}
 
@@ -1448,7 +1362,6 @@ export class Renderer {
 	}
 
 	render(scene, camera, target = null, params = {}) {
-
 		const gl = this.gl;
 
 		// PREPARE 
@@ -1461,13 +1374,11 @@ export class Renderer {
 
 		const traversalResult = this.traverse(scene);
 
-
 		// RENDER
 		for (const octree of traversalResult.octrees) {
 			let nodes = octree.visibleNodes;
 			this.renderOctree(octree, nodes, camera, target, params);
 		}
-
 
 		// CLEANUP
 		gl.activeTexture(gl.TEXTURE1);
@@ -1477,15 +1388,4 @@ export class Renderer {
 
 		this.threeRenderer.resetState();
 	}
-
-
-
-};
-
-
-
-
-
-
-
-
+}

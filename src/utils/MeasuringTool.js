@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -14,15 +15,14 @@ import {Utils} from "../utils.js";
 import {CameraMode} from "../defines.js";
 import { EventDispatcher } from "../EventDispatcher.js";
 
-function updateAzimuth(viewer, measure){
-
+function updateAzimuth(viewer, measure) {
 	const azimuth = measure.azimuth;
 
 	const isOkay = measure.points.length === 2;
 
 	azimuth.node.visible = isOkay && measure.showAzimuth;
 
-	if(!azimuth.node.visible){
+	if (!azimuth.node.visible) {
 		return;
 	}
 
@@ -30,7 +30,7 @@ function updateAzimuth(viewer, measure){
 	const renderAreaSize = viewer.renderer.getSize(new THREE.Vector2());
 	const width = renderAreaSize.width;
 	const height = renderAreaSize.height;
-	
+
 	const [p0, p1] = measure.points;
 	const r = p0.position.distanceTo(p1.position);
 	const northVec = Utils.getNorthVec(p0.position, r, viewer.getProjection());
@@ -38,10 +38,9 @@ function updateAzimuth(viewer, measure){
 
 	azimuth.center.position.copy(p0.position);
 	azimuth.center.scale.set(2, 2, 2);
-	
+
 	azimuth.center.visible = false;
 	// azimuth.target.visible = false;
-
 
 	{ // north
 		azimuth.north.position.copy(northPos);
@@ -64,7 +63,6 @@ function updateAzimuth(viewer, measure){
 		let scale = (5 / pr);
 		azimuth.target.scale.set(scale, scale, scale);
 	}
-
 
 	azimuth.circle.position.copy(p0.position);
 	azimuth.circle.scale.set(r, r, r);
@@ -110,12 +108,12 @@ function updateAzimuth(viewer, measure){
 	// label
 	const radians = Utils.computeAzimuth(p0.position, p1.position, viewer.getProjection());
 	let degrees = THREE.Math.radToDeg(radians);
-	if(degrees < 0){
+	if (degrees < 0) {
 		degrees = 360 + degrees;
 	}
 	const txtDegrees = `${degrees.toFixed(2)}°`;
 	const labelDir = northPos.clone().add(p1.position).multiplyScalar(0.5).sub(p0.position);
-	if(labelDir.length() > 0){
+	if (labelDir.length() > 0) {
 		labelDir.z = 0;
 		labelDir.normalize();
 		const labelVec = labelDir.clone().multiplyScalar(r);
@@ -129,7 +127,7 @@ function updateAzimuth(viewer, measure){
 	azimuth.label.scale.set(scale, scale, scale);
 }
 
-export class MeasuringTool extends EventDispatcher{
+export class MeasuringTool extends EventDispatcher {
 	constructor (viewer) {
 		super();
 
@@ -153,7 +151,7 @@ export class MeasuringTool extends EventDispatcher{
 		this.onRemove = (e) => { this.scene.remove(e.measurement);};
 		this.onAdd = e => {this.scene.add(e.measurement);};
 
-		for(let measurement of viewer.scene.measurements){
+		for (let measurement of viewer.scene.measurements) {
 			this.onAdd({measurement: measurement});
 		}
 
@@ -165,8 +163,8 @@ export class MeasuringTool extends EventDispatcher{
 		viewer.scene.addEventListener('measurement_removed', this.onRemove);
 	}
 
-	onSceneChange(e){
-		if(e.oldScene){
+	onSceneChange(e) {
+		if (e.oldScene) {
 			e.oldScene.removeEventListener('measurement_added', this.onAdd);
 			e.oldScene.removeEventListener('measurement_removed', this.onRemove);
 		}
@@ -186,9 +184,9 @@ export class MeasuringTool extends EventDispatcher{
 		});
 
 		const pick = (defaul, alternative) => {
-			if(defaul != null){
+			if (defaul != null) {
 				return defaul;
-			}else{
+			} else {
 				return alternative;
 			}
 		};
@@ -250,8 +248,8 @@ export class MeasuringTool extends EventDispatcher{
 
 		return measure;
 	}
-	
-	update(){
+
+	update() {
 		let camera = this.viewer.scene.getActiveCamera();
 		let domElement = this.renderer.domElement;
 		let measurements = this.viewer.scene.measurements;
@@ -271,7 +269,7 @@ export class MeasuringTool extends EventDispatcher{
 			updateAzimuth(this.viewer, measure);
 
 			// spheres
-			for(let sphere of measure.spheres){
+			for (let sphere of measure.spheres) {
 				let distance = camera.position.distanceTo(sphere.getWorldPosition(new THREE.Vector3()));
 				let pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
 				let scale = (15 / pr);
@@ -280,12 +278,12 @@ export class MeasuringTool extends EventDispatcher{
 
 			// labels
 			let labels = measure.edgeLabels.concat(measure.angleLabels);
-			for(let label of labels){
+			for (let label of labels) {
 				let distance = camera.position.distanceTo(label.getWorldPosition(new THREE.Vector3()));
 				let pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
 				let scale = (70 / pr);
 
-				if(Potree.debug.scale){
+				if (Potree.debug.scale) {
 					scale = (Potree.debug.scale / pr);
 				}
 
@@ -305,16 +303,15 @@ export class MeasuringTool extends EventDispatcher{
 				screenPos.z = 0;
 				screenPos.y -= 30;
 
-				let labelPos = new THREE.Vector3( 
-					(screenPos.x / clientWidth) * 2 - 1, 
-					-(screenPos.y / clientHeight) * 2 + 1, 
+				let labelPos = new THREE.Vector3(
+					(screenPos.x / clientWidth) * 2 - 1,
+					-(screenPos.y / clientHeight) * 2 + 1,
 					0.5 );
 				labelPos.unproject(camera);
-				if(this.viewer.scene.cameraMode == CameraMode.PERSPECTIVE) {
+				if (this.viewer.scene.cameraMode == CameraMode.PERSPECTIVE) {
 					let direction = labelPos.sub(camera.position).normalize();
 					labelPos = new THREE.Vector3().addVectors(
 						camera.position, direction.multiplyScalar(distance));
-
 				}
 				label.position.copy(labelPos);
 				let pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
@@ -399,31 +396,30 @@ export class MeasuringTool extends EventDispatcher{
 					measure.circleLine.material,
 				];
 
-				for(const material of materials){
+				for (const material of materials) {
 					material.resolution.set(clientWidth, clientHeight);
 				}
 			}
 
-			if(!this.showLabels){
-
+			if (!this.showLabels) {
 				const labels = [
-					...measure.sphereLabels, 
-					...measure.edgeLabels, 
-					...measure.angleLabels, 
+					...measure.sphereLabels,
+					...measure.edgeLabels,
+					...measure.angleLabels,
 					...measure.coordinateLabels,
 					measure.heightLabel,
 					measure.areaLabel,
 					measure.circleRadiusLabel,
 				];
 
-				for(const label of labels){
+				for (const label of labels) {
 					label.visible = false;
 				}
 			}
 		}
 	}
 
-	render(){
+	render() {
 		this.viewer.renderer.render(this.scene, this.viewer.scene.getActiveCamera());
 	}
-};
+}

@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -27,8 +28,8 @@
 import * as THREE from "../../libs/three.js/build/three.module.js";
 import {EventDispatcher} from "../EventDispatcher.js";
 
-export class DeviceOrientationControls extends EventDispatcher{
-	constructor(viewer){
+export class DeviceOrientationControls extends EventDispatcher {
+	constructor(viewer) {
 		super();
 
 		this.viewer = viewer;
@@ -87,4 +88,4 @@ export class DeviceOrientationControls extends EventDispatcher{
 			viewer.scene.cameraP.quaternion.set(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
 		}
 	}
-};
+}

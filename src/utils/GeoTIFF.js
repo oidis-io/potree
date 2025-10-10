@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -73,43 +74,37 @@ const typeMapping = new Map([
 	[Type.DOUBLE, Float64Array],
 ]);
 
-class IFDEntry{
-
-	constructor(tag, type, count, offset, value){
+class IFDEntry {
+	constructor(tag, type, count, offset, value) {
 		this.tag = tag;
 		this.type = type;
 		this.count = count;
 		this.offset = offset;
 		this.value = value;
 	}
-
 }
 
-class Image{
-
-	constructor(){
+class Image {
+	constructor() {
 		this.width = 0;
 		this.height = 0;
 		this.buffer = null;
 		this.metadata = [];
 	}
-
 }
 
-class Reader{
-
-	constructor(){
+class Reader {
+	constructor() {
 
 	}
 
-	static read(data){
-
+	static read(data) {
 		let endiannessTag = String.fromCharCode(...Array.from(data.slice(0, 2)));
 		let endianness = Endianness.fromValue(endiannessTag);
 
 		let tiffCheckTag = data.readUInt8(2);
 
-		if(tiffCheckTag !== 42){
+		if (tiffCheckTag !== 42) {
 			throw new Error("not a valid tiff file");
 		}
 
@@ -121,8 +116,7 @@ class Reader{
 		let IFDsRead = false;
 		let currentIFDOffset = offsetToFirstIFD;
 		let i = 0;
-		while(IFDsRead || i < 100){
-
+		while (IFDsRead || i < 100) {
 			console.log("currentIFDOffset", currentIFDOffset);
 			let numEntries = data.readUInt16LE(currentIFDOffset);
 			let nextIFDOffset = data.readUInt32LE(currentIFDOffset + 2 + numEntries * 12);
@@ -131,7 +125,7 @@ class Reader{
 
 			let entryBuffer = data.slice(currentIFDOffset + 2, currentIFDOffset + 2 + 12 * numEntries);
 
-			for(let i = 0; i < numEntries; i++){
+			for (let i = 0; i < numEntries; i++) {
 				let tag = Tag.fromValue(entryBuffer.readUInt16LE(i * 12));
 				let type = Type.fromValue(entryBuffer.readUInt16LE(i * 12 + 2));
 				let count = entryBuffer.readUInt32LE(i * 12 + 4);
@@ -139,17 +133,17 @@ class Reader{
 				let valueBytes = type.bytes * count;
 
 				let value;
-				if(valueBytes <= 4){
+				if (valueBytes <= 4) {
 					value = offsetOrValue;
-				}else{
+				} else {
 					let valueBuffer = new Uint8Array(valueBytes);
 					valueBuffer.set(data.slice(offsetOrValue, offsetOrValue + valueBytes));
-					
+
 					let ArrayType = typeMapping.get(type);
 
 					value = new ArrayType(valueBuffer.buffer);
 
-					if(type === Type.ASCII){
+					if (type === Type.ASCII) {
 						value = String.fromCharCode(...value);
 					}
 				}
@@ -161,7 +155,7 @@ class Reader{
 
 			console.log("nextIFDOffset", nextIFDOffset);
 
-			if(nextIFDOffset === 0){
+			if (nextIFDOffset === 0) {
 				break;
 			}
 
@@ -170,8 +164,8 @@ class Reader{
 		}
 
 		let ifdForTag = (tag) => {
-			for(let entry of ifds){
-				if(entry.tag === tag){
+			for (let entry of ifds) {
+				if (entry.tag === tag) {
 					return entry;
 				}
 			}
@@ -182,21 +176,21 @@ class Reader{
 		let width = ifdForTag(Tag.IMAGE_WIDTH, ifds).value;
 		let height = ifdForTag(Tag.IMAGE_HEIGHT, ifds).value;
 		let compression = ifdForTag(Tag.COMPRESSION, ifds).value;
-		let rowsPerStrip = ifdForTag(Tag.ROWS_PER_STRIP, ifds).value; 
+		let rowsPerStrip = ifdForTag(Tag.ROWS_PER_STRIP, ifds).value;
 		let ifdStripOffsets = ifdForTag(Tag.STRIP_OFFSETS, ifds);
 		let ifdStripByteCounts = ifdForTag(Tag.STRIP_BYTE_COUNTS, ifds);
 
 		let numStrips = Math.ceil(height / rowsPerStrip);
 
 		let stripByteCounts = [];
-		for(let i = 0; i < ifdStripByteCounts.count; i++){
+		for (let i = 0; i < ifdStripByteCounts.count; i++) {
 			let type = ifdStripByteCounts.type;
 			let offset = ifdStripByteCounts.offset + i * type.bytes;
 
 			let value;
-			if(type === Type.SHORT){
+			if (type === Type.SHORT) {
 				value = data.readUInt16LE(offset);
-			}else if(type === Type.LONG){
+			} else if (type === Type.LONG) {
 				value = data.readUInt32LE(offset);
 			}
 
@@ -204,14 +198,14 @@ class Reader{
 		}
 
 		let stripOffsets = [];
-		for(let i = 0; i < ifdStripOffsets.count; i++){
+		for (let i = 0; i < ifdStripOffsets.count; i++) {
 			let type = ifdStripOffsets.type;
 			let offset = ifdStripOffsets.offset + i * type.bytes;
 
 			let value;
-			if(type === Type.SHORT){
+			if (type === Type.SHORT) {
 				value = data.readUInt16LE(offset);
-			}else if(type === Type.LONG){
+			} else if (type === Type.LONG) {
 				value = data.readUInt32LE(offset);
 			}
 
@@ -219,20 +213,20 @@ class Reader{
 		}
 
 		let imageBuffer = new Uint8Array(width * height * 3);
-		
+
 		let linesProcessed = 0;
-		for(let i = 0; i < numStrips; i++){
+		for (let i = 0; i < numStrips; i++) {
 			let stripOffset = stripOffsets[i];
 			let stripBytes = stripByteCounts[i];
 			let stripData = data.slice(stripOffset, stripOffset + stripBytes);
 			let lineBytes = width * 3;
-			for(let y = 0; y < rowsPerStrip; y++){
+			for (let y = 0; y < rowsPerStrip; y++) {
 				let line = stripData.slice(y * lineBytes, y * lineBytes + lineBytes);
 				imageBuffer.set(line, linesProcessed * lineBytes);
-		
-				if(line.length === lineBytes){
+
+				if (line.length === lineBytes) {
 					linesProcessed++;
-				}else{
+				} else {
 					break;
 				}
 			}
@@ -252,20 +246,16 @@ class Reader{
 
 		return image;
 	}
-
 }
 
-
-class Exporter{
-
-	constructor(){
+class Exporter {
+	constructor() {
 
 	}
 
-	static toTiffBuffer(image, params = {}){
-
+	static toTiffBuffer(image, params = {}) {
 		let offsetToFirstIFD = 8;
-		
+
 		let headerBuffer = new Uint8Array([0x49, 0x49, 42, 0, offsetToFirstIFD, 0, 0, 0]);
 
 		let [width, height] = [image.width, image.height];
@@ -288,7 +278,7 @@ class Exporter{
 			new IFDEntry(Tag.Y_RESOLUTION,               Type.RATIONAL, 1,   null, new Uint32Array([1, 1])),
 		];
 
-		if(params.ifdEntries){
+		if (params.ifdEntries) {
 			ifds.push(...params.ifdEntries);
 		}
 
@@ -297,7 +287,7 @@ class Exporter{
 		// create 12 byte buffer for each ifd and variable length buffers for ifd values
 		let ifdEntryBuffers = new Map();
 		let ifdValueBuffers = new Map();
-		for(let ifd of ifds){
+		for (let ifd of ifds) {
 			let entryBuffer = new ArrayBuffer(12);
 			let entryView = new DataView(entryBuffer);
 
@@ -307,15 +297,15 @@ class Exporter{
 			entryView.setUint16(2, ifd.type.value, true);
 			entryView.setUint32(4, ifd.count, true);
 
-			if(ifd.count === 1 && ifd.type.bytes <= 4){
+			if (ifd.count === 1 && ifd.type.bytes <= 4) {
 				entryView.setUint32(8, ifd.value, true);
-			}else{
+			} else {
 				entryView.setUint32(8, valueOffset, true);
 
 				let valueBuffer = new Uint8Array(ifd.count * ifd.type.bytes);
-				if(ifd.type === Type.ASCII){
+				if (ifd.type === Type.ASCII) {
 					valueBuffer.set(new Uint8Array(ifd.value.split("").map(c => c.charCodeAt(0))));
-				}else{
+				} else {
 					valueBuffer.set(new Uint8Array(ifd.value.buffer));
 				}
 				ifdValueBuffers.set(ifd.tag, valueBuffer);
@@ -331,22 +321,21 @@ class Exporter{
 		new DataView(ifdEntryBuffers.get(Tag.STRIP_OFFSETS)).setUint32(8, imageBufferOffset, true);
 
 		let concatBuffers = (buffers) => {
-
 			let totalLength = buffers.reduce( (sum, buffer) => (sum + buffer.byteLength), 0);
 			let merged = new Uint8Array(totalLength);
 
 			let offset = 0;
-			for(let buffer of buffers){
+			for (let buffer of buffers) {
 				merged.set(new Uint8Array(buffer), offset);
 				offset += buffer.byteLength;
 			}
 
 			return merged;
 		};
-		
+
 		let ifdBuffer = concatBuffers([
-			new Uint16Array([ifds.length]), 
-			...ifdEntryBuffers.values(), 
+			new Uint16Array([ifds.length]),
+			...ifdEntryBuffers.values(),
 			new Uint32Array([0])]);
 		let ifdValueBuffer = concatBuffers([...ifdValueBuffers.values()]);
 
@@ -359,7 +348,6 @@ class Exporter{
 
 		return {width: width, height: height, buffer: tiffBuffer};
 	}
-
 }
 
 exports.Tag = Tag;
@@ -370,5 +358,4 @@ exports.Reader = Reader;
 exports.Exporter = Exporter;
 
 return exports;
-
 }({}));

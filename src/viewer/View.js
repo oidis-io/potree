@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -10,7 +11,7 @@
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
 
-export class View{
+export class View {
 	constructor () {
 		this.position = new THREE.Vector3(0, 0, 0);
 
@@ -51,25 +52,23 @@ export class View{
 	}
 
 	set direction (dir) {
-
 		//if(dir.x === dir.y){
-		if(dir.x === 0 && dir.y === 0){
+		if (dir.x === 0 && dir.y === 0) {
 			this.pitch = Math.PI / 2 * Math.sign(dir.z);
-		}else{
+		} else {
 			let yaw = Math.atan2(dir.y, dir.x) - Math.PI / 2;
 			let pitch = Math.atan2(dir.z, Math.sqrt(dir.x * dir.x + dir.y * dir.y));
 
 			this.yaw = yaw;
 			this.pitch = pitch;
 		}
-		
 	}
 
-	lookAt(t){
+	lookAt(t) {
 		let V;
-		if(arguments.length === 1){
+		if (arguments.length === 1) {
 			V = new THREE.Vector3().subVectors(t, this.position);
-		}else if(arguments.length === 3){
+		} else if (arguments.length === 3) {
 			V = new THREE.Vector3().subVectors(new THREE.Vector3(...arguments), this.position);
 		}
 
@@ -132,22 +131,21 @@ export class View{
 		this.position.z += z;
 	}
 
-	setView(position, target, duration = 0, callback = null){
-
+	setView(position, target, duration = 0, callback = null) {
 		let endPosition = null;
-		if(position instanceof Array){
+		if (position instanceof Array) {
 			endPosition = new THREE.Vector3(...position);
-		}else if(position.x != null){
+		} else if (position.x != null) {
 			endPosition = position.clone();
 		}
 
 		let endTarget = null;
-		if(target instanceof Array){
+		if (target instanceof Array) {
 			endTarget = new THREE.Vector3(...target);
-		}else if(target.x != null){
+		} else if (target.x != null) {
 			endTarget = target.clone();
 		}
-		
+
 		const startPosition = this.position.clone();
 		const startTarget = this.getPivot();
 
@@ -156,10 +154,10 @@ export class View{
 
 		let easing = TWEEN.Easing.Quartic.Out;
 
-		if(duration === 0){
+		if (duration === 0) {
 			this.position.copy(endPosition);
 			this.lookAt(endTarget);
-		}else{
+		} else {
 			let value = {x: 0};
 			let tween = new TWEEN.Tween(value).to({x: 1}, duration);
 			tween.easing(easing);
@@ -184,18 +182,15 @@ export class View{
 
 				this.position.copy(pos);
 				this.lookAt(target);
-
 			});
 
 			tween.start();
 
 			tween.onComplete(() => {
-				if(callback){
+				if (callback) {
 					callback();
 				}
 			});
 		}
-
 	}
-
-};
+}

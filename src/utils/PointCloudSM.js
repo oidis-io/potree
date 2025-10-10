@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -10,10 +11,8 @@
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
 
-export class PointCloudSM{
-
-	constructor(potreeRenderer){
-
+export class PointCloudSM {
+	constructor(potreeRenderer) {
 		this.potreeRenderer = potreeRenderer;
 		this.threeRenderer = this.potreeRenderer.threeRenderer;
 
@@ -30,7 +29,7 @@ export class PointCloudSM{
 		this.threeRenderer.setClearColor(0xff0000, 1);
 
 		//HACK? removed while moving to three.js 109
-		//this.threeRenderer.clearTarget(this.target, true, true, true); 
+		//this.threeRenderer.clearTarget(this.target, true, true, true);
 		{
 			const oldTarget = this.threeRenderer.getRenderTarget();
 
@@ -41,7 +40,7 @@ export class PointCloudSM{
 		}
 	}
 
-	setLight(light){
+	setLight(light) {
 		this.light = light;
 
 		let fov = (180 * light.angle) / Math.PI;
@@ -61,17 +60,16 @@ export class PointCloudSM{
 		this.camera.matrixWorldInverse.copy(this.camera.matrixWorld).invert();
 	}
 
-	setSize(width, height){
-		if(this.target.width !== width || this.target.height !== height){
+	setSize(width, height) {
+		if (this.target.width !== width || this.target.height !== height) {
 			this.target.dispose();
 		}
 		this.target.setSize(width, height);
 	}
 
-	render(scene, camera){
-
+	render(scene, camera) {
 		this.threeRenderer.setClearColor(0x000000, 1);
-		
+
 		const oldTarget = this.threeRenderer.getRenderTarget();
 
 		this.threeRenderer.setRenderTarget(this.target);
@@ -81,6 +79,4 @@ export class PointCloudSM{
 
 		this.threeRenderer.setRenderTarget(oldTarget);
 	}
-
-
 }

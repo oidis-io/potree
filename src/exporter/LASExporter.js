@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -107,7 +108,6 @@ export class LASExporter {
 
 		let boffset = 227;
 		for (let i = 0; i < points.numPoints; i++) {
-
 			let px = points.data.position[3 * i + 0];
 			let py = points.data.position[3 * i + 1];
 			let pz = points.data.position[3 * i + 2];
@@ -155,5 +155,4 @@ export class LASExporter {
 
 		return buffer;
 	}
-	
 }

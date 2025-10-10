@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -8,27 +9,25 @@
  *
  * ********************************************************************************************************* */
 
-
 function createPointcloudData(pointcloud) {
-
 	let material = pointcloud.material;
 
 	let ranges = [];
-	
-	for(let [name, value] of material.ranges){
+
+	for (let [name, value] of material.ranges) {
 		ranges.push({
 			name: name,
 			value: value,
 		});
 	}
 
-	if(typeof material.elevationRange[0] === "number"){
+	if (typeof material.elevationRange[0] === "number") {
 		ranges.push({
 			name: "elevationRange",
 			value: material.elevationRange,
 		});
 	}
-	if(typeof material.intensityRange[0] === "number"){
+	if (typeof material.intensityRange[0] === "number") {
 		ranges.push({
 			name: "intensityRange",
 			value: material.intensityRange,
@@ -58,7 +57,7 @@ function createPointcloudData(pointcloud) {
 	return pcdata;
 }
 
-function createProfileData(profile){
+function createProfileData(profile) {
 	const data = {
 		uuid: profile.uuid,
 		name: profile.name,
@@ -70,7 +69,7 @@ function createProfileData(profile){
 	return data;
 }
 
-function createVolumeData(volume){
+function createVolumeData(volume) {
 	const data = {
 		uuid: volume.uuid,
 		type: volume.constructor.name,
@@ -85,8 +84,7 @@ function createVolumeData(volume){
 	return data;
 }
 
-function createCameraAnimationData(animation){
-
+function createCameraAnimationData(animation) {
 	const controlPoints = animation.controlPoints.map( cp => {
 		const cpdata = {
 			position: cp.position.toArray(),
@@ -109,8 +107,7 @@ function createCameraAnimationData(animation){
 	return data;
 }
 
-function createMeasurementData(measurement){
-
+function createMeasurementData(measurement) {
 	const data = {
 		uuid: measurement.uuid,
 		name: measurement.name,
@@ -130,7 +127,7 @@ function createMeasurementData(measurement){
 	return data;
 }
 
-function createOrientedImagesData(images){
+function createOrientedImagesData(images) {
 	const data = {
 		cameraParamsPath: images.cameraParamsPath,
 		imageParamsPath: images.imageParamsPath,
@@ -139,7 +136,7 @@ function createOrientedImagesData(images){
 	return data;
 }
 
-function createGeopackageData(geopackage){
+function createGeopackageData(geopackage) {
 	const data = {
 		path: geopackage.path,
 	};
@@ -147,8 +144,7 @@ function createGeopackageData(geopackage){
 	return data;
 }
 
-function createAnnotationData(annotation){
-
+function createAnnotationData(annotation) {
 	const data = {
 		uuid: annotation.uuid,
 		title: annotation.title.toString(),
@@ -158,23 +154,22 @@ function createAnnotationData(annotation){
 		children: [],
 	};
 
-	if(annotation.cameraPosition){
+	if (annotation.cameraPosition) {
 		data.cameraPosition = annotation.cameraPosition.toArray();
 	}
 
-	if(annotation.cameraTarget){
+	if (annotation.cameraTarget) {
 		data.cameraTarget = annotation.cameraTarget.toArray();
 	}
 
-	if(typeof annotation.radius !== "undefined"){
+	if (typeof annotation.radius !== "undefined") {
 		data.radius = annotation.radius;
 	}
 
 	return data;
 }
 
-function createAnnotationsData(viewer){
-	
+function createAnnotationsData(viewer) {
 	const map = new Map();
 
 	viewer.scene.annotations.traverseDescendants(a => {
@@ -183,8 +178,8 @@ function createAnnotationsData(viewer){
 		map.set(a, aData);
 	});
 
-	for(const [annotation, data] of map){
-		for(const child of annotation.children){
+	for (const [annotation, data] of map) {
+		for (const child of annotation.children) {
 			const childData = map.get(child);
 			data.children.push(childData);
 		}
@@ -195,7 +190,7 @@ function createAnnotationsData(viewer){
 	return annotations;
 }
 
-function createSettingsData(viewer){
+function createSettingsData(viewer) {
 	return {
 		pointBudget: viewer.getPointBudget(),
 		fov: viewer.getFOV(),
@@ -208,36 +203,31 @@ function createSettingsData(viewer){
 	};
 }
 
-function createSceneContentData(viewer){
-
+function createSceneContentData(viewer) {
 	const data = [];
 
 	const potreeObjects = [];
 
 	viewer.scene.scene.traverse(node => {
-		if(node.potree){
+		if (node.potree) {
 			potreeObjects.push(node);
 		}
 	});
 
-	for(const object of potreeObjects){
-		
-		if(object.potree.file){
+	for (const object of potreeObjects) {
+		if (object.potree.file) {
 			const saveObject = {
 				file: object.potree.file,
 			};
 
 			data.push(saveObject);
 		}
-
-
 	}
-
 
 	return data;
 }
 
-function createViewData(viewer){
+function createViewData(viewer) {
 	const view = viewer.scene.view;
 
 	const data = {
@@ -248,7 +238,7 @@ function createViewData(viewer){
 	return data;
 }
 
-function createClassificationData(viewer){
+function createClassificationData(viewer) {
 	const classifications = viewer.classifications;
 
 	const data = classifications;
@@ -257,7 +247,6 @@ function createClassificationData(viewer){
 }
 
 export function saveProject(viewer) {
-
 	const scene = viewer.scene;
 
 	const data = {

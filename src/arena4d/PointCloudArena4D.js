@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -13,8 +14,6 @@ import {PointCloudTree, PointCloudTreeNode} from "../PointCloudTree.js";
 import {PointCloudMaterial} from "../materials/PointCloudMaterial.js";
 import {PointSizeType, ClipTask, TreeType} from "../defines.js";
 import {Utils} from "../utils.js";
-
-
 
 export class PointCloudArena4DNode extends PointCloudTreeNode {
 	constructor () {
@@ -92,9 +91,9 @@ export class PointCloudArena4DNode extends PointCloudTreeNode {
 
 		return children;
 	}
-};
+}
 
-export class PointCloudArena4D extends PointCloudTree{
+export class PointCloudArena4D extends PointCloudTree {
 	constructor (geometry) {
 		super();
 
@@ -137,7 +136,7 @@ export class PointCloudArena4D extends PointCloudTree{
 		let tBox = Utils.computeTransformedBoundingBox(box, transform);
 
 		return tBox;
-	};
+	}
 
 	setName (name) {
 		if (this.name !== name) {
@@ -302,8 +301,7 @@ export class PointCloudArena4D extends PointCloudTree{
 		return nodesOnRay;
 	}
 
-	pick(viewer, camera, ray, params = {}){
-
+	pick(viewer, camera, ray, params = {}) {
 		let renderer = viewer.renderer;
 		let pRenderer = viewer.pRenderer;
 
@@ -346,7 +344,7 @@ export class PointCloudArena4D extends PointCloudTree{
 				material: material,
 				scene: scene
 			};
-		};
+		}
 
 		let pickState = this.pickState;
 		let pickMaterial = pickState.material;
@@ -359,31 +357,30 @@ export class PointCloudArena4D extends PointCloudTree{
 			pickMaterial.uniforms.minSize.value = this.material.uniforms.minSize.value;
 			pickMaterial.uniforms.maxSize.value = this.material.uniforms.maxSize.value;
 			pickMaterial.classification = this.material.classification;
-			if(params.pickClipped){
+			if (params.pickClipped) {
 				pickMaterial.clipBoxes = this.material.clipBoxes;
-				if(this.material.clipTask === ClipTask.HIGHLIGHT){
+				if (this.material.clipTask === ClipTask.HIGHLIGHT) {
 					pickMaterial.clipTask = ClipTask.NONE;
-				}else{
+				} else {
 					pickMaterial.clipTask = this.material.clipTask;
 				}
-			}else{
+			} else {
 				pickMaterial.clipBoxes = [];
 			}
-			
+
 			this.updateMaterial(pickMaterial, nodes, camera, renderer);
 		}
 
 		pickState.renderTarget.setSize(width, height);
 
 		let pixelPos = new THREE.Vector2(params.x, params.y);
-		
+
 		let gl = renderer.getContext();
 		gl.enable(gl.SCISSOR_TEST);
 		gl.scissor(
 			parseInt(pixelPos.x - (pickWindowSize - 1) / 2),
 			parseInt(pixelPos.y - (pickWindowSize - 1) / 2),
 			parseInt(pickWindowSize), parseInt(pickWindowSize));
-
 
 		renderer.state.buffers.depth.setTest(pickMaterial.depthTest);
 		renderer.state.buffers.depth.setMask(pickMaterial.depthWrite);
@@ -395,12 +392,12 @@ export class PointCloudArena4D extends PointCloudTree{
 			renderer.setRenderTarget(pickState.renderTarget);
 			gl.clearColor(0, 0, 0, 0);
 			renderer.clearTarget( pickState.renderTarget, true, true, true );
-			
+
 			let tmp = this.material;
 			this.material = pickMaterial;
-			
+
 			pRenderer.renderOctree(this, nodes, camera, pickState.renderTarget);
-			
+
 			this.material = tmp;
 		}
 
@@ -413,14 +410,14 @@ export class PointCloudArena4D extends PointCloudTree{
 
 		let pixelCount = w * h;
 		let buffer = new Uint8Array(4 * pixelCount);
-		
-		gl.readPixels(x, y, pickWindowSize, pickWindowSize, gl.RGBA, gl.UNSIGNED_BYTE, buffer); 
-		
+
+		gl.readPixels(x, y, pickWindowSize, pickWindowSize, gl.RGBA, gl.UNSIGNED_BYTE, buffer);
+
 		renderer.setRenderTarget(null);
 		renderer.state.reset();
 		renderer.setScissorTest(false);
 		gl.disable(gl.SCISSOR_TEST);
-		
+
 		let pixels = buffer;
 		let ibuffer = new Uint32Array(buffer.buffer);
 
@@ -436,57 +433,53 @@ export class PointCloudArena4D extends PointCloudTree{
 				pixels[4 * offset + 3] = 0;
 				let pIndex = ibuffer[offset];
 
-				if(!(pcIndex === 0 && pIndex === 0) && (pcIndex !== undefined) && (pIndex !== undefined)){
+				if (!(pcIndex === 0 && pIndex === 0) && (pcIndex !== undefined) && (pIndex !== undefined)) {
 					let hit = {
 						pIndex: pIndex,
 						pcIndex: pcIndex,
 						distanceToCenter: distance
 					};
 
-					if(params.all){
+					if (params.all) {
 						hits.push(hit);
-					}else{
-						if(hits.length > 0){
-							if(distance < hits[0].distanceToCenter){
+					} else {
+						if (hits.length > 0) {
+							if (distance < hits[0].distanceToCenter) {
 								hits[0] = hit;
 							}
-						}else{
+						} else {
 							hits.push(hit);
 						}
 					}
-
-					
 				}
 			}
 		}
 
-
-
-		for(let hit of hits){
+		for (let hit of hits) {
 			let point = {};
-		
+
 			if (!nodes[hit.pcIndex]) {
 				return null;
 			}
-		
+
 			let node = nodes[hit.pcIndex];
 			let pc = node.sceneNode;
 			let geometry = node.geometryNode.geometry;
-			
-			for(let attributeName in geometry.attributes){
+
+			for (let attributeName in geometry.attributes) {
 				let attribute = geometry.attributes[attributeName];
-		
+
 				if (attributeName === 'position') {
 					let x = attribute.array[3 * hit.pIndex + 0];
 					let y = attribute.array[3 * hit.pIndex + 1];
 					let z = attribute.array[3 * hit.pIndex + 2];
-					
+
 					let position = new THREE.Vector3(x, y, z);
 					position.applyMatrix4(pc.matrixWorld);
-		
+
 					point[attributeName] = position;
 				} else if (attributeName === 'indices') {
-		
+
 				} else {
 					//if (values.itemSize === 1) {
 					//	point[attribute.name] = values.array[hit.pIndex];
@@ -498,7 +491,6 @@ export class PointCloudArena4D extends PointCloudTree{
 					//	point[attribute.name] = value;
 					//}
 				}
-				
 			}
 
 			hit.point = point;
@@ -507,20 +499,19 @@ export class PointCloudArena4D extends PointCloudTree{
 		performance.mark("pick-end");
 		performance.measure("pick", "pick-start", "pick-end");
 
-		if(params.all){
+		if (params.all) {
 			return hits.map(hit => hit.point);
-		}else{
-			if(hits.length === 0){
+		} else {
+			if (hits.length === 0) {
 				return null;
-			}else{
+			} else {
 				return hits[0].point;
 			}
 		}
 	}
 
-	computeVisibilityTextureData(nodes){
-
-		if(exports.measureTimings) performance.mark("computeVisibilityTextureData-start");
+	computeVisibilityTextureData(nodes) {
+		if (exports.measureTimings) performance.mark("computeVisibilityTextureData-start");
 
 		let data = new Uint8Array(nodes.length * 3);
 		let visibleNodeTextureOffsets = new Map();
@@ -577,7 +568,7 @@ export class PointCloudArena4D extends PointCloudTree{
 			data[i * 3 + 2] = b3;
 		}
 
-		if(exports.measureTimings){
+		if (exports.measureTimings) {
 			performance.mark("computeVisibilityTextureData-end");
 			performance.measure("render.computeVisibilityTextureData", "computeVisibilityTextureData-start", "computeVisibilityTextureData-end");
 		}
@@ -595,4 +586,4 @@ export class PointCloudArena4D extends PointCloudTree{
 			return 0;
 		}
 	}
-};
+}

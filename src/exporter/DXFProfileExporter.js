@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -15,9 +16,7 @@
  */
 
 export class DXFProfileExporter {
-
 	static toXYZ(points, flatten = false) {
-
 		/*
 		points: {
 			...
@@ -49,7 +48,6 @@ export class DXFProfileExporter {
 		const pColor   = pData.rgba;
 
 		for (let pIx = 0; pIx < points.numPoints; pIx++) {
-
 			const poMileage = pMileage[pIx];
 			const poCoordX  = pCoords[ ((pIx * 3) + 0) ];
 			const poCoordY  = pCoords[ ((pIx * 3) + 1) ];
@@ -60,7 +58,6 @@ export class DXFProfileExporter {
 			// const poColorA  = pColor[ ((pIx * 4) + 3) ];
 
 			if (flatten === true) {
-
 				pointsXYZ.x.push(poMileage);
 				pointsXYZ.y.push(0);
 				pointsXYZ.z.push(poCoordZ);
@@ -72,9 +69,7 @@ export class DXFProfileExporter {
 				// Get boundaries Z
 				if (pointsXYZ.maxZ < poCoordZ) pointsXYZ.maxZ = poCoordZ;
 				if (pointsXYZ.minZ > poCoordZ) pointsXYZ.minZ = poCoordZ;
-
 			} else {
-
 				pointsXYZ.x.push(poCoordX);
 				pointsXYZ.y.push(poCoordY);
 				pointsXYZ.z.push(poCoordZ);
@@ -90,9 +85,7 @@ export class DXFProfileExporter {
 				// Get boundaries Z
 				if (pointsXYZ.maxZ < poCoordZ) pointsXYZ.maxZ = poCoordZ;
 				if (pointsXYZ.minZ > poCoordZ) pointsXYZ.minZ = poCoordZ;
-
 			}
-
 		}
 
 		if (flatten === true) {
@@ -107,7 +100,6 @@ export class DXFProfileExporter {
 	}
 
 	static plotPCloudPoint(x, y, z) {
-
 		const dxfSection = `0
 POINT
 8
@@ -124,7 +116,6 @@ ${z}
 	}
 
 	static toString(points, flatten = false) {
-
 		const pCloud = DXFProfileExporter.toXYZ(points, flatten);
 
 		const dxfHeader = `999
@@ -183,5 +174,4 @@ ENDSEC
 
 		return dxf;
 	}
-
 }

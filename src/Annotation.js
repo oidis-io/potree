@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -76,7 +77,7 @@ export class Annotation extends EventDispatcher {
 		// this.elDescriptionContent = this.elDescription.find(".annotation-description-content");
 
 		this.clickTitle = () => {
-			if(this.hasView()){
+			if (this.hasView()) {
 				this.moveHere(this.scene.getActiveCamera());
 			}
 			this.dispatchEvent({type: 'click', target: this});
@@ -121,11 +122,10 @@ export class Annotation extends EventDispatcher {
 
 		this.display = false;
 		//this.display = true;
-
 	}
 
-	installHandles(viewer){
-		if(this.handles !== undefined){
+	installHandles(viewer) {
+		if (this.handles !== undefined) {
 			return;
 		}
 
@@ -138,7 +138,7 @@ export class Annotation extends EventDispatcher {
 				</svg>
 			</div>
 		`);
-		
+
 		let svg = domElement.find("svg")[0];
 		let elLine = domElement.find("line")[0];
 		let elStart = domElement.find("circle")[0];
@@ -164,20 +164,18 @@ export class Annotation extends EventDispatcher {
 			let ya = start.y - end.y;
 			let xa = start.x - end.x;
 
-			if(ya > 0){
+			if (ya > 0) {
 				start.y = start.y - ya;
 			}
-			if(xa > 0){
+			if (xa > 0) {
 				start.x = start.x - xa;
 			}
 
 			domElement.css("left", `${start.x}px`);
 			domElement.css("top", `${start.y}px`);
-
 		};
 
 		$(viewer.renderArea).append(domElement);
-
 
 		let annotationStartPos = this.position.clone();
 		let annotationStartOffset = this.offset.clone();
@@ -198,7 +196,7 @@ export class Annotation extends EventDispatcher {
 				//let renderAreaHeight = viewer.renderer.getSize().height;
 
 				let diff = {
-					x: ui.originalPosition.left - ui.position.left, 
+					x: ui.originalPosition.left - ui.position.left,
 					y: ui.originalPosition.top - ui.position.top
 				};
 
@@ -251,12 +249,11 @@ export class Annotation extends EventDispatcher {
 
 				return screenPos;
 			};
-			
+
 			start = toScreen(start);
 			end = toScreen(end);
 
 			setCoordinates(start, end);
-
 		};
 
 		viewer.addEventListener("update", updateCallback);
@@ -268,8 +265,8 @@ export class Annotation extends EventDispatcher {
 		};
 	}
 
-	removeHandles(viewer){
-		if(this.handles === undefined){
+	removeHandles(viewer) {
+		if (this.handles === undefined) {
 			return;
 		}
 
@@ -519,7 +516,7 @@ export class Annotation extends EventDispatcher {
 		let hasView = hasPosTargetView || hasRadiusView;
 
 		return hasView;
-	};
+	}
 
 	moveHere (camera) {
 		if (!this.hasView()) {
@@ -567,15 +564,15 @@ export class Annotation extends EventDispatcher {
 				tween.start();
 			}
 		}
-	};
+	}
 
 	dispose () {
 		if (this.domElement.parentElement) {
 			this.domElement.parentElement.removeChild(this.domElement);
 		}
-	};
+	}
 
 	toString () {
 		return 'Annotation: ' + this._title;
 	}
-};
+}

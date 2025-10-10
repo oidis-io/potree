@@ -29,9 +29,8 @@ import {Images360} from "../modules/Images360/Images360.js";
 
 import JSON5 from "../../libs/json5-2.1.3/json5.mjs";
 
-export class Sidebar{
-
-	constructor(viewer){
+export class Sidebar {
+	constructor(viewer) {
 		this.viewer = viewer;
 
 		this.measuringTool = viewer.measuringTool;
@@ -41,7 +40,7 @@ export class Sidebar{
 		this.dom = $("#sidebar_root");
 	}
 
-	createToolIcon(icon, title, callback){
+	createToolIcon(icon, title, callback) {
 		let element = $(`
 			<img src="${icon}"
 				style="width: 32px; height: 32px"
@@ -54,8 +53,7 @@ export class Sidebar{
 		return element;
 	}
 
-	init(){
-
+	init() {
 		this.initAccordion();
 		this.initAppearance();
 		this.initToolbar();
@@ -68,10 +66,7 @@ export class Sidebar{
 		$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
 	}
 
-		
-
-	initToolbar(){
-
+	initToolbar() {
 		// ANGLE
 		let elToolbar = $('#tools');
 		elToolbar.append(this.createToolIcon(
@@ -255,7 +250,7 @@ export class Sidebar{
 			Potree.resourcePath + '/icons/profile.svg',
 			'[title]tt.height_profile',
 			() => {
-				$('#menu_measurements').next().slideDown(); ;
+				$('#menu_measurements').next().slideDown(); 
 				let profile = this.profileTool.startInsertion();
 
 				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
@@ -270,7 +265,7 @@ export class Sidebar{
 			Potree.resourcePath + '/icons/annotation.svg',
 			'[title]tt.annotation',
 			() => {
-				$('#menu_measurements').next().slideDown(); ;
+				$('#menu_measurements').next().slideDown(); 
 				let annotation = this.viewer.annotationTool.startInsertion();
 
 				let annotationsRoot = $("#jstree_scene").jstree().get_json("annotations");
@@ -289,7 +284,6 @@ export class Sidebar{
 			}
 		));
 
-
 		{ // SHOW / HIDE Measurements
 			let elShow = $("#measurement_options_show");
 			elShow.selectgroup({title: "Show/Hide labels"});
@@ -304,12 +298,10 @@ export class Sidebar{
 		}
 	}
 
-	initScene(){
-
+	initScene() {
 		let elScene = $("#menu_scene");
 		let elObjects = elScene.next().find("#scene_objects");
 		let elProperties = elScene.next().find("#scene_object_properties");
-		
 
 		{
 			let elExport = elScene.next().find("#scene_export");
@@ -330,12 +322,12 @@ export class Sidebar{
 				let scene = this.viewer.scene;
 				let measurements = [...scene.measurements, ...scene.profiles, ...scene.volumes];
 
-				if(measurements.length > 0){
+				if (measurements.length > 0) {
 					let geoJson = GeoJSONExporter.toString(measurements);
 
 					let url = window.URL.createObjectURL(new Blob([geoJson], {type: 'data:application/octet-stream'}));
 					elDownloadJSON.attr('href', url);
-				}else{
+				} else {
 					this.viewer.postError("no measurements to export");
 					event.preventDefault();
 				}
@@ -346,12 +338,12 @@ export class Sidebar{
 				let scene = this.viewer.scene;
 				let measurements = [...scene.measurements, ...scene.profiles, ...scene.volumes];
 
-				if(measurements.length > 0){
+				if (measurements.length > 0) {
 					let dxf = DXFExporter.toString(measurements);
 
 					let url = window.URL.createObjectURL(new Blob([dxf], {type: 'data:application/octet-stream'}));
 					elDownloadDXF.attr('href', url);
-				}else{
+				} else {
 					this.viewer.postError("no measurements to export");
 					event.preventDefault();
 				}
@@ -359,7 +351,6 @@ export class Sidebar{
 
 			let elDownloadPotree = elExport.find("img[name=potree_export_button]").parent();
 			elDownloadPotree.click( (event) => {
-
 				let data = Potree.saveProject(this.viewer);
 				let dataString = JSON5.stringify(data, null, "\t");
 
@@ -402,9 +393,9 @@ export class Sidebar{
 				}, 
 				"last", false, false);
 			
-			if(object.visible){
+			if (object.visible) {
 				tree.jstree('check_node', nodeID);
-			}else{
+			} else {
 				tree.jstree('uncheck_node', nodeID);
 			}
 
@@ -435,7 +426,7 @@ export class Sidebar{
 
 			this.viewer.inputHandler.deselectAll();
 
-			if(object instanceof Volume){
+			if (object instanceof Volume) {
 				this.viewer.inputHandler.toggleSelection(object);
 			}
 
@@ -451,57 +442,55 @@ export class Sidebar{
 		});
 
 		tree.on('dblclick','.jstree-anchor', (e) => {
-
 			let instance = $.jstree.reference(e.target);
 			let node = instance.get_node(e.target);
 			let object = node.data;
 
 			// ignore double click on checkbox
-			if(e.target.classList.contains("jstree-checkbox")){
+			if (e.target.classList.contains("jstree-checkbox")) {
 				return;
 			}
 
-			if(object instanceof PointCloudTree){
+			if (object instanceof PointCloudTree) {
 				let box = this.viewer.getBoundingBox([object]);
 				let node = new THREE.Object3D();
 				node.boundingBox = box;
 				this.viewer.zoomTo(node, 1, 500);
-			}else if(object instanceof Measure){
+			} else if (object instanceof Measure) {
 				let points = object.points.map(p => p.position);
 				let box = new THREE.Box3().setFromPoints(points);
-				if(box.getSize(new THREE.Vector3()).length() > 0){
+				if (box.getSize(new THREE.Vector3()).length() > 0) {
 					let node = new THREE.Object3D();
 					node.boundingBox = box;
 					this.viewer.zoomTo(node, 2, 500);
 				}
-			}else if(object instanceof Profile){
+			} else if (object instanceof Profile) {
 				let points = object.points;
 				let box = new THREE.Box3().setFromPoints(points);
-				if(box.getSize(new THREE.Vector3()).length() > 0){
+				if (box.getSize(new THREE.Vector3()).length() > 0) {
 					let node = new THREE.Object3D();
 					node.boundingBox = box;
 					this.viewer.zoomTo(node, 1, 500);
 				}
-			}else if(object instanceof Volume){
-				
+			} else if (object instanceof Volume) {
 				let box = object.boundingBox.clone().applyMatrix4(object.matrixWorld);
 
-				if(box.getSize(new THREE.Vector3()).length() > 0){
+				if (box.getSize(new THREE.Vector3()).length() > 0) {
 					let node = new THREE.Object3D();
 					node.boundingBox = box;
 					this.viewer.zoomTo(node, 1, 500);
 				}
-			}else if(object instanceof Annotation){
+			} else if (object instanceof Annotation) {
 				object.moveHere(this.viewer.scene.getActiveCamera());
-			}else if(object instanceof PolygonClipVolume){
+			} else if (object instanceof PolygonClipVolume) {
 				let dir = object.camera.getWorldDirection(new THREE.Vector3());
 				let target;
 
-				if(object.camera instanceof THREE.OrthographicCamera){
+				if (object.camera instanceof THREE.OrthographicCamera) {
 					dir.multiplyScalar(object.camera.right);
 					target = new THREE.Vector3().addVectors(object.camera.position, dir);
 					this.viewer.setCameraMode(CameraMode.ORTHOGRAPHIC);
-				}else if(object.camera instanceof THREE.PerspectiveCamera){
+				} else if (object.camera instanceof THREE.PerspectiveCamera) {
 					dir.multiplyScalar(this.viewer.scene.view.radius);
 					target = new THREE.Vector3().addVectors(object.camera.position, dir);
 					this.viewer.setCameraMode(CameraMode.PERSPECTIVE);
@@ -509,7 +498,7 @@ export class Sidebar{
 				
 				this.viewer.scene.view.position.copy(object.camera.position);
 				this.viewer.scene.view.lookAt(target);
-			}else if(object.type === "SpotLight"){
+			} else if (object.type === "SpotLight") {
 				let distance = (object.distance > 0) ? object.distance / 4 : 5 * 1000;
 				let position = object.position;
 				let target = new THREE.Vector3().addVectors(
@@ -518,15 +507,15 @@ export class Sidebar{
 
 				this.viewer.scene.view.position.copy(object.position);
 				this.viewer.scene.view.lookAt(target);
-			}else if(object instanceof THREE.Object3D){
+			} else if (object instanceof THREE.Object3D) {
 				let box = new THREE.Box3().setFromObject(object);
 
-				if(box.getSize(new THREE.Vector3()).length() > 0){
+				if (box.getSize(new THREE.Vector3()).length() > 0) {
 					let node = new THREE.Object3D();
 					node.boundingBox = box;
 					this.viewer.zoomTo(node, 1, 500);
 				}
-			}else if(object instanceof OrientedImage){
+			} else if (object instanceof OrientedImage) {
 				// TODO zoom to images
 
 				// let box = new THREE.Box3().setFromObject(object);
@@ -536,9 +525,9 @@ export class Sidebar{
 				// 	node.boundingBox = box;
 				// 	this.viewer.zoomTo(node, 1, 500);
 				// }
-			}else if(object instanceof Images360){
+			} else if (object instanceof Images360) {
 				// TODO
-			}else if(object instanceof Geopackage){
+			} else if (object instanceof Geopackage) {
 				// TODO
 			}
 		});
@@ -546,7 +535,7 @@ export class Sidebar{
 		tree.on("uncheck_node.jstree", (e, data) => {
 			let object = data.node.data;
 
-			if(object){
+			if (object) {
 				object.visible = false;
 			}
 		});
@@ -554,11 +543,10 @@ export class Sidebar{
 		tree.on("check_node.jstree", (e, data) => {
 			let object = data.node.data;
 
-			if(object){
+			if (object) {
 				object.visible = true;
 			}
 		});
-
 
 		let onPointCloudAdded = (e) => {
 			let pointcloud = e.pointcloud;
@@ -566,9 +554,9 @@ export class Sidebar{
 			let node = createNode(pcID, pointcloud.name, cloudIcon, pointcloud);
 
 			pointcloud.addEventListener("visibility_changed", () => {
-				if(pointcloud.visible){
+				if (pointcloud.visible) {
 					tree.jstree('check_node', node);
-				}else{
+				} else {
 					tree.jstree('uncheck_node', node);
 				}
 			});
@@ -586,9 +574,9 @@ export class Sidebar{
 			let node = createNode(measurementID, volume.name, icon, volume);
 
 			volume.addEventListener("visibility_changed", () => {
-				if(volume.visible){
+				if (volume.visible) {
 					tree.jstree('check_node', node);
-				}else{
+				} else {
 					tree.jstree('uncheck_node', node);
 				}
 			});
@@ -630,9 +618,9 @@ export class Sidebar{
 			const node = createNode(imagesID, "images", imagesIcon, images);
 
 			images.addEventListener("visibility_changed", () => {
-				if(images.visible){
+				if (images.visible) {
 					tree.jstree('check_node', node);
-				}else{
+				} else {
 					tree.jstree('uncheck_node', node);
 				}
 			});
@@ -645,9 +633,9 @@ export class Sidebar{
 			const node = createNode(imagesID, "360° images", imagesIcon, images);
 
 			images.addEventListener("visibility_changed", () => {
-				if(images.visible){
+				if (images.visible) {
 					tree.jstree('check_node', node);
-				}else{
+				} else {
 					tree.jstree('uncheck_node', node);
 				}
 			});
@@ -660,7 +648,7 @@ export class Sidebar{
 			const tree = $(`#jstree_scene`);
 			const parentNode = "vectors";
 
-			for(const layer of geopackage.node.children){
+			for (const layer of geopackage.node.children) {
 				const name = layer.name;
 
 				let shpPointsID = tree.jstree('create_node', parentNode, { 
@@ -672,7 +660,6 @@ export class Sidebar{
 					"last", false, false);
 				tree.jstree(layer.visible ? "check_node" : "uncheck_node", shpPointsID);
 			}
-
 		};
 
 		this.viewer.scene.addEventListener("pointcloud_added", onPointCloudAdded);
@@ -731,35 +718,35 @@ export class Sidebar{
 		}
 
 		const scene = this.viewer.scene;
-		for(let pointcloud of scene.pointclouds){
+		for (let pointcloud of scene.pointclouds) {
 			onPointCloudAdded({pointcloud: pointcloud});
 		}
 
-		for(let measurement of scene.measurements){
+		for (let measurement of scene.measurements) {
 			onMeasurementAdded({measurement: measurement});
 		}
 
-		for(let volume of [...scene.volumes, ...scene.polygonClipVolumes]){
+		for (let volume of [...scene.volumes, ...scene.polygonClipVolumes]) {
 			onVolumeAdded({volume: volume});
 		}
 
-		for(let animation of scene.cameraAnimations){
+		for (let animation of scene.cameraAnimations) {
 			onCameraAnimationAdded({animation: animation});
 		}
 
-		for(let images of scene.orientedImages){
+		for (let images of scene.orientedImages) {
 			onOrientedImagesAdded({images: images});
 		}
 
-		for(let images of scene.images360){
+		for (let images of scene.images360) {
 			onImages360Added({images: images});
 		}
 
-		for(const geopackage of scene.geopackages){
+		for (const geopackage of scene.geopackages) {
 			onGeopackageAdded({geopackage: geopackage});
 		}
 
-		for(let profile of scene.profiles){
+		for (let profile of scene.profiles) {
 			onProfileAdded({profile: profile});
 		}
 
@@ -784,12 +771,9 @@ export class Sidebar{
 			e.scene.addEventListener("polygon_clip_volume_added", onVolumeAdded);
 			e.scene.addEventListener("measurement_removed", onMeasurementRemoved);
 		});
-
 	}
 
-	initClippingTool(){
-
-
+	initClippingTool() {
 		this.viewer.addEventListener("cliptask_changed", (event) => {
 			console.log("TODO");
 		});
@@ -861,7 +845,7 @@ export class Sidebar{
 				Potree.resourcePath + "/icons/clip-screen.svg",
 				"[title]tt.screen_clip_box",
 				() => {
-					if(!(this.viewer.scene.getActiveCamera() instanceof THREE.OrthographicCamera)){
+					if (!(this.viewer.scene.getActiveCamera() instanceof THREE.OrthographicCamera)) {
 						this.viewer.postMessage(`Switch to Orthographic Camera Mode before using the Screen-Box-Select tool.`, 
 							{duration: 2000});
 						return;
@@ -882,23 +866,20 @@ export class Sidebar{
 				Potree.resourcePath + "/icons/remove.svg",
 				"[title]tt.remove_all_clipping_volumes",
 				() => {
-
 					this.viewer.scene.removeAllClipVolumes();
 				}
 			));
 		}
-
 	}
 
-	initFilters(){
+	initFilters() {
 		this.initClassificationList();
 		this.initReturnFilters();
 		this.initGPSTimeFilters();
 		this.initPointSourceIDFilters();
-
 	}
 
-	initReturnFilters(){
+	initReturnFilters() {
 		let elReturnFilterPanel = $('#return_filter_panel');
 
 		{ // RETURN NUMBER
@@ -952,8 +933,7 @@ export class Sidebar{
 		}
 	}
 
-	initGPSTimeFilters(){
-
+	initGPSTimeFilters() {
 		let elGPSTimeFilterPanel = $('#gpstime_filter_panel');
 
 		{
@@ -967,7 +947,6 @@ export class Sidebar{
 			let initialized = false;
 
 			let initialize = () => {
-				
 				let elRangeContainer = $("#gpstime_multilevel_range_container");
 				elRangeContainer[0].prepend(slider.element);
 
@@ -976,7 +955,6 @@ export class Sidebar{
 				slider.setRange(extent);
 				slider.setValues(extent);
 
-
 				initialized = true;
 			};
 
@@ -984,7 +962,7 @@ export class Sidebar{
 				let extent = this.viewer.getGpsTimeExtent();
 				let gpsTimeAvailable = extent[0] !== Infinity;
 
-				if(!initialized && gpsTimeAvailable){
+				if (!initialized && gpsTimeAvailable) {
 					initialize();
 				}
 
@@ -992,9 +970,7 @@ export class Sidebar{
 			});
 		}
 
-
 		{
-			
 			const txtGpsTime = elGPSTimeFilterPanel.find("#txtGpsTime");
 			const btnFindGpsTime = elGPSTimeFilterPanel.find("#btnFindGpsTime");
 
@@ -1003,27 +979,24 @@ export class Sidebar{
 			txtGpsTime.on("input", (e) => {
 				const str = txtGpsTime.val();
 
-				if(!isNaN(str)){
+				if (!isNaN(str)) {
 					const value = parseFloat(str);
 					targetTime = value;
 
 					txtGpsTime.css("background-color", "");
-				}else{
+				} else {
 					targetTime = null;
 
 					txtGpsTime.css("background-color", "#ff9999");
 				}
-
 			});
 
 			btnFindGpsTime.click( () => {
-				
-				if(targetTime !== null){
+				if (targetTime !== null) {
 					viewer.moveToGpsTimeVicinity(targetTime);
 				}
 			});
 		}
-
 	}
 
 	initPointSourceIDFilters() {
@@ -1051,12 +1024,11 @@ export class Sidebar{
 			this.viewer.addEventListener("update", (e) => {
 				let extent = this.viewer.filterPointSourceIDRange;
 
-				if(!initialized){
+				if (!initialized) {
 					initialize();
 
 					slider.setValues(extent);
 				}
-				
 			});
 		}
 
@@ -1090,10 +1062,9 @@ export class Sidebar{
 
 		// this.viewer.addEventListener('filter_point_source_id_range_changed', onPointSourceIDChanged);
 		// this.viewer.addEventListener('filter_point_source_id_extent_changed', onPointSourceIDExtentChanged);
-
 	}
 
-	initClassificationList(){
+	initClassificationList() {
 		let elClassificationList = $('#classificationList');
 
 		let addClassificationItem = (code, name) => {
@@ -1122,7 +1093,6 @@ export class Sidebar{
 
 			let defaultColor = classification.color.map(c => c *  255).join(", ");
 			defaultColor = `rgb(${defaultColor})`;
-
 
 			elColorPicker.spectrum({
 				// flat: true,
@@ -1177,7 +1147,7 @@ export class Sidebar{
 			elInput.click( () => {
 				const classifications = this.viewer.classifications;
 	
-				for(let key of Object.keys(classifications)){
+				for (let key of Object.keys(classifications)) {
 					let value = classifications[key];
 					this.viewer.setClassificationVisibility(key, !value.visible);
 				}
@@ -1202,9 +1172,8 @@ export class Sidebar{
 		});
 
 		this.viewer.addEventListener("classification_visibility_changed", () => {
-
 			{ // set checked state of classification buttons
-				for(const classID of Object.keys(this.viewer.classifications)){
+				for (const classID of Object.keys(this.viewer.classifications)) {
 					const classValue = this.viewer.classifications[classID];
 
 					let elItem = elClassificationList.find(`#chkClassification_${classID}`);
@@ -1215,8 +1184,8 @@ export class Sidebar{
 			{ // set checked state of toggle button based on state of all other buttons
 				let numVisible = 0;
 				let numItems = 0;
-				for(const key of Object.keys(this.viewer.classifications)){
-					if(this.viewer.classifications[key].visible){
+				for (const key of Object.keys(this.viewer.classifications)) {
+					if (this.viewer.classifications[key].visible) {
 						numVisible++;
 					}
 					numItems++;
@@ -1229,8 +1198,8 @@ export class Sidebar{
 		});
 	}
 
-	initAccordion(){
-		$('.accordion > h3').each(function(){
+	initAccordion() {
+		$('.accordion > h3').each(function() {
 			let header = $(this);
 			let content = $(this).next();
 
@@ -1257,22 +1226,21 @@ export class Sidebar{
 		];
 
 		let elLanguages = $('#potree_languages');
-		for(let i = 0; i < languages.length; i++){
+		for (let i = 0; i < languages.length; i++) {
 			let [key, value] = languages[i];
 			let element = $(`<a>${key}</a>`);
 			element.click(() => this.viewer.setLanguage(value));
 
-			if(i === 0){
+			if (i === 0) {
 				element.css("margin-left", "30px");
 			}
 			
 			elLanguages.append(element);
 
-			if(i < languages.length - 1){
+			if (i < languages.length - 1) {
 				elLanguages.append($(document.createTextNode(' - ')));	
 			}
 		}
-
 
 		// to close all, call
 		// $(".accordion > div").hide()
@@ -1281,8 +1249,7 @@ export class Sidebar{
 		// $("#menu_tools").next().show()
 	}
 
-	initAppearance(){
-
+	initAppearance() {
 		const sldPointBudget = this.dom.find('#sldPointBudget');
 
 		sldPointBudget.slider({
@@ -1376,7 +1343,7 @@ export class Sidebar{
 		});
 	}
 
-	initNavigation(){
+	initNavigation() {
 		let elNavigation = $('#navigation');
 		let sldMoveSpeed = $('#sldMoveSpeed');
 		let lblMoveSpeed = $('#lblMoveSpeed');
@@ -1442,9 +1409,7 @@ export class Sidebar{
 			}
 		));
 
-
 		elNavigation.append("<br>");
-
 
 		elNavigation.append(this.createToolIcon(
 			Potree.resourcePath + "/icons/left.svg",
@@ -1481,10 +1446,6 @@ export class Sidebar{
 			"[title]tt.bottom_view_control",
 			() => {this.viewer.setBottomView();}
 		));
-
-
-
-
 
 		let elCameraProjection = $(`
 			<selectgroup id="camera_projection_options">
@@ -1527,9 +1488,7 @@ export class Sidebar{
 		lblMoveSpeed.html(this.viewer.getMoveSpeed().toFixed(1));
 	}
 
-
-	initSettings(){
-
+	initSettings() {
 		{
 			$('#sldMinNodeSize').slider({
 				value: this.viewer.getMinNodeSize(),
@@ -1551,9 +1510,9 @@ export class Sidebar{
 			elSplatQuality.selectgroup({title: "Splat Quality"});
 
 			elSplatQuality.find("input").click( (e) => {
-				if(e.target.value === "standard"){
+				if (e.target.value === "standard") {
 					this.viewer.useHQ = false;
-				}else if(e.target.value === "hq"){
+				} else if (e.target.value === "hq") {
 					this.viewer.useHQ = true;
 				}
 			});
@@ -1570,5 +1529,4 @@ export class Sidebar{
 			this.viewer.setFreeze($('#set_freeze').prop("checked"));
 		});
 	}
-
 }

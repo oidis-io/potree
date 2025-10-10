@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -11,8 +12,7 @@
 import * as THREE from "../../libs/three.js/build/three.module.js";
 import {Utils} from "../utils.js";
 
-export class Profile extends THREE.Object3D{
-
+export class Profile extends THREE.Object3D {
 	constructor () {
 		super();
 
@@ -41,7 +41,7 @@ export class Profile extends THREE.Object3D{
 		);
 
 		return sphereMaterial;
-	};
+	}
 
 	getSegments () {
 		let segments = [];
@@ -121,9 +121,9 @@ export class Profile extends THREE.Object3D{
 		{ // event listeners
 			let drag = (e) => {
 				let I = Utils.getMousePointCloudIntersection(
-					e.drag.end, 
-					e.viewer.scene.getActiveCamera(), 
-					e.viewer, 
+					e.drag.end,
+					e.viewer.scene.getActiveCamera(),
+					e.viewer,
 					e.viewer.scene.pointclouds);
 
 				if (I) {
@@ -318,7 +318,7 @@ export class Profile extends THREE.Object3D{
 			I.distance = raycaster.ray.origin.distanceTo(I.point);
 		}
 		intersects.sort(function (a, b) { return a.distance - b.distance; });
-	};
+	}
 
 	get modifiable () {
 		return this._modifiable;
@@ -328,5 +328,4 @@ export class Profile extends THREE.Object3D{
 		this._modifiable = value;
 		this.update();
 	}
-
 }

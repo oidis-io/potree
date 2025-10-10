@@ -20,7 +20,7 @@ class U {
 
 	static toBox3(b) {
 		return new THREE.Box3(U.toVector3(b), U.toVector3(b, 3));
-	};
+	}
 
 	static findDim(schema, name) {
 		var dim = schema.find((dim) => dim.name == name);
@@ -56,7 +56,7 @@ class U {
 			return srs;
 		} catch (e) {}
 	}
-};
+}
 
 class BaseGeometry {
 	constructor({ 
@@ -80,7 +80,7 @@ class BaseGeometry {
 		this.projection = srs || null;
 		try {
 			proj4(this.projection);
-		} catch(e) {
+		} catch (e) {
 			this.projection = null;
 		}
 
@@ -124,7 +124,7 @@ export class PointCloudCopcGeometry extends BaseGeometry {
 		const page = this.pages[Key.toString(key)];
 		return Copc.loadHierarchyPage(this.getter, page);
 	}
-};
+}
 
 export class PointCloudEptGeometry extends BaseGeometry {
 	static parse(ept) {
@@ -241,7 +241,7 @@ export class PointCloudCopcGeometryNode extends PointCloudTreeNode {
 		this.loadPoints();
 	}
 
-	loadPoints(){
+	loadPoints() {
 		this.owner.loader.load(this);
 	}
 

@@ -23,7 +23,7 @@ export class EptLaszipLoader {
 		this.parse(node, buffer);
 	}
 
-	async parse(node, compressed){
+	async parse(node, compressed) {
 		let handler = new EptLazBatcher(node);
 
 		try {
@@ -50,7 +50,7 @@ export class EptLaszipLoader {
 			console.log('Failed:', e);
 		}
 	}
-};
+}
 
 export class CopcLaszipLoader {
 	async load(node) {
@@ -90,7 +90,7 @@ export class CopcLaszipLoader {
 			console.log('Failed:', e);
 		}
 	}
-};
+}
 
 export class EptLazBatcher {
 	constructor(node) { this.node = node; }
@@ -170,5 +170,5 @@ export class EptLazBatcher {
 		let message = { isFullFile, compressed, header, eb, pointCount, nodemin };
 
 		worker.postMessage(message, [message.compressed]);
-	};
-};
+	}
+}

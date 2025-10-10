@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -10,8 +11,8 @@
 
 import {MeasurePanel} from "./MeasurePanel.js";
 
-export class CirclePanel extends MeasurePanel{
-	constructor(viewer, measurement, propertiesPanel){
+export class CirclePanel extends MeasurePanel {
+	constructor(viewer, measurement, propertiesPanel) {
 		super(viewer, measurement, propertiesPanel);
 
 		let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
@@ -42,16 +43,16 @@ export class CirclePanel extends MeasurePanel{
 		this.update();
 	}
 
-	update(){
+	update() {
 		let elCoordiantesContainer = this.elContent.find('.coordinates_table_container');
 		elCoordiantesContainer.empty();
 		elCoordiantesContainer.append(this.createCoordinatesTable(this.measurement.points.map(p => p.position)));
 
 		const elInfos = this.elContent.find(`#infos_table`);
 
-		if(this.measurement.points.length !== 3){
+		if (this.measurement.points.length !== 3) {
 			elInfos.empty();
-			
+
 			return;
 		}
 
@@ -62,19 +63,18 @@ export class CirclePanel extends MeasurePanel{
 		const center = Potree.Utils.computeCircleCenter(A, B, C);
 		const radius = center.distanceTo(A);
 		const circumference = 2 * Math.PI * radius;
-		
+
 		const format = (number) => {
 			return Potree.Utils.addCommas(number.toFixed(3));
 		};
 
-		
 		const txtCenter = `${format(center.x)} ${format(center.y)} ${format(center.z)}`;
 		const txtRadius = format(radius);
 		const txtCircumference = format(circumference);
 
 		const thStyle = `style="text-align: left"`;
 		const tdStyle = `style="width: 100%; padding: 5px;"`;
-		
+
 		elInfos.html(`
 			<tr>
 				<th ${thStyle}>Center: </th>
@@ -95,4 +95,4 @@ export class CirclePanel extends MeasurePanel{
 			</tr>
 		`);
 	}
-};
+}

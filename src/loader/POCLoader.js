@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -17,8 +18,7 @@ import {BinaryLoader} from "./BinaryLoader.js";
 import {Utils} from "../utils.js";
 import {PointAttribute, PointAttributes, PointAttributeTypes} from "./PointAttributes.js";
 
-function parseAttributes(cloudjs){
-
+function parseAttributes(cloudjs) {
 	let version = new Version(cloudjs.version);
 
 	const replacements = {
@@ -30,17 +30,16 @@ function parseAttributes(cloudjs){
 	};
 
 	const replaceOldNames = (old) => {
-		if(replacements[old]){
+		if (replacements[old]) {
 			return replacements[old];
-		}else{
+		} else {
 			return old;
 		}
 	};
 
 	const pointAttributes = [];
-	if(version.upTo('1.7')){
-		
-		for(let attributeName of cloudjs.pointAttributes){
+	if (version.upTo('1.7')) {
+		for (let attributeName of cloudjs.pointAttributes) {
 			const oldAttribute = PointAttribute[attributeName];
 
 			const attribute = {
@@ -54,11 +53,9 @@ function parseAttributes(cloudjs){
 
 			pointAttributes.push(attribute);
 		}
-
-	}else{
+	} else {
 		pointAttributes.push(...cloudjs.pointAttributes);
 	}
-
 
 	{
 		const attributes = new PointAttributes();
@@ -76,7 +73,7 @@ function parseAttributes(cloudjs){
 			float:  PointAttributeTypes.DATA_TYPE_FLOAT,
 		};
 
-		for(const jsAttribute of pointAttributes){
+		for (const jsAttribute of pointAttributes) {
 			const name = replaceOldNames(jsAttribute.name);
 			const type = typeConversion[jsAttribute.type];
 			const numElements = jsAttribute.elements;
@@ -89,12 +86,12 @@ function parseAttributes(cloudjs){
 
 		{
 			// check if it has normals
-			let hasNormals = 
+			let hasNormals =
 				pointAttributes.find(a => a.name === "NormalX") !== undefined &&
 				pointAttributes.find(a => a.name === "NormalY") !== undefined &&
 				pointAttributes.find(a => a.name === "NormalZ") !== undefined;
 
-			if(hasNormals){
+			if (hasNormals) {
 				let vector = {
 					name: "NORMAL",
 					attributes: ["NormalX", "NormalY", "NormalZ"],
@@ -105,10 +102,9 @@ function parseAttributes(cloudjs){
 
 		return attributes;
 	}
-
 }
 
-function lasLazAttributes(fMno){
+function lasLazAttributes(fMno) {
 	const attributes = new PointAttributes();
 
 	attributes.add(PointAttribute.POSITION_CARTESIAN);
@@ -121,13 +117,11 @@ function lasLazAttributes(fMno){
 	attributes.add(new PointAttribute("source id", PointAttributeTypes.DATA_TYPE_UINT16, 1));
 	//attributes.add(new PointAttribute("pointSourceID", PointAttributeTypes.DATA_TYPE_INT8, 4));
 
-
 	return attributes;
 }
 
 export class POCLoader {
-
-	static load(url, callback){
+	static load(url, callback) {
 		try {
 			let pco = new PointCloudOctreeGeometry();
 			pco.url = url;
@@ -242,7 +236,7 @@ export class POCLoader {
 		}
 	}
 
-	loadPointAttributes(mno){
+	loadPointAttributes(mno) {
 		let fpa = mno.pointAttributes;
 		let pa = new PointAttributes();
 
@@ -254,7 +248,7 @@ export class POCLoader {
 		return pa;
 	}
 
-	createChildAABB(aabb, index){
+	createChildAABB(aabb, index) {
 		let min = aabb.min.clone();
 		let max = aabb.max.clone();
 		let size = new THREE.Vector3().subVectors(max, min);
@@ -280,4 +274,3 @@ export class POCLoader {
 		return new THREE.Box3(min, max);
 	}
 }
-

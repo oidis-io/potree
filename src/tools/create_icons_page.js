@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -12,21 +13,19 @@ const path = require('path');
 const fs = require("fs");
 const fsp = fs.promises;
 
-
-function createIconsPage(){
+function createIconsPage() {
 	let iconsPath = "resources/icons";
 
 	fs.readdir(iconsPath, function(err, items) {
-
 		let svgs = items.filter(item => item.endsWith(".svg"));
 		let other = items.filter(item => !item.endsWith(".svg"));
 
 		items = [...svgs, ...other];
 
 		let iconsCode = ``;
-		for(let item of items){
+		for (let item of items) {
 			let extension = path.extname(item);
-			if(![".png", ".svg", ".jpg", ".jpeg"].includes(extension)){
+			if (![".png", ".svg", ".jpg", ".jpeg"].includes(extension)) {
 				continue;
 			}
 
@@ -63,17 +62,13 @@ function createIconsPage(){
 		`;
 
 		fs.writeFile(`${iconsPath}/index.html`, page, (err) => {
-			if(err){
+			if (err) {
 				console.log(err);
-			}else{
+			} else {
 				console.log(`created ${iconsPath}/index.html`);
 			}
 		});
-
 	});
 }
-
-
-
 
 exports.createIconsPage = createIconsPage;

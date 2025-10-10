@@ -27,9 +27,8 @@ let previousView = {
 	target: null,
 };
 
-class Image360{
-
-	constructor(file, time, longitude, latitude, altitude, course, pitch, roll){
+class Image360 {
+	constructor(file, time, longitude, latitude, altitude, course, pitch, roll) {
 		this.file = file;
 		this.time = time;
 		this.longitude = longitude;
@@ -40,11 +39,10 @@ class Image360{
 		this.roll = roll;
 		this.mesh = null;
 	}
-};
+}
 
-export class Images360 extends EventDispatcher{
-
-	constructor(viewer){
+export class Images360 extends EventDispatcher {
+	constructor(viewer) {
 		super();
 
 		this.viewer = viewer;
@@ -84,20 +82,18 @@ export class Images360 extends EventDispatcher{
 		viewer.inputHandler.addInputListener(this);
 
 		this.addEventListener("mousedown", () => {
-			if(currentlyHovered && currentlyHovered.image360){
+			if (currentlyHovered && currentlyHovered.image360) {
 				this.focus(currentlyHovered.image360);
 			}
 		});
-		
-	};
+	}
 
-	set visible(visible){
-		if(this._visible === visible){
+	set visible(visible) {
+		if (this._visible === visible) {
 			return;
 		}
 
-
-		for(const image of this.images){
+		for (const image of this.images) {
 			image.mesh.visible = visible && (this.focusedImage == null);
 		}
 
@@ -109,12 +105,12 @@ export class Images360 extends EventDispatcher{
 		});
 	}
 
-	get visible(){
+	get visible() {
 		return this._visible;
 	}
 
-	focus(image360){
-		if(this.focusedImage !== null){
+	focus(image360) {
+		if (this.focusedImage !== null) {
 			this.unfocus();
 		}
 
@@ -127,7 +123,7 @@ export class Images360 extends EventDispatcher{
 		this.viewer.setControls(this.viewer.orbitControls);
 		this.viewer.orbitControls.doubleClockZoomEnabled = false;
 
-		for(let image of this.images){
+		for (let image of this.images) {
 			image.mesh.visible = false;
 		}
 
@@ -169,19 +165,18 @@ export class Images360 extends EventDispatcher{
 		this.elUnfocus.style.display = "";
 	}
 
-	unfocus(){
+	unfocus() {
 		this.selectingEnabled = true;
 
-		for(let image of this.images){
+		for (let image of this.images) {
 			image.mesh.visible = true;
 		}
 
 		let image = this.focusedImage;
 
-		if(image === null){
+		if (image === null) {
 			return;
 		}
-
 
 		this.sphere.material.map = null;
 		this.sphere.material.needsUpdate = true;
@@ -202,14 +197,12 @@ export class Images360 extends EventDispatcher{
 			500
 		);
 
-
 		this.focusedImage = null;
 
 		this.elUnfocus.style.display = "none";
 	}
 
-	load(image360){
-
+	load(image360) {
 		return new Promise(resolve => {
 			let texture = new THREE.TextureLoader().load(image360.file, resolve);
 			texture.wrapS = THREE.RepeatWrapping;
@@ -217,10 +210,9 @@ export class Images360 extends EventDispatcher{
 
 			image360.texture = texture;
 		});
-
 	}
 
-	handleHovering(){
+	handleHovering() {
 		let mouse = viewer.inputHandler.mouse;
 		let camera = viewer.scene.getActiveCamera();
 		let domElement = viewer.renderer.domElement;
@@ -231,7 +223,7 @@ export class Images360 extends EventDispatcher{
 		raycaster.ray.copy(ray);
 		let intersections = raycaster.intersectObjects(this.node.children);
 
-		if(intersections.length === 0){
+		if (intersections.length === 0) {
 			// label.visible = false;
 
 			return;
@@ -246,29 +238,23 @@ export class Images360 extends EventDispatcher{
 		//currentlyHovered.getWorldPosition(label.position);
 	}
 
-	update(){
-
+	update() {
 		let {viewer} = this;
 
-		if(currentlyHovered){
+		if (currentlyHovered) {
 			currentlyHovered.material = sm;
 			currentlyHovered = null;
 		}
 
-		if(this.selectingEnabled){
+		if (this.selectingEnabled) {
 			this.handleHovering();
 		}
-
 	}
+}
 
-};
-
-
-export class Images360Loader{
-
-	static async load(url, viewer, params = {}){
-
-		if(!params.transform){
+export class Images360Loader {
+	static async load(url, viewer, params = {}) {
+		if (!params.transform) {
 			params.transform = {
 				forward: a => a,
 			};
@@ -282,9 +268,8 @@ export class Images360Loader{
 
 		let images360 = new Images360(viewer);
 
-		for(let line of coordinateLines){
-
-			if(line.trim().length === 0){
+		for (let line of coordinateLines) {
+			if (line.trim().length === 0) {
 				continue;
 			}
 
@@ -314,12 +299,10 @@ export class Images360Loader{
 		Images360Loader.createSceneNodes(images360, params.transform);
 
 		return images360;
-
 	}
 
-	static createSceneNodes(images360, transform){
-
-		for(let image360 of images360.images){
+	static createSceneNodes(images360, transform) {
+		for (let image360 of images360.images) {
 			let {longitude, latitude, altitude} = image360;
 			let xy = transform.forward([longitude, latitude]);
 
@@ -345,9 +328,4 @@ export class Images360Loader{
 			image360.mesh = mesh;
 		}
 	}
-
-	
-
-};
-
-
+}

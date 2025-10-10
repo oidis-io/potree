@@ -1,3 +1,13 @@
+/*! ******************************************************************************************************** *
+ *
+ * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
+ * or at https://spdx.org/licenses/BSD-2-Clause.html#licenseText
+ *
+ * ********************************************************************************************************* */
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
 import {MOUSE} from "../defines.js";
@@ -55,7 +65,6 @@ export class EarthControls extends EventDispatcher {
 			let domElement = this.viewer.renderer.domElement;
 
 			if (e.drag.mouse === MOUSE.LEFT) {
-
 				let ray = Utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);
 				let plane = new THREE.Plane().setFromNormalAndCoplanarPoint(
 					new THREE.Vector3(0, 0, 1),
@@ -117,10 +126,10 @@ export class EarthControls extends EventDispatcher {
 
 		let onMouseDown = e => {
 			let I = Utils.getMousePointCloudIntersection(
-				e.mouse, 
-				this.scene.getActiveCamera(), 
-				this.viewer, 
-				this.scene.pointclouds, 
+				e.mouse,
+				this.scene.getActiveCamera(),
+				this.viewer,
+				this.scene.pointclouds,
 				{pickClipped: false});
 
 			if (I) {
@@ -161,14 +170,14 @@ export class EarthControls extends EventDispatcher {
 		this.scene = scene;
 	}
 
-	stop(){
+	stop() {
 		this.wheelDelta = 0;
 		this.zoomDelta.set(0, 0, 0);
 	}
-	
-	zoomToLocation(mouse){
+
+	zoomToLocation(mouse) {
 		let camera = this.scene.getActiveCamera();
-		
+
 		let I = Utils.getMousePointCloudIntersection(
 			mouse,
 			camera,
@@ -234,13 +243,13 @@ export class EarthControls extends EventDispatcher {
 		let fade = Math.pow(0.5, this.fadeFactor * delta);
 		let progression = 1 - fade;
 		let camera = this.scene.getActiveCamera();
-		
+
 		// compute zoom
 		if (this.wheelDelta !== 0) {
 			let I = Utils.getMousePointCloudIntersection(
-				this.viewer.inputHandler.mouse, 
-				this.scene.getActiveCamera(), 
-				this.viewer, 
+				this.viewer.inputHandler.mouse,
+				this.scene.getActiveCamera(),
+				this.viewer,
 				this.scene.pointclouds);
 
 			if (I) {
@@ -285,4 +294,4 @@ export class EarthControls extends EventDispatcher {
 			this.wheelDelta = 0;
 		}
 	}
-};
+}

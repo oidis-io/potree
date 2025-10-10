@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -27,7 +28,7 @@ export class InputHandler extends EventDispatcher {
 		this.renderer = viewer.renderer;
 		this.domElement = this.renderer.domElement;
 		this.enabled = true;
-		
+
 		this.scene = null;
 		this.interactiveScenes = [];
 		this.interactiveObjects = new Set();
@@ -75,7 +76,7 @@ export class InputHandler extends EventDispatcher {
 		this.inputListeners = this.inputListeners.filter(e => e !== listener);
 	}
 
-	getSortedListeners(){
+	getSortedListeners() {
 		return this.inputListeners.sort( (a, b) => {
 			let ia = (a.importance !== undefined) ? a.importance : 0;
 			let ib = (b.importance !== undefined) ? b.importance : 0;
@@ -98,7 +99,6 @@ export class InputHandler extends EventDispatcher {
 			this.startDragging(null);
 		}
 
-		
 		for (let inputListener of this.getSortedListeners()) {
 			inputListener.dispatchEvent({
 				type: e.type,
@@ -273,8 +273,8 @@ export class InputHandler extends EventDispatcher {
 					mouse: this.mouse
 				});
 			}
-		}else{
-			for(let hovered of this.hoveredElements){
+		} else {
+			for (let hovered of this.hoveredElements) {
 				let object = hovered.object;
 				object.dispatchEvent({
 					type: 'mousedown',
@@ -282,7 +282,7 @@ export class InputHandler extends EventDispatcher {
 					consume: consume
 				});
 
-				if(consumed){
+				if (consumed) {
 					break;
 				}
 			}
@@ -314,7 +314,6 @@ export class InputHandler extends EventDispatcher {
 
 		let noMovement = this.getNormalizedDrag().length() === 0;
 
-		
 		let consumed = false;
 		let consume = () => { return consumed = true; };
 		if (this.hoveredElements.length === 0) {
@@ -326,15 +325,15 @@ export class InputHandler extends EventDispatcher {
 					consume: consume
 				});
 
-				if(consumed){
+				if (consumed) {
 					break;
 				}
 			}
-		}else{
+		} else {
 			let hovered = this.hoveredElements
 				.map(e => e.object)
 				.find(e => (e._listeners && e._listeners['mouseup']));
-			if(hovered){
+			if (hovered) {
 				hovered.dispatchEvent({
 					type: 'mouseup',
 					viewer: this.viewer,
@@ -364,7 +363,7 @@ export class InputHandler extends EventDispatcher {
 
 			// check for a click
 			let clicked = this.hoveredElements.map(h => h.object).find(v => v === this.drag.object) !== undefined;
-			if(clicked){
+			if (clicked) {
 				if (this.logMessages) console.log(`${this.constructor.name}: click ${this.drag.object.name}`);
 				this.drag.object.dispatchEvent({
 					type: 'click',
@@ -376,7 +375,7 @@ export class InputHandler extends EventDispatcher {
 			this.drag = null;
 		}
 
-		if(!consumed){
+		if (!consumed) {
 			if (e.button === THREE.MOUSE.LEFT) {
 				if (noMovement) {
 					let selectable = this.hoveredElements
@@ -412,7 +411,7 @@ export class InputHandler extends EventDispatcher {
 		this.mouse.set(x, y);
 
 		let hoveredElements = this.getHoveredElements();
-		if(hoveredElements.length > 0){
+		if (hoveredElements.length > 0) {
 			let names = hoveredElements.map(h => h.object.name).join(", ");
 			if (this.logMessages) console.log(`${this.constructor.name}: onMouseMove; hovered: '${names}'`);
 		}
@@ -444,24 +443,24 @@ export class InputHandler extends EventDispatcher {
 						consume: () => {dragConsumed = true;}
 					});
 
-					if(dragConsumed){
+					if (dragConsumed) {
 						break;
 					}
 				}
 			}
-		}else{
+		} else {
 			let curr = hoveredElements.map(a => a.object).find(a => true);
 			let prev = this.hoveredElements.map(a => a.object).find(a => true);
 
-			if(curr !== prev){
-				if(curr){
+			if (curr !== prev) {
+				if (curr) {
 					if (this.logMessages) console.log(`${this.constructor.name}: mouseover: ${curr.name}`);
 					curr.dispatchEvent({
 						type: 'mouseover',
 						object: curr,
 					});
 				}
-				if(prev){
+				if (prev) {
 					if (this.logMessages) console.log(`${this.constructor.name}: mouseleave: ${prev.name}`);
 					prev.dispatchEvent({
 						type: 'mouseleave',
@@ -470,37 +469,35 @@ export class InputHandler extends EventDispatcher {
 				}
 			}
 
-			if(hoveredElements.length > 0){
+			if (hoveredElements.length > 0) {
 				let object = hoveredElements
 					.map(e => e.object)
 					.find(e => (e._listeners && e._listeners['mousemove']));
-				
-				if(object){
+
+				if (object) {
 					object.dispatchEvent({
 						type: 'mousemove',
 						object: object
 					});
 				}
 			}
-
 		}
-		
+
 		// for (let inputListener of this.getSortedListeners()) {
 		// 	inputListener.dispatchEvent({
 		// 		type: 'mousemove',
 		// 		object: null
 		// 	});
 		// }
-		
 
 		this.hoveredElements = hoveredElements;
 	}
-	
-	onMouseWheel(e){
-		if(!this.enabled) return;
 
-		if(this.logMessages) console.log(this.constructor.name + ": onMouseWheel");
-		
+	onMouseWheel(e) {
+		if (!this.enabled) return;
+
+		if (this.logMessages) console.log(this.constructor.name + ": onMouseWheel");
+
 		e.preventDefault();
 
 		let delta = 0;
@@ -532,7 +529,6 @@ export class InputHandler extends EventDispatcher {
 	}
 
 	startDragging (object, args = null) {
-
 		let name = object ? object.name : "no name";
 		if (this.logMessages) console.log(`${this.constructor.name}: startDragging: '${name}'`);
 
@@ -553,9 +549,9 @@ export class InputHandler extends EventDispatcher {
 
 	getMousePointCloudIntersection (mouse) {
 		return Utils.getMousePointCloudIntersection(
-			this.mouse, 
-			this.scene.getActiveCamera(), 
-			this.viewer, 
+			this.mouse,
+			this.scene.getActiveCamera(),
+			this.viewer,
 			this.scene.pointclouds);
 	}
 
@@ -583,13 +579,12 @@ export class InputHandler extends EventDispatcher {
 		});
 	}
 
-	deselect(object){
-
+	deselect(object) {
 		let oldSelection = this.selection;
 
 		let index = this.selection.indexOf(object);
 
-		if(index >= 0){
+		if (index >= 0) {
 			this.selection.splice(index, 1);
 			object.dispatchEvent({
 				type: 'deselect'
@@ -628,11 +623,11 @@ export class InputHandler extends EventDispatcher {
 		return index !== -1;
 	}
 
-	registerInteractiveObject(object){
+	registerInteractiveObject(object) {
 		this.interactiveObjects.add(object);
 	}
 
-	removeInteractiveObject(object){
+	removeInteractiveObject(object) {
 		this.interactiveObjects.delete(object);
 	}
 
@@ -677,10 +672,10 @@ export class InputHandler extends EventDispatcher {
 				}
 			});
 		}
-		
+
 		let camera = this.scene.getActiveCamera();
 		let ray = Utils.mouseToRay(this.mouse, camera, this.domElement.clientWidth, this.domElement.clientHeight);
-		
+
 		let raycaster = new THREE.Raycaster();
 		raycaster.ray.set(ray.origin, ray.direction);
 		raycaster.params.Line.threshold = 0.2;

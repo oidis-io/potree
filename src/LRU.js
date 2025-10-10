@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -8,23 +9,20 @@
  *
  * ********************************************************************************************************* */
 
-class LRUItem{
-
-	constructor(node){
+class LRUItem {
+	constructor(node) {
 		this.previous = null;
 		this.next = null;
 		this.node = node;
 	}
-
 }
 
 /**
  *
  * @class A doubly-linked-list of the least recently used elements.
  */
-class LRU{
-
-	constructor(){
+class LRU {
+	constructor() {
 		// the least recently used item
 		this.first = null;
 		// the most recently used item
@@ -35,15 +33,15 @@ class LRU{
 		this.numPoints = 0;
 	}
 
-	size(){
+	size() {
 		return this.elements;
 	}
 
-	contains(node){
+	contains(node) {
 		return this.items[node.id] == null;
 	}
 
-	touch(node){
+	touch(node) {
 		if (!node.loaded) {
 			return;
 		}
@@ -92,7 +90,7 @@ class LRU{
 		}
 	}
 
-	remove(node){
+	remove(node) {
 		let lruItem = this.items[node.id];
 		if (lruItem) {
 			if (this.elements === 1) {
@@ -119,7 +117,7 @@ class LRU{
 		}
 	}
 
-	getLRUItem(){
+	getLRUItem() {
 		if (this.first === null) {
 			return null;
 		}
@@ -128,7 +126,7 @@ class LRU{
 		return lru.node;
 	}
 
-	toString(){
+	toString() {
 		let string = '{ ';
 		let curr = this.first;
 		while (curr !== null) {
@@ -143,7 +141,7 @@ class LRU{
 		return string;
 	}
 
-	freeMemory(){
+	freeMemory() {
 		if (this.elements <= 1) {
 			return;
 		}
@@ -155,7 +153,7 @@ class LRU{
 		}
 	}
 
-	disposeDescendants(node){
+	disposeDescendants(node) {
 		let stack = [];
 		stack.push(node);
 		while (stack.length > 0) {
@@ -176,7 +174,6 @@ class LRU{
 			}
 		}
 	}
-
 }
 
 export {LRU, LRUItem};

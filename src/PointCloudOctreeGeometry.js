@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -13,9 +14,8 @@ import {PointCloudTreeNode} from "./PointCloudTree.js";
 import {XHRFactory} from "./XHRFactory.js";
 import {Utils} from "./utils.js";
 
-export class PointCloudOctreeGeometry{
-
-	constructor(){
+export class PointCloudOctreeGeometry {
+	constructor() {
 		this.url = null;
 		this.octreeDir = null;
 		this.spacing = 0;
@@ -26,12 +26,10 @@ export class PointCloudOctreeGeometry{
 		this.hierarchyStepSize = -1;
 		this.loader = null;
 	}
-	
 }
 
-export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
-
-	constructor(name, pcoGeometry, boundingBox){
+export class PointCloudOctreeGeometryNode extends PointCloudTreeNode {
+	constructor(name, pcoGeometry, boundingBox) {
 		super();
 
 		this.id = PointCloudOctreeGeometryNode.IDCount++;
@@ -48,31 +46,31 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 		this.oneTimeDisposeHandlers = [];
 	}
 
-	isGeometryNode(){
+	isGeometryNode() {
 		return true;
 	}
 
-	getLevel(){
+	getLevel() {
 		return this.level;
 	}
 
-	isTreeNode(){
+	isTreeNode() {
 		return false;
 	}
 
-	isLoaded(){
+	isLoaded() {
 		return this.loaded;
 	}
 
-	getBoundingSphere(){
+	getBoundingSphere() {
 		return this.boundingSphere;
 	}
 
-	getBoundingBox(){
+	getBoundingBox() {
 		return this.boundingBox;
 	}
 
-	getChildren(){
+	getChildren() {
 		let children = [];
 
 		for (let i = 0; i < 8; i++) {
@@ -84,11 +82,11 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 		return children;
 	}
 
-	getBoundingBox(){
+	getBoundingBox() {
 		return this.boundingBox;
 	}
 
-	getURL(){
+	getURL() {
 		let url = '';
 
 		let version = this.pcoGeometry.loader.version;
@@ -104,7 +102,7 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 		return url;
 	}
 
-	getHierarchyPath(){
+	getHierarchyPath() {
 		let path = 'r/';
 
 		let hierarchyStepSize = this.pcoGeometry.hierarchyStepSize;
@@ -125,7 +123,7 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 		child.parent = this;
 	}
 
-	load(){
+	load() {
 		if (this.loading === true || this.loaded === true || Potree.numNodesLoading >= Potree.maxNodesLoading) {
 			return;
 		}
@@ -145,16 +143,15 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 		}
 	}
 
-	loadPoints(){
+	loadPoints() {
 		this.pcoGeometry.loader.load(this);
 	}
 
-	loadHierachyThenPoints(){
+	loadHierachyThenPoints() {
 		let node = this;
 
 		// load hierarchy
 		let callback = function (node, hbuffer) {
-
 			let tStart = performance.now();
 
 			let view = new DataView(hbuffer);
@@ -218,7 +215,7 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 			}
 
 			let duration = performance.now() - tStart;
-			if(duration > 5){
+			if (duration > 5) {
 				let msg = `duration: ${duration}ms, numNodes: ${decoded.length}`;
 				console.log(msg);
 			}
@@ -252,18 +249,18 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 		}
 	}
 
-	getNumPoints(){
+	getNumPoints() {
 		return this.numPoints;
 	}
 
-	dispose(){
+	dispose() {
 		if (this.geometry && this.parent != null) {
 			this.geometry.dispose();
 			this.geometry = null;
 			this.loaded = false;
 
 			this.dispatchEvent( { type: 'dispose' } );
-			
+
 			for (let i = 0; i < this.oneTimeDisposeHandlers.length; i++) {
 				let handler = this.oneTimeDisposeHandlers[i];
 				handler();
@@ -271,7 +268,6 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 			this.oneTimeDisposeHandlers = [];
 		}
 	}
-	
 }
 
 PointCloudOctreeGeometryNode.IDCount = 0;

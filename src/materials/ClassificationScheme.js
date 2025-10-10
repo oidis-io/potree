@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -29,11 +30,10 @@ export const ClassificationScheme = {
 };
 
 Object.defineProperty(ClassificationScheme, 'RANDOM', {
-	get: function() { 
-
+	get: function() {
 		let scheme = {};
 
-		for(let i = 0; i <= 255; i++){
+		for (let i = 0; i <= 255; i++) {
 			scheme[i] = new THREE.Vector4(Math.random(), Math.random(), Math.random());
 		}
 

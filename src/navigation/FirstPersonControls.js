@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -27,7 +28,6 @@ import * as THREE from "../../libs/three.js/build/three.module.js";
 import {MOUSE} from "../defines.js";
 import {Utils} from "../utils.js";
 import {EventDispatcher} from "../EventDispatcher.js";
-
 
 export class FirstPersonControls extends EventDispatcher {
 	constructor (viewer) {
@@ -119,15 +119,15 @@ export class FirstPersonControls extends EventDispatcher {
 		this.scene = scene;
 	}
 
-	stop(){
+	stop() {
 		this.yawDelta = 0;
 		this.pitchDelta = 0;
 		this.translationDelta.set(0, 0, 0);
 	}
-	
-	zoomToLocation(mouse){
+
+	zoomToLocation(mouse) {
 		let camera = this.scene.getActiveCamera();
-		
+
 		let I = Utils.getMousePointCloudIntersection(
 			mouse,
 			camera,
@@ -213,7 +213,7 @@ export class FirstPersonControls extends EventDispatcher {
 			let moveUp = this.keys.UP.some(e => ih.pressedKeys[e]);
 			let moveDown = this.keys.DOWN.some(e => ih.pressedKeys[e]);
 
-			if(this.lockElevation){
+			if (this.lockElevation) {
 				let dir = view.direction;
 				dir.z = 0;
 				dir.normalize();
@@ -225,7 +225,7 @@ export class FirstPersonControls extends EventDispatcher {
 				} else if (moveBackward) {
 					this.translationWorldDelta.copy(dir.multiplyScalar(-this.viewer.getMoveSpeed()));
 				}
-			}else{
+			} else {
 				if (moveForward && moveBackward) {
 					this.translationDelta.y = 0;
 				} else if (moveForward) {
@@ -289,4 +289,4 @@ export class FirstPersonControls extends EventDispatcher {
 			this.translationWorldDelta.multiplyScalar(attenuation);
 		}
 	}
-};
+}

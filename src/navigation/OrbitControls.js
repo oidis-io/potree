@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -28,12 +29,10 @@ import {MOUSE} from "../defines.js";
 import {Utils} from "../utils.js";
 import {EventDispatcher} from "../EventDispatcher.js";
 
- 
-export class OrbitControls extends EventDispatcher{
-	
-	constructor(viewer){
+export class OrbitControls extends EventDispatcher {
+	constructor(viewer) {
 		super();
-		
+
 		this.viewer = viewer;
 		this.renderer = viewer.renderer;
 
@@ -94,7 +93,7 @@ export class OrbitControls extends EventDispatcher{
 		};
 
 		let dblclick = (e) => {
-			if(this.doubleClockZoomEnabled){
+			if (this.doubleClockZoomEnabled) {
 				this.zoomToLocation(e.mouse);
 			}
 		};
@@ -109,7 +108,7 @@ export class OrbitControls extends EventDispatcher{
 		};
 
 		let touchMove = e => {
-			if (e.touches.length === 2 && previousTouch.touches.length === 2){
+			if (e.touches.length === 2 && previousTouch.touches.length === 2) {
 				let prev = previousTouch;
 				let curr = e;
 
@@ -127,7 +126,7 @@ export class OrbitControls extends EventDispatcher{
 				this.radiusDelta = newRadius - resolvedRadius;
 
 				this.stopTweens();
-			}else if(e.touches.length === 3 && previousTouch.touches.length === 3){
+			} else if (e.touches.length === 3 && previousTouch.touches.length === 3) {
 				let prev = previousTouch;
 				let curr = e;
 
@@ -164,16 +163,16 @@ export class OrbitControls extends EventDispatcher{
 		this.scene = scene;
 	}
 
-	stop(){
+	stop() {
 		this.yawDelta = 0;
 		this.pitchDelta = 0;
 		this.radiusDelta = 0;
 		this.panDelta.set(0, 0);
 	}
-	
-	zoomToLocation(mouse){
+
+	zoomToLocation(mouse) {
 		let camera = this.scene.getActiveCamera();
-		
+
 		let I = Utils.getMousePointCloudIntersection(
 			mouse,
 			camera,
@@ -301,4 +300,4 @@ export class OrbitControls extends EventDispatcher{
 			this.radiusDelta -= progression * this.radiusDelta;
 		}
 	}
-};
+}

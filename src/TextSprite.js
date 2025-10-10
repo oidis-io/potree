@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -14,9 +15,8 @@
 
 import * as THREE from "../libs/three.js/build/three.module.js";
 
-export class TextSprite extends THREE.Object3D{
-	
-	constructor(text){
+export class TextSprite extends THREE.Object3D {
+	constructor(text) {
 		super();
 
 		let texture = new THREE.Texture();
@@ -45,33 +45,33 @@ export class TextSprite extends THREE.Object3D{
 		this.setText(text);
 	}
 
-	setText(text){
-		if (this.text !== text){
+	setText(text) {
+		if (this.text !== text) {
 			this.text = text;
 
 			this.update();
 		}
 	}
 
-	setTextColor(color){
+	setTextColor(color) {
 		this.textColor = color;
 
 		this.update();
 	}
 
-	setBorderColor(color){
+	setBorderColor(color) {
 		this.borderColor = color;
 
 		this.update();
 	}
 
-	setBackgroundColor(color){
+	setBackgroundColor(color) {
 		this.backgroundColor = color;
 
 		this.update();
 	}
 
-	update(){
+	update() {
 		let canvas = document.createElement('canvas');
 		let context = canvas.getContext('2d');
 		context.font = 'Bold ' + this.fontsize + 'px ' + this.fontface;
@@ -133,7 +133,7 @@ export class TextSprite extends THREE.Object3D{
 		this.sprite.scale.set(spriteWidth * 0.01, spriteHeight * 0.01, 1.0);
 	}
 
-	roundRect(ctx, x, y, w, h, r){
+	roundRect(ctx, x, y, w, h, r) {
 		ctx.beginPath();
 		ctx.moveTo(x + r, y);
 		ctx.lineTo(x + w - r, y);
@@ -148,7 +148,4 @@ export class TextSprite extends THREE.Object3D{
 		ctx.fill();
 		ctx.stroke();
 	}
-
 }
-
-

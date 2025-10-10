@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -8,9 +9,8 @@
  *
  * ********************************************************************************************************* */
 
-export class Message{
-
-	constructor(content){
+export class Message {
+	constructor(content) {
 		this.content = content;
 
 		let closeIcon = `${exports.resourcePath}/icons/close.svg`;
@@ -25,21 +25,19 @@ export class Message{
 
 		this.elContainer = this.element.find("span[name=content_container]");
 
-		if(typeof content === "string"){
+		if (typeof content === "string") {
 			this.elContainer.append($(`<span>${content}</span>`));
-		}else{
+		} else {
 			this.elContainer.append(content);
 		}
-
 	}
 
-	setMessage(content){
+	setMessage(content) {
 		this.elContainer.empty();
-		if(typeof content === "string"){
+		if (typeof content === "string") {
 			this.elContainer.append($(`<span>${content}</span>`));
-		}else{
+		} else {
 			this.elContainer.append(content);
 		}
 	}
-
 }

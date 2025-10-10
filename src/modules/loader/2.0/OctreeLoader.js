@@ -15,15 +15,13 @@ import {OctreeGeometry, OctreeGeometryNode} from "./OctreeGeometry.js";
 
 // let loadedNodes = new Set();
 
-export class NodeLoader{
-
-	constructor(url){
+export class NodeLoader {
+	constructor(url) {
 		this.url = url;
 	}
 
-	async load(node){
-
-		if(node.loaded || node.loading){
+	async load(node) {
+		if (node.loaded || node.loading) {
 			return;
 		}
 
@@ -37,13 +35,12 @@ export class NodeLoader{
 		// }
 		// loadedNodes.add(node.name);
 
-		try{
-			if(node.nodeType === 2){
+		try {
+			if (node.nodeType === 2) {
 				await this.loadHierarchy(node);
 			}
 
 			let {byteOffset, byteSize} = node;
-
 
 			let urlOctree = `${this.url}/../octree.bin`;
 
@@ -52,10 +49,10 @@ export class NodeLoader{
 
 			let buffer;
 
-			if(byteSize === 0n){
+			if (byteSize === 0n) {
 				buffer = new ArrayBuffer(0);
 				console.warn(`loaded node with 0 bytes: ${node.name}`);
-			}else{
+			} else {
 				let response = await fetch(urlOctree, {
 					headers: {
 						'content-type': 'multipart/byteranges',
@@ -67,16 +64,15 @@ export class NodeLoader{
 			}
 
 			let workerPath;
-			if(this.metadata.encoding === "BROTLI"){
+			if (this.metadata.encoding === "BROTLI") {
 				workerPath = Potree.scriptPath + '/workers/2.0/DecoderWorker_brotli.js';
-			}else{
+			} else {
 				workerPath = Potree.scriptPath + '/workers/2.0/DecoderWorker.js';
 			}
 
 			let worker = Potree.workerPool.getWorker(workerPath);
 
 			worker.onmessage = function (e) {
-
 				let data = e.data;
 				let buffers = data.attributeBuffers;
 
@@ -84,22 +80,21 @@ export class NodeLoader{
 
 				let geometry = new THREE.BufferGeometry();
 				
-				for(let property in buffers){
-
+				for (let property in buffers) {
 					let buffer = buffers[property].buffer;
 
-					if(property === "position"){
+					if (property === "position") {
 						geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-					}else if(property === "rgba"){
+					} else if (property === "rgba") {
 						geometry.setAttribute('rgba', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
-					}else if(property === "NORMAL"){
+					} else if (property === "NORMAL") {
 						//geometry.setAttribute('rgba', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
 						geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-					}else if (property === "INDICES") {
+					} else if (property === "INDICES") {
 						let bufferAttribute = new THREE.BufferAttribute(new Uint8Array(buffer), 4);
 						bufferAttribute.normalized = true;
 						geometry.setAttribute('indices', bufferAttribute);
-					}else{
+					} else {
 						const bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
 
 						let batchAttribute = buffers[property].attribute;
@@ -112,7 +107,6 @@ export class NodeLoader{
 
 						geometry.setAttribute(property, bufferAttribute);
 					}
-
 				}
 				// indices ??
 
@@ -147,7 +141,7 @@ export class NodeLoader{
 			};
 
 			worker.postMessage(message, [message.buffer]);
-		}catch(e){
+		} catch (e) {
 			node.loaded = false;
 			node.loading = false;
 			Potree.numNodesLoading--;
@@ -158,8 +152,7 @@ export class NodeLoader{
 		}
 	}
 
-	parseHierarchy(node, buffer){
-
+	parseHierarchy(node, buffer) {
 		let view = new DataView(buffer);
 		let tStart = performance.now();
 
@@ -172,7 +165,7 @@ export class NodeLoader{
 		nodes[0] = node;
 		let nodePos = 1;
 
-		for(let i = 0; i < numNodes; i++){
+		for (let i = 0; i < numNodes; i++) {
 			let current = nodes[i];
 
 			let type = view.getUint8(i * bytesPerNode + 0);
@@ -185,25 +178,24 @@ export class NodeLoader{
 			// 	// debugger;
 			// }
 
-
-			if(current.nodeType === 2){
+			if (current.nodeType === 2) {
 				// replace proxy with real node
 				current.byteOffset = byteOffset;
 				current.byteSize = byteSize;
 				current.numPoints = numPoints;
-			}else if(type === 2){
+			} else if (type === 2) {
 				// load proxy
 				current.hierarchyByteOffset = byteOffset;
 				current.hierarchyByteSize = byteSize;
 				current.numPoints = numPoints;
-			}else{
+			} else {
 				// load real node 
 				current.byteOffset = byteOffset;
 				current.byteSize = byteSize;
 				current.numPoints = numPoints;
 			}
 
-			if(current.byteSize === 0n){
+			if (current.byteSize === 0n) {
 				// workaround for issue #1125
 				// some inner nodes erroneously report >0 points even though have 0 points
 				// however, they still report a byteSize of 0, so based on that we now set node.numPoints to 0
@@ -212,14 +204,14 @@ export class NodeLoader{
 			
 			current.nodeType = type;
 
-			if(current.nodeType === 2){
+			if (current.nodeType === 2) {
 				continue;
 			}
 
-			for(let childIndex = 0; childIndex < 8; childIndex++){
+			for (let childIndex = 0; childIndex < 8; childIndex++) {
 				let childExists = ((1 << childIndex) & childMask) !== 0;
 
-				if(!childExists){
+				if (!childExists) {
 					continue;
 				}
 
@@ -252,8 +244,7 @@ export class NodeLoader{
 		// }
 	}
 
-	async loadHierarchy(node){
-
+	async loadHierarchy(node) {
 		let {hierarchyByteOffset, hierarchyByteSize} = node;
 		let hierarchyPath = `${this.url}/../hierarchy.bin`;
 		
@@ -266,8 +257,6 @@ export class NodeLoader{
 				'Range': `bytes=${first}-${last}`,
 			},
 		});
-
-
 
 		let buffer = await response.arrayBuffer();
 
@@ -290,17 +279,11 @@ export class NodeLoader{
 		// });
 
 		// await promise;
-
-		
-
-
-
 	}
-
 }
 
 let tmpVec3 = new THREE.Vector3();
-function createChildAABB(aabb, index){
+function createChildAABB(aabb, index) {
 	let min = aabb.min.clone();
 	let max = aabb.max.clone();
 	let size = tmpVec3.subVectors(max, min);
@@ -339,10 +322,8 @@ let typenameTypeattributeMap = {
 	"uint64": PointAttributeTypes.DATA_TYPE_UINT64,
 };
 
-export class OctreeLoader{
-
-	static parseAttributes(jsonAttributes){
-
+export class OctreeLoader {
+	static parseAttributes(jsonAttributes) {
 		let attributes = new PointAttributes();
 
 		let replacements = {
@@ -358,9 +339,9 @@ export class OctreeLoader{
 
 			let attribute = new PointAttribute(potreeAttributeName, type, numElements);
 
-			if(numElements === 1){
+			if (numElements === 1) {
 				attribute.range = [min[0], max[0]];
-			}else{
+			} else {
 				attribute.range = [min, max];
 			}
 
@@ -382,7 +363,7 @@ export class OctreeLoader{
 				attributes.attributes.find(a => a.name === "NormalY") !== undefined &&
 				attributes.attributes.find(a => a.name === "NormalZ") !== undefined;
 
-			if(hasNormals){
+			if (hasNormals) {
 				let vector = {
 					name: "NORMAL",
 					attributes: ["NormalX", "NormalY", "NormalZ"],
@@ -394,8 +375,7 @@ export class OctreeLoader{
 		return attributes;
 	}
 
-	static async load(url){
-
+	static async load(url) {
 		let response = await fetch(url);
 		let metadata = await response.json();
 
@@ -450,7 +430,5 @@ export class OctreeLoader{
 		};
 
 		return result;
-
 	}
-
-};
+}

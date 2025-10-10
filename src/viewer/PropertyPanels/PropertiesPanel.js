@@ -32,9 +32,8 @@ import {CameraPanel} from "./CameraPanel.js";
 import {AnnotationPanel} from "./AnnotationPanel.js";
 import { CameraAnimationPanel } from "./CameraAnimationPanel.js";
 
-export class PropertiesPanel{
-
-	constructor(container, viewer){
+export class PropertiesPanel {
+	constructor(container, viewer) {
 		this.container = container;
 		this.viewer = viewer;
 		this.object = null;
@@ -42,35 +41,34 @@ export class PropertiesPanel{
 		this.scene = null;
 	}
 
-	setScene(scene){
+	setScene(scene) {
 		this.scene = scene;
 	}
 
-	set(object){
-		if(this.object === object){
+	set(object) {
+		if (this.object === object) {
 			return;
 		}
 
 		this.object = object;
 		
-		for(let task of this.cleanupTasks){
+		for (let task of this.cleanupTasks) {
 			task();
 		}
 		this.cleanupTasks = [];
 		this.container.empty();
 
-		if(object instanceof PointCloudTree){
+		if (object instanceof PointCloudTree) {
 			this.setPointCloud(object);
-		}else if(object instanceof Measure || object instanceof Profile || object instanceof Volume){
+		} else if (object instanceof Measure || object instanceof Profile || object instanceof Volume) {
 			this.setMeasurement(object);
-		}else if(object instanceof THREE.Camera){
+		} else if (object instanceof THREE.Camera) {
 			this.setCamera(object);
-		}else if(object instanceof Annotation){
+		} else if (object instanceof Annotation) {
 			this.setAnnotation(object);
-		}else if(object instanceof CameraAnimation){
+		} else if (object instanceof CameraAnimation) {
 			this.setCameraAnimation(object);
 		}
-		
 	}
 
 	//
@@ -78,15 +76,14 @@ export class PropertiesPanel{
 	// This is for listening to materials, scene, point clouds, etc.
 	// not required for DOM listeners, since they are automatically cleared by removing the DOM subtree.
 	//
-	addVolatileListener(target, type, callback){
+	addVolatileListener(target, type, callback) {
 		target.addEventListener(type, callback);
 		this.cleanupTasks.push(() => {
 			target.removeEventListener(type, callback);
 		});
 	}
 
-	setPointCloud(pointcloud){
-
+	setPointCloud(pointcloud) {
 		let material = pointcloud.material;
 
 		let panel = $(`
@@ -339,7 +336,6 @@ export class PropertiesPanel{
 		}
 
 		{ // BACKFACE CULLING
-			
 			let opt = panel.find(`#set_backface_culling`);
 			opt.click(() => {
 				material.backfaceCulling = opt.prop("checked");
@@ -356,7 +352,7 @@ export class PropertiesPanel{
 
 			const pointAttributes = pointcloud.pcoGeometry.pointAttributes;
 			const hasNormals = pointAttributes.hasNormals ? pointAttributes.hasNormals() : false;
-			if(hasNormals) {
+			if (hasNormals) {
 				blockBackface.css('display', 'block');
 			}
 			/*
@@ -395,7 +391,6 @@ export class PropertiesPanel{
 		}
 
 		{
-
 			const attributes = pointcloud.pcoGeometry.pointAttributes.attributes;
 
 			let options = [];
@@ -403,7 +398,7 @@ export class PropertiesPanel{
 			options.push(...attributes.map(a => a.name));
 
 			const intensityIndex = options.indexOf("intensity");
-			if(intensityIndex >= 0){
+			if (intensityIndex >= 0) {
 				options.splice(intensityIndex + 1, 0, "intensity gradient");
 			}
 
@@ -424,7 +419,7 @@ export class PropertiesPanel{
 			options = options.filter(o => !blacklist.includes(o));
 
 			let attributeSelection = panel.find('#optMaterial');
-			for(let option of options){
+			for (let option of options) {
 				let elOption = $(`<option>${option}</option>`);
 				attributeSelection.append(elOption);
 			}
@@ -435,14 +430,14 @@ export class PropertiesPanel{
 
 				let attribute = pointcloud.getAttribute(selectedValue);
 
-				if(selectedValue === "intensity gradient"){
+				if (selectedValue === "intensity gradient") {
 					attribute = pointcloud.getAttribute("intensity");
 				}
 
 				const isIntensity = attribute ? ["intensity", "intensity gradient"].includes(attribute.name) : false;
 
-				if(isIntensity){
-					if(pointcloud.material.intensityRange[0] === Infinity){
+				if (isIntensity) {
+					if (pointcloud.material.intensityRange[0] === Infinity) {
 						pointcloud.material.intensityRange = attribute.range;
 					}
 
@@ -458,18 +453,18 @@ export class PropertiesPanel{
 							material.intensityRange = [min, max];
 						}
 					});
-				} else if(attribute){
+				} else if (attribute) {
 					const [min, max] = attribute.range;
 
 					let selectedRange = material.getRange(attribute.name);
 
-					if(!selectedRange){
+					if (!selectedRange) {
 						selectedRange = [...attribute.range];
 					}
 
 					let minMaxAreNumbers = typeof min === "number" && typeof max === "number";
 
-					if(minMaxAreNumbers){
+					if (minMaxAreNumbers) {
 						panel.find('#sldExtraRange').slider({
 							range: true,
 							min: min, 
@@ -483,7 +478,6 @@ export class PropertiesPanel{
 							}
 						});
 					}
-
 				}
 
 				let blockWeights = $('#materials\\.composite_weight_container');
@@ -526,21 +520,21 @@ export class PropertiesPanel{
 					blockIntensity.css('display', 'block');
 				} else if (selectedValue === 'intensity gradient') {
 					blockIntensity.css('display', 'block');
-				} else if (selectedValue === "indices" ){
+				} else if (selectedValue === "indices" ) {
 					blockIndex.css('display', 'block');
-				} else if (selectedValue === "matcap" ){
+				} else if (selectedValue === "matcap" ) {
 					blockMatcap.css('display', 'block');
-				} else if (selectedValue === "classification" ){
+				} else if (selectedValue === "classification" ) {
 					// add classification color selctor?
-				} else if (selectedValue === "gps-time" ){
+				} else if (selectedValue === "gps-time" ) {
 					blockGps.css('display', 'block');
-				} else if(selectedValue === "number of returns"){
+				} else if (selectedValue === "number of returns") {
 					
-				} else if(selectedValue === "return number"){
+				} else if (selectedValue === "return number") {
 					
-				} else if(["source id", "point source id"].includes(selectedValue)){
+				} else if (["source id", "point source id"].includes(selectedValue)) {
 					
-				} else{
+				} else {
 					blockExtra.css('display', 'block');
 				}
 			};
@@ -562,8 +556,8 @@ export class PropertiesPanel{
 
 			let elSchemeContainers = panel.find("div.gradient_scheme");
 
-			for(let scheme of schemes){
-				elSchemeContainers.each(function(index, container){
+			for (let scheme of schemes) {
+				elSchemeContainers.each(function(index, container) {
 					let elScheme = $(`
 						<span style="flex-grow: 1;">
 						</span>
@@ -615,7 +609,7 @@ export class PropertiesPanel{
 
 			let elMatcapContainer = panel.find("#matcap_scheme_selection");
 
-			for(let matcap of matcaps){
+			for (let matcap of matcaps) {
 				let elMatcap = $(`
 						<img src="${matcap.icon}" class="button-icon" style="width: 25%;" />
 				`);
@@ -754,13 +748,11 @@ export class PropertiesPanel{
 			});
 
 			let updateHeightRange = function () {
-				
-
 				let aPosition = pointcloud.getAttribute("position");
 
 				let bMin, bMax;
 
-				if(aPosition){
+				if (aPosition) {
 					// for new format 2.0 and loader that contain precomputed min/max of attributes
 					let min = aPosition.range[0][2];
 					let max = aPosition.range[1][2];
@@ -768,7 +760,7 @@ export class PropertiesPanel{
 
 					bMin = min - 0.2 * width;
 					bMax = max + 0.2 * width;
-				}else{
+				} else {
 					// for format up until exlusive 2.0
 					let box = [pointcloud.pcoGeometry.tightBoundingBox, pointcloud.getBoundingBoxWorld()]
 						.find(v => v !== undefined);
@@ -788,31 +780,30 @@ export class PropertiesPanel{
 			};
 
 			let updateExtraRange = function () {
-
 				let attributeName = material.activeAttributeName;
 				let attribute = pointcloud.getAttribute(attributeName);
 
-				if(attribute == null){
+				if (attribute == null) {
 					return;
 				}
 				
 				let range = material.getRange(attributeName);
 
-				if(range == null){
+				if (range == null) {
 					range = attribute.range;
 				}
 
 				// currently only supporting scalar ranges.
 				// rgba, normals, positions, etc have vector ranges, however
 				let isValidRange = (typeof range[0] === "number") && (typeof range[1] === "number");
-				if(!isValidRange){
+				if (!isValidRange) {
 					return;
 				}
 
-				if(range){
+				if (range) {
 					let msg = `${range[0].toFixed(2)} to ${range[1].toFixed(2)}`;
 					panel.find('#lblExtraRange').html(msg);
-				}else{
+				} else {
 					panel.find("could not deduce range");
 				}
 			};
@@ -895,13 +886,9 @@ export class PropertiesPanel{
 			onIntensityChange();
 			onRGBChange();
 		}
-
 	}
 
-	
-
-	setMeasurement(object){
-
+	setMeasurement(object) {
 		let TYPE = {
 			DISTANCE: {panel: DistancePanel},
 			AREA: {panel: AreaPanel},
@@ -947,19 +934,18 @@ export class PropertiesPanel{
 		this.container.append(panel.elContent);
 	}
 
-	setCamera(camera){
+	setCamera(camera) {
 		let panel = new CameraPanel(this.viewer, this);
 		this.container.append(panel.elContent);
 	}
 
-	setAnnotation(annotation){
+	setAnnotation(annotation) {
 		let panel = new AnnotationPanel(this.viewer, this, annotation);
 		this.container.append(panel.elContent);
 	}
 
-	setCameraAnimation(animation){
+	setCameraAnimation(animation) {
 		let panel = new CameraAnimationPanel(this.viewer, this, animation);
 		this.container.append(panel.elContent);
 	}
-
 }

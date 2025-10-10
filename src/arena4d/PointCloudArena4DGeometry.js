@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -11,9 +12,8 @@
 import * as THREE from "../../libs/three.js/build/three.module.js";
 import {EventDispatcher} from "../EventDispatcher.js";
 
-Potree.PointCloudArena4DGeometryNode = class PointCloudArena4DGeometryNode{
-
-	constructor(){
+Potree.PointCloudArena4DGeometryNode = class PointCloudArena4DGeometryNode {
+	constructor() {
 		this.left = null;
 		this.right = null;
 		this.boundingBox = null;
@@ -26,27 +26,27 @@ Potree.PointCloudArena4DGeometryNode = class PointCloudArena4DGeometryNode{
 		this.oneTimeDisposeHandlers = [];
 	}
 
-	isGeometryNode(){
+	isGeometryNode() {
 		return true;
 	}
 
-	isTreeNode(){
+	isTreeNode() {
 		return false;
 	}
 
-	isLoaded(){
+	isLoaded() {
 		return this.loaded;
 	}
 
-	getBoundingSphere(){
+	getBoundingSphere() {
 		return this.boundingSphere;
 	}
 
-	getBoundingBox(){
+	getBoundingBox() {
 		return this.boundingBox;
 	}
 
-	getChildren(){
+	getChildren() {
 		let children = [];
 
 		if (this.left) {
@@ -60,15 +60,15 @@ Potree.PointCloudArena4DGeometryNode = class PointCloudArena4DGeometryNode{
 		return children;
 	}
 
-	getBoundingBox(){
+	getBoundingBox() {
 		return this.boundingBox;
 	}
 
-	getLevel(){
+	getLevel() {
 		return this.level;
 	}
 
-	load(){
+	load() {
 		if (this.loaded || this.loading) {
 			return;
 		}
@@ -107,7 +107,6 @@ Potree.PointCloudArena4DGeometryNode = class PointCloudArena4DGeometryNode{
 				Potree.PointAttribute.INTENSITY,
 				Potree.PointAttribute.CLASSIFICATION,
 			];
-
 
 			let position = new Float32Array(numPoints * 3);
 			let color = new Uint8Array(numPoints * 4);
@@ -159,7 +158,7 @@ Potree.PointCloudArena4DGeometryNode = class PointCloudArena4DGeometryNode{
 				//bufferAttribute.normalized = true;
 				geometry.setAttribute('indices', bufferAttribute);
 			}
-		
+
 			node.geometry = geometry;
 			node.numPoints = numPoints;
 			node.loaded = true;
@@ -170,7 +169,7 @@ Potree.PointCloudArena4DGeometryNode = class PointCloudArena4DGeometryNode{
 		xhr.send(null);
 	}
 
-	dispose(){
+	dispose() {
 		if (this.geometry && this.parent != null) {
 			this.geometry.dispose();
 			this.geometry = null;
@@ -185,18 +184,13 @@ Potree.PointCloudArena4DGeometryNode = class PointCloudArena4DGeometryNode{
 		}
 	}
 
-	getNumPoints(){
+	getNumPoints() {
 		return this.numPoints;
 	}
 };
 
-
-
-
-
-Potree.PointCloudArena4DGeometry = class PointCloudArena4DGeometry extends EventDispatcher{
-
-	constructor(){
+Potree.PointCloudArena4DGeometry = class PointCloudArena4DGeometry extends EventDispatcher {
+	constructor() {
 		super();
 
 		this.numPoints = 0;
@@ -262,9 +256,9 @@ Potree.PointCloudArena4DGeometry = class PointCloudArena4DGeometry extends Event
 		};
 
 		xhr.send(null);
-	};
+	}
 
-	loadHierarchy(){
+	loadHierarchy() {
 		let url = this.url + '?tree';
 		let xhr = Potree.XHRFactory.createXMLHttpRequest();
 		xhr.open('GET', url, true);
@@ -390,9 +384,9 @@ Potree.PointCloudArena4DGeometry = class PointCloudArena4DGeometry extends Event
 		};
 
 		xhr.send(null);
-	};
+	}
 
-	get spacing(){
+	get spacing() {
 		if (this._spacing) {
 			return this._spacing;
 		} else if (this.root) {
@@ -402,9 +396,7 @@ Potree.PointCloudArena4DGeometry = class PointCloudArena4DGeometry extends Event
 		}
 	}
 
-	set spacing(value){
+	set spacing(value) {
 		this._spacing = value;
 	}
-
 };
-

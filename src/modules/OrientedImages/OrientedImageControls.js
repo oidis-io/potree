@@ -11,11 +11,9 @@
 
 import * as THREE from "../../../libs/three.js/build/three.module.js";
 import {EventDispatcher} from "../../EventDispatcher.js";
-
  
-export class OrientedImageControls extends EventDispatcher{
-	
-	constructor(viewer){
+export class OrientedImageControls extends EventDispatcher {
+	constructor(viewer) {
 		super();
 		
 		this.viewer = viewer;
@@ -85,12 +83,12 @@ export class OrientedImageControls extends EventDispatcher{
 		//this.addEventListener("mousemove", onMove);
 	}
 
-	hasSomethingCaptured(){
+	hasSomethingCaptured() {
 		return this.image !== null;
 	}
 
-	capture(image){
-		if(this.hasSomethingCaptured()){
+	capture(image) {
+		if (this.hasSomethingCaptured()) {
 			return;
 		}
 
@@ -107,7 +105,6 @@ export class OrientedImageControls extends EventDispatcher{
 
 		this.shear = [0, 0];
 
-
 		elRoot.append(this.elUp);
 		elRoot.append(this.elRight);
 		elRoot.append(this.elDown);
@@ -115,7 +112,7 @@ export class OrientedImageControls extends EventDispatcher{
 		elRoot.append(this.elExit);
 	}
 
-	release(){
+	release() {
 		this.image = null;
 
 		this.viewer.scene.overrideCamera = null;
@@ -216,4 +213,4 @@ export class OrientedImageControls extends EventDispatcher{
 
 		this.fovDelta *= attenuation;
 	}
-};
+}
