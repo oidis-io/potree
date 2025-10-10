@@ -41,7 +41,7 @@ import { DeviceOrientationControls } from "../navigation/DeviceOrientationContro
 import { VRControls } from "../navigation/VRControls.js";
 import { EventDispatcher } from "../EventDispatcher.js";
 import { ClassificationScheme } from "../materials/ClassificationScheme.js";
-import { VRButton } from '../../libs/three.js/extra/VRButton.js';
+import { VRButton } from "../../libs/three.js/extra/VRButton.js";
 
 import JSON5 from "../../libs/json5-2.1.3/json5.mjs";
 
@@ -64,7 +64,7 @@ export class Viewer extends EventDispatcher {
 
         try {
             { // generate missing dom hierarchy
-                if ($(domElement).find('#potree_map').length === 0) {
+                if ($(domElement).find("#potree_map").length === 0) {
                     let potreeMap = $(`
                     <div id="potree_map" class="mapBox" style="position: absolute; left: 50px; top: 50px; width: 400px; height: 400px; display: none">
                         <div id="potree_map_header" style="position: absolute; width: 100%; height: 25px; top: 0px; background-color: rgba(0,0,0,0.5); z-index: 1000; border-top-left-radius: 3px; border-top-right-radius: 3px;">
@@ -75,19 +75,19 @@ export class Viewer extends EventDispatcher {
                     $(domElement).append(potreeMap);
                 }
 
-                if ($(domElement).find('#potree_description').length === 0) {
+                if ($(domElement).find("#potree_description").length === 0) {
                     let potreeDescription = $(`<div id="potree_description" class="potree_info_text"></div>`);
                     $(domElement).append(potreeDescription);
                 }
 
-                if ($(domElement).find('#potree_annotations').length === 0) {
+                if ($(domElement).find("#potree_annotations").length === 0) {
                     let potreeAnnotationContainer = $(`
                     <div id="potree_annotation_container" 
                         style="position: absolute; z-index: 100000; width: 100%; height: 100%; pointer-events: none;"></div>`);
                     $(domElement).append(potreeAnnotationContainer);
                 }
 
-                if ($(domElement).find('#potree_quick_buttons').length === 0) {
+                if ($(domElement).find("#potree_quick_buttons").length === 0) {
                     let potreeMap = $(`
                     <div id="potree_quick_buttons" class="quick_buttons_container" style="">
                     </div>
@@ -280,7 +280,7 @@ export class Viewer extends EventDispatcher {
                     this.inputHandler.deselect(e.volume);
                 };
 
-                this.addEventListener('scene_changed', (e) => {
+                this.addEventListener("scene_changed", (e) => {
                     this.inputHandler.setScene(e.scene);
                     this.clippingTool.setScene(this.scene);
 
@@ -294,7 +294,7 @@ export class Viewer extends EventDispatcher {
                 });
 
                 this.scene.addEventListener("volume_removed", onVolumeRemoved);
-                this.scene.addEventListener('pointcloud_added', onPointcloudAdded);
+                this.scene.addEventListener("pointcloud_added", onPointcloudAdded);
             }
 
             { // set defaults
@@ -309,7 +309,7 @@ export class Viewer extends EventDispatcher {
                 this.setShowBoundingBox(false);
                 this.setFreeze(false);
                 this.setControls(this.orbitControls);
-                this.setBackground('gradient');
+                this.setBackground("gradient");
 
                 this.scaleFactor = 1;
 
@@ -337,7 +337,7 @@ export class Viewer extends EventDispatcher {
     onCrash(error) {
         $(this.renderArea).empty();
 
-        if ($(this.renderArea).find('#potree_failpage').length === 0) {
+        if ($(this.renderArea).find("#potree_failpage").length === 0) {
             let elFailPage = $(`
             <div id="#potree_failpage" class="potree_failpage"> 
                 <h1>Potree Encountered An Error </h1>
@@ -365,7 +365,7 @@ export class Viewer extends EventDispatcher {
                 <pre id="potree_error_console" style="width: 100%; height: 100%"></pre>
             </div>`);
 
-            let elErrorMessage = elFailPage.find('#potree_error_console');
+            let elErrorMessage = elFailPage.find("#potree_error_console");
             elErrorMessage.html(error.stack);
 
             $(this.renderArea).append(elFailPage);
@@ -387,13 +387,13 @@ export class Viewer extends EventDispatcher {
         this.scene = scene;
 
         this.dispatchEvent({
-            type: 'scene_changed',
+            type: "scene_changed",
             oldScene: oldScene,
             scene: scene
         });
 
         { // Annotations
-            $('.annotation').detach();
+            $(".annotation").detach();
 
             // for(let annotation of this.scene.annotations){
             // this.renderArea.appendChild(annotation.domElement[0]);
@@ -416,9 +416,9 @@ export class Viewer extends EventDispatcher {
             }
 
             if (oldScene) {
-                oldScene.annotations.removeEventListener('annotation_added', this.onAnnotationAdded);
+                oldScene.annotations.removeEventListener("annotation_added", this.onAnnotationAdded);
             }
-            this.scene.annotations.addEventListener('annotation_added', this.onAnnotationAdded);
+            this.scene.annotations.addEventListener("annotation_added", this.onAnnotationAdded);
         }
     }
 
@@ -450,7 +450,7 @@ export class Viewer extends EventDispatcher {
     setMinNodeSize(value) {
         if (this.minNodeSize !== value) {
             this.minNodeSize = value;
-            this.dispatchEvent({'type': 'minnodesize_changed', 'viewer': this});
+            this.dispatchEvent({"type": "minnodesize_changed", "viewer": this});
         }
     }
 
@@ -464,17 +464,17 @@ export class Viewer extends EventDispatcher {
         }
 
         if (bg === "skybox") {
-            this.skybox = Utils.loadSkybox(new URL(Potree.resourcePath + '/textures/skybox2/').href);
+            this.skybox = Utils.loadSkybox(new URL(Potree.resourcePath + "/textures/skybox2/").href);
         }
 
         this.background = bg;
-        this.dispatchEvent({'type': 'background_changed', 'viewer': this});
+        this.dispatchEvent({"type": "background_changed", "viewer": this});
     }
 
     setDescription(value) {
         this.description = value;
 
-        $('#potree_description').html(value);
+        $("#potree_description").html(value);
         // $('#potree_description').text(value);
     }
 
@@ -485,7 +485,7 @@ export class Viewer extends EventDispatcher {
     setShowBoundingBox(value) {
         if (this.showBoundingBox !== value) {
             this.showBoundingBox = value;
-            this.dispatchEvent({'type': 'show_boundingbox_changed', 'viewer': this});
+            this.dispatchEvent({"type": "show_boundingbox_changed", "viewer": this});
         }
     }
 
@@ -496,7 +496,7 @@ export class Viewer extends EventDispatcher {
     setMoveSpeed(value) {
         if (this.moveSpeed !== value) {
             this.moveSpeed = value;
-            this.dispatchEvent({'type': 'move_speed_changed', 'viewer': this, 'speed': value});
+            this.dispatchEvent({"type": "move_speed_changed", "viewer": this, "speed": value});
         }
     }
 
@@ -507,7 +507,7 @@ export class Viewer extends EventDispatcher {
     setWeightClassification(w) {
         for (let i = 0; i < this.scene.pointclouds.length; i++) {
             this.scene.pointclouds[i].material.weightClassification = w;
-            this.dispatchEvent({'type': 'attribute_weights_changed' + i, 'viewer': this});
+            this.dispatchEvent({"type": "attribute_weights_changed" + i, "viewer": this});
         }
     }
 
@@ -515,7 +515,7 @@ export class Viewer extends EventDispatcher {
         value = Boolean(value);
         if (this.freeze !== value) {
             this.freeze = value;
-            this.dispatchEvent({'type': 'freeze_changed', 'viewer': this});
+            this.dispatchEvent({"type": "freeze_changed", "viewer": this});
         }
     }
 
@@ -567,7 +567,7 @@ export class Viewer extends EventDispatcher {
     setPointBudget(value) {
         if (Potree.pointBudget !== value) {
             Potree.pointBudget = parseInt(value);
-            this.dispatchEvent({'type': 'point_budget_changed', 'viewer': this});
+            this.dispatchEvent({"type": "point_budget_changed", "viewer": this});
         }
     }
 
@@ -578,7 +578,7 @@ export class Viewer extends EventDispatcher {
     setShowAnnotations(value) {
         if (this.showAnnotations !== value) {
             this.showAnnotations = value;
-            this.dispatchEvent({'type': 'show_annotations_changed', 'viewer': this});
+            this.dispatchEvent({"type": "show_annotations_changed", "viewer": this});
         }
     }
 
@@ -589,7 +589,7 @@ export class Viewer extends EventDispatcher {
     setDEMCollisionsEnabled(value) {
         if (this.useDEMCollisions !== value) {
             this.useDEMCollisions = value;
-            this.dispatchEvent({'type': 'use_demcollisions_changed', 'viewer': this});
+            this.dispatchEvent({"type": "use_demcollisions_changed", "viewer": this});
         }
     }
 
@@ -602,7 +602,7 @@ export class Viewer extends EventDispatcher {
 
         if (this.useEDL !== value) {
             this.useEDL = value;
-            this.dispatchEvent({'type': 'use_edl_changed', 'viewer': this});
+            this.dispatchEvent({"type": "use_edl_changed", "viewer": this});
         }
     }
 
@@ -613,7 +613,7 @@ export class Viewer extends EventDispatcher {
     setEDLRadius(value) {
         if (this.edlRadius !== value) {
             this.edlRadius = value;
-            this.dispatchEvent({'type': 'edl_radius_changed', 'viewer': this});
+            this.dispatchEvent({"type": "edl_radius_changed", "viewer": this});
         }
     }
 
@@ -624,7 +624,7 @@ export class Viewer extends EventDispatcher {
     setEDLStrength(value) {
         if (this.edlStrength !== value) {
             this.edlStrength = value;
-            this.dispatchEvent({'type': 'edl_strength_changed', 'viewer': this});
+            this.dispatchEvent({"type": "edl_strength_changed", "viewer": this});
         }
     }
 
@@ -635,7 +635,7 @@ export class Viewer extends EventDispatcher {
     setEDLOpacity(value) {
         if (this.edlOpacity !== value) {
             this.edlOpacity = value;
-            this.dispatchEvent({'type': 'edl_opacity_changed', 'viewer': this});
+            this.dispatchEvent({"type": "edl_opacity_changed", "viewer": this});
         }
     }
 
@@ -646,7 +646,7 @@ export class Viewer extends EventDispatcher {
     setFOV(value) {
         if (this.fov !== value) {
             this.fov = value;
-            this.dispatchEvent({'type': 'fov_changed', 'viewer': this});
+            this.dispatchEvent({"type": "fov_changed", "viewer": this});
         }
     }
 
@@ -656,7 +656,7 @@ export class Viewer extends EventDispatcher {
 
     disableAnnotations() {
         this.scene.annotations.traverse(annotation => {
-            annotation.domElement.css('pointer-events', 'none');
+            annotation.domElement.css("pointer-events", "none");
 
             // return annotation.visible;
         });
@@ -664,7 +664,7 @@ export class Viewer extends EventDispatcher {
 
     enableAnnotations() {
         this.scene.annotations.traverse(annotation => {
-            annotation.domElement.css('pointer-events', 'auto');
+            annotation.domElement.css("pointer-events", "auto");
 
             // return annotation.visible;
         });
@@ -673,16 +673,16 @@ export class Viewer extends EventDispatcher {
     setClassifications(classifications) {
         this.classifications = classifications;
 
-        this.dispatchEvent({'type': 'classifications_changed', 'viewer': this});
+        this.dispatchEvent({"type": "classifications_changed", "viewer": this});
     }
 
     setClassificationVisibility(key, value) {
         if (!this.classifications[key]) {
-            this.classifications[key] = {visible: value, name: 'no name'};
-            this.dispatchEvent({'type': 'classification_visibility_changed', 'viewer': this});
+            this.classifications[key] = {visible: value, name: "no name"};
+            this.dispatchEvent({"type": "classification_visibility_changed", "viewer": this});
         } else if (this.classifications[key].visible !== value) {
             this.classifications[key].visible = value;
-            this.dispatchEvent({'type': 'classification_visibility_changed', 'viewer': this});
+            this.dispatchEvent({"type": "classification_visibility_changed", "viewer": this});
         }
     }
 
@@ -711,75 +711,75 @@ export class Viewer extends EventDispatcher {
         }
 
         if (somethingChanged) {
-            this.dispatchEvent({'type': 'classification_visibility_changed', 'viewer': this});
+            this.dispatchEvent({"type": "classification_visibility_changed", "viewer": this});
         }
     }
 
     setFilterReturnNumberRange(from, to) {
         this.filterReturnNumberRange = [from, to];
-        this.dispatchEvent({'type': 'filter_return_number_range_changed', 'viewer': this});
+        this.dispatchEvent({"type": "filter_return_number_range_changed", "viewer": this});
     }
 
     setFilterNumberOfReturnsRange(from, to) {
         this.filterNumberOfReturnsRange = [from, to];
-        this.dispatchEvent({'type': 'filter_number_of_returns_range_changed', 'viewer': this});
+        this.dispatchEvent({"type": "filter_number_of_returns_range_changed", "viewer": this});
     }
 
     setFilterGPSTimeRange(from, to) {
         this.filterGPSTimeRange = [from, to];
-        this.dispatchEvent({'type': 'filter_gps_time_range_changed', 'viewer': this});
+        this.dispatchEvent({"type": "filter_gps_time_range_changed", "viewer": this});
     }
 
     setFilterPointSourceIDRange(from, to) {
         this.filterPointSourceIDRange = [from, to];
-        this.dispatchEvent({'type': 'filter_point_source_id_range_changed', 'viewer': this});
+        this.dispatchEvent({"type": "filter_point_source_id_range_changed", "viewer": this});
     }
 
     setLengthUnit(value) {
         switch (value) {
-            case 'm':
+            case "m":
                 this.lengthUnit = LengthUnits.METER;
                 this.lengthUnitDisplay = LengthUnits.METER;
                 break;
-            case 'ft':
+            case "ft":
                 this.lengthUnit = LengthUnits.FEET;
                 this.lengthUnitDisplay = LengthUnits.FEET;
                 break;
-            case 'in':
+            case "in":
                 this.lengthUnit = LengthUnits.INCH;
                 this.lengthUnitDisplay = LengthUnits.INCH;
                 break;
         }
 
-        this.dispatchEvent({'type': 'length_unit_changed', 'viewer': this, value: value});
+        this.dispatchEvent({"type": "length_unit_changed", "viewer": this, value: value});
     }
 
     setLengthUnitAndDisplayUnit(lengthUnitValue, lengthUnitDisplayValue) {
         switch (lengthUnitValue) {
-            case 'm':
+            case "m":
                 this.lengthUnit = LengthUnits.METER;
                 break;
-            case 'ft':
+            case "ft":
                 this.lengthUnit = LengthUnits.FEET;
                 break;
-            case 'in':
+            case "in":
                 this.lengthUnit = LengthUnits.INCH;
                 break;
         }
 
         switch (lengthUnitDisplayValue) {
-            case 'm':
+            case "m":
                 this.lengthUnitDisplay = LengthUnits.METER;
                 break;
-            case 'ft':
+            case "ft":
                 this.lengthUnitDisplay = LengthUnits.FEET;
                 break;
-            case 'in':
+            case "in":
                 this.lengthUnitDisplay = LengthUnits.INCH;
                 break;
         }
 
-        this.dispatchEvent({'type': 'length_unit_changed', 'viewer': this, value: lengthUnitValue});
+        this.dispatchEvent({"type": "length_unit_changed", "viewer": this, value: lengthUnitValue});
     }
 
     zoomTo(node, factor, animationDuration = 0) {
@@ -812,7 +812,7 @@ export class Viewer extends EventDispatcher {
         view.radius = endPosition.distanceTo(endTarget);
 
         if (animationDuration <= 0) {
-            this.dispatchEvent({type: 'focusing_finished', target: this});
+            this.dispatchEvent({type: "focusing_finished", target: this});
             return;
         }
 
@@ -834,11 +834,11 @@ export class Viewer extends EventDispatcher {
                 view.yaw = endYaw;
                 view.pitch = endPitch;
                 if (view._updateCamera) view._updateCamera();
-                this.dispatchEvent({type: 'focusing_finished', target: this});
+                this.dispatchEvent({type: "focusing_finished", target: this});
             })
             .start();
 
-        this.dispatchEvent({type: 'focusing_started', target: this});
+        this.dispatchEvent({type: "focusing_started", target: this});
     }
 
     moveToGpsTimeVicinity(time) {
@@ -857,7 +857,7 @@ export class Viewer extends EventDispatcher {
 
     showAbout() {
         $(function () {
-            $('#about-panel').dialog();
+            $("#about-panel").dialog();
         });
     }
 
@@ -966,7 +966,7 @@ export class Viewer extends EventDispatcher {
         this.isFlipYZ = !this.isFlipYZ;
 
         // TODO flipyz
-        console.log('TODO');
+        console.log("TODO");
     }
 
     setCameraMode(mode) {
@@ -1023,20 +1023,20 @@ export class Viewer extends EventDispatcher {
             this.setEDLEnabled(enabled);
         }
 
-        if (Utils.getParameterByName('edlRadius')) {
-            this.setEDLRadius(parseFloat(Utils.getParameterByName('edlRadius')));
+        if (Utils.getParameterByName("edlRadius")) {
+            this.setEDLRadius(parseFloat(Utils.getParameterByName("edlRadius")));
         }
 
-        if (Utils.getParameterByName('edlStrength')) {
-            this.setEDLStrength(parseFloat(Utils.getParameterByName('edlStrength')));
+        if (Utils.getParameterByName("edlStrength")) {
+            this.setEDLStrength(parseFloat(Utils.getParameterByName("edlStrength")));
         }
 
-        if (Utils.getParameterByName('pointBudget')) {
-            this.setPointBudget(parseFloat(Utils.getParameterByName('pointBudget')));
+        if (Utils.getParameterByName("pointBudget")) {
+            this.setPointBudget(parseFloat(Utils.getParameterByName("pointBudget")));
         }
 
-        if (Utils.getParameterByName('showBoundingBox')) {
-            let enabled = Utils.getParameterByName('showBoundingBox') === 'true';
+        if (Utils.getParameterByName("showBoundingBox")) {
+            let enabled = Utils.getParameterByName("showBoundingBox") === "true";
             if (enabled) {
                 this.setShowBoundingBox(true);
             } else {
@@ -1044,25 +1044,25 @@ export class Viewer extends EventDispatcher {
             }
         }
 
-        if (Utils.getParameterByName('material')) {
-            let material = Utils.getParameterByName('material');
+        if (Utils.getParameterByName("material")) {
+            let material = Utils.getParameterByName("material");
             this.setMaterial(material);
         }
 
-        if (Utils.getParameterByName('pointSizing')) {
-            let sizing = Utils.getParameterByName('pointSizing');
+        if (Utils.getParameterByName("pointSizing")) {
+            let sizing = Utils.getParameterByName("pointSizing");
             this.setPointSizing(sizing);
         }
 
-        if (Utils.getParameterByName('quality')) {
-            let quality = Utils.getParameterByName('quality');
+        if (Utils.getParameterByName("quality")) {
+            let quality = Utils.getParameterByName("quality");
             this.setQuality(quality);
         }
 
-        if (Utils.getParameterByName('position')) {
-            let value = Utils.getParameterByName('position');
-            value = value.replace('[', '').replace(']', '');
-            let tokens = value.split(';');
+        if (Utils.getParameterByName("position")) {
+            let value = Utils.getParameterByName("position");
+            value = value.replace("[", "").replace("]", "");
+            let tokens = value.split(";");
             let x = parseFloat(tokens[0]);
             let y = parseFloat(tokens[1]);
             let z = parseFloat(tokens[2]);
@@ -1070,10 +1070,10 @@ export class Viewer extends EventDispatcher {
             this.scene.view.position.set(x, y, z);
         }
 
-        if (Utils.getParameterByName('target')) {
-            let value = Utils.getParameterByName('target');
-            value = value.replace('[', '').replace(']', '');
-            let tokens = value.split(';');
+        if (Utils.getParameterByName("target")) {
+            let value = Utils.getParameterByName("target");
+            value = value.replace("[", "").replace("]", "");
+            let tokens = value.split(";");
             let x = parseFloat(tokens[0]);
             let y = parseFloat(tokens[1]);
             let z = parseFloat(tokens[2]);
@@ -1081,8 +1081,8 @@ export class Viewer extends EventDispatcher {
             this.scene.view.lookAt(new THREE.Vector3(x, y, z));
         }
 
-        if (Utils.getParameterByName('background')) {
-            let value = Utils.getParameterByName('background');
+        if (Utils.getParameterByName("background")) {
+            let value = Utils.getParameterByName("background");
             this.setBackground(value);
         }
 
@@ -1106,8 +1106,8 @@ export class Viewer extends EventDispatcher {
         { // create FIRST PERSON CONTROLS
             this.fpControls = new FirstPersonControls(this);
             this.fpControls.enabled = false;
-            this.fpControls.addEventListener('start', this.disableAnnotations.bind(this));
-            this.fpControls.addEventListener('end', this.enableAnnotations.bind(this));
+            this.fpControls.addEventListener("start", this.disableAnnotations.bind(this));
+            this.fpControls.addEventListener("end", this.enableAnnotations.bind(this));
         }
 
         // { // create GEO CONTROLS
@@ -1123,40 +1123,40 @@ export class Viewer extends EventDispatcher {
         { // create ORBIT CONTROLS
             this.orbitControls = new OrbitControls(this);
             this.orbitControls.enabled = false;
-            this.orbitControls.addEventListener('start', this.disableAnnotations.bind(this));
-            this.orbitControls.addEventListener('end', this.enableAnnotations.bind(this));
+            this.orbitControls.addEventListener("start", this.disableAnnotations.bind(this));
+            this.orbitControls.addEventListener("end", this.enableAnnotations.bind(this));
         }
 
         { // create EARTH CONTROLS
             this.earthControls = new EarthControls(this);
             this.earthControls.enabled = false;
-            this.earthControls.addEventListener('start', this.disableAnnotations.bind(this));
-            this.earthControls.addEventListener('end', this.enableAnnotations.bind(this));
+            this.earthControls.addEventListener("start", this.disableAnnotations.bind(this));
+            this.earthControls.addEventListener("end", this.enableAnnotations.bind(this));
         }
 
         { // create DEVICE ORIENTATION CONTROLS
             this.deviceControls = new DeviceOrientationControls(this);
             this.deviceControls.enabled = false;
-            this.deviceControls.addEventListener('start', this.disableAnnotations.bind(this));
-            this.deviceControls.addEventListener('end', this.enableAnnotations.bind(this));
+            this.deviceControls.addEventListener("start", this.disableAnnotations.bind(this));
+            this.deviceControls.addEventListener("end", this.enableAnnotations.bind(this));
         }
 
         { // create VR CONTROLS
             this.vrControls = new VRControls(this);
             this.vrControls.enabled = false;
-            this.vrControls.addEventListener('start', this.disableAnnotations.bind(this));
-            this.vrControls.addEventListener('end', this.enableAnnotations.bind(this));
+            this.vrControls.addEventListener("start", this.disableAnnotations.bind(this));
+            this.vrControls.addEventListener("end", this.enableAnnotations.bind(this));
         }
     }
 
     toggleSidebar() {
-        let renderArea = $('#potree_render_area');
-        let isVisible = renderArea.css('left') !== '0px';
+        let renderArea = $("#potree_render_area");
+        let isVisible = renderArea.css("left") !== "0px";
 
         if (isVisible) {
-            renderArea.css('left', '0px');
+            renderArea.css("left", "0px");
         } else {
-            renderArea.css('left', '300px');
+            renderArea.css("left", "300px");
         }
     }
 
@@ -1193,23 +1193,23 @@ export class Viewer extends EventDispatcher {
         }
 
         let viewer = this;
-        let sidebarContainer = $('#potree_sidebar_container');
-        sidebarContainer.load(new URL(Potree.scriptPath + '/sidebar.html').href, () => {
-            sidebarContainer.css('width', '300px');
-            sidebarContainer.css('height', '100%');
+        let sidebarContainer = $("#potree_sidebar_container");
+        sidebarContainer.load(new URL(Potree.scriptPath + "/sidebar.html").href, () => {
+            sidebarContainer.css("width", "300px");
+            sidebarContainer.css("height", "100%");
 
-            let imgMenuToggle = document.createElement('img');
-            imgMenuToggle.src = new URL(Potree.resourcePath + '/icons/menu_button.svg').href;
+            let imgMenuToggle = document.createElement("img");
+            imgMenuToggle.src = new URL(Potree.resourcePath + "/icons/menu_button.svg").href;
             imgMenuToggle.onclick = this.toggleSidebar;
-            imgMenuToggle.classList.add('potree_menu_toggle');
+            imgMenuToggle.classList.add("potree_menu_toggle");
 
-            let imgMapToggle = document.createElement('img');
-            imgMapToggle.src = new URL(Potree.resourcePath + '/icons/map_icon.png').href;
-            imgMapToggle.style.display = 'none';
+            let imgMapToggle = document.createElement("img");
+            imgMapToggle.src = new URL(Potree.resourcePath + "/icons/map_icon.png").href;
+            imgMapToggle.style.display = "none";
             imgMapToggle.onclick = e => {
                 this.toggleMap();
             };
-            imgMapToggle.id = 'potree_map_toggle';
+            imgMapToggle.id = "potree_map_toggle";
 
             let elButtons = $("#potree_quick_buttons").get(0);
 
@@ -1253,14 +1253,14 @@ export class Viewer extends EventDispatcher {
             this.mapView.init();
 
             i18n.init({
-                lng: 'en',
-                resGetPath: Potree.resourcePath + '/lang/__lng__/__ns__.json',
-                preload: ['en', 'fr', 'de', 'jp', 'se', 'es', 'zh', 'it', 'ca'],
+                lng: "en",
+                resGetPath: Potree.resourcePath + "/lang/__lng__/__ns__.json",
+                preload: ["en", "fr", "de", "jp", "se", "es", "zh", "it", "ca"],
                 getAsync: true,
                 debug: false
             }, function (t) {
                 // Start translation once everything is loaded
-                $('body').i18n();
+                $("body").i18n();
             });
 
             $(() => {
@@ -1274,18 +1274,18 @@ export class Viewer extends EventDispatcher {
                 // $(callback);
                 // }
 
-                let elProfile = $('<div>').load(new URL(Potree.scriptPath + '/profile.html').href, () => {
+                let elProfile = $("<div>").load(new URL(Potree.scriptPath + "/profile.html").href, () => {
                     $(document.body).append(elProfile.children());
                     this.profileWindow = new ProfileWindow(this);
                     this.profileWindowController = new ProfileWindowController(this);
 
-                    $('#profile_window').draggable({
-                        handle: $('#profile_titlebar'),
+                    $("#profile_window").draggable({
+                        handle: $("#profile_titlebar"),
                         containment: $(document.body)
                     });
-                    $('#profile_window').resizable({
+                    $("#profile_window").resizable({
                         containment: $(document.body),
-                        handles: 'n, e, s, w'
+                        handles: "n, e, s, w"
                     });
 
                     $(() => {
@@ -1303,7 +1303,7 @@ export class Viewer extends EventDispatcher {
 
     setLanguage(lang) {
         i18n.setLng(lang);
-        $('body').i18n();
+        $("body").i18n();
     }
 
     setServer(server) {
@@ -1312,7 +1312,7 @@ export class Viewer extends EventDispatcher {
 
     initDragAndDrop() {
         function allowDrag(e) {
-            e.dataTransfer.dropEffect = 'copy';
+            e.dataTransfer.dropEffect = "copy";
             e.preventDefault();
         }
 
@@ -1403,7 +1403,7 @@ export class Viewer extends EventDispatcher {
 
         let canvas = document.createElement("canvas");
 
-        let context = canvas.getContext('webgl', contextAttributes);
+        let context = canvas.getContext("webgl", contextAttributes);
 
         this.renderer = new THREE.WebGLRenderer({
             alpha: true,
@@ -1415,9 +1415,9 @@ export class Viewer extends EventDispatcher {
         this.renderer.setSize(width, height);
         this.renderer.autoClear = false;
         this.renderArea.appendChild(this.renderer.domElement);
-        this.renderer.domElement.tabIndex = '2222';
-        this.renderer.domElement.style.position = 'absolute';
-        this.renderer.domElement.addEventListener('mousedown', () => {
+        this.renderer.domElement.tabIndex = "2222";
+        this.renderer.domElement.style.position = "absolute";
+        this.renderer.domElement.addEventListener("mousedown", () => {
             this.renderer.domElement.focus();
         });
         // this.renderer.domElement.focus();
@@ -1425,12 +1425,12 @@ export class Viewer extends EventDispatcher {
         // NOTE: If extension errors occur, pass the string into this.renderer.extensions.get(x) before enabling
         // enable frag_depth extension for the interpolation shader, if available
         let gl = this.renderer.getContext();
-        gl.getExtension('EXT_frag_depth');
-        gl.getExtension('WEBGL_depth_texture');
-        gl.getExtension('WEBGL_color_buffer_float');     // Enable explicitly for more portability, EXT_color_buffer_float is the proper name in WebGL 2
+        gl.getExtension("EXT_frag_depth");
+        gl.getExtension("WEBGL_depth_texture");
+        gl.getExtension("WEBGL_color_buffer_float");     // Enable explicitly for more portability, EXT_color_buffer_float is the proper name in WebGL 2
 
         if (gl.createVertexArray == null) {
-            let extVAO = gl.getExtension('OES_vertex_array_object');
+            let extVAO = gl.getExtension("OES_vertex_array_object");
 
             if (!extVAO) {
                 throw new Error("OES_vertex_array_object extension not supported");
@@ -1583,7 +1583,7 @@ export class Viewer extends EventDispatcher {
         if (Potree.measureTimings) performance.mark("update-start");
 
         this.dispatchEvent({
-            type: 'update_start',
+            type: "update_start",
             delta: delta,
             timestamp: timestamp
         });
@@ -1845,7 +1845,7 @@ export class Viewer extends EventDispatcher {
         TWEEN.update(timestamp);
 
         this.dispatchEvent({
-            type: 'update',
+            type: "update",
             delta: delta,
             timestamp: timestamp
         });

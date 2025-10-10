@@ -21,14 +21,14 @@ export class VolumeTool extends EventDispatcher {
         this.viewer = viewer;
         this.renderer = viewer.renderer;
 
-        this.addEventListener('start_inserting_volume', e => {
+        this.addEventListener("start_inserting_volume", e => {
             this.viewer.dispatchEvent({
-                type: 'cancel_insertions'
+                type: "cancel_insertions"
             });
         });
 
         this.scene = new THREE.Scene();
-        this.scene.name = 'scene_volume';
+        this.scene.name = "scene_volume";
 
         this.viewer.inputHandler.registerInteractiveScene(this.scene);
 
@@ -44,7 +44,7 @@ export class VolumeTool extends EventDispatcher {
             this.onAdd({volume: volume});
         }
 
-        this.viewer.inputHandler.addEventListener('delete', e => {
+        this.viewer.inputHandler.addEventListener("delete", e => {
             let volumes = e.selection.filter(e => (e instanceof Volume));
             volumes.forEach(e => this.viewer.scene.removeVolume(e));
         });
@@ -53,18 +53,18 @@ export class VolumeTool extends EventDispatcher {
         viewer.addEventListener("render.pass.scene", e => this.render(e));
         viewer.addEventListener("scene_changed", this.onSceneChange.bind(this));
 
-        viewer.scene.addEventListener('volume_added', this.onAdd);
-        viewer.scene.addEventListener('volume_removed', this.onRemove);
+        viewer.scene.addEventListener("volume_added", this.onAdd);
+        viewer.scene.addEventListener("volume_removed", this.onRemove);
     }
 
     onSceneChange(e) {
         if (e.oldScene) {
-            e.oldScene.removeEventListeners('volume_added', this.onAdd);
-            e.oldScene.removeEventListeners('volume_removed', this.onRemove);
+            e.oldScene.removeEventListeners("volume_added", this.onAdd);
+            e.oldScene.removeEventListeners("volume_removed", this.onRemove);
         }
 
-        e.scene.addEventListener('volume_added', this.onAdd);
-        e.scene.addEventListener('volume_removed', this.onRemove);
+        e.scene.addEventListener("volume_added", this.onAdd);
+        e.scene.addEventListener("volume_removed", this.onRemove);
     }
 
     startInsertion(args = {}) {
@@ -76,10 +76,10 @@ export class VolumeTool extends EventDispatcher {
         }
 
         volume.clip = args.clip || false;
-        volume.name = args.name || 'Volume';
+        volume.name = args.name || "Volume";
 
         this.dispatchEvent({
-            type: 'start_inserting_volume',
+            type: "start_inserting_volume",
             volume: volume
         });
 
@@ -111,21 +111,21 @@ export class VolumeTool extends EventDispatcher {
         };
 
         let drop = e => {
-            volume.removeEventListener('drag', drag);
-            volume.removeEventListener('drop', drop);
+            volume.removeEventListener("drag", drag);
+            volume.removeEventListener("drop", drop);
 
             cancel.callback();
         };
 
         cancel.callback = e => {
-            volume.removeEventListener('drag', drag);
-            volume.removeEventListener('drop', drop);
-            this.viewer.removeEventListener('cancel_insertions', cancel.callback);
+            volume.removeEventListener("drag", drag);
+            volume.removeEventListener("drop", drop);
+            this.viewer.removeEventListener("cancel_insertions", cancel.callback);
         };
 
-        volume.addEventListener('drag', drag);
-        volume.addEventListener('drop', drop);
-        this.viewer.addEventListener('cancel_insertions', cancel.callback);
+        volume.addEventListener("drag", drag);
+        volume.addEventListener("drop", drop);
+        this.viewer.addEventListener("cancel_insertions", cancel.callback);
 
         this.viewer.inputHandler.startDragging(volume);
 
@@ -156,7 +156,7 @@ export class VolumeTool extends EventDispatcher {
 
             let calculatedVolume = volume.getVolume();
             calculatedVolume = calculatedVolume / Math.pow(this.viewer.lengthUnit.unitspermeter, 3) * Math.pow(this.viewer.lengthUnitDisplay.unitspermeter, 3);  // convert to cubic meters then to the cubic display unit
-            let text = Utils.addCommas(calculatedVolume.toFixed(3)) + ' ' + this.viewer.lengthUnitDisplay.code + '\u00B3';
+            let text = Utils.addCommas(calculatedVolume.toFixed(3)) + " " + this.viewer.lengthUnitDisplay.code + "\u00B3";
             label.setText(text);
         }
     }

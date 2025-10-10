@@ -34,7 +34,7 @@ export class AnnotationTool extends EventDispatcher {
             title: "Annotation Title",
             description: `Annotation Description`
         });
-        this.dispatchEvent({type: 'start_inserting_annotation', annotation: annotation});
+        this.dispatchEvent({type: "start_inserting_annotation", annotation: annotation});
 
         const annotations = this.viewer.scene.annotations;
         annotations.add(annotation);
@@ -55,14 +55,14 @@ export class AnnotationTool extends EventDispatcher {
         callbacks.cancel = e => {
             annotations.remove(annotation);
 
-            domElement.removeEventListener('mouseup', insertionCallback, true);
+            domElement.removeEventListener("mouseup", insertionCallback, true);
         };
 
         callbacks.finish = e => {
-            domElement.removeEventListener('mouseup', insertionCallback, true);
+            domElement.removeEventListener("mouseup", insertionCallback, true);
         };
 
-        domElement.addEventListener('mouseup', insertionCallback, true);
+        domElement.addEventListener("mouseup", insertionCallback, true);
 
         let drag = (e) => {
             let I = Utils.getMousePointCloudIntersection(
@@ -85,8 +85,8 @@ export class AnnotationTool extends EventDispatcher {
             this.s.removeEventListener("drop", drop);
         };
 
-        this.s.addEventListener('drag', drag);
-        this.s.addEventListener('drop', drop);
+        this.s.addEventListener("drag", drag);
+        this.s.addEventListener("drop", drop);
 
         this.viewer.scene.scene.add(this.s);
         this.viewer.inputHandler.startDragging(this.s);

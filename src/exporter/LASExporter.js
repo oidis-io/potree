@@ -39,14 +39,14 @@ export class LASExporter {
         let u8View = new Uint8Array(buffer);
         // let u16View = new Uint16Array(buffer);
 
-        setString('LASF', 0, buffer);
+        setString("LASF", 0, buffer);
         u8View[24] = 1;
         u8View[25] = 2;
 
         // system identifier o:26 l:32
 
         // generating software o:58 l:32
-        setString('Potree 1.7', 58, buffer);
+        setString("Potree 1.7", 58, buffer);
 
         // file creation day of year o:90 l:2
         // file creation year o:92 l:2

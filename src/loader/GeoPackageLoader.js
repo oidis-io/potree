@@ -101,7 +101,7 @@ export class GeoPackageLoader {
                 const dao = data.getFeatureDao(table);
 
                 let boundingBox = dao.getBoundingBox();
-                boundingBox = boundingBox.projectBoundingBox(dao.projection, 'EPSG:4326');
+                boundingBox = boundingBox.projectBoundingBox(dao.projection, "EPSG:4326");
                 const geoJson = data.queryForGeoJSONFeaturesInTable(table, boundingBox);
 
                 const matLine = new LineMaterial({

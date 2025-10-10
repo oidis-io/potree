@@ -17,26 +17,26 @@ export class NormalizationMaterial extends THREE.RawShaderMaterial {
         super();
 
         let uniforms = {
-            uDepthMap: {type: 't', value: null},
-            uWeightMap: {type: 't', value: null},
+            uDepthMap: {type: "t", value: null},
+            uWeightMap: {type: "t", value: null},
         };
 
         this.setValues({
             uniforms: uniforms,
-            vertexShader: this.getDefines() + Shaders['normalize.vs'],
-            fragmentShader: this.getDefines() + Shaders['normalize.fs'],
+            vertexShader: this.getDefines() + Shaders["normalize.vs"],
+            fragmentShader: this.getDefines() + Shaders["normalize.fs"],
         });
     }
 
     getDefines() {
-        let defines = '';
+        let defines = "";
 
         return defines;
     }
 
     updateShaderSource() {
-        let vs = this.getDefines() + Shaders['normalize.vs'];
-        let fs = this.getDefines() + Shaders['normalize.fs'];
+        let vs = this.getDefines() + Shaders["normalize.vs"];
+        let fs = this.getDefines() + Shaders["normalize.fs"];
 
         this.setValues({
             vertexShader: vs,

@@ -160,7 +160,7 @@ export class PointCloudOctree extends PointCloudTree {
         this.visibleGeometry = [];
         this.generateDEM = false;
         this.profileRequests = [];
-        this.name = '';
+        this.name = "";
         this._visible = true;
 
         {
@@ -186,7 +186,7 @@ export class PointCloudOctree extends PointCloudTree {
     setName(name) {
         if (this.name !== name) {
             this.name = name;
-            this.dispatchEvent({type: 'name_changed', name: name, pointcloud: this});
+            this.dispatchEvent({type: "name_changed", name: name, pointcloud: this});
         }
     }
 
@@ -930,7 +930,7 @@ export class PointCloudOctree extends PointCloudTree {
             for (let attributeName in geometry.attributes) {
                 let attribute = geometry.attributes[attributeName];
 
-                if (attributeName === 'position') {
+                if (attributeName === "position") {
                     let x = attribute.array[3 * hit.pIndex + 0];
                     let y = attribute.array[3 * hit.pIndex + 1];
                     let z = attribute.array[3 * hit.pIndex + 2];
@@ -939,7 +939,7 @@ export class PointCloudOctree extends PointCloudTree {
                     position.applyMatrix4(pc.matrixWorld);
 
                     point[attributeName] = position;
-                } else if (attributeName === 'indices') {
+                } else if (attributeName === "indices") {
 
                 } else {
                     let values = attribute.array.slice(attribute.itemSize * hit.pIndex, attribute.itemSize * (hit.pIndex + 1));
@@ -1121,7 +1121,7 @@ export class PointCloudOctree extends PointCloudTree {
         if (value !== this._visible) {
             this._visible = value;
 
-            this.dispatchEvent({type: 'visibility_changed', pointcloud: this});
+            this.dispatchEvent({type: "visibility_changed", pointcloud: this});
         }
     }
 }

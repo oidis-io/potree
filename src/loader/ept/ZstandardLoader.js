@@ -13,10 +13,10 @@ import { EptBinaryLoader } from "./BinaryLoader.js";
 
 export class EptZstandardLoader extends EptBinaryLoader {
     extension() {
-        return '.zst';
+        return ".zst";
     }
 
     workerPath() {
-        return Potree.scriptPath + '/workers/EptZstandardDecoderWorker.js';
+        return Potree.scriptPath + "/workers/EptZstandardDecoderWorker.js";
     }
 }

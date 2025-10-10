@@ -26,24 +26,24 @@ export class EyeDomeLightingMaterial extends THREE.RawShaderMaterial {
         super();
 
         let uniforms = {
-            screenWidth: {type: 'f', value: 0},
-            screenHeight: {type: 'f', value: 0},
-            edlStrength: {type: 'f', value: 1.0},
-            uNear: {type: 'f', value: 1.0},
-            uFar: {type: 'f', value: 1.0},
-            radius: {type: 'f', value: 1.0},
-            neighbours: {type: '2fv', value: []},
-            depthMap: {type: 't', value: null},
-            uEDLColor: {type: 't', value: null},
-            uEDLDepth: {type: 't', value: null},
-            opacity: {type: 'f', value: 1.0},
+            screenWidth: {type: "f", value: 0},
+            screenHeight: {type: "f", value: 0},
+            edlStrength: {type: "f", value: 1.0},
+            uNear: {type: "f", value: 1.0},
+            uFar: {type: "f", value: 1.0},
+            radius: {type: "f", value: 1.0},
+            neighbours: {type: "2fv", value: []},
+            depthMap: {type: "t", value: null},
+            uEDLColor: {type: "t", value: null},
+            uEDLDepth: {type: "t", value: null},
+            opacity: {type: "f", value: 1.0},
             uProj: {type: "Matrix4fv", value: []},
         };
 
         this.setValues({
             uniforms: uniforms,
-            vertexShader: this.getDefines() + Shaders['edl.vs'],
-            fragmentShader: this.getDefines() + Shaders['edl.fs'],
+            vertexShader: this.getDefines() + Shaders["edl.vs"],
+            fragmentShader: this.getDefines() + Shaders["edl.fs"],
             lights: false
         });
 
@@ -51,16 +51,16 @@ export class EyeDomeLightingMaterial extends THREE.RawShaderMaterial {
     }
 
     getDefines() {
-        let defines = '';
+        let defines = "";
 
-        defines += '#define NEIGHBOUR_COUNT ' + this.neighbourCount + '\n';
+        defines += "#define NEIGHBOUR_COUNT " + this.neighbourCount + "\n";
 
         return defines;
     }
 
     updateShaderSource() {
-        let vs = this.getDefines() + Shaders['edl.vs'];
-        let fs = this.getDefines() + Shaders['edl.fs'];
+        let vs = this.getDefines() + Shaders["edl.vs"];
+        let fs = this.getDefines() + Shaders["edl.fs"];
 
         this.setValues({
             vertexShader: vs,

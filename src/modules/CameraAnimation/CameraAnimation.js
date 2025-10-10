@@ -404,11 +404,11 @@ export class CameraAnimation extends EventDispatcher {
         svg.style.position = "absolute";
         svg.style.zIndex = "10000";
 
-        const circle = document.createElementNS(svgns, 'circle');
-        circle.setAttributeNS(null, 'cx', "1em");
-        circle.setAttributeNS(null, 'cy', "1em");
-        circle.setAttributeNS(null, 'r', "0.5em");
-        circle.setAttributeNS(null, 'style', 'fill: red; stroke: black; stroke-width: 0.2em;');
+        const circle = document.createElementNS(svgns, "circle");
+        circle.setAttributeNS(null, "cx", "1em");
+        circle.setAttributeNS(null, "cy", "1em");
+        circle.setAttributeNS(null, "r", "0.5em");
+        circle.setAttributeNS(null, "style", "fill: red; stroke: black; stroke-width: 0.2em;");
         svg.appendChild(circle);
 
         const element = this.viewer.renderer.domElement.parentElement;
@@ -448,8 +448,8 @@ export class CameraAnimation extends EventDispatcher {
             }
         };
 
-        svg.addEventListener('mousedown', startDrag);
-        svg.addEventListener('mouseup', endDrag);
+        svg.addEventListener("mousedown", startDrag);
+        svg.addEventListener("mouseup", endDrag);
 
         const handle = {
             svg: svg,

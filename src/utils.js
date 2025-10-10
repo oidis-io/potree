@@ -34,7 +34,7 @@ export class Utils {
                 break;
             }
 
-            if (result.value && result.value.type === 'Feature' && result.value.geometry !== undefined) {
+            if (result.value && result.value.type === "Feature" && result.value.geometry !== undefined) {
                 features.push(result.value);
             }
         }
@@ -42,21 +42,21 @@ export class Utils {
 
     static toString(value) {
         if (value.x != null) {
-            return value.x.toFixed(2) + ', ' + value.y.toFixed(2) + ', ' + value.z.toFixed(2);
+            return value.x.toFixed(2) + ", " + value.y.toFixed(2) + ", " + value.z.toFixed(2);
         } else {
-            return '' + value + '';
+            return "" + value + "";
         }
     }
 
     static normalizeURL(url) {
         let u = new URL(url);
 
-        return u.protocol + '//' + u.hostname + u.pathname.replace(/\/+/g, '/');
+        return u.protocol + "//" + u.hostname + u.pathname.replace(/\/+/g, "/");
     }
 
     static pathExists(url) {
         let req = XHRFactory.createXMLHttpRequest();
-        req.open('GET', url, false);
+        req.open("GET", url, false);
         req.send(null);
         if (req.status !== 200) {
             return false;
@@ -225,19 +225,19 @@ export class Utils {
      * @returns
      */
     static addCommas(nStr) {
-        nStr += '';
-        let x = nStr.split('.');
+        nStr += "";
+        let x = nStr.split(".");
         let x1 = x[0];
-        let x2 = x.length > 1 ? '.' + x[1] : '';
+        let x2 = x.length > 1 ? "." + x[1] : "";
         let rgx = /(\d+)(\d{3})/;
         while (rgx.test(x1)) {
-            x1 = x1.replace(rgx, '$1' + ',' + '$2');
+            x1 = x1.replace(rgx, "$1" + "," + "$2");
         }
         return x1 + x2;
     }
 
     static removeCommas(str) {
-        return str.replace(/,/g, '');
+        return str.replace(/,/g, "");
     }
 
     /**
@@ -246,7 +246,7 @@ export class Utils {
      * code from http://stackoverflow.com/questions/10343913/how-to-create-a-web-worker-from-a-string
      */
     static createWorker(code) {
-        let blob = new Blob([code], {type: 'application/javascript'});
+        let blob = new Blob([code], {type: "application/javascript"});
         let worker = new Worker(URL.createObjectURL(blob));
 
         return worker;
@@ -289,11 +289,11 @@ export class Utils {
         camera.up.set(0, 0, 1);
         let scene = new THREE.Scene();
 
-        let format = '.jpg';
+        let format = ".jpg";
         let urls = [
-            path + 'px' + format, path + 'nx' + format,
-            path + 'py' + format, path + 'ny' + format,
-            path + 'pz' + format, path + 'nz' + format
+            path + "px" + format, path + "nx" + format,
+            path + "py" + format, path + "ny" + format,
+            path + "pz" + format, path + "nz" + format
         ];
 
         let materialArray = [];
@@ -318,7 +318,7 @@ export class Utils {
                     }, function progress(xhr) {
                         // console.log( (xhr.loaded / xhr.total * 100) + '% loaded' );
                     }, function error(xhr) {
-                        console.log('An error happened', xhr);
+                        console.log("An error happened", xhr);
                     }
                 );
             }
@@ -454,11 +454,11 @@ export class Utils {
     }
 
     static pixelsArrayToImage(pixels, width, height) {
-        let canvas = document.createElement('canvas');
+        let canvas = document.createElement("canvas");
         canvas.width = width;
         canvas.height = height;
 
-        let context = canvas.getContext('2d');
+        let context = canvas.getContext("2d");
 
         pixels = new pixels.constructor(pixels);
 
@@ -478,11 +478,11 @@ export class Utils {
     }
 
     static pixelsArrayToDataUrl(pixels, width, height) {
-        let canvas = document.createElement('canvas');
+        let canvas = document.createElement("canvas");
         canvas.width = width;
         canvas.height = height;
 
-        let context = canvas.getContext('2d');
+        let context = canvas.getContext("2d");
 
         pixels = new pixels.constructor(pixels);
 
@@ -500,11 +500,11 @@ export class Utils {
     }
 
     static pixelsArrayToCanvas(pixels, width, height) {
-        let canvas = document.createElement('canvas');
+        let canvas = document.createElement("canvas");
         canvas.width = width;
         canvas.height = height;
 
-        let context = canvas.getContext('2d');
+        let context = canvas.getContext("2d");
 
         pixels = new pixels.constructor(pixels);
 
@@ -730,33 +730,33 @@ export class Utils {
 
     // from http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
     static getParameterByName(name) {
-        name = name.replace(/[[]/, '\\[').replace(/[\]]/, '\\]');
-        let regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+        name = name.replace(/[[]/, "\\[").replace(/[\]]/, "\\]");
+        let regex = new RegExp("[\\?&]" + name + "=([^&#]*)");
         let results = regex.exec(document.location.search);
-        return results === null ? null : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        return results === null ? null : decodeURIComponent(results[1].replace(/\+/g, " "));
     }
 
     static setParameter(name, value) {
         // value = encodeURIComponent(value);
 
-        name = name.replace(/[[]/, '\\[').replace(/[\]]/, '\\]');
-        let regex = new RegExp('([\\?&])(' + name + '=([^&#]*))');
+        name = name.replace(/[[]/, "\\[").replace(/[\]]/, "\\]");
+        let regex = new RegExp("([\\?&])(" + name + "=([^&#]*))");
         let results = regex.exec(document.location.search);
 
         let url = window.location.href;
         if (results === null) {
             if (window.location.search.length === 0) {
-                url = url + '?';
+                url = url + "?";
             } else {
-                url = url + '&';
+                url = url + "&";
             }
 
-            url = url + name + '=' + value;
+            url = url + name + "=" + value;
         } else {
-            let newValue = name + '=' + value;
+            let newValue = name + "=" + value;
             url = url.replace(results[2], newValue);
         }
-        window.history.replaceState({}, '', url);
+        window.history.replaceState({}, "", url);
     }
 
     static createChildAABB(aabb, index) {
@@ -789,20 +789,20 @@ export class Utils {
     static clipboardCopy(text) {
         let textArea = document.createElement("textarea");
 
-        textArea.style.position = 'fixed';
+        textArea.style.position = "fixed";
         textArea.style.top = 0;
         textArea.style.left = 0;
 
-        textArea.style.width = '2em';
-        textArea.style.height = '2em';
+        textArea.style.width = "2em";
+        textArea.style.height = "2em";
 
         textArea.style.padding = 0;
 
-        textArea.style.border = 'none';
-        textArea.style.outline = 'none';
-        textArea.style.boxShadow = 'none';
+        textArea.style.border = "none";
+        textArea.style.outline = "none";
+        textArea.style.boxShadow = "none";
 
-        textArea.style.background = 'transparent';
+        textArea.style.background = "transparent";
 
         textArea.value = text;
 
@@ -811,7 +811,7 @@ export class Utils {
         textArea.select();
 
         try {
-            let success = document.execCommand('copy');
+            let success = document.execCommand("copy");
             if (success) {
                 console.log("copied text to clipboard");
             } else {
@@ -944,7 +944,7 @@ export class Utils {
 
             let transform;
 
-            if (projection.includes('EPSG')) {
+            if (projection.includes("EPSG")) {
                 transform = proj4(projection, "WGS84");
             } else {
                 proj4.defs("pointcloud", projection);
@@ -1072,7 +1072,7 @@ Utils.screenPass = new function () {
     this.render = function (renderer, material, target) {
         this.screenQuad.material = material;
 
-        if (typeof target === 'undefined') {
+        if (typeof target === "undefined") {
             renderer.render(this.screenScene, this.camera);
         } else {
             renderer.render(this.screenScene, this.camera, target);

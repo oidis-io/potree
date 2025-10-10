@@ -27,9 +27,9 @@ export class GeoJSONExporter {
 
         if (coords.length === 1) {
             let feature = {
-                type: 'Feature',
+                type: "Feature",
                 geometry: {
-                    type: 'Point',
+                    type: "Point",
                     coordinates: coords[0]
                 },
                 properties: {
@@ -39,12 +39,12 @@ export class GeoJSONExporter {
             features.push(feature);
         } else if (coords.length > 1 && !measurement.closed) {
             let object = {
-                'type': 'Feature',
-                'geometry': {
-                    'type': 'LineString',
-                    'coordinates': coords
+                "type": "Feature",
+                "geometry": {
+                    "type": "LineString",
+                    "coordinates": coords
                 },
-                'properties': {
+                "properties": {
                     name: measurement.name
                 }
             };
@@ -52,12 +52,12 @@ export class GeoJSONExporter {
             features.push(object);
         } else if (coords.length > 1 && measurement.closed) {
             let object = {
-                'type': 'Feature',
-                'geometry': {
-                    'type': 'Polygon',
-                    'coordinates': [[...coords, coords[0]]]
+                "type": "Feature",
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [[...coords, coords[0]]]
                 },
-                'properties': {
+                "properties": {
                     name: measurement.name
                 }
             };
@@ -67,9 +67,9 @@ export class GeoJSONExporter {
         if (measurement.showDistances) {
             measurement.edgeLabels.forEach((label) => {
                 let labelPoint = {
-                    type: 'Feature',
+                    type: "Feature",
                     geometry: {
-                        type: 'Point',
+                        type: "Point",
                         coordinates: label.position.toArray()
                     },
                     properties: {
@@ -83,9 +83,9 @@ export class GeoJSONExporter {
         if (measurement.showArea) {
             let point = measurement.areaLabel.position;
             let labelArea = {
-                type: 'Feature',
+                type: "Feature",
                 geometry: {
-                    type: 'Point',
+                    type: "Point",
                     coordinates: point.toArray()
                 },
                 properties: {
@@ -113,10 +113,10 @@ export class GeoJSONExporter {
         }
 
         let geojson = {
-            'type': 'FeatureCollection',
-            'features': features
+            "type": "FeatureCollection",
+            "features": features
         };
 
-        return JSON.stringify(geojson, null, '\t');
+        return JSON.stringify(geojson, null, "\t");
     }
 }

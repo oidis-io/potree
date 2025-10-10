@@ -133,7 +133,7 @@ export class Scene extends EventDispatcher {
         this.scenePointCloud.add(pointcloud);
 
         this.dispatchEvent({
-            type: 'pointcloud_added',
+            type: "pointcloud_added",
             pointcloud: pointcloud
         });
     }
@@ -141,9 +141,9 @@ export class Scene extends EventDispatcher {
     addVolume(volume) {
         this.volumes.push(volume);
         this.dispatchEvent({
-            'type': 'volume_added',
-            'scene': this,
-            'volume': volume
+            "type": "volume_added",
+            "scene": this,
+            "volume": volume
         });
     }
 
@@ -152,9 +152,9 @@ export class Scene extends EventDispatcher {
         this.scene.add(images.node);
 
         this.dispatchEvent({
-            'type': 'oriented_images_added',
-            'scene': this,
-            'images': images
+            "type": "oriented_images_added",
+            "scene": this,
+            "images": images
         });
     }
 
@@ -164,9 +164,9 @@ export class Scene extends EventDispatcher {
             this.orientedImages.splice(index, 1);
 
             this.dispatchEvent({
-                'type': 'oriented_images_removed',
-                'scene': this,
-                'images': images
+                "type": "oriented_images_removed",
+                "scene": this,
+                "images": images
             });
         }
     }
@@ -176,9 +176,9 @@ export class Scene extends EventDispatcher {
         this.scene.add(images.node);
 
         this.dispatchEvent({
-            'type': '360_images_added',
-            'scene': this,
-            'images': images
+            "type": "360_images_added",
+            "scene": this,
+            "images": images
         });
     }
 
@@ -188,9 +188,9 @@ export class Scene extends EventDispatcher {
             this.images360.splice(index, 1);
 
             this.dispatchEvent({
-                'type': '360_images_removed',
-                'scene': this,
-                'images': images
+                "type": "360_images_removed",
+                "scene": this,
+                "images": images
             });
         }
     }
@@ -200,9 +200,9 @@ export class Scene extends EventDispatcher {
         this.scene.add(geopackage.node);
 
         this.dispatchEvent({
-            'type': 'geopackage_added',
-            'scene': this,
-            'geopackage': geopackage
+            "type": "geopackage_added",
+            "scene": this,
+            "geopackage": geopackage
         });
     }
 
@@ -212,9 +212,9 @@ export class Scene extends EventDispatcher {
             this.geopackages.splice(index, 1);
 
             this.dispatchEvent({
-                'type': 'geopackage_removed',
-                'scene': this,
-                'geopackage': geopackage
+                "type": "geopackage_removed",
+                "scene": this,
+                "geopackage": geopackage
             });
         }
     }
@@ -225,9 +225,9 @@ export class Scene extends EventDispatcher {
             this.volumes.splice(index, 1);
 
             this.dispatchEvent({
-                'type': 'volume_removed',
-                'scene': this,
-                'volume': volume
+                "type": "volume_removed",
+                "scene": this,
+                "volume": volume
             });
         }
     }
@@ -235,9 +235,9 @@ export class Scene extends EventDispatcher {
     addCameraAnimation(animation) {
         this.cameraAnimations.push(animation);
         this.dispatchEvent({
-            'type': 'camera_animation_added',
-            'scene': this,
-            'animation': animation
+            "type": "camera_animation_added",
+            "scene": this,
+            "animation": animation
         });
     }
 
@@ -247,9 +247,9 @@ export class Scene extends EventDispatcher {
             this.cameraAnimations.splice(index, 1);
 
             this.dispatchEvent({
-                'type': 'camera_animation_removed',
-                'scene': this,
-                'animation': animation
+                "type": "camera_animation_removed",
+                "scene": this,
+                "animation": animation
             });
         }
     }
@@ -280,9 +280,9 @@ export class Scene extends EventDispatcher {
         measurement.lengthUnitDisplay = this.lengthUnitDisplay;
         this.measurements.push(measurement);
         this.dispatchEvent({
-            'type': 'measurement_added',
-            'scene': this,
-            'measurement': measurement
+            "type": "measurement_added",
+            "scene": this,
+            "measurement": measurement
         });
     }
 
@@ -291,9 +291,9 @@ export class Scene extends EventDispatcher {
         if (index > -1) {
             this.measurements.splice(index, 1);
             this.dispatchEvent({
-                'type': 'measurement_removed',
-                'scene': this,
-                'measurement': measurement
+                "type": "measurement_removed",
+                "scene": this,
+                "measurement": measurement
             });
         }
     }
@@ -301,9 +301,9 @@ export class Scene extends EventDispatcher {
     addProfile(profile) {
         this.profiles.push(profile);
         this.dispatchEvent({
-            'type': 'profile_added',
-            'scene': this,
-            'profile': profile
+            "type": "profile_added",
+            "scene": this,
+            "profile": profile
         });
     }
 
@@ -312,9 +312,9 @@ export class Scene extends EventDispatcher {
         if (index > -1) {
             this.profiles.splice(index, 1);
             this.dispatchEvent({
-                'type': 'profile_removed',
-                'scene': this,
-                'profile': profile
+                "type": "profile_removed",
+                "scene": this,
+                "profile": profile
             });
         }
     }

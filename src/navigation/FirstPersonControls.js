@@ -44,12 +44,12 @@ export class FirstPersonControls extends EventDispatcher {
         this.lockElevation = false;
 
         this.keys = {
-            FORWARD: ['W'.charCodeAt(0), 38],
-            BACKWARD: ['S'.charCodeAt(0), 40],
-            LEFT: ['A'.charCodeAt(0), 37],
-            RIGHT: ['D'.charCodeAt(0), 39],
-            UP: ['R'.charCodeAt(0), 33],
-            DOWN: ['F'.charCodeAt(0), 34]
+            FORWARD: ["W".charCodeAt(0), 38],
+            BACKWARD: ["S".charCodeAt(0), 40],
+            LEFT: ["A".charCodeAt(0), 37],
+            RIGHT: ["D".charCodeAt(0), 39],
+            UP: ["R".charCodeAt(0), 33],
+            DOWN: ["F".charCodeAt(0), 34]
         };
 
         this.fadeFactor = 50;
@@ -68,7 +68,7 @@ export class FirstPersonControls extends EventDispatcher {
             if (e.drag.startHandled === undefined) {
                 e.drag.startHandled = true;
 
-                this.dispatchEvent({type: 'start'});
+                this.dispatchEvent({type: "start"});
             }
 
             let moveSpeed = this.viewer.getMoveSpeed();
@@ -88,7 +88,7 @@ export class FirstPersonControls extends EventDispatcher {
         };
 
         let drop = e => {
-            this.dispatchEvent({type: 'end'});
+            this.dispatchEvent({type: "end"});
         };
 
         let scroll = (e) => {
@@ -109,10 +109,10 @@ export class FirstPersonControls extends EventDispatcher {
             this.zoomToLocation(e.mouse);
         };
 
-        this.addEventListener('drag', drag);
-        this.addEventListener('drop', drop);
-        this.addEventListener('mousewheel', scroll);
-        this.addEventListener('dblclick', dblclick);
+        this.addEventListener("drag", drag);
+        this.addEventListener("drop", drop);
+        this.addEventListener("mousewheel", scroll);
+        this.addEventListener("dblclick", dblclick);
     }
 
     setScene(scene) {

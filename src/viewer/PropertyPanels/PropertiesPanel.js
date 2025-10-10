@@ -309,7 +309,7 @@ export class PropertiesPanel {
 
             let opt = panel.find(`#optPointSizing`);
             opt.selectmenu();
-            opt.val(strSizeType).selectmenu('refresh');
+            opt.val(strSizeType).selectmenu("refresh");
 
             opt.selectmenu({
                 change: (event, ui) => {
@@ -332,7 +332,7 @@ export class PropertiesPanel {
             let update = () => {
                 let typename = Object.keys(PointShape)[material.shape];
 
-                opt.selectmenu().val(typename).selectmenu('refresh');
+                opt.selectmenu().val(typename).selectmenu("refresh");
             };
             this.addVolatileListener(material, "point_shape_changed", update);
 
@@ -351,13 +351,13 @@ export class PropertiesPanel {
             this.addVolatileListener(material, "backface_changed", update);
             update();
 
-            let blockBackface = $('#materials_backface_container');
-            blockBackface.css('display', 'none');
+            let blockBackface = $("#materials_backface_container");
+            blockBackface.css("display", "none");
 
             const pointAttributes = pointcloud.pcoGeometry.pointAttributes;
             const hasNormals = pointAttributes.hasNormals ? pointAttributes.hasNormals() : false;
             if (hasNormals) {
-                blockBackface.css('display', 'block');
+                blockBackface.css("display", "block");
             }
             /*
             opt.checkboxradio({
@@ -409,10 +409,10 @@ export class PropertiesPanel {
             options.push(
                 "elevation",
                 "color",
-                'matcap',
-                'indices',
-                'level of detail',
-                'composite'
+                "matcap",
+                "indices",
+                "level of detail",
+                "composite"
             );
 
             const blacklist = [
@@ -422,7 +422,7 @@ export class PropertiesPanel {
 
             options = options.filter(o => !blacklist.includes(o));
 
-            let attributeSelection = panel.find('#optMaterial');
+            let attributeSelection = panel.find("#optMaterial");
             for (let option of options) {
                 let elOption = $(`<option>${option}</option>`);
                 attributeSelection.append(elOption);
@@ -447,7 +447,7 @@ export class PropertiesPanel {
 
                     const [min, max] = attribute.range;
 
-                    panel.find('#sldIntensityRange').slider({
+                    panel.find("#sldIntensityRange").slider({
                         range: true,
                         min: min, max: max, step: 0.01,
                         values: [min, max],
@@ -469,7 +469,7 @@ export class PropertiesPanel {
                     let minMaxAreNumbers = typeof min === "number" && typeof max === "number";
 
                     if (minMaxAreNumbers) {
-                        panel.find('#sldExtraRange').slider({
+                        panel.find("#sldExtraRange").slider({
                             range: true,
                             min: min,
                             max: max,
@@ -484,54 +484,54 @@ export class PropertiesPanel {
                     }
                 }
 
-                let blockWeights = $('#materials\\.composite_weight_container');
-                let blockElevation = $('#materials\\.elevation_container');
-                let blockRGB = $('#materials\\.rgb_container');
-                let blockExtra = $('#materials\\.extra_container');
-                let blockColor = $('#materials\\.color_container');
-                let blockIntensity = $('#materials\\.intensity_container');
-                let blockIndex = $('#materials\\.index_container');
-                let blockTransition = $('#materials\\.transition_container');
-                let blockGps = $('#materials\\.gpstime_container');
-                let blockMatcap = $('#materials\\.matcap_container');
+                let blockWeights = $("#materials\\.composite_weight_container");
+                let blockElevation = $("#materials\\.elevation_container");
+                let blockRGB = $("#materials\\.rgb_container");
+                let blockExtra = $("#materials\\.extra_container");
+                let blockColor = $("#materials\\.color_container");
+                let blockIntensity = $("#materials\\.intensity_container");
+                let blockIndex = $("#materials\\.index_container");
+                let blockTransition = $("#materials\\.transition_container");
+                let blockGps = $("#materials\\.gpstime_container");
+                let blockMatcap = $("#materials\\.matcap_container");
 
-                blockIndex.css('display', 'none');
-                blockIntensity.css('display', 'none');
-                blockElevation.css('display', 'none');
-                blockRGB.css('display', 'none');
-                blockExtra.css('display', 'none');
-                blockColor.css('display', 'none');
-                blockWeights.css('display', 'none');
-                blockTransition.css('display', 'none');
-                blockMatcap.css('display', 'none');
-                blockGps.css('display', 'none');
+                blockIndex.css("display", "none");
+                blockIntensity.css("display", "none");
+                blockElevation.css("display", "none");
+                blockRGB.css("display", "none");
+                blockExtra.css("display", "none");
+                blockColor.css("display", "none");
+                blockWeights.css("display", "none");
+                blockTransition.css("display", "none");
+                blockMatcap.css("display", "none");
+                blockGps.css("display", "none");
 
-                if (selectedValue === 'composite') {
-                    blockWeights.css('display', 'block');
-                    blockElevation.css('display', 'block');
-                    blockRGB.css('display', 'block');
-                    blockIntensity.css('display', 'block');
-                } else if (selectedValue === 'elevation') {
-                    blockElevation.css('display', 'block');
-                } else if (selectedValue === 'RGB and Elevation') {
-                    blockRGB.css('display', 'block');
-                    blockElevation.css('display', 'block');
-                } else if (selectedValue === 'rgba') {
-                    blockRGB.css('display', 'block');
-                } else if (selectedValue === 'color') {
-                    blockColor.css('display', 'block');
-                } else if (selectedValue === 'intensity') {
-                    blockIntensity.css('display', 'block');
-                } else if (selectedValue === 'intensity gradient') {
-                    blockIntensity.css('display', 'block');
+                if (selectedValue === "composite") {
+                    blockWeights.css("display", "block");
+                    blockElevation.css("display", "block");
+                    blockRGB.css("display", "block");
+                    blockIntensity.css("display", "block");
+                } else if (selectedValue === "elevation") {
+                    blockElevation.css("display", "block");
+                } else if (selectedValue === "RGB and Elevation") {
+                    blockRGB.css("display", "block");
+                    blockElevation.css("display", "block");
+                } else if (selectedValue === "rgba") {
+                    blockRGB.css("display", "block");
+                } else if (selectedValue === "color") {
+                    blockColor.css("display", "block");
+                } else if (selectedValue === "intensity") {
+                    blockIntensity.css("display", "block");
+                } else if (selectedValue === "intensity gradient") {
+                    blockIntensity.css("display", "block");
                 } else if (selectedValue === "indices") {
-                    blockIndex.css('display', 'block');
+                    blockIndex.css("display", "block");
                 } else if (selectedValue === "matcap") {
-                    blockMatcap.css('display', 'block');
+                    blockMatcap.css("display", "block");
                 } else if (selectedValue === "classification") {
                     // add classification color selctor?
                 } else if (selectedValue === "gps-time") {
-                    blockGps.css('display', 'block');
+                    blockGps.css("display", "block");
                 } else if (selectedValue === "number of returns") {
 
                 } else if (selectedValue === "return number") {
@@ -539,14 +539,14 @@ export class PropertiesPanel {
                 } else if (["source id", "point source id"].includes(selectedValue)) {
 
                 } else {
-                    blockExtra.css('display', 'block');
+                    blockExtra.css("display", "block");
                 }
             };
 
             attributeSelection.selectmenu({change: updateMaterialPanel});
 
             let update = () => {
-                attributeSelection.val(material.activeAttributeName).selectmenu('refresh');
+                attributeSelection.val(material.activeAttributeName).selectmenu("refresh");
             };
             this.addVolatileListener(material, "point_color_type_changed", update);
             this.addVolatileListener(material, "active_attribute_changed", update);
@@ -619,7 +619,7 @@ export class PropertiesPanel {
                 `);
 
                 elMatcap.click(() => {
-                    material.matcap = matcap.icon.substring(matcap.icon.lastIndexOf('/'));
+                    material.matcap = matcap.icon.substring(matcap.icon.lastIndexOf("/"));
                 });
 
                 elMatcapContainer.append(elMatcap);
@@ -627,7 +627,7 @@ export class PropertiesPanel {
         }
 
         {
-            panel.find('#sldRGBGamma').slider({
+            panel.find("#sldRGBGamma").slider({
                 value: material.rgbGamma,
                 min: 0, max: 4, step: 0.01,
                 slide: (event, ui) => {
@@ -635,7 +635,7 @@ export class PropertiesPanel {
                 }
             });
 
-            panel.find('#sldRGBContrast').slider({
+            panel.find("#sldRGBContrast").slider({
                 value: material.rgbContrast,
                 min: -1, max: 1, step: 0.01,
                 slide: (event, ui) => {
@@ -643,7 +643,7 @@ export class PropertiesPanel {
                 }
             });
 
-            panel.find('#sldRGBBrightness').slider({
+            panel.find("#sldRGBBrightness").slider({
                 value: material.rgbBrightness,
                 min: -1, max: 1, step: 0.01,
                 slide: (event, ui) => {
@@ -651,7 +651,7 @@ export class PropertiesPanel {
                 }
             });
 
-            panel.find('#sldExtraGamma').slider({
+            panel.find("#sldExtraGamma").slider({
                 value: material.extraGamma,
                 min: 0, max: 4, step: 0.01,
                 slide: (event, ui) => {
@@ -659,7 +659,7 @@ export class PropertiesPanel {
                 }
             });
 
-            panel.find('#sldExtraBrightness').slider({
+            panel.find("#sldExtraBrightness").slider({
                 value: material.extraBrightness,
                 min: -1, max: 1, step: 0.01,
                 slide: (event, ui) => {
@@ -667,7 +667,7 @@ export class PropertiesPanel {
                 }
             });
 
-            panel.find('#sldExtraContrast').slider({
+            panel.find("#sldExtraContrast").slider({
                 value: material.extraContrast,
                 min: -1, max: 1, step: 0.01,
                 slide: (event, ui) => {
@@ -675,7 +675,7 @@ export class PropertiesPanel {
                 }
             });
 
-            panel.find('#sldHeightRange').slider({
+            panel.find("#sldHeightRange").slider({
                 range: true,
                 min: 0, max: 1000, step: 0.01,
                 values: [0, 1000],
@@ -685,7 +685,7 @@ export class PropertiesPanel {
                 }
             });
 
-            panel.find('#sldIntensityGamma').slider({
+            panel.find("#sldIntensityGamma").slider({
                 value: material.intensityGamma,
                 min: 0, max: 4, step: 0.01,
                 slide: (event, ui) => {
@@ -693,7 +693,7 @@ export class PropertiesPanel {
                 }
             });
 
-            panel.find('#sldIntensityContrast').slider({
+            panel.find("#sldIntensityContrast").slider({
                 value: material.intensityContrast,
                 min: -1, max: 1, step: 0.01,
                 slide: (event, ui) => {
@@ -701,7 +701,7 @@ export class PropertiesPanel {
                 }
             });
 
-            panel.find('#sldIntensityBrightness').slider({
+            panel.find("#sldIntensityBrightness").slider({
                 value: material.intensityBrightness,
                 min: -1, max: 1, step: 0.01,
                 slide: (event, ui) => {
@@ -709,7 +709,7 @@ export class PropertiesPanel {
                 }
             });
 
-            panel.find('#sldWeightRGB').slider({
+            panel.find("#sldWeightRGB").slider({
                 value: material.weightRGB,
                 min: 0, max: 1, step: 0.01,
                 slide: (event, ui) => {
@@ -717,7 +717,7 @@ export class PropertiesPanel {
                 }
             });
 
-            panel.find('#sldWeightIntensity').slider({
+            panel.find("#sldWeightIntensity").slider({
                 value: material.weightIntensity,
                 min: 0, max: 1, step: 0.01,
                 slide: (event, ui) => {
@@ -725,7 +725,7 @@ export class PropertiesPanel {
                 }
             });
 
-            panel.find('#sldWeightElevation').slider({
+            panel.find("#sldWeightElevation").slider({
                 value: material.weightElevation,
                 min: 0, max: 1, step: 0.01,
                 slide: (event, ui) => {
@@ -733,7 +733,7 @@ export class PropertiesPanel {
                 }
             });
 
-            panel.find('#sldWeightClassification').slider({
+            panel.find("#sldWeightClassification").slider({
                 value: material.weightClassification,
                 min: 0, max: 1, step: 0.01,
                 slide: (event, ui) => {
@@ -741,7 +741,7 @@ export class PropertiesPanel {
                 }
             });
 
-            panel.find('#sldWeightReturnNumber').slider({
+            panel.find("#sldWeightReturnNumber").slider({
                 value: material.weightReturnNumber,
                 min: 0, max: 1, step: 0.01,
                 slide: (event, ui) => {
@@ -749,7 +749,7 @@ export class PropertiesPanel {
                 }
             });
 
-            panel.find('#sldWeightSourceID').slider({
+            panel.find("#sldWeightSourceID").slider({
                 value: material.weightSourceID,
                 min: 0, max: 1, step: 0.01,
                 slide: (event, ui) => {
@@ -760,9 +760,9 @@ export class PropertiesPanel {
             panel.find(`#materials\\.color\\.picker`).spectrum({
                 flat: true,
                 showInput: true,
-                preferredFormat: 'rgb',
-                cancelText: '',
-                chooseText: 'Apply',
+                preferredFormat: "rgb",
+                cancelText: "",
+                chooseText: "Apply",
                 color: `#${material.color.getHexString()}`,
                 move: color => {
                     let cRGB = color.toRgb();
@@ -778,7 +778,7 @@ export class PropertiesPanel {
 
             this.addVolatileListener(material, "color_changed", () => {
                 panel.find(`#materials\\.color\\.picker`)
-                    .spectrum('set', `#${material.color.getHexString()}`);
+                    .spectrum("set", `#${material.color.getHexString()}`);
             });
 
             let updateHeightRange = function () {
@@ -809,8 +809,8 @@ export class PropertiesPanel {
 
                 let range = material.elevationRange;
 
-                panel.find('#lblHeightRange').html(`${range[0].toFixed(2)} to ${range[1].toFixed(2)}`);
-                panel.find('#sldHeightRange').slider({min: bMin, max: bMax, values: range});
+                panel.find("#lblHeightRange").html(`${range[0].toFixed(2)} to ${range[1].toFixed(2)}`);
+                panel.find("#sldHeightRange").slider({min: bMin, max: bMax, values: range});
             };
 
             let updateExtraRange = function () {
@@ -836,7 +836,7 @@ export class PropertiesPanel {
 
                 if (range) {
                     let msg = `${range[0].toFixed(2)} to ${range[1].toFixed(2)}`;
-                    panel.find('#lblExtraRange').html(msg);
+                    panel.find("#lblExtraRange").html(msg);
                 } else {
                     panel.find("could not deduce range");
                 }
@@ -845,13 +845,13 @@ export class PropertiesPanel {
             let updateIntensityRange = function () {
                 let range = material.intensityRange;
 
-                panel.find('#lblIntensityRange').html(`${parseInt(range[0])} to ${parseInt(range[1])}`);
+                panel.find("#lblIntensityRange").html(`${parseInt(range[0])} to ${parseInt(range[1])}`);
             };
 
             {
                 updateHeightRange();
-                panel.find(`#sldHeightRange`).slider('option', 'min');
-                panel.find(`#sldHeightRange`).slider('option', 'max');
+                panel.find(`#sldHeightRange`).slider("option", "min");
+                panel.find(`#sldHeightRange`).slider("option", "max");
             }
 
             {
@@ -887,13 +887,13 @@ export class PropertiesPanel {
 
                 updateIntensityRange();
 
-                panel.find('#lblIntensityGamma').html(gamma.toFixed(2));
-                panel.find('#lblIntensityContrast').html(contrast.toFixed(2));
-                panel.find('#lblIntensityBrightness').html(brightness.toFixed(2));
+                panel.find("#lblIntensityGamma").html(gamma.toFixed(2));
+                panel.find("#lblIntensityContrast").html(contrast.toFixed(2));
+                panel.find("#lblIntensityBrightness").html(brightness.toFixed(2));
 
-                panel.find('#sldIntensityGamma').slider({value: gamma});
-                panel.find('#sldIntensityContrast').slider({value: contrast});
-                panel.find('#sldIntensityBrightness').slider({value: brightness});
+                panel.find("#sldIntensityGamma").slider({value: gamma});
+                panel.find("#sldIntensityContrast").slider({value: contrast});
+                panel.find("#sldIntensityBrightness").slider({value: brightness});
             };
 
             let onRGBChange = () => {
@@ -901,13 +901,13 @@ export class PropertiesPanel {
                 let contrast = material.rgbContrast;
                 let brightness = material.rgbBrightness;
 
-                panel.find('#lblRGBGamma').html(gamma.toFixed(2));
-                panel.find('#lblRGBContrast').html(contrast.toFixed(2));
-                panel.find('#lblRGBBrightness').html(brightness.toFixed(2));
+                panel.find("#lblRGBGamma").html(gamma.toFixed(2));
+                panel.find("#lblRGBContrast").html(contrast.toFixed(2));
+                panel.find("#lblRGBBrightness").html(brightness.toFixed(2));
 
-                panel.find('#sldRGBGamma').slider({value: gamma});
-                panel.find('#sldRGBContrast').slider({value: contrast});
-                panel.find('#sldRGBBrightness').slider({value: brightness});
+                panel.find("#sldRGBGamma").slider({value: gamma});
+                panel.find("#sldRGBContrast").slider({value: contrast});
+                panel.find("#sldRGBBrightness").slider({value: brightness});
             };
 
             this.addVolatileListener(material, "material_property_changed", updateExtraRange);

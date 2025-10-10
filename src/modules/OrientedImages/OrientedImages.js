@@ -437,8 +437,8 @@ export class OrientedImageLoader {
                 moveToImage(hoveredElement);
             }
         };
-        viewer.renderer.domElement.addEventListener('mousemove', onMouseMove, false);
-        viewer.renderer.domElement.addEventListener('mousedown', onMouseClick, false);
+        viewer.renderer.domElement.addEventListener("mousemove", onMouseMove, false);
+        viewer.renderer.domElement.addEventListener("mousedown", onMouseClick, false);
 
         viewer.addEventListener("update", () => {
             for (const image of orientedImages) {

@@ -21,14 +21,14 @@ export class ProfileTool extends EventDispatcher {
         this.viewer = viewer;
         this.renderer = viewer.renderer;
 
-        this.addEventListener('start_inserting_profile', e => {
+        this.addEventListener("start_inserting_profile", e => {
             this.viewer.dispatchEvent({
-                type: 'cancel_insertions'
+                type: "cancel_insertions"
             });
         });
 
         this.scene = new THREE.Scene();
-        this.scene.name = 'scene_profile';
+        this.scene.name = "scene_profile";
         this.light = new THREE.PointLight(0xffffff, 1.0);
         this.scene.add(this.light);
 
@@ -45,28 +45,28 @@ export class ProfileTool extends EventDispatcher {
         viewer.addEventListener("render.pass.perspective_overlay", this.render.bind(this));
         viewer.addEventListener("scene_changed", this.onSceneChange.bind(this));
 
-        viewer.scene.addEventListener('profile_added', this.onAdd);
-        viewer.scene.addEventListener('profile_removed', this.onRemove);
+        viewer.scene.addEventListener("profile_added", this.onAdd);
+        viewer.scene.addEventListener("profile_removed", this.onRemove);
     }
 
     onSceneChange(e) {
         if (e.oldScene) {
-            e.oldScene.removeEventListeners('profile_added', this.onAdd);
-            e.oldScene.removeEventListeners('profile_removed', this.onRemove);
+            e.oldScene.removeEventListeners("profile_added", this.onAdd);
+            e.oldScene.removeEventListeners("profile_removed", this.onRemove);
         }
 
-        e.scene.addEventListener('profile_added', this.onAdd);
-        e.scene.addEventListener('profile_removed', this.onRemove);
+        e.scene.addEventListener("profile_added", this.onAdd);
+        e.scene.addEventListener("profile_removed", this.onRemove);
     }
 
     startInsertion(args = {}) {
         let domElement = this.viewer.renderer.domElement;
 
         let profile = new Profile();
-        profile.name = args.name || 'Profile';
+        profile.name = args.name || "Profile";
 
         this.dispatchEvent({
-            type: 'start_inserting_profile',
+            type: "start_inserting_profile",
             profile: profile
         });
 
@@ -99,12 +99,12 @@ export class ProfileTool extends EventDispatcher {
 
         cancel.callback = e => {
             profile.removeMarker(profile.points.length - 1);
-            domElement.removeEventListener('mouseup', insertionCallback, false);
-            this.viewer.removeEventListener('cancel_insertions', cancel.callback);
+            domElement.removeEventListener("mouseup", insertionCallback, false);
+            this.viewer.removeEventListener("cancel_insertions", cancel.callback);
         };
 
-        this.viewer.addEventListener('cancel_insertions', cancel.callback);
-        domElement.addEventListener('mouseup', insertionCallback, false);
+        this.viewer.addEventListener("cancel_insertions", cancel.callback);
+        domElement.addEventListener("mouseup", insertionCallback, false);
 
         profile.addMarker(new THREE.Vector3(0, 0, 0));
         this.viewer.inputHandler.startDragging(

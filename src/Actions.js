@@ -15,7 +15,7 @@ export class Action extends EventDispatcher {
     constructor(args = {}) {
         super();
 
-        this.icon = args.icon || '';
+        this.icon = args.icon || "";
         this.tooltip = args.tooltip;
 
         if (args.onclick !== undefined) {
@@ -41,7 +41,7 @@ export class Action extends EventDispatcher {
         this.icon = newIcon;
 
         this.dispatchEvent({
-            type: 'icon_changed',
+            type: "icon_changed",
             action: this,
             icon: newIcon,
             oldIcon: oldIcon

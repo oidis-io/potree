@@ -20,7 +20,7 @@ export class CameraPanel {
             this.update();
         };
 
-        let copyIconPath = Potree.resourcePath + '/icons/copy.svg';
+        let copyIconPath = Potree.resourcePath + "/icons/copy.svg";
         this.elContent = $(`
         <div class="propertypanel_content">
             <table>

@@ -359,7 +359,7 @@ export class ProfileRequest {
                     points.data[attributeName] = filteredBuffer;
                 }
 
-                points.data['mileage'] = mileage;
+                points.data["mileage"] = mileage;
                 points.numPoints = accepted.length;
 
                 segment.points.add(points);

@@ -42,7 +42,7 @@ function createHeightLine() {
 }
 
 function createHeightLabel() {
-    const heightLabel = new TextSprite('');
+    const heightLabel = new TextSprite("");
 
     heightLabel.setTextColor({r: 140, g: 250, b: 140, a: 1.0});
     heightLabel.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
@@ -56,7 +56,7 @@ function createHeightLabel() {
 }
 
 function createAreaLabel() {
-    const areaLabel = new TextSprite('');
+    const areaLabel = new TextSprite("");
 
     areaLabel.setTextColor({r: 140, g: 250, b: 140, a: 1.0});
     areaLabel.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
@@ -293,7 +293,7 @@ export class Measure extends THREE.Object3D {
 
         this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
 
-        this.name = 'Measure_' + this.constructor.counter;
+        this.name = "Measure_" + this.constructor.counter;
         this.points = [];
         this._showDistances = true;
         this._showCoordinates = false;
@@ -441,7 +441,7 @@ export class Measure extends THREE.Object3D {
                             }
                         }
 
-                        for (let key of Object.keys(I.point).filter(e => e !== 'position')) {
+                        for (let key of Object.keys(I.point).filter(e => e !== "position")) {
                             point[key] = I.point[key];
                         }
 
@@ -454,9 +454,9 @@ export class Measure extends THREE.Object3D {
                 let i = this.spheres.indexOf(e.drag.object);
                 if (i !== -1) {
                     this.dispatchEvent({
-                        'type': 'marker_dropped',
-                        'measurement': this,
-                        'index': i
+                        "type": "marker_dropped",
+                        "measurement": this,
+                        "index": i
                     });
                 }
             };
@@ -464,14 +464,14 @@ export class Measure extends THREE.Object3D {
             let mouseover = (e) => e.object.material.emissive.setHex(0x888888);
             let mouseleave = (e) => e.object.material.emissive.setHex(0x000000);
 
-            sphere.addEventListener('drag', drag);
-            sphere.addEventListener('drop', drop);
-            sphere.addEventListener('mouseover', mouseover);
-            sphere.addEventListener('mouseleave', mouseleave);
+            sphere.addEventListener("drag", drag);
+            sphere.addEventListener("drop", drop);
+            sphere.addEventListener("mouseover", mouseover);
+            sphere.addEventListener("mouseleave", mouseleave);
         }
 
         let event = {
-            type: 'marker_added',
+            type: "marker_added",
             measurement: this,
             sphere: sphere
         };
@@ -500,14 +500,14 @@ export class Measure extends THREE.Object3D {
 
         this.update();
 
-        this.dispatchEvent({type: 'marker_removed', measurement: this});
+        this.dispatchEvent({type: "marker_removed", measurement: this});
     }
 
     setMarker(index, point) {
         this.points[index] = point;
 
         let event = {
-            type: 'marker_moved',
+            type: "marker_moved",
             measure: this,
             index: index,
             position: point.position.clone()
@@ -522,7 +522,7 @@ export class Measure extends THREE.Object3D {
         point.position.copy(position);
 
         let event = {
-            type: 'marker_moved',
+            type: "marker_moved",
             measure: this,
             index: index,
             position: position.clone()
@@ -711,7 +711,7 @@ export class Measure extends THREE.Object3D {
                 let labelPos = point.position.clone().add(dir.multiplyScalar(dist));
                 angleLabel.position.copy(labelPos);
 
-                let msg = Utils.addCommas((angle * (180.0 / Math.PI)).toFixed(1)) + '\u00B0';
+                let msg = Utils.addCommas((angle * (180.0 / Math.PI)).toFixed(1)) + "\u00B0";
                 angleLabel.setText(msg);
 
                 angleLabel.visible = this.showAngles && (index < lastIndex || this.closed) && this.points.length >= 3 && angle > 0;

@@ -34,7 +34,7 @@ export class EptLaszipLoader {
             const header = Las.Header.parse(new Uint8Array(compressed));
             const vlrs = await Las.Vlr.walk(get, header);
             let eb = [];
-            const ebVlr = Las.Vlr.find(vlrs, 'LASF_Spec', 4);
+            const ebVlr = Las.Vlr.find(vlrs, "LASF_Spec", 4);
             if (ebVlr) eb = Las.ExtraBytes.parse(await Las.Vlr.fetch(get, ebVlr));
 
             const message = {
@@ -47,7 +47,7 @@ export class EptLaszipLoader {
             };
             handler.push(message);
         } catch (e) {
-            console.log('Failed:', e);
+            console.log("Failed:", e);
         }
     }
 }
@@ -87,7 +87,7 @@ export class CopcLaszipLoader {
                 nodemin: node.bounds.slice(0, 3),
             });
         } catch (e) {
-            console.log('Failed:', e);
+            console.log("Failed:", e);
         }
     }
 }
@@ -101,7 +101,7 @@ export class EptLazBatcher {
         const {isFullFile, compressed, header, eb, pointCount, nodemin} = las;
 
         let workerPath = Potree.scriptPath +
-            '/workers/EptLaszipDecoderWorker.js';
+            "/workers/EptLaszipDecoderWorker.js";
         let worker = Potree.workerPool.getWorker(workerPath);
         const pointAttributes = this.node.owner.pointAttributes;
 
@@ -119,23 +119,23 @@ export class EptLazBatcher {
             let indices = new Uint8Array(e.data.indices);
             let gpsTime = new Float32Array(e.data.gpsTime);
 
-            g.setAttribute('position',
+            g.setAttribute("position",
                 new THREE.BufferAttribute(positions, 3));
-            g.setAttribute('rgba',
+            g.setAttribute("rgba",
                 new THREE.BufferAttribute(colors, 4, true));
-            g.setAttribute('intensity',
+            g.setAttribute("intensity",
                 new THREE.BufferAttribute(intensities, 1));
-            g.setAttribute('classification',
+            g.setAttribute("classification",
                 new THREE.BufferAttribute(classifications, 1));
-            g.setAttribute('return number',
+            g.setAttribute("return number",
                 new THREE.BufferAttribute(returnNumbers, 1));
-            g.setAttribute('number of returns',
+            g.setAttribute("number of returns",
                 new THREE.BufferAttribute(numberOfReturns, 1));
-            g.setAttribute('source id',
+            g.setAttribute("source id",
                 new THREE.BufferAttribute(pointSourceIds, 1));
-            g.setAttribute('indices',
+            g.setAttribute("indices",
                 new THREE.BufferAttribute(indices, 4));
-            g.setAttribute('gps-time',
+            g.setAttribute("gps-time",
                 new THREE.BufferAttribute(gpsTime, 1));
             this.node.gpsTime = e.data.gpsMeta;
 

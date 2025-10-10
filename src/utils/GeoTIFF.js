@@ -12,7 +12,7 @@
 import { Enum } from "../Enum.js";
 
 var GeoTIFF = (function (exports) {
-    'use strict';
+    "use strict";
 
     const Endianness = new Enum({
         LITTLE: "II",

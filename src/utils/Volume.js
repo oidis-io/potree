@@ -29,7 +29,7 @@ export class Volume extends THREE.Object3D {
         this.showVolumeLabel = true;
         this._modifiable = args.modifiable || true;
 
-        this.label = new TextSprite('0');
+        this.label = new TextSprite("0");
         this.label.setBorderColor({r: 0, g: 255, b: 0, a: 0.0});
         this.label.setBackgroundColor({r: 0, g: 255, b: 0, a: 0.0});
         this.label.material.depthTest = false;
@@ -52,9 +52,9 @@ export class Volume extends THREE.Object3D {
         };
 
         { // event listeners
-            this.addEventListener('select', e => {
+            this.addEventListener("select", e => {
             });
-            this.addEventListener('deselect', e => {
+            this.addEventListener("deselect", e => {
             });
         }
     }
@@ -116,7 +116,7 @@ export class BoxVolume extends Volume {
         super(args);
 
         this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
-        this.name = 'box_' + this.constructor.counter;
+        this.name = "box_" + this.constructor.counter;
 
         let boxGeometry = new THREE.BoxGeometry(1, 1, 1);
         boxGeometry.computeBoundingBox();
@@ -212,7 +212,7 @@ export class SphereVolume extends Volume {
         super(args);
 
         this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
-        this.name = 'sphere_' + this.constructor.counter;
+        this.name = "sphere_" + this.constructor.counter;
 
         let sphereGeometry = new THREE.SphereGeometry(1, 32, 32);
         sphereGeometry.computeBoundingBox();

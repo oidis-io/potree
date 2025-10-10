@@ -53,7 +53,7 @@ export default [
                     "exceptions": ["*"]
                 }
             }],
-            // "quotes": ["error", "double", { "allowTemplateLiterals": true }],
+            "quotes": ["error", "double", { "allowTemplateLiterals": true }],
 
             "no-unused-imports": "off",
             "no-unused-vars": "off",

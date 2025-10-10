@@ -9,10 +9,10 @@
  *
  * ********************************************************************************************************* */
 
-let ftCanvas = document.createElement('canvas');
+let ftCanvas = document.createElement("canvas");
 
 export const Features = (function () {
-    let gl = ftCanvas.getContext('webgl') || ftCanvas.getContext('experimental-webgl');
+    let gl = ftCanvas.getContext("webgl") || ftCanvas.getContext("experimental-webgl");
     if (gl === null) {
         return null;
     }
@@ -32,11 +32,11 @@ export const Features = (function () {
 
     let precision;
     if (highpAvailable) {
-        precision = 'highp';
+        precision = "highp";
     } else if (mediumpAvailable) {
-        precision = 'mediump';
+        precision = "mediump";
     } else {
-        precision = 'lowp';
+        precision = "lowp";
     }
 
     return {
@@ -44,7 +44,7 @@ export const Features = (function () {
             isSupported: function () {
                 let supported = true;
 
-                supported = supported && gl.getExtension('EXT_frag_depth');
+                supported = supported && gl.getExtension("EXT_frag_depth");
                 supported = supported && gl.getParameter(gl.MAX_VARYING_VECTORS) >= 8;
 
                 return supported;
@@ -54,8 +54,8 @@ export const Features = (function () {
             isSupported: function () {
                 let supported = true;
 
-                supported = supported && gl.getExtension('EXT_frag_depth');
-                supported = supported && gl.getExtension('OES_texture_float');
+                supported = supported && gl.getExtension("EXT_frag_depth");
+                supported = supported && gl.getExtension("OES_texture_float");
                 supported = supported && gl.getParameter(gl.MAX_VARYING_VECTORS) >= 8;
 
                 return supported;
@@ -66,8 +66,8 @@ export const Features = (function () {
             isSupported: function () {
                 let supported = true;
 
-                supported = supported && gl.getExtension('EXT_frag_depth');
-                supported = supported && gl.getExtension('OES_texture_float');
+                supported = supported && gl.getExtension("EXT_frag_depth");
+                supported = supported && gl.getExtension("OES_texture_float");
                 supported = supported && gl.getParameter(gl.MAX_VARYING_VECTORS) >= 8;
 
                 // supported = supported || (gl instanceof WebGL2RenderingContext);

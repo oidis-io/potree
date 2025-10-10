@@ -102,9 +102,9 @@ export function updateVisibilityStructures(pointclouds, camera, renderer) {
     }
 
     return {
-        'frustums': frustums,
-        'camObjPositions': camObjPositions,
-        'priorityQueue': priorityQueue
+        "frustums": frustums,
+        "camObjPositions": camObjPositions,
+        "priorityQueue": priorityQueue
     };
 }
 

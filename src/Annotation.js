@@ -19,8 +19,8 @@ export class Annotation extends EventDispatcher {
         super();
 
         this.scene = null;
-        this._title = args.title || 'No Title';
-        this._description = args.description || '';
+        this._title = args.title || "No Title";
+        this._description = args.description || "";
         this.offset = new THREE.Vector3();
         this.uuid = THREE.Math.generateUUID();
 
@@ -53,7 +53,7 @@ export class Annotation extends EventDispatcher {
         this.parent = null;
         this.boundingBox = new THREE.Box3();
 
-        let iconClose = exports.resourcePath + '/icons/close.svg';
+        let iconClose = exports.resourcePath + "/icons/close.svg";
 
         this.domElement = $(`
             <div class="annotation" oncontextmenu="return false;">
@@ -69,18 +69,18 @@ export class Annotation extends EventDispatcher {
             </div>
         `);
 
-        this.elTitlebar = this.domElement.find('.annotation-titlebar');
-        this.elTitle = this.elTitlebar.find('.annotation-label');
+        this.elTitlebar = this.domElement.find(".annotation-titlebar");
+        this.elTitle = this.elTitlebar.find(".annotation-label");
         this.elTitle.append(this._title);
-        this.elDescription = this.domElement.find('.annotation-description');
-        this.elDescriptionClose = this.elDescription.find('.annotation-description-close');
+        this.elDescription = this.domElement.find(".annotation-description");
+        this.elDescriptionClose = this.elDescription.find(".annotation-description-close");
         // this.elDescriptionContent = this.elDescription.find(".annotation-description-content");
 
         this.clickTitle = () => {
             if (this.hasView()) {
                 this.moveHere(this.scene.getActiveCamera());
             }
-            this.dispatchEvent({type: 'click', target: this});
+            this.dispatchEvent({type: "click", target: this});
         };
 
         this.elTitle.click(this.clickTitle);
@@ -98,7 +98,7 @@ export class Annotation extends EventDispatcher {
         }
 
         let actions = this.actions.filter(
-            a => a.showIn === undefined || a.showIn.includes('scene'));
+            a => a.showIn === undefined || a.showIn.includes("scene"));
 
         for (let action of actions) {
             let elButton = $(`<img src="${action.icon}" class="annotation-action-icon">`);
@@ -107,8 +107,8 @@ export class Annotation extends EventDispatcher {
         }
 
         this.elDescriptionClose.hover(
-            e => this.elDescriptionClose.css('opacity', '1'),
-            e => this.elDescriptionClose.css('opacity', '0.5')
+            e => this.elDescriptionClose.css("opacity", "1"),
+            e => this.elDescriptionClose.css("opacity", "0.5")
         );
         this.elDescriptionClose.click(e => this.setHighlighted(false));
         // this.elDescriptionContent.html(this._description);
@@ -116,7 +116,7 @@ export class Annotation extends EventDispatcher {
         this.domElement.mouseenter(e => this.setHighlighted(true));
         this.domElement.mouseleave(e => this.setHighlighted(false));
 
-        this.domElement.on('touchstart', e => {
+        this.domElement.on("touchstart", e => {
             this.setHighlighted(!this.isHighlighted);
         });
 
@@ -293,7 +293,7 @@ export class Annotation extends EventDispatcher {
         // });
 
         this.dispatchEvent({
-            type: 'visibility_changed',
+            type: "visibility_changed",
             annotation: this
         });
     }
@@ -393,8 +393,8 @@ export class Annotation extends EventDispatcher {
                 let c = this;
                 while (c !== null) {
                     c.dispatchEvent({
-                        'type': 'annotation_added',
-                        'annotation': descendant
+                        "type": "annotation_added",
+                        "annotation": descendant
                     });
                     c = c.parent;
                 }
@@ -489,21 +489,21 @@ export class Annotation extends EventDispatcher {
 
     setHighlighted(highlighted) {
         if (highlighted) {
-            this.domElement.css('opacity', '0.8');
-            this.elTitlebar.css('box-shadow', '0 0 5px #fff');
-            this.domElement.css('z-index', '1000');
+            this.domElement.css("opacity", "0.8");
+            this.elTitlebar.css("box-shadow", "0 0 5px #fff");
+            this.domElement.css("z-index", "1000");
 
             if (this._description) {
                 this.descriptionVisible = true;
                 this.elDescription.fadeIn(200);
-                this.elDescription.css('position', 'relative');
+                this.elDescription.css("position", "relative");
             }
         } else {
-            this.domElement.css('opacity', '0.5');
-            this.elTitlebar.css('box-shadow', '');
-            this.domElement.css('z-index', '100');
+            this.domElement.css("opacity", "0.5");
+            this.elTitlebar.css("box-shadow", "");
+            this.domElement.css("z-index", "100");
             this.descriptionVisible = false;
-            this.elDescription.css('display', 'none');
+            this.elDescription.css("display", "none");
         }
 
         this.isHighlighted = highlighted;
@@ -575,6 +575,6 @@ export class Annotation extends EventDispatcher {
     }
 
     toString() {
-        return 'Annotation: ' + this._title;
+        return "Annotation: " + this._title;
     }
 }

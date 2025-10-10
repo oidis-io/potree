@@ -55,8 +55,8 @@ export class NodeLoader {
             } else {
                 let response = await fetch(urlOctree, {
                     headers: {
-                        'content-type': 'multipart/byteranges',
-                        'Range': `bytes=${first}-${last}`,
+                        "content-type": "multipart/byteranges",
+                        "Range": `bytes=${first}-${last}`,
                     },
                 });
 
@@ -65,9 +65,9 @@ export class NodeLoader {
 
             let workerPath;
             if (this.metadata.encoding === "BROTLI") {
-                workerPath = Potree.scriptPath + '/workers/2.0/DecoderWorker_brotli.js';
+                workerPath = Potree.scriptPath + "/workers/2.0/DecoderWorker_brotli.js";
             } else {
-                workerPath = Potree.scriptPath + '/workers/2.0/DecoderWorker.js';
+                workerPath = Potree.scriptPath + "/workers/2.0/DecoderWorker.js";
             }
 
             let worker = Potree.workerPool.getWorker(workerPath);
@@ -84,16 +84,16 @@ export class NodeLoader {
                     let buffer = buffers[property].buffer;
 
                     if (property === "position") {
-                        geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(buffer), 3));
+                        geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(buffer), 3));
                     } else if (property === "rgba") {
-                        geometry.setAttribute('rgba', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
+                        geometry.setAttribute("rgba", new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
                     } else if (property === "NORMAL") {
                         // geometry.setAttribute('rgba', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
-                        geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
+                        geometry.setAttribute("normal", new THREE.BufferAttribute(new Float32Array(buffer), 3));
                     } else if (property === "INDICES") {
                         let bufferAttribute = new THREE.BufferAttribute(new Uint8Array(buffer), 4);
                         bufferAttribute.normalized = true;
-                        geometry.setAttribute('indices', bufferAttribute);
+                        geometry.setAttribute("indices", bufferAttribute);
                     } else {
                         const bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
 
@@ -253,8 +253,8 @@ export class NodeLoader {
 
         let response = await fetch(hierarchyPath, {
             headers: {
-                'content-type': 'multipart/byteranges',
-                'Range': `bytes=${first}-${last}`,
+                "content-type": "multipart/byteranges",
+                "Range": `bytes=${first}-${last}`,
             },
         });
 

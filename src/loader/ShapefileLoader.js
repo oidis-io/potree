@@ -156,7 +156,7 @@ export class ShapefileLoader {
                 break;
             }
 
-            if (result.value && result.value.type === 'Feature' && result.value.geometry !== undefined) {
+            if (result.value && result.value.type === "Feature" && result.value.geometry !== undefined) {
                 features.push(result.value);
             }
         }

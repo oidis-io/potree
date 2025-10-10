@@ -25,7 +25,7 @@ export class DXFExporter {
         let position = measurement.points[0].position;
 
         if (!position) {
-            return '';
+            return "";
         }
 
         let dxfSection = `0
@@ -107,7 +107,7 @@ SEQEND
         // }
 
         if (measurement.points.length === 0) {
-            return '';
+            return "";
         } else if (measurement.points.length === 1) {
             return DXFExporter.measurementPointSection(measurement);
         } else if (measurement.points.length >= 2) {
@@ -185,7 +185,7 @@ ENTITIES
 ENDSEC
 `;
 
-        let dxf = dxfHeader + dxfBody + '0\nEOF';
+        let dxf = dxfHeader + dxfBody + "0\nEOF";
 
         return dxf;
     }

@@ -24,7 +24,7 @@ export class TransformationTool {
         this.showPickVolumes = false;
 
         this.viewer.inputHandler.registerInteractiveScene(this.scene);
-        this.viewer.inputHandler.addEventListener('selection_changed', (e) => {
+        this.viewer.inputHandler.addEventListener("selection_changed", (e) => {
             for (let selected of this.selection) {
                 this.viewer.inputHandler.blacklist.delete(selected);
             }

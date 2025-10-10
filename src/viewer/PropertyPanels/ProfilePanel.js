@@ -16,7 +16,7 @@ export class ProfilePanel extends MeasurePanel {
     constructor(viewer, measurement, propertiesPanel) {
         super(viewer, measurement, propertiesPanel);
 
-        let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
+        let removeIconPath = Potree.resourcePath + "/icons/remove.svg";
         this.elContent = $(`
             <div class="measurement_content selectable">
                 <span class="coordinates_table_container"></span>
@@ -65,24 +65,24 @@ export class ProfilePanel extends MeasurePanel {
 
             elWidthSlider.spinner({
                 min: 0, max: 10 * 1000 * 1000, step: 0.01,
-                numberFormat: 'n',
+                numberFormat: "n",
                 start: () => {
                 },
                 spin: (event, ui) => {
-                    let value = elWidthSlider.spinner('value');
+                    let value = elWidthSlider.spinner("value");
                     measurement.setWidth(value);
                 },
                 change: (event, ui) => {
-                    let value = elWidthSlider.spinner('value');
+                    let value = elWidthSlider.spinner("value");
                     measurement.setWidth(value);
                 },
                 stop: (event, ui) => {
-                    let value = elWidthSlider.spinner('value');
+                    let value = elWidthSlider.spinner("value");
                     measurement.setWidth(value);
                 },
                 incremental: (count) => {
-                    let value = elWidthSlider.spinner('value');
-                    let step = elWidthSlider.spinner('option', 'step');
+                    let value = elWidthSlider.spinner("value");
+                    let step = elWidthSlider.spinner("option", "step");
 
                     let delta = value * 0.05;
                     let increments = Math.max(1, parseInt(delta / step));
@@ -90,13 +90,13 @@ export class ProfilePanel extends MeasurePanel {
                     return increments;
                 }
             });
-            elWidthSlider.spinner('value', measurement.getWidth());
-            elWidthSlider.spinner('widget').css('width', '100%');
+            elWidthSlider.spinner("value", measurement.getWidth());
+            elWidthSlider.spinner("widget").css("width", "100%");
 
             let widthListener = (event) => {
-                let value = elWidthSlider.spinner('value');
+                let value = elWidthSlider.spinner("value");
                 if (value !== measurement.getWidth()) {
-                    elWidthSlider.spinner('value', measurement.getWidth());
+                    elWidthSlider.spinner("value", measurement.getWidth());
                 }
             };
             this.propertiesPanel.addVolatileListener(measurement, "width_changed", widthListener);
@@ -116,7 +116,7 @@ export class ProfilePanel extends MeasurePanel {
     }
 
     update() {
-        let elCoordiantesContainer = this.elContent.find('.coordinates_table_container');
+        let elCoordiantesContainer = this.elContent.find(".coordinates_table_container");
         elCoordiantesContainer.empty();
         elCoordiantesContainer.append(this.createCoordinatesTable(this.measurement.points));
     }

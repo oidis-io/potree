@@ -15,7 +15,7 @@ import { XHRFactory } from "../XHRFactory.js";
 
 export class BinaryLoader {
     constructor(version, boundingBox, scale) {
-        if (typeof (version) === 'string') {
+        if (typeof (version) === "string") {
             this.version = new Version(version);
         } else {
             this.version = version;
@@ -32,14 +32,14 @@ export class BinaryLoader {
 
         let url = node.getURL();
 
-        if (this.version.equalOrHigher('1.4')) {
-            url += '.bin';
+        if (this.version.equalOrHigher("1.4")) {
+            url += ".bin";
         }
 
         let xhr = XHRFactory.createXMLHttpRequest();
-        xhr.open('GET', url, true);
-        xhr.responseType = 'arraybuffer';
-        xhr.overrideMimeType('text/plain; charset=x-user-defined');
+        xhr.open("GET", url, true);
+        xhr.responseType = "arraybuffer";
+        xhr.overrideMimeType("text/plain; charset=x-user-defined");
         xhr.onreadystatechange = () => {
             if (xhr.readyState === 4) {
                 if ((xhr.status === 200 || xhr.status === 0) && xhr.response !== null) {
@@ -55,7 +55,7 @@ export class BinaryLoader {
         try {
             xhr.send(null);
         } catch (e) {
-            console.log('fehler beim laden der punktwolke: ' + e);
+            console.log("fehler beim laden der punktwolke: " + e);
         }
     }
 
@@ -63,11 +63,11 @@ export class BinaryLoader {
         let pointAttributes = node.pcoGeometry.pointAttributes;
         let numPoints = buffer.byteLength / node.pcoGeometry.pointAttributes.byteSize;
 
-        if (this.version.upTo('1.5')) {
+        if (this.version.upTo("1.5")) {
             node.numPoints = numPoints;
         }
 
-        let workerPath = Potree.scriptPath + '/workers/BinaryDecoderWorker.js';
+        let workerPath = Potree.scriptPath + "/workers/BinaryDecoderWorker.js";
         let worker = Potree.workerPool.getWorker(workerPath);
 
         worker.onmessage = function (e) {
@@ -87,22 +87,22 @@ export class BinaryLoader {
                 let batchAttribute = buffers[property].attribute;
 
                 if (property === "POSITION_CARTESIAN") {
-                    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(buffer), 3));
+                    geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(buffer), 3));
                 } else if (property === "rgba") {
                     geometry.setAttribute("rgba", new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
                 } else if (property === "NORMAL_SPHEREMAPPED") {
-                    geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
+                    geometry.setAttribute("normal", new THREE.BufferAttribute(new Float32Array(buffer), 3));
                 } else if (property === "NORMAL_OCT16") {
-                    geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
+                    geometry.setAttribute("normal", new THREE.BufferAttribute(new Float32Array(buffer), 3));
                 } else if (property === "NORMAL") {
-                    geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
+                    geometry.setAttribute("normal", new THREE.BufferAttribute(new Float32Array(buffer), 3));
                 } else if (property === "INDICES") {
                     let bufferAttribute = new THREE.BufferAttribute(new Uint8Array(buffer), 4);
                     bufferAttribute.normalized = true;
-                    geometry.setAttribute('indices', bufferAttribute);
+                    geometry.setAttribute("indices", bufferAttribute);
                 } else if (property === "SPACING") {
                     let bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
-                    geometry.setAttribute('spacing', bufferAttribute);
+                    geometry.setAttribute("spacing", bufferAttribute);
                 } else {
                     const bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
 

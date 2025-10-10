@@ -83,25 +83,25 @@ export class GeoControls extends EventDispatcher {
 
         // events
 
-        let changeEvent = {type: 'change'};
-        let startEvent = {type: 'start'};
-        let endEvent = {type: 'end'};
+        let changeEvent = {type: "change"};
+        let startEvent = {type: "start"};
+        let endEvent = {type: "end"};
 
-        this.domElement.addEventListener('contextmenu', (event) => {
+        this.domElement.addEventListener("contextmenu", (event) => {
             event.preventDefault();
         }, false);
-        this.domElement.addEventListener('mousedown', this.onMouseDown.bind(this), false);
-        this.domElement.addEventListener('mousewheel', this.onMouseWheel.bind(this), false);
-        this.domElement.addEventListener('DOMMouseScroll', this.onMouseWheel.bind(this), false); // firefox
+        this.domElement.addEventListener("mousedown", this.onMouseDown.bind(this), false);
+        this.domElement.addEventListener("mousewheel", this.onMouseWheel.bind(this), false);
+        this.domElement.addEventListener("DOMMouseScroll", this.onMouseWheel.bind(this), false); // firefox
 
-        this.domElement.addEventListener('mousemove', this.onMouseMove.bind(this), false);
-        this.domElement.addEventListener('mouseup', this.onMouseUp.bind(this), false);
+        this.domElement.addEventListener("mousemove", this.onMouseMove.bind(this), false);
+        this.domElement.addEventListener("mouseup", this.onMouseUp.bind(this), false);
 
         if (this.domElement.tabIndex === -1) {
             this.domElement.tabIndex = 2222;
         }
-        this.domElement.addEventListener('keydown', this.onKeyDown.bind(this), false);
-        this.domElement.addEventListener('keyup', this.onKeyUp.bind(this), false);
+        this.domElement.addEventListener("keydown", this.onKeyDown.bind(this), false);
+        this.domElement.addEventListener("keyup", this.onKeyUp.bind(this), false);
     }
 
     setTrack(track) {
@@ -133,7 +133,7 @@ export class GeoControls extends EventDispatcher {
             this.object.updateMatrixWorld();
 
             let event = {
-                type: 'path_relative_rotation',
+                type: "path_relative_rotation",
                 angle: angle,
                 axis: tangentDiffNormal,
                 controls: this
@@ -154,7 +154,7 @@ export class GeoControls extends EventDispatcher {
 
         if (newTrackPos !== oldTrackPos) {
             let event = {
-                type: 'move',
+                type: "move",
                 translation: pan.clone()
             };
             this.dispatchEvent(event);
@@ -236,12 +236,12 @@ export class GeoControls extends EventDispatcher {
             this.panUp(deltaY * (this.object.top - this.object.bottom) / element.clientHeight);
         } else {
             // camera neither orthographic or perspective
-            console.warn('WARNING: GeoControls.js encountered an unknown camera type - pan disabled.');
+            console.warn("WARNING: GeoControls.js encountered an unknown camera type - pan disabled.");
         }
     }
 
     update(delta) {
-        this.object.rotation.order = 'ZYX';
+        this.object.rotation.order = "ZYX";
 
         let object = this.object;
 
@@ -285,7 +285,7 @@ export class GeoControls extends EventDispatcher {
 
         if (!pan.equals(new THREE.Vector3(0, 0, 0))) {
             let event = {
-                type: 'move',
+                type: "move",
                 translation: pan.clone()
             };
             this.dispatchEvent(event);
@@ -295,7 +295,7 @@ export class GeoControls extends EventDispatcher {
 
         if (!(thetaDelta === 0.0 && phiDelta === 0.0)) {
             let event = {
-                type: 'rotate',
+                type: "rotate",
                 thetaDelta: thetaDelta,
                 phiDelta: phiDelta
             };
@@ -312,7 +312,7 @@ export class GeoControls extends EventDispatcher {
 
         // send transformation proposal to listeners
         let proposeTransformEvent = {
-            type: 'proposeTransform',
+            type: "proposeTransform",
             oldPosition: object.position,
             newPosition: this.object.position,
             objections: 0,
@@ -451,7 +451,7 @@ export class GeoControls extends EventDispatcher {
         if (this.moveSpeed !== value) {
             this.moveSpeed = value;
             this.dispatchEvent({
-                type: 'move_speed_changed',
+                type: "move_speed_changed",
                 controls: this
             });
         }

@@ -101,7 +101,7 @@ export class PointCloudArena4D extends PointCloudTree {
         if (geometry.root) {
             this.root = geometry.root;
         } else {
-            geometry.addEventListener('hierarchy_loaded', () => {
+            geometry.addEventListener("hierarchy_loaded", () => {
                 this.root = geometry.root;
             });
         }
@@ -126,7 +126,7 @@ export class PointCloudArena4D extends PointCloudTree {
         this.material.sizeType = PointSizeType.ATTENUATED;
         this.material.size = 0.05;
         this.profileRequests = [];
-        this.name = '';
+        this.name = "";
     }
 
     getBoundingBoxWorld() {
@@ -141,7 +141,7 @@ export class PointCloudArena4D extends PointCloudTree {
     setName(name) {
         if (this.name !== name) {
             this.name = name;
-            this.dispatchEvent({type: 'name_changed', name: name, pointcloud: this});
+            this.dispatchEvent({type: "name_changed", name: name, pointcloud: this});
         }
     }
 
@@ -471,7 +471,7 @@ export class PointCloudArena4D extends PointCloudTree {
             for (let attributeName in geometry.attributes) {
                 let attribute = geometry.attributes[attributeName];
 
-                if (attributeName === 'position') {
+                if (attributeName === "position") {
                     let x = attribute.array[3 * hit.pIndex + 0];
                     let y = attribute.array[3 * hit.pIndex + 1];
                     let z = attribute.array[3 * hit.pIndex + 2];
@@ -480,7 +480,7 @@ export class PointCloudArena4D extends PointCloudTree {
                     position.applyMatrix4(pc.matrixWorld);
 
                     point[attributeName] = position;
-                } else if (attributeName === 'indices') {
+                } else if (attributeName === "indices") {
 
                 } else {
                     // if (values.itemSize === 1) {
@@ -557,11 +557,11 @@ export class PointCloudArena4D extends PointCloudTree {
                 b2 = (b2 === 0) ? visibleNodeNames.indexOf(node.geometryNode.right.number) - i : b2;
             }
 
-            if (node.geometryNode.split === 'X') {
+            if (node.geometryNode.split === "X") {
                 b3 = 1;
-            } else if (node.geometryNode.split === 'Y') {
+            } else if (node.geometryNode.split === "Y") {
                 b3 = 2;
-            } else if (node.geometryNode.split === 'Z') {
+            } else if (node.geometryNode.split === "Z") {
                 b3 = 4;
             }
 

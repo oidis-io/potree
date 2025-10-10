@@ -17,36 +17,36 @@ export class NormalizationEDLMaterial extends THREE.RawShaderMaterial {
         super();
 
         let uniforms = {
-            screenWidth: {type: 'f', value: 0},
-            screenHeight: {type: 'f', value: 0},
-            edlStrength: {type: 'f', value: 1.0},
-            radius: {type: 'f', value: 1.0},
-            neighbours: {type: '2fv', value: []},
-            uEDLMap: {type: 't', value: null},
-            uDepthMap: {type: 't', value: null},
-            uWeightMap: {type: 't', value: null},
+            screenWidth: {type: "f", value: 0},
+            screenHeight: {type: "f", value: 0},
+            edlStrength: {type: "f", value: 1.0},
+            radius: {type: "f", value: 1.0},
+            neighbours: {type: "2fv", value: []},
+            uEDLMap: {type: "t", value: null},
+            uDepthMap: {type: "t", value: null},
+            uWeightMap: {type: "t", value: null},
         };
 
         this.setValues({
             uniforms: uniforms,
-            vertexShader: this.getDefines() + Shaders['normalize.vs'],
-            fragmentShader: this.getDefines() + Shaders['normalize_and_edl.fs'],
+            vertexShader: this.getDefines() + Shaders["normalize.vs"],
+            fragmentShader: this.getDefines() + Shaders["normalize_and_edl.fs"],
         });
 
         this.neighbourCount = 8;
     }
 
     getDefines() {
-        let defines = '';
+        let defines = "";
 
-        defines += '#define NEIGHBOUR_COUNT ' + this.neighbourCount + '\n';
+        defines += "#define NEIGHBOUR_COUNT " + this.neighbourCount + "\n";
 
         return defines;
     }
 
     updateShaderSource() {
-        let vs = this.getDefines() + Shaders['normalize.vs'];
-        let fs = this.getDefines() + Shaders['normalize_and_edl.fs'];
+        let vs = this.getDefines() + Shaders["normalize.vs"];
+        let fs = this.getDefines() + Shaders["normalize_and_edl.fs"];
 
         this.setValues({
             vertexShader: vs,

@@ -95,11 +95,11 @@ export class HQSplatRenderer {
 
         if (background === "skybox") {
             renderer.setClearColor(0x000000, 0);
-        } else if (background === 'gradient') {
+        } else if (background === "gradient") {
             renderer.setClearColor(0x000000, 0);
-        } else if (background === 'black') {
+        } else if (background === "black") {
             renderer.setClearColor(0x000000, 1);
-        } else if (background === 'white') {
+        } else if (background === "white") {
             renderer.setClearColor(0xFFFFFF, 1);
         } else {
             renderer.setClearColor(0x000000, 0);
@@ -275,14 +275,14 @@ export class HQSplatRenderer {
 
             viewer.skybox.camera.updateProjectionMatrix();
             viewer.renderer.render(viewer.skybox.scene, viewer.skybox.camera);
-        } else if (viewer.background === 'gradient') {
+        } else if (viewer.background === "gradient") {
             viewer.renderer.setClearColor(0x000000, 0);
             viewer.renderer.clear();
             viewer.renderer.render(viewer.scene.sceneBG, viewer.scene.cameraBG);
-        } else if (viewer.background === 'black') {
+        } else if (viewer.background === "black") {
             viewer.renderer.setClearColor(0x000000, 1);
             viewer.renderer.clear();
-        } else if (viewer.background === 'white') {
+        } else if (viewer.background === "white") {
             viewer.renderer.setClearColor(0xFFFFFF, 1);
             viewer.renderer.clear();
         } else {

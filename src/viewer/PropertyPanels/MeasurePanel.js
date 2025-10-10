@@ -34,7 +34,7 @@ export class MeasurePanel {
             </table>
         `);
 
-        let copyIconPath = Potree.resourcePath + '/icons/copy.svg';
+        let copyIconPath = Potree.resourcePath + "/icons/copy.svg";
 
         for (let point of points) {
             let x = Utils.addCommas(point.x.toFixed(3));
@@ -69,7 +69,7 @@ export class MeasurePanel {
     }
 
     createAttributesTable() {
-        let elTable = $('<table class="measurement_value_table"></table>');
+        let elTable = $("<table class=\"measurement_value_table\"></table>");
 
         let point = this.measurement.points[0];
 
@@ -78,7 +78,7 @@ export class MeasurePanel {
 
             } else if (attributeName === "rgba") {
                 let color = point.rgba;
-                let text = color.join(', ');
+                let text = color.join(", ");
 
                 elTable.append($(`
                     <tr>
@@ -88,7 +88,7 @@ export class MeasurePanel {
                 `));
             } else {
                 let value = point[attributeName];
-                let text = value.join(', ');
+                let text = value.join(", ");
 
                 elTable.append($(`
                     <tr>

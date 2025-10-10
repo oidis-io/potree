@@ -53,7 +53,7 @@ export class EarthControls extends EventDispatcher {
             if (e.drag.startHandled === undefined) {
                 e.drag.startHandled = true;
 
-                this.dispatchEvent({type: 'start'});
+                this.dispatchEvent({type: "start"});
             }
 
             let camStart = this.camStart;
@@ -141,7 +141,7 @@ export class EarthControls extends EventDispatcher {
         };
 
         let drop = e => {
-            this.dispatchEvent({type: 'end'});
+            this.dispatchEvent({type: "end"});
         };
 
         let onMouseUp = e => {
@@ -158,12 +158,12 @@ export class EarthControls extends EventDispatcher {
             this.zoomToLocation(e.mouse);
         };
 
-        this.addEventListener('drag', drag);
-        this.addEventListener('drop', drop);
-        this.addEventListener('mousewheel', scroll);
-        this.addEventListener('mousedown', onMouseDown);
-        this.addEventListener('mouseup', onMouseUp);
-        this.addEventListener('dblclick', dblclick);
+        this.addEventListener("drag", drag);
+        this.addEventListener("drop", drop);
+        this.addEventListener("mousewheel", scroll);
+        this.addEventListener("mousedown", onMouseDown);
+        this.addEventListener("mouseup", onMouseUp);
+        this.addEventListener("dblclick", dblclick);
     }
 
     setScene(scene) {

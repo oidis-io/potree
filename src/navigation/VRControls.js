@@ -11,7 +11,7 @@
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
 import { EventDispatcher } from "../EventDispatcher.js";
-import { XRControllerModelFactory } from '../../libs/three.js/webxr/XRControllerModelFactory.js';
+import { XRControllerModelFactory } from "../../libs/three.js/webxr/XRControllerModelFactory.js";
 import { Line2 } from "../../libs/three.js/lines/Line2.js";
 import { LineGeometry } from "../../libs/three.js/lines/LineGeometry.js";
 import { LineMaterial } from "../../libs/three.js/lines/LineMaterial.js";
@@ -337,16 +337,16 @@ export class VRControls extends EventDispatcher {
                 controller.add(line);
             }
 
-            controller.addEventListener('connected', function (event) {
+            controller.addEventListener("connected", function (event) {
                 const xrInputSource = event.data;
                 controller.inputSource = xrInputSource;
                 // initInfo(controller);
             });
 
-            controller.addEventListener('selectstart', () => {
+            controller.addEventListener("selectstart", () => {
                 this.onTriggerStart(controller);
             });
-            controller.addEventListener('selectend', () => {
+            controller.addEventListener("selectend", () => {
                 this.onTriggerEnd(controller);
             });
 
@@ -389,16 +389,16 @@ export class VRControls extends EventDispatcher {
                 controller.add(line);
             }
 
-            controller.addEventListener('connected', (event) => {
+            controller.addEventListener("connected", (event) => {
                 const xrInputSource = event.data;
                 controller.inputSource = xrInputSource;
                 this.initMenu(controller);
             });
 
-            controller.addEventListener('selectstart', () => {
+            controller.addEventListener("selectstart", () => {
                 this.onTriggerStart(controller);
             });
-            controller.addEventListener('selectend', () => {
+            controller.addEventListener("selectend", () => {
                 this.onTriggerEnd(controller);
             });
 

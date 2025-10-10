@@ -79,7 +79,7 @@ export class OrientedImageControls extends EventDispatcher {
             this.fovDelta += -e.delta * 1.0;
         };
 
-        this.addEventListener('mousewheel', scroll);
+        this.addEventListener("mousewheel", scroll);
         // this.addEventListener("mousemove", onMove);
     }
 

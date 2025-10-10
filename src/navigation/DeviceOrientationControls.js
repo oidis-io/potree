@@ -48,15 +48,15 @@ export class DeviceOrientationControls extends EventDispatcher {
             this.screenOrientation = window.orientation || 0;
         };
 
-        if ('ondeviceorientationabsolute' in window) {
-            window.addEventListener('deviceorientationabsolute', deviceOrientationChange);
-        } else if ('ondeviceorientation' in window) {
-            window.addEventListener('deviceorientation', deviceOrientationChange);
+        if ("ondeviceorientationabsolute" in window) {
+            window.addEventListener("deviceorientationabsolute", deviceOrientationChange);
+        } else if ("ondeviceorientation" in window) {
+            window.addEventListener("deviceorientation", deviceOrientationChange);
         } else {
             console.warn("No device orientation found.");
         }
         // window.addEventListener('deviceorientation', deviceOrientationChange);
-        window.addEventListener('orientationchange', screenOrientationChange);
+        window.addEventListener("orientationchange", screenOrientationChange);
     }
 
     setScene(scene) {
@@ -71,14 +71,14 @@ export class DeviceOrientationControls extends EventDispatcher {
             let euler = new THREE.Euler();
             let q0 = new THREE.Quaternion();
 
-            euler.set(beta, gamma, alpha, 'ZXY');
+            euler.set(beta, gamma, alpha, "ZXY");
             quaternion.setFromEuler(euler);
             quaternion.multiply(q0.setFromAxisAngle(zee, -orient));
 
             return quaternion;
         };
 
-        if (typeof this.deviceOrientation !== 'undefined') {
+        if (typeof this.deviceOrientation !== "undefined") {
             let alpha = this.deviceOrientation.alpha ? THREE.Math.degToRad(this.deviceOrientation.alpha) : 0;
             let beta = this.deviceOrientation.beta ? THREE.Math.degToRad(this.deviceOrientation.beta) : 0;
             let gamma = this.deviceOrientation.gamma ? THREE.Math.degToRad(this.deviceOrientation.gamma) : 0;

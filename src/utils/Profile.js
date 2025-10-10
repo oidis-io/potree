@@ -18,7 +18,7 @@ export class Profile extends THREE.Object3D {
 
         this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
 
-        this.name = 'Profile_' + this.constructor.counter;
+        this.name = "Profile_" + this.constructor.counter;
         this.points = [];
         this.spheres = [];
         this.edges = [];
@@ -144,9 +144,9 @@ export class Profile extends THREE.Object3D {
                 let i = this.spheres.indexOf(e.drag.object);
                 if (i !== -1) {
                     this.dispatchEvent({
-                        'type': 'marker_dropped',
-                        'profile': this,
-                        'index': i
+                        "type": "marker_dropped",
+                        "profile": this,
+                        "index": i
                     });
                 }
             };
@@ -154,14 +154,14 @@ export class Profile extends THREE.Object3D {
             let mouseover = (e) => e.object.material.emissive.setHex(0x888888);
             let mouseleave = (e) => e.object.material.emissive.setHex(0x000000);
 
-            sphere.addEventListener('drag', drag);
-            sphere.addEventListener('drop', drop);
-            sphere.addEventListener('mouseover', mouseover);
-            sphere.addEventListener('mouseleave', mouseleave);
+            sphere.addEventListener("drag", drag);
+            sphere.addEventListener("drop", drop);
+            sphere.addEventListener("mouseover", mouseover);
+            sphere.addEventListener("mouseleave", mouseleave);
         }
 
         let event = {
-            type: 'marker_added',
+            type: "marker_added",
             profile: this,
             sphere: sphere
         };
@@ -186,8 +186,8 @@ export class Profile extends THREE.Object3D {
         this.update();
 
         this.dispatchEvent({
-            'type': 'marker_removed',
-            'profile': this
+            "type": "marker_removed",
+            "profile": this
         });
     }
 
@@ -196,7 +196,7 @@ export class Profile extends THREE.Object3D {
         point.copy(position);
 
         let event = {
-            type: 'marker_moved',
+            type: "marker_moved",
             profile: this,
             index: index,
             position: point.clone()
@@ -210,7 +210,7 @@ export class Profile extends THREE.Object3D {
         this.width = width;
 
         let event = {
-            type: 'width_changed',
+            type: "width_changed",
             profile: this,
             width: width
         };

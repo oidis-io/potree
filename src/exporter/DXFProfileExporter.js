@@ -170,7 +170,7 @@ ENTITIES
 ENDSEC
 `;
 
-        const dxf = dxfHeader + dxfBody + '0\nEOF';
+        const dxf = dxfHeader + dxfBody + "0\nEOF";
 
         return dxf;
     }

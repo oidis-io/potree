@@ -81,10 +81,10 @@ Potree.PointCloudArena4DGeometryNode = class PointCloudArena4DGeometryNode {
 
         Potree.numNodesLoading++;
 
-        let url = this.pcoGeometry.url + '?node=' + this.number;
+        let url = this.pcoGeometry.url + "?node=" + this.number;
         let xhr = Potree.XHRFactory.createXMLHttpRequest();
-        xhr.open('GET', url, true);
-        xhr.responseType = 'arraybuffer';
+        xhr.open("GET", url, true);
+        xhr.responseType = "arraybuffer";
 
         let node = this;
 
@@ -149,14 +149,14 @@ Potree.PointCloudArena4DGeometryNode = class PointCloudArena4DGeometryNode {
 
             let geometry = new THREE.BufferGeometry();
 
-            geometry.setAttribute('position', new THREE.BufferAttribute(position, 3));
-            geometry.setAttribute('color', new THREE.BufferAttribute(color, 4, true));
-            geometry.setAttribute('intensity', new THREE.BufferAttribute(intensities, 1));
-            geometry.setAttribute('classification', new THREE.BufferAttribute(classifications, 1));
+            geometry.setAttribute("position", new THREE.BufferAttribute(position, 3));
+            geometry.setAttribute("color", new THREE.BufferAttribute(color, 4, true));
+            geometry.setAttribute("intensity", new THREE.BufferAttribute(intensities, 1));
+            geometry.setAttribute("classification", new THREE.BufferAttribute(classifications, 1));
             {
                 let bufferAttribute = new THREE.BufferAttribute(new Uint8Array(indices), 4, true);
                 // bufferAttribute.normalized = true;
-                geometry.setAttribute('indices', bufferAttribute);
+                geometry.setAttribute("indices", bufferAttribute);
             }
 
             node.geometry = geometry;
@@ -204,14 +204,14 @@ Potree.PointCloudArena4DGeometry = class PointCloudArena4DGeometry extends Event
         this.levels = 0;
         this._spacing = null;
         this.pointAttributes = new Potree.PointAttributes([
-            'POSITION_CARTESIAN',
-            'COLOR_PACKED'
+            "POSITION_CARTESIAN",
+            "COLOR_PACKED"
         ]);
     }
 
     static load(url, callback) {
         let xhr = Potree.XHRFactory.createXMLHttpRequest();
-        xhr.open('GET', url + '?info', true);
+        xhr.open("GET", url + "?info", true);
 
         xhr.onreadystatechange = function () {
             try {
@@ -259,10 +259,10 @@ Potree.PointCloudArena4DGeometry = class PointCloudArena4DGeometry extends Event
     }
 
     loadHierarchy() {
-        let url = this.url + '?tree';
+        let url = this.url + "?tree";
         let xhr = Potree.XHRFactory.createXMLHttpRequest();
-        xhr.open('GET', url, true);
-        xhr.responseType = 'arraybuffer';
+        xhr.open("GET", url, true);
+        xhr.responseType = "arraybuffer";
 
         xhr.onreadystatechange = () => {
             if (!(xhr.readyState === 4 && xhr.status === 200)) {
@@ -290,12 +290,12 @@ Potree.PointCloudArena4DGeometry = class PointCloudArena4DGeometry extends Event
                 let splitZ = (mask & 16) > 0;
                 let split = null;
                 if (splitX) {
-                    split = 'X';
+                    split = "X";
                 } else if (splitY) {
-                    split = 'Y';
+                    split = "Y";
                 }
                 if (splitZ) {
-                    split = 'Z';
+                    split = "Z";
                 }
 
                 let node = new Potree.PointCloudArena4DGeometryNode();
@@ -319,11 +319,11 @@ Potree.PointCloudArena4DGeometry = class PointCloudArena4DGeometry extends Event
                         parent.left = node;
                         parent.children.push(node);
 
-                        if (parent.split === 'X') {
+                        if (parent.split === "X") {
                             node.boundingBox.max.x = node.boundingBox.min.x + parentBBSize.x / 2;
-                        } else if (parent.split === 'Y') {
+                        } else if (parent.split === "Y") {
                             node.boundingBox.max.y = node.boundingBox.min.y + parentBBSize.y / 2;
-                        } else if (parent.split === 'Z') {
+                        } else if (parent.split === "Z") {
                             node.boundingBox.max.z = node.boundingBox.min.z + parentBBSize.z / 2;
                         }
 
@@ -334,11 +334,11 @@ Potree.PointCloudArena4DGeometry = class PointCloudArena4DGeometry extends Event
                         parent.right = node;
                         parent.children.push(node);
 
-                        if (parent.split === 'X') {
+                        if (parent.split === "X") {
                             node.boundingBox.min.x = node.boundingBox.min.x + parentBBSize.x / 2;
-                        } else if (parent.split === 'Y') {
+                        } else if (parent.split === "Y") {
                             node.boundingBox.min.y = node.boundingBox.min.y + parentBBSize.y / 2;
-                        } else if (parent.split === 'Z') {
+                        } else if (parent.split === "Z") {
                             node.boundingBox.min.z = node.boundingBox.min.z + parentBBSize.z / 2;
                         }
 
@@ -381,7 +381,7 @@ Potree.PointCloudArena4DGeometry = class PointCloudArena4DGeometry extends Event
             this.levels = levels;
             // console.log(this.root);
 
-            this.dispatchEvent({type: 'hierarchy_loaded'});
+            this.dispatchEvent({type: "hierarchy_loaded"});
         };
 
         xhr.send(null);

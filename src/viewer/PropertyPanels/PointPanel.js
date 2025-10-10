@@ -15,7 +15,7 @@ export class PointPanel extends MeasurePanel {
     constructor(viewer, measurement, propertiesPanel) {
         super(viewer, measurement, propertiesPanel);
 
-        let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
+        let removeIconPath = Potree.resourcePath + "/icons/remove.svg";
         this.elContent = $(`
             <div class="measurement_content selectable">
                 <span class="coordinates_table_container"></span>
@@ -44,11 +44,11 @@ export class PointPanel extends MeasurePanel {
     }
 
     update() {
-        let elCoordiantesContainer = this.elContent.find('.coordinates_table_container');
+        let elCoordiantesContainer = this.elContent.find(".coordinates_table_container");
         elCoordiantesContainer.empty();
         elCoordiantesContainer.append(this.createCoordinatesTable(this.measurement.points.map(p => p.position)));
 
-        let elAttributesContainer = this.elContent.find('.attributes_table_container');
+        let elAttributesContainer = this.elContent.find(".attributes_table_container");
         elAttributesContainer.empty();
         elAttributesContainer.append(this.createAttributesTable());
     }

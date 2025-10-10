@@ -24,7 +24,7 @@ import { XHRFactory } from "../XHRFactory.js";
 
 export class LasLazLoader {
     constructor(version, extension) {
-        if (typeof (version) === 'string') {
+        if (typeof (version) === "string") {
             this.version = new Version(version);
         } else {
             this.version = version;
@@ -44,21 +44,21 @@ export class LasLazLoader {
 
         let url = node.getURL();
 
-        if (this.version.equalOrHigher('1.4')) {
+        if (this.version.equalOrHigher("1.4")) {
             url += `.${this.extension}`;
         }
 
         let xhr = XHRFactory.createXMLHttpRequest();
-        xhr.open('GET', url, true);
-        xhr.responseType = 'arraybuffer';
-        xhr.overrideMimeType('text/plain; charset=x-user-defined');
+        xhr.open("GET", url, true);
+        xhr.responseType = "arraybuffer";
+        xhr.overrideMimeType("text/plain; charset=x-user-defined");
         xhr.onreadystatechange = () => {
             if (xhr.readyState === 4) {
                 if (xhr.status === 200 || xhr.status === 0) {
                     let buffer = xhr.response;
                     this.parse(node, buffer);
                 } else {
-                    console.log('Failed to load file! HTTP status: ' + xhr.status + ', file: ' + url);
+                    console.log("Failed to load file! HTTP status: " + xhr.status + ", file: " + url);
                 }
             }
         };
@@ -132,7 +132,7 @@ export class LasLazBatcher {
     }
 
     push(lasBuffer) {
-        const workerPath = Potree.scriptPath + '/workers/LASDecoderWorker.js';
+        const workerPath = Potree.scriptPath + "/workers/LASDecoderWorker.js";
         const worker = Potree.workerPool.getWorker(workerPath);
         const node = this.node;
         const pointAttributes = node.pcoGeometry.pointAttributes;
@@ -150,14 +150,14 @@ export class LasLazBatcher {
             let pointSourceIDs = new Uint16Array(e.data.pointSourceID);
             let indices = new Uint8Array(e.data.indices);
 
-            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 4, true));
-            geometry.setAttribute('intensity', new THREE.BufferAttribute(intensities, 1));
-            geometry.setAttribute('classification', new THREE.BufferAttribute(classifications, 1));
-            geometry.setAttribute('return number', new THREE.BufferAttribute(returnNumbers, 1));
-            geometry.setAttribute('number of returns', new THREE.BufferAttribute(numberOfReturns, 1));
-            geometry.setAttribute('source id', new THREE.BufferAttribute(pointSourceIDs, 1));
-            geometry.setAttribute('indices', new THREE.BufferAttribute(indices, 4));
+            geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute("color", new THREE.BufferAttribute(colors, 4, true));
+            geometry.setAttribute("intensity", new THREE.BufferAttribute(intensities, 1));
+            geometry.setAttribute("classification", new THREE.BufferAttribute(classifications, 1));
+            geometry.setAttribute("return number", new THREE.BufferAttribute(returnNumbers, 1));
+            geometry.setAttribute("number of returns", new THREE.BufferAttribute(numberOfReturns, 1));
+            geometry.setAttribute("source id", new THREE.BufferAttribute(pointSourceIDs, 1));
+            geometry.setAttribute("indices", new THREE.BufferAttribute(indices, 4));
             geometry.attributes.indices.normalized = true;
 
             for (const key in e.data.ranges) {

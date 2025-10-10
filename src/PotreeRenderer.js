@@ -42,7 +42,7 @@ function paramThreeToGL(_gl, p) {
     if (p === THREE.FloatType) return _gl.FLOAT;
 
     if (p === THREE.HalfFloatType) {
-        extension = extensions.get('OES_texture_half_float');
+        extension = extensions.get("OES_texture_half_float");
 
         if (extension !== null) return extension.HALF_FLOAT_OES;
     }
@@ -74,7 +74,7 @@ function paramThreeToGL(_gl, p) {
 
     if (p === THREE.RGB_S3TC_DXT1_Format || p === RGBA_S3TC_DXT1_Format ||
         p === THREE.RGBA_S3TC_DXT3_Format || p === RGBA_S3TC_DXT5_Format) {
-        extension = extensions.get('WEBGL_compressed_texture_s3tc');
+        extension = extensions.get("WEBGL_compressed_texture_s3tc");
 
         if (extension !== null) {
             if (p === THREE.RGB_S3TC_DXT1_Format) return extension.COMPRESSED_RGB_S3TC_DXT1_EXT;
@@ -86,7 +86,7 @@ function paramThreeToGL(_gl, p) {
 
     if (p === THREE.RGB_PVRTC_4BPPV1_Format || p === THREE.RGB_PVRTC_2BPPV1_Format ||
         p === THREE.RGBA_PVRTC_4BPPV1_Format || p === THREE.RGBA_PVRTC_2BPPV1_Format) {
-        extension = extensions.get('WEBGL_compressed_texture_pvrtc');
+        extension = extensions.get("WEBGL_compressed_texture_pvrtc");
 
         if (extension !== null) {
             if (p === THREE.RGB_PVRTC_4BPPV1_Format) return extension.COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
@@ -97,13 +97,13 @@ function paramThreeToGL(_gl, p) {
     }
 
     if (p === THREE.RGB_ETC1_Format) {
-        extension = extensions.get('WEBGL_compressed_texture_etc1');
+        extension = extensions.get("WEBGL_compressed_texture_etc1");
 
         if (extension !== null) return extension.COMPRESSED_RGB_ETC1_WEBGL;
     }
 
     if (p === THREE.MinEquation || p === THREE.MaxEquation) {
-        extension = extensions.get('EXT_blend_minmax');
+        extension = extensions.get("EXT_blend_minmax");
 
         if (extension !== null) {
             if (p === THREE.MinEquation) return extension.MIN_EXT;
@@ -112,7 +112,7 @@ function paramThreeToGL(_gl, p) {
     }
 
     if (p === UnsignedInt248Type) {
-        extension = extensions.get('WEBGL_depth_texture');
+        extension = extensions.get("WEBGL_depth_texture");
 
         if (extension !== null) return extension.UNSIGNED_INT_24_8_WEBGL;
     }
@@ -812,7 +812,7 @@ export class Renderer {
 
             const geometry = node.geometryNode.geometry;
 
-            if (!geometry) console.log('Missing geometry', node);
+            if (!geometry) console.log("Missing geometry", node);
             if (geometry.attributes["gps-time"]) {
                 const bufferAttribute = geometry.attributes["gps-time"];
                 const attGPS = octree.getAttribute("gps-time");

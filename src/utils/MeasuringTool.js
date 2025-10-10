@@ -134,15 +134,15 @@ export class MeasuringTool extends EventDispatcher {
         this.viewer = viewer;
         this.renderer = viewer.renderer;
 
-        this.addEventListener('start_inserting_measurement', e => {
+        this.addEventListener("start_inserting_measurement", e => {
             this.viewer.dispatchEvent({
-                type: 'cancel_insertions'
+                type: "cancel_insertions"
             });
         });
 
         this.showLabels = true;
         this.scene = new THREE.Scene();
-        this.scene.name = 'scene_measurement';
+        this.scene.name = "scene_measurement";
         this.light = new THREE.PointLight(0xffffff, 1.0);
         this.scene.add(this.light);
 
@@ -163,18 +163,18 @@ export class MeasuringTool extends EventDispatcher {
         viewer.addEventListener("render.pass.perspective_overlay", this.render.bind(this));
         viewer.addEventListener("scene_changed", this.onSceneChange.bind(this));
 
-        viewer.scene.addEventListener('measurement_added', this.onAdd);
-        viewer.scene.addEventListener('measurement_removed', this.onRemove);
+        viewer.scene.addEventListener("measurement_added", this.onAdd);
+        viewer.scene.addEventListener("measurement_removed", this.onRemove);
     }
 
     onSceneChange(e) {
         if (e.oldScene) {
-            e.oldScene.removeEventListener('measurement_added', this.onAdd);
-            e.oldScene.removeEventListener('measurement_removed', this.onRemove);
+            e.oldScene.removeEventListener("measurement_added", this.onAdd);
+            e.oldScene.removeEventListener("measurement_removed", this.onRemove);
         }
 
-        e.scene.addEventListener('measurement_added', this.onAdd);
-        e.scene.addEventListener('measurement_removed', this.onRemove);
+        e.scene.addEventListener("measurement_added", this.onAdd);
+        e.scene.addEventListener("measurement_removed", this.onRemove);
     }
 
     startInsertion(args = {}) {
@@ -183,7 +183,7 @@ export class MeasuringTool extends EventDispatcher {
         let measure = new Measure();
 
         this.dispatchEvent({
-            type: 'start_inserting_measurement',
+            type: "start_inserting_measurement",
             measure: measure
         });
 
@@ -207,7 +207,7 @@ export class MeasuringTool extends EventDispatcher {
         measure.closed = pick(args.closed, false);
         measure.maxMarkers = pick(args.maxMarkers, Infinity);
 
-        measure.name = args.name || 'Measurement';
+        measure.name = args.name || "Measurement";
 
         this.scene.add(measure);
 
@@ -235,13 +235,13 @@ export class MeasuringTool extends EventDispatcher {
             if (cancel.removeLastMarker) {
                 measure.removeMarker(measure.points.length - 1);
             }
-            domElement.removeEventListener('mouseup', insertionCallback, false);
-            this.viewer.removeEventListener('cancel_insertions', cancel.callback);
+            domElement.removeEventListener("mouseup", insertionCallback, false);
+            this.viewer.removeEventListener("cancel_insertions", cancel.callback);
         };
 
         if (measure.maxMarkers > 1) {
-            this.viewer.addEventListener('cancel_insertions', cancel.callback);
-            domElement.addEventListener('mouseup', insertionCallback, false);
+            this.viewer.addEventListener("cancel_insertions", cancel.callback);
+            domElement.addEventListener("mouseup", insertionCallback, false);
         }
 
         measure.addMarker(new THREE.Vector3(0, 0, 0));

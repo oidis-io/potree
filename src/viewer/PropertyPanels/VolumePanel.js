@@ -19,8 +19,8 @@ export class VolumePanel extends MeasurePanel {
     constructor(viewer, measurement, propertiesPanel) {
         super(viewer, measurement, propertiesPanel);
 
-        let copyIconPath = Potree.resourcePath + '/icons/copy.svg';
-        let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
+        let copyIconPath = Potree.resourcePath + "/icons/copy.svg";
+        let removeIconPath = Potree.resourcePath + "/icons/remove.svg";
 
         let lblLengthText = new Map([
             [BoxVolume, "length"],
@@ -159,12 +159,12 @@ export class VolumePanel extends MeasurePanel {
             measurement.scale.set(mean, mean, mean);
         });
 
-        this.elCheckClip = this.elContent.find('#volume_clip');
+        this.elCheckClip = this.elContent.find("#volume_clip");
         this.elCheckClip.click(event => {
             this.measurement.clip = event.target.checked;
         });
 
-        this.elCheckShow = this.elContent.find('#volume_show');
+        this.elCheckShow = this.elContent.find("#volume_show");
         this.elCheckShow.click(event => {
             this.measurement.visible = event.target.checked;
         });
@@ -350,7 +350,7 @@ export class VolumePanel extends MeasurePanel {
     }
 
     update() {
-        let elCoordiantesContainer = this.elContent.find('.coordinates_table_container');
+        let elCoordiantesContainer = this.elContent.find(".coordinates_table_container");
         elCoordiantesContainer.empty();
         elCoordiantesContainer.append(this.createCoordinatesTable([this.measurement.position]));
 
@@ -359,7 +359,7 @@ export class VolumePanel extends MeasurePanel {
             angles = angles.toArray();
             // angles = [angles.z, angles.x, angles.y];
             angles = angles.map(v => 180 * v / Math.PI);
-            angles = angles.map(a => a.toFixed(1) + '\u00B0');
+            angles = angles.map(a => a.toFixed(1) + "\u00B0");
 
             let elAlpha = this.elContent.find(`#angle_cell_alpha`);
             let elBetta = this.elContent.find(`#angle_cell_betta`);

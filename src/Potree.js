@@ -101,12 +101,12 @@ export const workerPool = new WorkerPool();
 export const version = {
     major: 2025,
     minor: 3,
-    suffix: '.0'
+    suffix: ".0"
 };
 
 export let lru = new LRU();
 
-console.log('Potree ' + version.major + '.' + version.minor + version.suffix);
+console.log("Potree " + version.major + "." + version.minor + version.suffix);
 
 export let pointBudget = 1 * 1000 * 1000;
 export let framenumber = 0;
@@ -118,20 +118,20 @@ export const debug = {};
 let scriptPath = "";
 
 if (document.currentScript && document.currentScript.src) {
-    scriptPath = new URL(document.currentScript.src + '/..').href;
-    if (scriptPath.slice(-1) === '/') {
+    scriptPath = new URL(document.currentScript.src + "/..").href;
+    if (scriptPath.slice(-1) === "/") {
         scriptPath = scriptPath.slice(0, -1);
     }
 } else if (import.meta) {
     scriptPath = new URL(import.meta.url + "/..").href;
-    if (scriptPath.slice(-1) === '/') {
+    if (scriptPath.slice(-1) === "/") {
         scriptPath = scriptPath.slice(0, -1);
     }
 } else {
-    console.error('Potree was unable to find its script path using document.currentScript. Is Potree included with a script tag? Does your browser support this function?');
+    console.error("Potree was unable to find its script path using document.currentScript. Is Potree included with a script tag? Does your browser support this function?");
 }
 
-let resourcePath = scriptPath + '/resources';
+let resourcePath = scriptPath + "/resources";
 
 // scriptPath: build/potree
 // resourcePath:build/potree/resources
@@ -147,25 +147,25 @@ export function loadPointCloud(path, name, callback) {
         // load pointcloud
         if (!path) {
             // TODO: callback? comment? Hello? Bueller? Anyone?
-        } else if (path.includes('ept.json')) {
+        } else if (path.includes("ept.json")) {
             EptLoader.load(path, function (geometry) {
                 if (!geometry) {
                     console.error(new Error(`failed to load point cloud from URL: ${path}`));
                 } else {
                     let pointcloud = new PointCloudOctree(geometry);
-                    resolve({type: 'pointcloud_loaded', pointcloud: pointcloud});
+                    resolve({type: "pointcloud_loaded", pointcloud: pointcloud});
                 }
             });
-        } else if (path.includes('.copc.laz')) {
+        } else if (path.includes(".copc.laz")) {
             CopcLoader.load(path, function (geometry) {
                 if (!geometry) {
                     console.error(new Error(`failed to load point cloud from URL: ${path}`));
                 } else {
                     let pointcloud = new PointCloudOctree(geometry);
-                    resolve({type: 'pointcloud_loaded', pointcloud: pointcloud});
+                    resolve({type: "pointcloud_loaded", pointcloud: pointcloud});
                 }
             });
-        } else if (path.indexOf('cloud.js') > 0) {
+        } else if (path.indexOf("cloud.js") > 0) {
             POCLoader.load(path, function (geometry) {
                 if (!geometry) {
                     // callback({type: 'loading_failed'});
@@ -173,10 +173,10 @@ export function loadPointCloud(path, name, callback) {
                 } else {
                     let pointcloud = new PointCloudOctree(geometry);
                     // loaded(pointcloud);
-                    resolve({type: 'pointcloud_loaded', pointcloud: pointcloud});
+                    resolve({type: "pointcloud_loaded", pointcloud: pointcloud});
                 }
             });
-        } else if (path.indexOf('metadata.json') > 0) {
+        } else if (path.indexOf("metadata.json") > 0) {
             Potree.OctreeLoader.load(path).then(e => {
                 let geometry = e.geometry;
 
@@ -194,7 +194,7 @@ export function loadPointCloud(path, name, callback) {
                     ];
 
                     // loaded(pointcloud);
-                    resolve({type: 'pointcloud_loaded', pointcloud: pointcloud});
+                    resolve({type: "pointcloud_loaded", pointcloud: pointcloud});
                 }
             });
 
@@ -205,10 +205,10 @@ export function loadPointCloud(path, name, callback) {
                 } else {
                     let pointcloud = new PointCloudOctree(geometry);
                     // loaded(pointcloud);
-                    resolve({type: 'pointcloud_loaded', pointcloud: pointcloud});
+                    resolve({type: "pointcloud_loaded", pointcloud: pointcloud});
                 }
             });
-        } else if (path.indexOf('.vpc') > 0) {
+        } else if (path.indexOf(".vpc") > 0) {
             PointCloudArena4DGeometry.load(path, function (geometry) {
                 if (!geometry) {
                     // callback({type: 'loading_failed'});
@@ -216,7 +216,7 @@ export function loadPointCloud(path, name, callback) {
                 } else {
                     let pointcloud = new PointCloudArena4D(geometry);
                     // loaded(pointcloud);
-                    resolve({type: 'pointcloud_loaded', pointcloud: pointcloud});
+                    resolve({type: "pointcloud_loaded", pointcloud: pointcloud});
                 }
             });
         } else {

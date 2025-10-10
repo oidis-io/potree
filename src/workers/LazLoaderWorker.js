@@ -59,7 +59,7 @@ function parseLASHeader(arraybuffer) {
 
 function handleEvent(msg) {
     switch (msg.type) {
-        case 'open':
+        case "open":
             try {
                 instance = new Module.LASZip();
                 let abInt = new Uint8Array(msg.arraybuffer);
@@ -72,26 +72,26 @@ function handleEvent(msg) {
 
                 instance.readOffset = 0;
 
-                postMessage({type: 'open', status: 1});
+                postMessage({type: "open", status: 1});
             } catch (e) {
-                postMessage({type: 'open', status: 0, details: e});
+                postMessage({type: "open", status: 0, details: e});
             }
             break;
 
-        case 'header':
+        case "header":
             if (!instance) {
-                throw new Error('You need to open the file before trying to read header');
+                throw new Error("You need to open the file before trying to read header");
             }
 
             let header = parseLASHeader(instance.arraybuffer);
             header.pointsFormatId &= 0x3f;
             instance.header = header;
-            postMessage({type: 'header', status: 1, header: header});
+            postMessage({type: "header", status: 1, header: header});
             break;
 
-        case 'read':
+        case "read":
             if (!instance) {
-                throw new Error('You need to open the file before trying to read stuff');
+                throw new Error("You need to open the file before trying to read stuff");
             }
 
             // msg.start
@@ -100,7 +100,7 @@ function handleEvent(msg) {
             let o = instance;
 
             if (!o.header) {
-                throw new Error('You need to query header before reading, I maintain state that way, sorry :(');
+                throw new Error("You need to query header before reading, I maintain state that way, sorry :(");
             }
 
             let pointsToRead = Math.min(count * skip, o.header.pointsCount - o.readOffset);
@@ -122,7 +122,7 @@ function handleEvent(msg) {
             }
 
             postMessage({
-                type: 'header',
+                type: "header",
                 status: 1,
                 buffer: thisBuf.buffer,
                 count: pointsRead,
@@ -131,12 +131,12 @@ function handleEvent(msg) {
 
             break;
 
-        case 'close':
+        case "close":
             if (instance !== null) {
                 instance.delete();
                 instance = null;
             }
-            postMessage({type: 'close', status: 1});
+            postMessage({type: "close", status: 1});
             break;
     }
 }

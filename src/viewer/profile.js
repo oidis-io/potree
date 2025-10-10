@@ -234,9 +234,9 @@ export class ProfileWindow extends EventDispatcher {
         super();
 
         this.viewer = viewer;
-        this.elRoot = $('#profile_window');
-        this.renderArea = this.elRoot.find('#profileCanvasContainer');
-        this.svg = d3.select('svg#profileSVG');
+        this.elRoot = $("#profile_window");
+        this.renderArea = this.elRoot.find("#profileCanvasContainer");
+        this.svg = d3.select("svg#profileSVG");
         this.mouseIsDown = false;
 
         this.projectedBox = new THREE.Box3();
@@ -251,31 +251,31 @@ export class ProfileWindow extends EventDispatcher {
         this.autoFit = false; // internal
 
         let cwIcon = `${exports.resourcePath}/icons/arrow_cw.svg`;
-        $('#potree_profile_rotate_cw').attr('src', cwIcon);
+        $("#potree_profile_rotate_cw").attr("src", cwIcon);
 
         let ccwIcon = `${exports.resourcePath}/icons/arrow_ccw.svg`;
-        $('#potree_profile_rotate_ccw').attr('src', ccwIcon);
+        $("#potree_profile_rotate_ccw").attr("src", ccwIcon);
 
         let forwardIcon = `${exports.resourcePath}/icons/arrow_up.svg`;
-        $('#potree_profile_move_forward').attr('src', forwardIcon);
+        $("#potree_profile_move_forward").attr("src", forwardIcon);
 
         let backwardIcon = `${exports.resourcePath}/icons/arrow_down.svg`;
-        $('#potree_profile_move_backward').attr('src', backwardIcon);
+        $("#potree_profile_move_backward").attr("src", backwardIcon);
 
         let dxf2DIcon = `${exports.resourcePath}/icons/file_dxf_2d.svg`;
-        $('#potree_download_dxf2D_icon').attr('src', dxf2DIcon);
+        $("#potree_download_dxf2D_icon").attr("src", dxf2DIcon);
 
         let dxf3DIcon = `${exports.resourcePath}/icons/file_dxf_3d.svg`;
-        $('#potree_download_dxf3D_icon').attr('src', dxf3DIcon);
+        $("#potree_download_dxf3D_icon").attr("src", dxf3DIcon);
 
         let csvIcon = `${exports.resourcePath}/icons/file_csv_2d.svg`;
-        $('#potree_download_csv_icon').attr('src', csvIcon);
+        $("#potree_download_csv_icon").attr("src", csvIcon);
 
         let lasIcon = `${exports.resourcePath}/icons/file_las_3d.svg`;
-        $('#potree_download_las_icon').attr('src', lasIcon);
+        $("#potree_download_las_icon").attr("src", lasIcon);
 
         let closeIcon = `${exports.resourcePath}/icons/close.svg`;
-        $('#closeProfileContainer').attr("src", closeIcon);
+        $("#closeProfileContainer").attr("src", closeIcon);
 
         this.initTHREE();
         this.initSVG();
@@ -350,7 +350,7 @@ export class ProfileWindow extends EventDispatcher {
                         point.position[2] + closest.pointcloud.position.z
                     ]);
 
-                    this.elRoot.find('#profileSelectionProperties').fadeIn(200);
+                    this.elRoot.find("#profileSelectionProperties").fadeIn(200);
                     this.pickSphere.visible = true;
                     this.pickSphere.scale.set(0.5 * radius, 0.5 * radius, 0.5 * radius);
                     this.pickSphere.position.set(point.mileage, 0, position[2]);
@@ -364,8 +364,8 @@ export class ProfileWindow extends EventDispatcher {
                         }
                     }
 
-                    let info = this.elRoot.find('#profileSelectionProperties');
-                    let html = '<table>';
+                    let info = this.elRoot.find("#profileSelectionProperties");
+                    let html = "<table>";
 
                     for (let attributeName of Object.keys(point)) {
                         let value = point[attributeName];
@@ -379,7 +379,7 @@ export class ProfileWindow extends EventDispatcher {
                             transform = value => value / scale + offset;
                         }
 
-                        if (attributeName === 'position') {
+                        if (attributeName === "position") {
                             let values = [...position].map(v => Utils.addCommas(v.toFixed(3)));
                             html += `
                                 <tr>
@@ -394,15 +394,15 @@ export class ProfileWindow extends EventDispatcher {
                                     <td>z</td>
                                     <td>${values[2]}</td>
                                 </tr>`;
-                        } else if (attributeName === 'rgba') {
+                        } else if (attributeName === "rgba") {
                             html += `
                                 <tr>
                                     <td>${attributeName}</td>
-                                    <td>${value.join(', ')}</td>
+                                    <td>${value.join(", ")}</td>
                                 </tr>`;
-                        } else if (attributeName === 'normal') {
+                        } else if (attributeName === "normal") {
                             continue;
-                        } else if (attributeName === 'mileage') {
+                        } else if (attributeName === "mileage") {
                             html += `
                                 <tr>
                                     <td>${attributeName}</td>
@@ -416,7 +416,7 @@ export class ProfileWindow extends EventDispatcher {
                                 </tr>`;
                         }
                     }
-                    html += '</table>';
+                    html += "</table>";
                     info.html(html);
 
                     this.selectedPoint = point;
@@ -469,10 +469,10 @@ export class ProfileWindow extends EventDispatcher {
             this.render();
             this.updateScales();
         };
-        $(this.renderArea)[0].addEventListener('mousewheel', onWheel, false);
-        $(this.renderArea)[0].addEventListener('DOMMouseScroll', onWheel, false); // Firefox
+        $(this.renderArea)[0].addEventListener("mousewheel", onWheel, false);
+        $(this.renderArea)[0].addEventListener("DOMMouseScroll", onWheel, false); // Firefox
 
-        $('#closeProfileContainer').click(() => {
+        $("#closeProfileContainer").click(() => {
             this.hide();
         });
 
@@ -501,40 +501,40 @@ export class ProfileWindow extends EventDispatcher {
             return points;
         };
 
-        $('#potree_download_dxf2D_icon').click(() => {
+        $("#potree_download_dxf2D_icon").click(() => {
             const points = getProfilePoints();
 
             const string = DXFProfileExporter.toString(points, true);
 
             const blob = new Blob([string], {type: "text/string"});
-            $('#potree_download_profile_dxf2D_link').attr('href', URL.createObjectURL(blob));
+            $("#potree_download_profile_dxf2D_link").attr("href", URL.createObjectURL(blob));
         });
 
-        $('#potree_download_dxf3D_icon').click(() => {
+        $("#potree_download_dxf3D_icon").click(() => {
             const points = getProfilePoints(true);
 
             const string = DXFProfileExporter.toString(points);
 
             const blob = new Blob([string], {type: "text/string"});
-            $('#potree_download_profile_dxf3D_link').attr('href', URL.createObjectURL(blob));
+            $("#potree_download_profile_dxf3D_link").attr("href", URL.createObjectURL(blob));
         });
 
-        $('#potree_download_csv_icon').click(() => {
+        $("#potree_download_csv_icon").click(() => {
             let points = getProfilePoints(true);
 
             let string = CSVExporter.toString(points);
 
             let blob = new Blob([string], {type: "text/string"});
-            $('#potree_download_profile_ortho_link').attr('href', URL.createObjectURL(blob));
+            $("#potree_download_profile_ortho_link").attr("href", URL.createObjectURL(blob));
         });
 
-        $('#potree_download_las_icon').click(() => {
+        $("#potree_download_las_icon").click(() => {
             let points = getProfilePoints(true);
 
             let buffer = LASExporter.toLAS(points);
 
             let blob = new Blob([buffer], {type: "application/octet-binary"});
-            $('#potree_download_profile_link').attr('href', URL.createObjectURL(blob));
+            $("#potree_download_profile_link").attr("href", URL.createObjectURL(blob));
         });
     }
 
@@ -638,15 +638,15 @@ export class ProfileWindow extends EventDispatcher {
         this.renderer.setSize(10, 10);
         this.renderer.autoClear = false;
         this.renderArea.append($(this.renderer.domElement));
-        this.renderer.domElement.tabIndex = '2222';
-        $(this.renderer.domElement).css('width', '100%');
-        $(this.renderer.domElement).css('height', '100%');
+        this.renderer.domElement.tabIndex = "2222";
+        $(this.renderer.domElement).css("width", "100%");
+        $(this.renderer.domElement).css("height", "100%");
 
         {
             let gl = this.renderer.getContext();
 
             if (gl.createVertexArray == null) {
-                let extVAO = gl.getExtension('OES_vertex_array_object');
+                let extVAO = gl.getExtension("OES_vertex_array_object");
 
                 if (!extVAO) {
                     throw new Error("OES_vertex_array_object extension not supported");
@@ -678,7 +678,7 @@ export class ProfileWindow extends EventDispatcher {
         let height = this.renderArea[0].clientHeight;
         let marginLeft = this.renderArea[0].offsetLeft;
 
-        this.svg.selectAll('*').remove();
+        this.svg.selectAll("*").remove();
 
         this.scaleX = d3.scale.linear()
             .domain([this.camera.left + this.camera.position.x, this.camera.right + this.camera.position.x])
@@ -689,7 +689,7 @@ export class ProfileWindow extends EventDispatcher {
 
         this.xAxis = d3.svg.axis()
             .scale(this.scaleX)
-            .orient('bottom')
+            .orient("bottom")
             .innerTickSize(-height)
             .outerTickSize(1)
             .tickPadding(10)
@@ -697,20 +697,20 @@ export class ProfileWindow extends EventDispatcher {
 
         this.yAxis = d3.svg.axis()
             .scale(this.scaleY)
-            .orient('left')
+            .orient("left")
             .innerTickSize(-width)
             .outerTickSize(1)
             .tickPadding(10)
             .ticks(height / 20);
 
-        this.elXAxis = this.svg.append('g')
-            .attr('class', 'x axis')
-            .attr('transform', `translate(${marginLeft}, ${height})`)
+        this.elXAxis = this.svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", `translate(${marginLeft}, ${height})`)
             .call(this.xAxis);
 
-        this.elYAxis = this.svg.append('g')
-            .attr('class', 'y axis')
-            .attr('transform', `translate(${marginLeft}, 0)`)
+        this.elYAxis = this.svg.append("g")
+            .attr("class", "y axis")
+            .attr("transform", `translate(${marginLeft}, 0)`)
             .call(this.yAxis);
     }
 
@@ -731,9 +731,9 @@ export class ProfileWindow extends EventDispatcher {
 
             materialChanged();
 
-            pointcloud.material.addEventListener('material_property_changed', materialChanged);
+            pointcloud.material.addEventListener("material_property_changed", materialChanged);
             this.addEventListener("on_reset_once", () => {
-                pointcloud.material.removeEventListener('material_property_changed', materialChanged);
+                pointcloud.material.removeEventListener("material_property_changed", materialChanged);
             });
         }
 
@@ -790,7 +790,7 @@ export class ProfileWindow extends EventDispatcher {
         }
         this.pickSphere.visible = false;
 
-        this.elRoot.find('#profileSelectionProperties').hide();
+        this.elRoot.find("#profileSelectionProperties").hide();
 
         this.render();
     }
@@ -828,23 +828,23 @@ export class ProfileWindow extends EventDispatcher {
         let marginLeft = this.renderArea[0].offsetLeft;
 
         this.xAxis.scale(this.scaleX)
-            .orient('bottom')
+            .orient("bottom")
             .innerTickSize(-height)
             .outerTickSize(1)
             .tickPadding(10)
             .ticks(width / 50);
         this.yAxis.scale(this.scaleY)
-            .orient('left')
+            .orient("left")
             .innerTickSize(-width)
             .outerTickSize(1)
             .tickPadding(10)
             .ticks(height / 20);
 
         this.elXAxis
-            .attr('transform', `translate(${marginLeft}, ${height})`)
+            .attr("transform", `translate(${marginLeft}, ${height})`)
             .call(this.xAxis);
         this.elYAxis
-            .attr('transform', `translate(${marginLeft}, 0)`)
+            .attr("transform", `translate(${marginLeft}, 0)`)
             .call(this.yAxis);
     }
 
@@ -1011,19 +1011,19 @@ export class ProfileWindowController {
 
     setProfile(profile) {
         if (this.profile !== null && this.profile !== profile) {
-            this.profile.removeEventListener('marker_moved', this._recompute);
-            this.profile.removeEventListener('marker_added', this._recompute);
-            this.profile.removeEventListener('marker_removed', this._recompute);
-            this.profile.removeEventListener('width_changed', this._recompute);
+            this.profile.removeEventListener("marker_moved", this._recompute);
+            this.profile.removeEventListener("marker_added", this._recompute);
+            this.profile.removeEventListener("marker_removed", this._recompute);
+            this.profile.removeEventListener("width_changed", this._recompute);
         }
 
         this.profile = profile;
 
         {
-            this.profile.addEventListener('marker_moved', this._recompute);
-            this.profile.addEventListener('marker_added', this._recompute);
-            this.profile.addEventListener('marker_removed', this._recompute);
-            this.profile.addEventListener('width_changed', this._recompute);
+            this.profile.addEventListener("marker_moved", this._recompute);
+            this.profile.addEventListener("marker_added", this._recompute);
+            this.profile.addEventListener("marker_removed", this._recompute);
+            this.profile.addEventListener("width_changed", this._recompute);
         }
 
         this.recompute();
@@ -1081,7 +1081,7 @@ export class ProfileWindowController {
 
         for (let pointcloud of this.viewer.scene.pointclouds.filter(p => p.visible)) {
             let request = pointcloud.getPointsInProfile(this.profile, null, {
-                'onProgress': (event) => {
+                "onProgress": (event) => {
                     if (!this.enabled) {
                         return;
                     }
@@ -1092,12 +1092,12 @@ export class ProfileWindowController {
                         this.finishLevelThenCancel();
                     }
                 },
-                'onFinish': (event) => {
+                "onFinish": (event) => {
                     if (!this.enabled) {
 
                     }
                 },
-                'onCancel': () => {
+                "onCancel": () => {
                     if (!this.enabled) {
 
                     }

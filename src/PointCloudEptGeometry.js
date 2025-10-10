@@ -24,7 +24,7 @@ class U {
 
     static findDim(schema, name) {
         var dim = schema.find((dim) => dim.name == name);
-        if (!dim) throw new Error('Failed to find ' + name + ' in schema');
+        if (!dim) throw new Error("Failed to find " + name + " in schema");
         return dim;
     }
 
@@ -33,7 +33,7 @@ class U {
     }
 
     static toPotreeName([d, x, y, z]) {
-        var name = 'r';
+        var name = "r";
 
         for (var i = 0; i < d; ++i) {
             var shift = d - i - 1;
@@ -73,7 +73,7 @@ class BaseGeometry {
         this.boundingSphere = U.sphereFrom(this.boundingBox);
         this.tightBoundingSphere = U.sphereFrom(this.tightBoundingBox);
         this.offset = U.toVector3([0, 0, 0]);
-        this.version = new Potree.Version('1.7');
+        this.version = new Potree.Version("1.7");
 
         this.loader = new Potree.CopcLaszipLoader();
 
@@ -112,10 +112,10 @@ export class PointCloudCopcGeometry extends BaseGeometry {
     constructor(getter, copc) {
         super(PointCloudCopcGeometry.parse(copc));
 
-        this.type = 'copc';
+        this.type = "copc";
         this.getter = getter;
         this.copc = copc;
-        this.pages = {'0-0-0-0': copc.info.rootHierarchyPage};
+        this.pages = {"0-0-0-0": copc.info.rootHierarchyPage};
 
         this.loader = new Potree.CopcLaszipLoader();
     }
@@ -148,20 +148,20 @@ export class PointCloudEptGeometry extends BaseGeometry {
     constructor(base, ept) {
         super(PointCloudEptGeometry.parse(ept));
 
-        this.type = 'ept';
+        this.type = "ept";
         this.base = base;
         this.ept = ept;
 
         this.loader = (() => {
             switch (ept.dataType) {
-                case 'laszip':
+                case "laszip":
                     return new Potree.EptLaszipLoader();
-                case 'binary':
+                case "binary":
                     return new Potree.EptBinaryLoader();
-                case 'zstandard':
+                case "zstandard":
                     return new Potree.EptZstandardLoader();
                 default:
-                    throw new Error('Invalid data type: ' + ept.dataType);
+                    throw new Error("Invalid data type: " + ept.dataType);
             }
         })();
     }

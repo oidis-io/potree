@@ -38,7 +38,7 @@ export class CameraAnimationPanel {
             animation.play();
         });
 
-        const elSlider = this.elContent.find('#sldTime');
+        const elSlider = this.elContent.find("#sldTime");
         elSlider.slider({
             value: 0,
             min: 0,
@@ -52,24 +52,24 @@ export class CameraAnimationPanel {
         let elDuration = this.elContent.find(`input[name=spnDuration]`);
         elDuration.spinner({
             min: 0, max: 300, step: 0.01,
-            numberFormat: 'n',
+            numberFormat: "n",
             start: () => {
             },
             spin: (event, ui) => {
-                let value = elDuration.spinner('value');
+                let value = elDuration.spinner("value");
                 animation.setDuration(value);
             },
             change: (event, ui) => {
-                let value = elDuration.spinner('value');
+                let value = elDuration.spinner("value");
                 animation.setDuration(value);
             },
             stop: (event, ui) => {
-                let value = elDuration.spinner('value');
+                let value = elDuration.spinner("value");
                 animation.setDuration(value);
             },
             incremental: (count) => {
-                let value = elDuration.spinner('value');
-                let step = elDuration.spinner('option', 'step');
+                let value = elDuration.spinner("value");
+                let step = elDuration.spinner("option", "step");
 
                 let delta = value * 0.05;
                 let increments = Math.max(1, parseInt(delta / step));
@@ -77,8 +77,8 @@ export class CameraAnimationPanel {
                 return increments;
             }
         });
-        elDuration.spinner('value', animation.getDuration());
-        elDuration.spinner('widget').css('width', '100%');
+        elDuration.spinner("value", animation.getDuration());
+        elDuration.spinner("widget").css("width", "100%");
 
         const elKeyframes = this.elContent.find("#animation_keyframes");
 

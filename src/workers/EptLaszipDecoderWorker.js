@@ -69,33 +69,33 @@ async function readUsingDataView(event) {
     const mean = [0, 0, 0];
 
     const get = {
-        x: view.getter('X'),
-        y: view.getter('Y'),
-        z: view.getter('Z'),
-        intensity: view.getter('Intensity'),
-        classification: view.getter('Classification'),
-        returnNumber: view.getter('ReturnNumber'),
-        numberOfReturns: view.getter('NumberOfReturns'),
-        pointSourceId: view.getter('PointSourceId'),
-        ...(view.dimensions.GpsTime && {gpsTime: view.getter('GpsTime')}),
+        x: view.getter("X"),
+        y: view.getter("Y"),
+        z: view.getter("Z"),
+        intensity: view.getter("Intensity"),
+        classification: view.getter("Classification"),
+        returnNumber: view.getter("ReturnNumber"),
+        numberOfReturns: view.getter("NumberOfReturns"),
+        pointSourceId: view.getter("PointSourceId"),
+        ...(view.dimensions.GpsTime && {gpsTime: view.getter("GpsTime")}),
         ...(view.dimensions.Red && {
-            red: view.getter('Red'),
-            green: view.getter('Green'),
-            blue: view.getter('Blue'),
+            red: view.getter("Red"),
+            green: view.getter("Green"),
+            blue: view.getter("Blue"),
         }),
     };
 
     const ranges = [
-        'x',
-        'y',
-        'z',
-        'intensity',
-        'classification',
-        'returnNumber',
-        'numberOfReturns',
-        'pointSourceId',
-        'gpsTime',
-        'color',
+        "x",
+        "y",
+        "z",
+        "intensity",
+        "classification",
+        "returnNumber",
+        "numberOfReturns",
+        "pointSourceId",
+        "gpsTime",
+        "color",
     ].reduce((map, name) => ({...map, [name]: [Infinity, -Infinity]}), {});
 
     function update(range, value) {
@@ -199,10 +199,10 @@ async function readUsingDataView(event) {
         ranges: {
             intensity: ranges.intensity,
             classification: ranges.classification,
-            'return number': ranges.returnNumber,
-            'number of returns': ranges.numberOfReturns,
-            'source id': ranges.pointSourceId,
-            'gps-time': ranges.gpsTime,
+            "return number": ranges.returnNumber,
+            "number of returns": ranges.numberOfReturns,
+            "source id": ranges.pointSourceId,
+            "gps-time": ranges.gpsTime,
         }
     };
 

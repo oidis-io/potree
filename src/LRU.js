@@ -127,17 +127,17 @@ class LRU {
     }
 
     toString() {
-        let string = '{ ';
+        let string = "{ ";
         let curr = this.first;
         while (curr !== null) {
             string += curr.node.id;
             if (curr.next !== null) {
-                string += ', ';
+                string += ", ";
             }
             curr = curr.next;
         }
-        string += '}';
-        string += '(' + this.size() + ')';
+        string += "}";
+        string += "(" + this.size() + ")";
         return string;
     }
 

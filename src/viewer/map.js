@@ -13,35 +13,35 @@ import * as THREE from "../../libs/three.js/build/three.module.js";
 
 // http://epsg.io/
 proj4.defs([
-    ['UTM10N', '+proj=utm +zone=10 +ellps=GRS80 +datum=NAD83 +units=m +no_defs'],
-    ['EPSG:6339', '+proj=utm +zone=10 +ellps=GRS80 +units=m +no_defs'],
-    ['EPSG:6340', '+proj=utm +zone=11 +ellps=GRS80 +units=m +no_defs'],
-    ['EPSG:6341', '+proj=utm +zone=12 +ellps=GRS80 +units=m +no_defs'],
-    ['EPSG:6342', '+proj=utm +zone=13 +ellps=GRS80 +units=m +no_defs'],
-    ['EPSG:6343', '+proj=utm +zone=14 +ellps=GRS80 +units=m +no_defs'],
-    ['EPSG:6344', '+proj=utm +zone=15 +ellps=GRS80 +units=m +no_defs'],
-    ['EPSG:6345', '+proj=utm +zone=16 +ellps=GRS80 +units=m +no_defs'],
-    ['EPSG:6346', '+proj=utm +zone=17 +ellps=GRS80 +units=m +no_defs'],
-    ['EPSG:6347', '+proj=utm +zone=18 +ellps=GRS80 +units=m +no_defs'],
-    ['EPSG:6348', '+proj=utm +zone=19 +ellps=GRS80 +units=m +no_defs'],
-    ['EPSG:26910', '+proj=utm +zone=10 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs '],
-    ['EPSG:26911', '+proj=utm +zone=11 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs '],
-    ['EPSG:26912', '+proj=utm +zone=12 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs '],
-    ['EPSG:26913', '+proj=utm +zone=13 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs '],
-    ['EPSG:26914', '+proj=utm +zone=14 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs '],
-    ['EPSG:26915', '+proj=utm +zone=15 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs '],
-    ['EPSG:26916', '+proj=utm +zone=16 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs '],
-    ['EPSG:26917', '+proj=utm +zone=17 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs '],
-    ['EPSG:26918', '+proj=utm +zone=18 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs '],
-    ['EPSG:26919', '+proj=utm +zone=19 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs '],
+    ["UTM10N", "+proj=utm +zone=10 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"],
+    ["EPSG:6339", "+proj=utm +zone=10 +ellps=GRS80 +units=m +no_defs"],
+    ["EPSG:6340", "+proj=utm +zone=11 +ellps=GRS80 +units=m +no_defs"],
+    ["EPSG:6341", "+proj=utm +zone=12 +ellps=GRS80 +units=m +no_defs"],
+    ["EPSG:6342", "+proj=utm +zone=13 +ellps=GRS80 +units=m +no_defs"],
+    ["EPSG:6343", "+proj=utm +zone=14 +ellps=GRS80 +units=m +no_defs"],
+    ["EPSG:6344", "+proj=utm +zone=15 +ellps=GRS80 +units=m +no_defs"],
+    ["EPSG:6345", "+proj=utm +zone=16 +ellps=GRS80 +units=m +no_defs"],
+    ["EPSG:6346", "+proj=utm +zone=17 +ellps=GRS80 +units=m +no_defs"],
+    ["EPSG:6347", "+proj=utm +zone=18 +ellps=GRS80 +units=m +no_defs"],
+    ["EPSG:6348", "+proj=utm +zone=19 +ellps=GRS80 +units=m +no_defs"],
+    ["EPSG:26910", "+proj=utm +zone=10 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs "],
+    ["EPSG:26911", "+proj=utm +zone=11 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs "],
+    ["EPSG:26912", "+proj=utm +zone=12 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs "],
+    ["EPSG:26913", "+proj=utm +zone=13 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs "],
+    ["EPSG:26914", "+proj=utm +zone=14 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs "],
+    ["EPSG:26915", "+proj=utm +zone=15 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs "],
+    ["EPSG:26916", "+proj=utm +zone=16 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs "],
+    ["EPSG:26917", "+proj=utm +zone=17 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs "],
+    ["EPSG:26918", "+proj=utm +zone=18 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs "],
+    ["EPSG:26919", "+proj=utm +zone=19 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs "],
 ]);
 
 export class MapView {
     constructor(viewer) {
         this.viewer = viewer;
 
-        this.webMapService = 'WMTS';
-        this.mapProjectionName = 'EPSG:3857';
+        this.webMapService = "WMTS";
+        this.mapProjectionName = "EPSG:3857";
         this.mapProjection = proj4.defs(this.mapProjectionName);
         this.sceneProjection = null;
 
@@ -75,21 +75,21 @@ export class MapView {
                 image: new ol.style.Circle({
                     radius: 6,
                     stroke: new ol.style.Stroke({
-                        color: 'white',
+                        color: "white",
                         width: 2
                     }),
                     fill: new ol.style.Fill({
-                        color: 'green'
+                        color: "green"
                     })
                 }),
                 text: new ol.style.Text({
-                    font: '12px helvetica,sans-serif',
+                    font: "12px helvetica,sans-serif",
                     text: text,
                     fill: new ol.style.Fill({
-                        color: '#000'
+                        color: "#000"
                     }),
                     stroke: new ol.style.Stroke({
-                        color: '#fff',
+                        color: "#fff",
                         width: 2
                     })
                 })
@@ -109,8 +109,8 @@ export class MapView {
             return;
         }
 
-        this.elMap = $('#potree_map');
-        this.elMap.draggable({handle: $('#potree_map_header')});
+        this.elMap = $("#potree_map");
+        this.elMap.draggable({handle: $("#potree_map_header")});
         this.elMap.resizable();
 
         this.elTooltip = $(`<div style="position: relative; z-index: 100"></div>`);
@@ -126,8 +126,8 @@ export class MapView {
 
         let mousePositionControl = new ol.control.MousePosition({
             coordinateFormat: ol.coordinate.createStringXY(5),
-            projection: 'EPSG:4326',
-            undefinedHTML: '&nbsp;'
+            projection: "EPSG:4326",
+            undefinedHTML: "&nbsp;"
         });
 
         let _this = this;
@@ -135,32 +135,32 @@ export class MapView {
             let options = optOptions || {};
 
             // TOGGLE TILES
-            let btToggleTiles = document.createElement('button');
-            btToggleTiles.innerHTML = 'T';
-            btToggleTiles.addEventListener('click', () => {
+            let btToggleTiles = document.createElement("button");
+            btToggleTiles.innerHTML = "T";
+            btToggleTiles.addEventListener("click", () => {
                 let visible = sourcesLayer.getVisible();
                 _this.showSources(!visible);
             }, false);
-            btToggleTiles.style.float = 'left';
-            btToggleTiles.title = 'show / hide tiles';
+            btToggleTiles.style.float = "left";
+            btToggleTiles.title = "show / hide tiles";
 
             // DOWNLOAD SELECTED TILES
-            let link = document.createElement('a');
-            link.href = '#';
-            link.download = 'list.txt';
-            link.style.float = 'left';
+            let link = document.createElement("a");
+            link.href = "#";
+            link.download = "list.txt";
+            link.style.float = "left";
 
-            let button = document.createElement('button');
-            button.innerHTML = 'D';
+            let button = document.createElement("button");
+            button.innerHTML = "D";
             link.appendChild(button);
 
             let handleDownload = (e) => {
                 let features = selectedFeatures.getArray();
 
-                let url = [document.location.protocol, '//', document.location.host, document.location.pathname].join('');
+                let url = [document.location.protocol, "//", document.location.host, document.location.pathname].join("");
 
                 if (features.length === 0) {
-                    alert('No tiles were selected. Select area with ctrl + left mouse button!');
+                    alert("No tiles were selected. Select area with ctrl + left mouse button!");
                     e.preventDefault();
                     e.stopImmediatePropagation();
                     return false;
@@ -169,38 +169,38 @@ export class MapView {
 
                     if (feature.source) {
                         let cloudjsurl = feature.pointcloud.pcoGeometry.url;
-                        let sourceurl = new URL(url + '/../' + cloudjsurl + '/../source/' + feature.source.name);
+                        let sourceurl = new URL(url + "/../" + cloudjsurl + "/../source/" + feature.source.name);
                         link.href = sourceurl.href;
                         link.download = feature.source.name;
                     }
                 } else {
-                    let content = '';
+                    let content = "";
                     for (let i = 0; i < features.length; i++) {
                         let feature = features[i];
 
                         if (feature.source) {
                             let cloudjsurl = feature.pointcloud.pcoGeometry.url;
-                            let sourceurl = new URL(url + '/../' + cloudjsurl + '/../source/' + feature.source.name);
-                            content += sourceurl.href + '\n';
+                            let sourceurl = new URL(url + "/../" + cloudjsurl + "/../source/" + feature.source.name);
+                            content += sourceurl.href + "\n";
                         }
                     }
 
-                    let uri = 'data:application/octet-stream;base64,' + btoa(content);
+                    let uri = "data:application/octet-stream;base64," + btoa(content);
                     link.href = uri;
-                    link.download = 'list_of_files.txt';
+                    link.download = "list_of_files.txt";
                 }
             };
 
-            button.addEventListener('click', handleDownload, false);
+            button.addEventListener("click", handleDownload, false);
 
             // assemble container
-            let element = document.createElement('div');
-            element.className = 'ol-unselectable ol-control';
+            let element = document.createElement("div");
+            element.className = "ol-unselectable ol-control";
             element.appendChild(link);
             element.appendChild(btToggleTiles);
-            element.style.bottom = '0.5em';
-            element.style.left = '0.5em';
-            element.title = 'Download file or list of selected tiles. Select tile with left mouse button or area using ctrl + left mouse.';
+            element.style.bottom = "0.5em";
+            element.style.left = "0.5em";
+            element.title = "Download file or list of selected tiles. Select tile with left mouse button or area using ctrl + left mouse.";
 
             ol.control.Control.call(this, {
                 element: element,
@@ -229,7 +229,7 @@ export class MapView {
                 extentsLayer,
                 cameraLayer
             ],
-            target: 'potree_map_content',
+            target: "potree_map_content",
             view: new ol.View({
                 center: this.olCenter,
                 zoom: 9
@@ -241,7 +241,7 @@ export class MapView {
             source: new ol.source.Vector({}),
             style: new ol.style.Style({
                 stroke: new ol.style.Stroke({
-                    color: 'rgba(0, 0, 255, 1)',
+                    color: "rgba(0, 0, 255, 1)",
                     width: 2
                 })
             })
@@ -275,7 +275,7 @@ export class MapView {
         //  }
         // });
 
-        this.map.on('click', evt => {
+        this.map.on("click", evt => {
             let pixel = evt.pixel;
             let feature = this.map.forEachFeatureAtPixel(pixel, function (feature) {
                 return feature;
@@ -286,7 +286,7 @@ export class MapView {
             }
         });
 
-        dragBox.on('boxend', (e) => {
+        dragBox.on("boxend", (e) => {
             // features that intersect the box are added to the collection of
             // selected features, and their names are displayed in the "info"
             // div
@@ -297,14 +297,14 @@ export class MapView {
         });
 
         // clear selection when drawing a new box and when clicking on the map
-        dragBox.on('boxstart', (e) => {
+        dragBox.on("boxstart", (e) => {
             selectedFeatures.clear();
         });
-        this.map.on('click', () => {
+        this.map.on("click", () => {
             selectedFeatures.clear();
         });
 
-        this.viewer.addEventListener('scene_changed', e => {
+        this.viewer.addEventListener("scene_changed", e => {
             this.setScene(e.scene);
         });
 
@@ -335,9 +335,9 @@ export class MapView {
                 let p = this.map.getPixelFromCoordinate(coordinates);
 
                 this.elTooltip.html(annotation.title);
-                this.elTooltip.css('display', '');
-                this.elTooltip.css('left', `${p[0]}px`);
-                this.elTooltip.css('top', `${p[1]}px`);
+                this.elTooltip.css("display", "");
+                this.elTooltip.css("left", `${p[0]}px`);
+                this.elTooltip.css("top", `${p[1]}px`);
             };
 
             feature.onClick = evt => {
@@ -356,16 +356,16 @@ export class MapView {
         }
 
         if (this.scene) {
-            this.scene.removeEventListener('pointcloud_added', this.onPointcloudAdded);
-            this.scene.removeEventListener('360_images_added', this.on360ImagesAdded);
-            this.scene.annotations.removeEventListener('annotation_added', this.onAnnotationAdded);
+            this.scene.removeEventListener("pointcloud_added", this.onPointcloudAdded);
+            this.scene.removeEventListener("360_images_added", this.on360ImagesAdded);
+            this.scene.annotations.removeEventListener("annotation_added", this.onAnnotationAdded);
         }
 
         this.scene = scene;
 
-        this.scene.addEventListener('pointcloud_added', this.onPointcloudAdded);
-        this.scene.addEventListener('360_images_added', this.on360ImagesAdded);
-        this.scene.annotations.addEventListener('annotation_added', this.onAnnotationAdded);
+        this.scene.addEventListener("pointcloud_added", this.onPointcloudAdded);
+        this.scene.addEventListener("360_images_added", this.on360ImagesAdded);
+        this.scene.annotations.addEventListener("annotation_added", this.onAnnotationAdded);
 
         for (let pointcloud of this.viewer.scene.pointclouds) {
             this.load(pointcloud);
@@ -396,16 +396,16 @@ export class MapView {
             source: featureVector,
             style: new ol.style.Style({
                 fill: new ol.style.Fill({
-                    color: 'rgba(255, 255, 255, 0.2)'
+                    color: "rgba(255, 255, 255, 0.2)"
                 }),
                 stroke: new ol.style.Stroke({
-                    color: '#0000ff',
+                    color: "#0000ff",
                     width: 2
                 }),
                 image: new ol.style.Circle({
                     radius: 3,
                     fill: new ol.style.Fill({
-                        color: '#0000ff'
+                        color: "#0000ff"
                     })
                 })
             })
@@ -423,10 +423,10 @@ export class MapView {
             source: new ol.source.Vector({}),
             style: new ol.style.Style({
                 fill: new ol.style.Fill({
-                    color: 'rgba(255, 0, 0, 1)'
+                    color: "rgba(255, 0, 0, 1)"
                 }),
                 stroke: new ol.style.Stroke({
-                    color: 'rgba(255, 0, 0, 1)',
+                    color: "rgba(255, 0, 0, 1)",
                     width: 2
                 })
             })
@@ -451,7 +451,7 @@ export class MapView {
             source: featureVector,
             style: new ol.style.Style({
                 stroke: new ol.style.Stroke({
-                    color: '#0000ff',
+                    color: "#0000ff",
                     width: 2
                 })
             })
@@ -469,10 +469,10 @@ export class MapView {
             source: new ol.source.Vector({}),
             style: new ol.style.Style({
                 fill: new ol.style.Fill({
-                    color: 'rgba(255, 0, 0, 1)'
+                    color: "rgba(255, 0, 0, 1)"
                 }),
                 stroke: new ol.style.Stroke({
-                    color: 'rgba(255, 0, 0, 1)',
+                    color: "rgba(255, 0, 0, 1)",
                     width: 2
                 })
             })
@@ -518,10 +518,10 @@ export class MapView {
             source: new ol.source.Vector({}),
             style: new ol.style.Style({
                 fill: new ol.style.Fill({
-                    color: 'rgba(0, 0, 150, 0.1)'
+                    color: "rgba(0, 0, 150, 0.1)"
                 }),
                 stroke: new ol.style.Stroke({
-                    color: 'rgba(0, 0, 150, 1)',
+                    color: "rgba(0, 0, 150, 1)",
                     width: 1
                 })
             })
@@ -539,10 +539,10 @@ export class MapView {
             source: new ol.source.Vector({}),
             style: new ol.style.Style({
                 fill: new ol.style.Fill({
-                    color: 'rgba(255, 0, 0, 0.1)'
+                    color: "rgba(255, 0, 0, 0.1)"
                 }),
                 stroke: new ol.style.Stroke({
-                    color: 'rgba(255, 0, 0, 1)',
+                    color: "rgba(255, 0, 0, 1)",
                     width: 2
                 })
             }),
@@ -636,7 +636,7 @@ export class MapView {
             let p = transform([image.position[0], image.position[1]]);
 
             let feature = new ol.Feature({
-                'geometry': new ol.geom.Point(p),
+                "geometry": new ol.geom.Point(p),
             });
 
             feature.onClick = () => {
@@ -660,15 +660,15 @@ export class MapView {
             try {
                 this.setSceneProjection(pointcloud.projection);
             } catch (e) {
-                console.log('Failed projection:', e);
+                console.log("Failed projection:", e);
 
                 if (pointcloud.fallbackProjection) {
                     try {
-                        console.log('Trying fallback projection...');
+                        console.log("Trying fallback projection...");
                         this.setSceneProjection(pointcloud.fallbackProjection);
-                        console.log('Set projection from fallback');
+                        console.log("Set projection from fallback");
                     } catch (e) {
-                        console.log('Failed fallback projection:', e);
+                        console.log("Failed fallback projection:", e);
                         return;
                     }
                 } else {
@@ -695,7 +695,7 @@ export class MapView {
             constrainResolution: false
         });
 
-        if (pointcloud.pcoGeometry.type == 'ept') {
+        if (pointcloud.pcoGeometry.type == "ept") {
             return;
         }
 
@@ -730,7 +730,7 @@ export class MapView {
                 // 'geometry': new ol.geom.LineString([p1, p2, p3, p4, p1])
                 // });
                 let feature = new ol.Feature({
-                    'geometry': new ol.geom.Polygon([[p1, p2, p3, p4, p1]])
+                    "geometry": new ol.geom.Polygon([[p1, p2, p3, p4, p1]])
                 });
                 feature.source = source;
                 feature.pointcloud = pointcloud;
@@ -749,11 +749,11 @@ export class MapView {
     }
 
     toggle() {
-        if (this.elMap.is(':visible')) {
-            this.elMap.css('display', 'none');
+        if (this.elMap.is(":visible")) {
+            this.elMap.css("display", "none");
             this.enabled = false;
         } else {
-            this.elMap.css('display', 'block');
+            this.elMap.css("display", "block");
             this.enabled = true;
         }
     }
@@ -763,7 +763,7 @@ export class MapView {
             return;
         }
 
-        let pm = $('#potree_map');
+        let pm = $("#potree_map");
 
         if (!this.enabled) {
             return;

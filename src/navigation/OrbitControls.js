@@ -59,7 +59,7 @@ export class OrbitControls extends EventDispatcher {
             if (e.drag.startHandled === undefined) {
                 e.drag.startHandled = true;
 
-                this.dispatchEvent({type: 'start'});
+                this.dispatchEvent({type: "start"});
             }
 
             let ndrag = {
@@ -81,7 +81,7 @@ export class OrbitControls extends EventDispatcher {
         };
 
         let drop = e => {
-            this.dispatchEvent({type: 'end'});
+            this.dispatchEvent({type: "end"});
         };
 
         let scroll = (e) => {
@@ -150,13 +150,13 @@ export class OrbitControls extends EventDispatcher {
             previousTouch = e;
         };
 
-        this.addEventListener('touchstart', touchStart);
-        this.addEventListener('touchend', touchEnd);
-        this.addEventListener('touchmove', touchMove);
-        this.addEventListener('drag', drag);
-        this.addEventListener('drop', drop);
-        this.addEventListener('mousewheel', scroll);
-        this.addEventListener('dblclick', dblclick);
+        this.addEventListener("touchstart", touchStart);
+        this.addEventListener("touchend", touchEnd);
+        this.addEventListener("touchmove", touchMove);
+        this.addEventListener("drag", drag);
+        this.addEventListener("drop", drop);
+        this.addEventListener("mousewheel", scroll);
+        this.addEventListener("dblclick", dblclick);
     }
 
     setScene(scene) {

@@ -55,7 +55,7 @@ onmessage = function (event) {
             for (let j = 0; j < numPoints; j++) {
                 let x, y, z;
 
-                if (version.newerThan('1.3')) {
+                if (version.newerThan("1.3")) {
                     x = (view.getUint32(inOffset + j * pointAttributes.byteSize + 0, true) * scale);
                     y = (view.getUint32(inOffset + j * pointAttributes.byteSize + 4, true) * scale);
                     z = (view.getUint32(inOffset + j * pointAttributes.byteSize + 8, true) * scale);
