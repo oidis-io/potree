@@ -87,7 +87,7 @@ let shaders = [
     "src/materials/shaders/blur.fs",
 ];
 
-let assets = ['build', "pointclouds", "libs", "examples", "docs", "LICENSE", "README.md"];
+let assets = ['build/potree', 'build/shaders', "pointclouds", "libs", "examples", "docs", "LICENSE", "README.md"];
 
 // For development, it is now possible to use 'gulp webserver'
 // from the command line to start the server (default port is 8080)
@@ -121,10 +121,10 @@ gulp.task("archive", async () => {
     archive.pipe(output);
     for (const asset of assets) {
         if (fs.existsSync(asset)) {
-            const name = path.basename(asset);
             if (fs.statSync(asset).isDirectory()) {
-                archive.directory(asset, `${baseName}/${name}`, null);
+                archive.directory(asset, `${baseName}/${asset}`, null);
             } else {
+                const name = path.basename(asset);
                 archive.file(asset, {name: `${baseName}/${name}`});
             }
         }
@@ -155,8 +155,6 @@ gulp.task('test', async () => {
 });
 
 gulp.task('workers', function () {
-    const merge = require('merge-stream');
-
     const workerStreams = Object.keys(workers).map(workerName => {
         return gulp.src(workers[workerName])
             .pipe(concat(`${workerName}.js`))
