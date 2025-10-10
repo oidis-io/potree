@@ -24,15 +24,15 @@ export class MeasurePanel {
 
     createCoordinatesTable(points) {
         let table = $(`
-			<table class="measurement_value_table">
-				<tr>
-					<th>x</th>
-					<th>y</th>
-					<th>z</th>
-					<th></th>
-				</tr>
-			</table>
-		`);
+            <table class="measurement_value_table">
+                <tr>
+                    <th>x</th>
+                    <th>y</th>
+                    <th>z</th>
+                    <th></th>
+                </tr>
+            </table>
+        `);
 
         let copyIconPath = Potree.resourcePath + '/icons/copy.svg';
 
@@ -42,15 +42,15 @@ export class MeasurePanel {
             let z = Utils.addCommas(point.z.toFixed(3));
 
             let row = $(`
-				<tr>
-					<td><span>${x}</span></td>
-					<td><span>${y}</span></td>
-					<td><span>${z}</span></td>
-					<td align="right" style="width: 25%">
-						<img name="copy" title="copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
-					</td>
-				</tr>
-			`);
+                <tr>
+                    <td><span>${x}</span></td>
+                    <td><span>${y}</span></td>
+                    <td><span>${z}</span></td>
+                    <td align="right" style="width: 25%">
+                        <img name="copy" title="copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
+                    </td>
+                </tr>
+            `);
 
             this.elCopy = row.find("img[name=copy]");
             this.elCopy.click(() => {
@@ -81,21 +81,21 @@ export class MeasurePanel {
                 let text = color.join(', ');
 
                 elTable.append($(`
-					<tr>
-						<td>rgb</td>
-						<td>${text}</td>
-					</tr>
-				`));
+                    <tr>
+                        <td>rgb</td>
+                        <td>${text}</td>
+                    </tr>
+                `));
             } else {
                 let value = point[attributeName];
                 let text = value.join(', ');
 
                 elTable.append($(`
-					<tr>
-						<td>${attributeName}</td>
-						<td>${text}</td>
-					</tr>
-				`));
+                    <tr>
+                        <td>${attributeName}</td>
+                        <td>${text}</td>
+                    </tr>
+                `));
             }
         }
 

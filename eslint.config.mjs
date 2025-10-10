@@ -41,6 +41,18 @@ export default [
             "padded-blocks": ["error", "never"],
             "keyword-spacing": ["error", { "before": true, "after": true }],
             "space-before-blocks": ["error", "always"],
+            "indent": ["error", 4, { "SwitchCase": 1 }],
+            "no-tabs": "error",
+            "spaced-comment": ["error", "always", {
+                "line": {
+                    "markers": ["//"],
+                    "exceptions": ["-","+"]
+                },
+                "block": {
+                    "markers": ["!"],
+                    "exceptions": ["*"]
+                }
+            }],
             // "quotes": ["error", "double", { "allowTemplateLiterals": true }],
 
             "no-unused-imports": "off",

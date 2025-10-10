@@ -508,9 +508,9 @@ export class Utils {
 
         pixels = new pixels.constructor(pixels);
 
-        //for (let i = 0; i < pixels.length; i++) {
-        //	pixels[i * 4 + 3] = 255;
-        //}
+        // for (let i = 0; i < pixels.length; i++) {
+        // pixels[i * 4 + 3] = 255;
+        // }
 
         // flip vertically
         let bytesPerLine = width * 4;
@@ -654,7 +654,7 @@ export class Utils {
                     closestDistance = distance;
                     closestValue = value;
                     closestNode = node;
-                    //console.log("found a closer one: " + value);
+                    // console.log("found a closer one: " + value);
                 }
             }
         }
@@ -861,11 +861,11 @@ export class Utils {
         };
 
         const mua = (d(0, 2, 3, 2) * d(3, 2, 1, 0) - d(0, 2, 1, 0) * d(3, 2, 3, 2))
-            /**-----------------------------------------------------------------**/ /
+        /** -----------------------------------------------------------------**/ /
             (d(1, 0, 1, 0) * d(3, 2, 3, 2) - d(3, 2, 1, 0) * d(3, 2, 1, 0));
 
         const mub = (d(0, 2, 3, 2) + mua * d(3, 2, 1, 0))
-            /**--------------------------------------**/ /
+        /** --------------------------------------**/ /
             d(3, 2, 3, 2);
 
         const P01 = P1.clone().sub(P0);
@@ -995,17 +995,17 @@ export class Utils {
     static createSvgGradient(scheme) {
         // this is what we are creating:
         //
-        //<svg width="1em" height="3em"  xmlns="http://www.w3.org/2000/svg">
-        //	<defs>
-        //		<linearGradient id="gradientID" gradientTransform="rotate(90)">
-        //		<stop offset="0%"  stop-color="rgb(93, 78, 162)" />
-        //		...
-        //		<stop offset="100%"  stop-color="rgb(157, 0, 65)" />
-        //		</linearGradient>
-        //	</defs>
+        // <svg width="1em" height="3em"  xmlns="http://www.w3.org/2000/svg">
+        // <defs>
+        //  <linearGradient id="gradientID" gradientTransform="rotate(90)">
+        //  <stop offset="0%"  stop-color="rgb(93, 78, 162)" />
+        //  ...
+        //  <stop offset="100%"  stop-color="rgb(157, 0, 65)" />
+        //  </linearGradient>
+        // </defs>
         //
-        //	<rect width="100%" height="100%" fill="url('#myGradient')" stroke="black" stroke-width="0.1em"/>
-        //</svg>
+        // <rect width="100%" height="100%" fill="url('#myGradient')" stroke="black" stroke-width="0.1em"/>
+        // </svg>
 
         const gradientId = `${Math.random()}_${Date.now()}`;
 

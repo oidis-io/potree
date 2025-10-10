@@ -161,8 +161,8 @@ async function readUsingDataView(event) {
     }
 
     // Do some normalizations:
-    // 	- if colors are 16-bit, normalize them down to 8-bit
-    // 	- normalize the GPS times to 32-bit offset values.
+    //  - if colors are 16-bit, normalize them down to 8-bit
+    //  - normalize the GPS times to 32-bit offset values.
     const normalizeColor = ranges.color[1] > 255 ? (c) => c / 256 : c => c;
     ranges.color[0] = normalizeColor(ranges.color[0]);
     ranges.color[1] = normalizeColor(ranges.color[1]);
@@ -175,13 +175,13 @@ async function readUsingDataView(event) {
 
     performance.mark("laslaz-end");
 
-    //{ // print timings
-    //	  performance.measure("laslaz", "laslaz-start", "laslaz-end");
-    //	  let measure = performance.getEntriesByType("measure")[0];
-    //	  let dpp = 1000 * measure.duration / numPoints;
-    //	  let debugMessage = `${measure.duration.toFixed(3)} ms, ${numPoints} points, ${dpp.toFixed(3)} µs / point`;
-    //	  console.log(debugMessage);
-    //}
+    // { // print timings
+    //   performance.measure("laslaz", "laslaz-start", "laslaz-end");
+    //   let measure = performance.getEntriesByType("measure")[0];
+    //   let dpp = 1000 * measure.duration / numPoints;
+    //   let debugMessage = `${measure.duration.toFixed(3)} ms, ${numPoints} points, ${dpp.toFixed(3)} µs / point`;
+    //   console.log(debugMessage);
+    // }
     performance.clearMarks();
     performance.clearMeasures();
 

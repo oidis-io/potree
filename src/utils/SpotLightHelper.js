@@ -18,7 +18,7 @@ export class SpotLightHelper extends THREE.Object3D {
         this.light = light;
         this.color = color;
 
-        //this.up.set(0, 0, 1);
+        // this.up.set(0, 0, 1);
         this.updateMatrix();
         this.updateMatrixWorld();
 

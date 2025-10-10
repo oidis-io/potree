@@ -18,21 +18,21 @@ export class DistancePanel extends MeasurePanel {
 
         let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
         this.elContent = $(`
-			<div class="measurement_content selectable">
-				<span class="coordinates_table_container"></span>
-				<br>
-				<table id="distances_table" class="measurement_value_table"></table>
+            <div class="measurement_content selectable">
+                <span class="coordinates_table_container"></span>
+                <br>
+                <table id="distances_table" class="measurement_value_table"></table>
 
-				<!-- ACTIONS -->
-				<div style="display: flex; margin-top: 12px">
-					<span>
-						<input type="button" name="make_profile" value="profile from measure" />
-					</span>
-					<span style="flex-grow: 1"></span>
-					<img name="remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
-				</div>
-			</div>
-		`);
+                <!-- ACTIONS -->
+                <div style="display: flex; margin-top: 12px">
+                    <span>
+                        <input type="button" name="make_profile" value="profile from measure" />
+                    </span>
+                    <span style="flex-grow: 1"></span>
+                    <img name="remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+                </div>
+            </div>
+        `);
 
         this.elRemove = this.elContent.find("img[name=remove]");
         this.elRemove.click(() => {
@@ -41,7 +41,7 @@ export class DistancePanel extends MeasurePanel {
 
         this.elMakeProfile = this.elContent.find("input[name=make_profile]");
         this.elMakeProfile.click(() => {
-            //measurement.points;
+            // measurement.points;
             const profile = new Profile();
 
             profile.name = measurement.name;
@@ -81,17 +81,17 @@ export class DistancePanel extends MeasurePanel {
             let label = (i === 0) ? 'Distances: ' : '';
             let distance = distances[i];
             let elDistance = $(`
-				<tr>
-					<th>${label}</th>
-					<td style="width: 100%; padding-left: 10px">${distance}</td>
-				</tr>`);
+                <tr>
+                    <th>${label}</th>
+                    <td style="width: 100%; padding-left: 10px">${distance}</td>
+                </tr>`);
             elDistanceTable.append(elDistance);
         }
 
         let elTotal = $(`
-			<tr>
-				<th>Total: </td><td style="width: 100%; padding-left: 10px">${totalDistance}</th>
-			</tr>`);
+            <tr>
+                <th>Total: </td><td style="width: 100%; padding-left: 10px">${totalDistance}</th>
+            </tr>`);
         elDistanceTable.append(elTotal);
     }
 }

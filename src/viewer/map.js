@@ -260,19 +260,19 @@ export class MapView {
         this.map.addInteraction(dragBox);
 
         // this.map.on('pointermove', evt => {
-        // 	let pixel = evt.pixel;
-        // 	let feature = this.map.forEachFeatureAtPixel(pixel, function (feature) {
-        // 		return feature;
-        // 	});
+        //  let pixel = evt.pixel;
+        //  let feature = this.map.forEachFeatureAtPixel(pixel, function (feature) {
+        //   return feature;
+        //  });
 
-        // 	// console.log(feature);
-        // 	// this.elTooltip.css("display", feature ? '' : 'none');
-        // 	this.elTooltip.css('display', 'none');
-        // 	if (feature && feature.onHover) {
-        // 		feature.onHover(evt);
-        // 		// overlay.setPosition(evt.coordinate);
-        // 		// tooltip.innerHTML = feature.get('name');
-        // 	}
+        //  // console.log(feature);
+        //  // this.elTooltip.css("display", feature ? '' : 'none');
+        //  this.elTooltip.css('display', 'none');
+        //  if (feature && feature.onHover) {
+        //   feature.onHover(evt);
+        //   // overlay.setPosition(evt.coordinate);
+        //   // tooltip.innerHTML = feature.get('name');
+        //  }
         // });
 
         this.map.on('click', evt => {
@@ -700,7 +700,7 @@ export class MapView {
         }
 
         let url = `${pointcloud.pcoGeometry.url}/../sources.json`;
-        //let response = await fetch(url);
+        // let response = await fetch(url);
 
         fetch(url).then(async (response) => {
             let data = await response.json();
@@ -727,7 +727,7 @@ export class MapView {
                 let p4 = this.toMap.forward([bounds.min[0], bounds.max[1]]);
 
                 // let feature = new ol.Feature({
-                //	'geometry': new ol.geom.LineString([p1, p2, p3, p4, p1])
+                // 'geometry': new ol.geom.LineString([p1, p2, p3, p4, p1])
                 // });
                 let feature = new ol.Feature({
                     'geometry': new ol.geom.Polygon([[p1, p2, p3, p4, p1]])

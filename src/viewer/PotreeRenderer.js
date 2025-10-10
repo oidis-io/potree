@@ -92,7 +92,7 @@ export class PotreeRenderer {
         viewer.dispatchEvent({type: "render.pass.scene", viewer: viewer});
 
         viewer.clippingTool.update();
-        renderer.render(viewer.clippingTool.sceneMarker, viewer.scene.cameraScreenSpace); //viewer.scene.cameraScreenSpace);
+        renderer.render(viewer.clippingTool.sceneMarker, viewer.scene.cameraScreenSpace); // viewer.scene.cameraScreenSpace);
         renderer.render(viewer.clippingTool.sceneVolume, camera);
 
         renderer.render(viewer.controls.sceneControls, camera);
@@ -108,8 +108,8 @@ export class PotreeRenderer {
         // renderer.render(viewer.transformationTool.scene, camera);
 
         // renderer.setViewport(width - viewer.navigationCube.width,
-        // 							height - viewer.navigationCube.width,
-        // 							viewer.navigationCube.width, viewer.navigationCube.width);
+        //   height - viewer.navigationCube.width,
+        //   viewer.navigationCube.width, viewer.navigationCube.width);
         // renderer.render(viewer.navigationCube, viewer.navigationCube.camera);
         // renderer.setViewport(0, 0, width, height);
 

@@ -23,41 +23,41 @@ export class AnnotationPanel {
 
         let copyIconPath = `${Potree.resourcePath}/icons/copy.svg`;
         this.elContent = $(`
-		<div class="propertypanel_content">
-			<table>
-				<tr>
-					<th colspan="3">position</th>
-					<th></th>
-				</tr>
-				<tr>
-					<td align="center" id="annotation_position_x" style="width: 25%"></td>
-					<td align="center" id="annotation_position_y" style="width: 25%"></td>
-					<td align="center" id="annotation_position_z" style="width: 25%"></td>
-					<td align="right" id="copy_annotation_position" style="width: 25%">
-						<img name="copyPosition" title="copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
-					</td>
-				</tr>
+        <div class="propertypanel_content">
+            <table>
+                <tr>
+                    <th colspan="3">position</th>
+                    <th></th>
+                </tr>
+                <tr>
+                    <td align="center" id="annotation_position_x" style="width: 25%"></td>
+                    <td align="center" id="annotation_position_y" style="width: 25%"></td>
+                    <td align="center" id="annotation_position_z" style="width: 25%"></td>
+                    <td align="right" id="copy_annotation_position" style="width: 25%">
+                        <img name="copyPosition" title="copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
+                    </td>
+                </tr>
 
-			</table>
+            </table>
 
-			<div>
+            <div>
 
-				<div class="heading">Title</div>
-				<div id="annotation_title" contenteditable="true">
-					Annotation Title
-				</div>
+                <div class="heading">Title</div>
+                <div id="annotation_title" contenteditable="true">
+                    Annotation Title
+                </div>
 
-				<div class="heading">Description</div>
-				<div id="annotation_description" contenteditable="true">
-					A longer description of this annotation. 
-						Can be multiple lines long. TODO: the user should be able
-						to modify title and description. 
-				</div>
+                <div class="heading">Description</div>
+                <div id="annotation_description" contenteditable="true">
+                    A longer description of this annotation. 
+                        Can be multiple lines long. TODO: the user should be able
+                        to modify title and description. 
+                </div>
 
-			</div>
+            </div>
 
-		</div>
-		`);
+        </div>
+        `);
 
         this.elCopyPosition = this.elContent.find("img[name=copyPosition]");
         this.elCopyPosition.click(() => {

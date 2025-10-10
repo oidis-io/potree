@@ -42,11 +42,11 @@ export class Sidebar {
 
     createToolIcon(icon, title, callback) {
         let element = $(`
-			<img src="${icon}"
-				style="width: 32px; height: 32px"
-				class="button-icon"
-				data-i18n="${title}" />
-		`);
+            <img src="${icon}"
+                style="width: 32px; height: 32px"
+                class="button-icon"
+                data-i18n="${title}" />
+        `);
 
         element.click(callback);
 
@@ -318,11 +318,11 @@ export class Sidebar {
             let potreeIcon = `${Potree.resourcePath}/icons/file_potree.svg`;
 
             elExport.append(`
-				Export: <br>
-				<a href="#" download="measure.json"><img name="geojson_export_button" src="${geoJSONIcon}" class="button-icon" style="height: 24px" /></a>
-				<a href="#" download="measure.dxf"><img name="dxf_export_button" src="${dxfIcon}" class="button-icon" style="height: 24px" /></a>
-				<a href="#" download="potree.json5"><img name="potree_export_button" src="${potreeIcon}" class="button-icon" style="height: 24px" /></a>
-			`);
+                Export: <br>
+                <a href="#" download="measure.json"><img name="geojson_export_button" src="${geoJSONIcon}" class="button-icon" style="height: 24px" /></a>
+                <a href="#" download="measure.dxf"><img name="dxf_export_button" src="${dxfIcon}" class="button-icon" style="height: 24px" /></a>
+                <a href="#" download="potree.json5"><img name="potree_export_button" src="${potreeIcon}" class="button-icon" style="height: 24px" /></a>
+            `);
 
             let elDownloadJSON = elExport.find("img[name=geojson_export_button]").parent();
             elDownloadJSON.click((event) => {
@@ -394,11 +394,11 @@ export class Sidebar {
 
         let createNode = (parent, text, icon, object) => {
             let nodeID = tree.jstree('create_node', parent, {
-                    "text": text,
-                    "icon": icon,
-                    "data": object
-                },
-                "last", false, false);
+                "text": text,
+                "icon": icon,
+                "data": object
+            },
+            "last", false, false);
 
             if (object.visible) {
                 tree.jstree('check_node', nodeID);
@@ -528,9 +528,9 @@ export class Sidebar {
                 // let box = new THREE.Box3().setFromObject(object);
 
                 // if(box.getSize(new THREE.Vector3()).length() > 0){
-                // 	let node = new THREE.Object3D();
-                // 	node.boundingBox = box;
-                // 	this.viewer.zoomTo(node, 1, 500);
+                //  let node = new THREE.Object3D();
+                //  node.boundingBox = box;
+                //  this.viewer.zoomTo(node, 1, 500);
                 // }
             } else if (object instanceof Images360) {
                 // TODO
@@ -659,12 +659,12 @@ export class Sidebar {
                 const name = layer.name;
 
                 let shpPointsID = tree.jstree('create_node', parentNode, {
-                        "text": name,
-                        "icon": geopackageIcon,
-                        "object": layer,
-                        "data": layer,
-                    },
-                    "last", false, false);
+                    "text": name,
+                    "icon": geopackageIcon,
+                    "object": layer,
+                    "data": layer,
+                },
+                "last", false, false);
                 tree.jstree(layer.visible ? "check_node" : "uncheck_node", shpPointsID);
             }
         };
@@ -1047,24 +1047,24 @@ export class Sidebar {
         // slider.update();
 
         // slider.change( () => {
-        // 	let range = slider.chosenRange;
-        // 	this.viewer.setFilterPointSourceIDRange(range[0], range[1]);
+        //  let range = slider.chosenRange;
+        //  this.viewer.setFilterPointSourceIDRange(range[0], range[1]);
         // });
 
         // let onPointSourceIDExtentChanged = (event) => {
-        // 	let range = this.viewer.filterPointSourceIDExtent;
-        // 	slider.setVisibleRange(range);
+        //  let range = this.viewer.filterPointSourceIDExtent;
+        //  slider.setVisibleRange(range);
         // };
 
         // let onPointSourceIDChanged = (event) => {
-        // 	let range = this.viewer.filterPointSourceIDRange;
+        //  let range = this.viewer.filterPointSourceIDRange;
 
-        // 	let precision = 1;
-        // 	let from = `${Utils.addCommas(range[0].toFixed(precision))}`;
-        // 	let to = `${Utils.addCommas(range[1].toFixed(precision))}`;
-        // 	lblPointSourceID[0].innerHTML = `${from} to ${to}`;
+        //  let precision = 1;
+        //  let from = `${Utils.addCommas(range[0].toFixed(precision))}`;
+        //  let to = `${Utils.addCommas(range[1].toFixed(precision))}`;
+        //  lblPointSourceID[0].innerHTML = `${from} to ${to}`;
 
-        // 	slider.setRange(range);
+        //  slider.setRange(range);
         // };
 
         // this.viewer.addEventListener('filter_point_source_id_range_changed', onPointSourceIDChanged);
@@ -1082,14 +1082,14 @@ export class Sidebar {
             const checked = classification.visible ? "checked" : "";
 
             let element = $(`
-				<li>
-					<label style="whitespace: nowrap; display: flex">
-						<input id="${inputID}" type="checkbox" ${checked}/>
-						<span style="flex-grow: 1">${name}</span>
-						<input id="${colorPickerID}" style="zoom: 0.5" />
-					</label>
-				</li>
-			`);
+                <li>
+                    <label style="whitespace: nowrap; display: flex">
+                        <input id="${inputID}" type="checkbox" ${checked}/>
+                        <span style="flex-grow: 1">${name}</span>
+                        <input id="${colorPickerID}" style="zoom: 0.5" />
+                    </label>
+                </li>
+            `);
 
             const elInput = element.find('input');
             const elColorPicker = element.find(`#${colorPickerID}`);
@@ -1125,13 +1125,13 @@ export class Sidebar {
 
         const addToggleAllButton = () => { // toggle all button
             const element = $(`
-				<li>
-					<label style="whitespace: nowrap">
-						<input id="toggleClassificationFilters" type="checkbox" checked/>
-						<span>show/hide all</span>
-					</label>
-				</li>
-			`);
+                <li>
+                    <label style="whitespace: nowrap">
+                        <input id="toggleClassificationFilters" type="checkbox" checked/>
+                        <span>show/hide all</span>
+                    </label>
+                </li>
+            `);
 
             let elInput = element.find('input');
 
@@ -1144,10 +1144,10 @@ export class Sidebar {
 
         const addInvertButton = () => {
             const element = $(`
-				<li>
-					<input type="button" value="invert" />
-				</li>
-			`);
+                <li>
+                    <input type="button" value="invert" />
+                </li>
+            `);
 
             let elInput = element.find('input');
 
@@ -1210,8 +1210,8 @@ export class Sidebar {
             let header = $(this);
             let content = $(this).next();
 
-            //header.addClass('accordion-header ui-widget');
-            //content.addClass('accordion-content ui-widget');
+            // header.addClass('accordion-header ui-widget');
+            // content.addClass('accordion-content ui-widget');
 
             content.hide();
 
@@ -1485,11 +1485,11 @@ export class Sidebar {
         ));
 
         let elCameraProjection = $(`
-			<selectgroup id="camera_projection_options">
-				<option id="camera_projection_options_perspective" value="PERSPECTIVE">Perspective</option>
-				<option id="camera_projection_options_orthigraphic" value="ORTHOGRAPHIC">Orthographic</option>
-			</selectgroup>
-		`);
+            <selectgroup id="camera_projection_options">
+                <option id="camera_projection_options_perspective" value="PERSPECTIVE">Perspective</option>
+                <option id="camera_projection_options_orthigraphic" value="ORTHOGRAPHIC">Orthographic</option>
+            </selectgroup>
+        `);
         elNavigation.append(elCameraProjection);
         elCameraProjection.selectgroup({title: "Camera Projection"});
         elCameraProjection.find("input").click((e) => {

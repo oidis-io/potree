@@ -88,7 +88,7 @@ export class AnimationPath {
     constructor(points = []) {
         this.points = points;
         this.spline = new THREE.CatmullRomCurve3(points);
-        //this.spline.reparametrizeByArcLength(1 / this.spline.getLength().total);
+        // this.spline.reparametrizeByArcLength(1 / this.spline.getLength().total);
     }
 
     get(t) {

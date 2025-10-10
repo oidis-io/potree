@@ -25,11 +25,11 @@ export class PointCloudSM {
         this.target.depthTexture = new THREE.DepthTexture();
         this.target.depthTexture.type = THREE.UnsignedIntType;
 
-        //this.threeRenderer.setClearColor(0x000000, 1);
+        // this.threeRenderer.setClearColor(0x000000, 1);
         this.threeRenderer.setClearColor(0xff0000, 1);
 
-        //HACK? removed while moving to three.js 109
-        //this.threeRenderer.clearTarget(this.target, true, true, true);
+        // HACK? removed while moving to three.js 109
+        // this.threeRenderer.clearTarget(this.target, true, true, true);
         {
             const oldTarget = this.threeRenderer.getRenderTarget();
 

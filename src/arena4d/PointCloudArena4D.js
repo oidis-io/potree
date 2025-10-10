@@ -294,7 +294,7 @@ export class PointCloudArena4D extends PointCloudTree {
                 nodesOnRay.push(node);
             }
             // if(_ray.isIntersectionBox(box)){
-            //	nodesOnRay.push(node);
+            // nodesOnRay.push(node);
             // }
         }
 
@@ -483,15 +483,15 @@ export class PointCloudArena4D extends PointCloudTree {
                 } else if (attributeName === 'indices') {
 
                 } else {
-                    //if (values.itemSize === 1) {
-                    //	point[attribute.name] = values.array[hit.pIndex];
-                    //} else {
-                    //	let value = [];
-                    //	for (let j = 0; j < values.itemSize; j++) {
-                    //		value.push(values.array[values.itemSize * hit.pIndex + j]);
-                    //	}
-                    //	point[attribute.name] = value;
-                    //}
+                    // if (values.itemSize === 1) {
+                    // point[attribute.name] = values.array[hit.pIndex];
+                    // } else {
+                    // let value = [];
+                    // for (let j = 0; j < values.itemSize; j++) {
+                    //  value.push(values.array[values.itemSize * hit.pIndex + j]);
+                    // }
+                    // point[attribute.name] = value;
+                    // }
                 }
             }
 
@@ -544,9 +544,9 @@ export class PointCloudArena4D extends PointCloudTree {
 
             visibleNodeTextureOffsets.set(node, i);
 
-            let b1 = 0;	// children
-            let b2 = 0;	// offset to first child
-            let b3 = 0;	// split
+            let b1 = 0;    // children
+            let b2 = 0;    // offset to first child
+            let b3 = 0;    // split
 
             if (node.geometryNode.left && visibleNodeNames.indexOf(node.geometryNode.left.number) > 0) {
                 b1 += 1;

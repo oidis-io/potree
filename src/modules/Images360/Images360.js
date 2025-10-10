@@ -233,9 +233,9 @@ export class Images360 extends EventDispatcher {
         currentlyHovered = intersection.object;
         currentlyHovered.material = smHovered;
 
-        //label.visible = true;
-        //label.setText(currentlyHovered.image360.file);
-        //currentlyHovered.getWorldPosition(label.position);
+        // label.visible = true;
+        // label.setText(currentlyHovered.image360.file);
+        // currentlyHovered.getWorldPosition(label.position);
     }
 
     update() {

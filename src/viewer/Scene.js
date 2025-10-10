@@ -369,8 +369,8 @@ export class Scene extends EventDispatcher {
         this.cameraP.position.set(1000, 1000, 1000);
         this.cameraO.up.set(0, 0, 1);
         this.cameraO.position.set(1000, 1000, 1000);
-        //this.camera.rotation.y = -Math.PI / 4;
-        //this.camera.rotation.x = -Math.PI / 6;
+        // this.camera.rotation.y = -Math.PI / 4;
+        // this.camera.rotation.x = -Math.PI / 6;
         this.cameraScreenSpace.lookAt(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1), new THREE.Vector3(0, 1, 0));
 
         this.directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
@@ -398,26 +398,26 @@ export class Scene extends EventDispatcher {
         }
 
         // { // lights
-        // 	{
-        // 		let light = new THREE.DirectionalLight(0xffffff);
-        // 		light.position.set(10, 10, 1);
-        // 		light.target.position.set(0, 0, 0);
-        // 		this.scene.add(light);
-        // 	}
+        //  {
+        //   let light = new THREE.DirectionalLight(0xffffff);
+        //   light.position.set(10, 10, 1);
+        //   light.target.position.set(0, 0, 0);
+        //   this.scene.add(light);
+        //  }
 
-        // 	{
-        // 		let light = new THREE.DirectionalLight(0xffffff);
-        // 		light.position.set(-10, 10, 1);
-        // 		light.target.position.set(0, 0, 0);
-        // 		this.scene.add(light);
-        // 	}
+        //  {
+        //   let light = new THREE.DirectionalLight(0xffffff);
+        //   light.position.set(-10, 10, 1);
+        //   light.target.position.set(0, 0, 0);
+        //   this.scene.add(light);
+        //  }
 
-        // 	{
-        // 		let light = new THREE.DirectionalLight(0xffffff);
-        // 		light.position.set(0, -10, 20);
-        // 		light.target.position.set(0, 0, 0);
-        // 		this.scene.add(light);
-        // 	}
+        //  {
+        //   let light = new THREE.DirectionalLight(0xffffff);
+        //   light.position.set(0, -10, 20);
+        //   light.target.position.set(0, 0, 0);
+        //   this.scene.add(light);
+        //  }
         // }
     }
 

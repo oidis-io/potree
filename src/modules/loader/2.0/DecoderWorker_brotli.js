@@ -53,7 +53,7 @@ function dealign24b(mortoncode) {
     x = ((x & 0b000000000000000000000000) >> 16) | ((x & 0b000000000000000011111111) >> 0);
 
     // sucessfully realigned!
-    //................................abcdefghijklmnop
+    // ................................abcdefghijklmnop
 
     return x;
 }
@@ -147,40 +147,40 @@ onmessage = function (event) {
                 // let reference;
                 // { // correct reference
 
-                // 	let mc_upper = view.getBigUint64(byteOffset + 0, true);
-                // 	let mc_lower = view.getBigUint64(byteOffset + 8, true);
+                //  let mc_upper = view.getBigUint64(byteOffset + 0, true);
+                //  let mc_lower = view.getBigUint64(byteOffset + 8, true);
 
-                // 	let X = 0n;
-                // 	let Y = 0n;
-                // 	let Z = 0n;
+                //  let X = 0n;
+                //  let Y = 0n;
+                //  let Z = 0n;
 
-                // 	for(let k = 0n; k < 16n; k++){
-                // 		let mask_lower = (mc_lower >> (3n * k)) & 0b111n;
-                // 		let mask_upper = (mc_upper >> (3n * k)) & 0b111n;
+                //  for(let k = 0n; k < 16n; k++){
+                //   let mask_lower = (mc_lower >> (3n * k)) & 0b111n;
+                //   let mask_upper = (mc_upper >> (3n * k)) & 0b111n;
 
-                // 		X = X | (((mask_lower >> 0n) & 0b001n) << k);
-                // 		X = X | ((((mask_upper >> 0n) & 0b001n) << k) << 16n);
+                //   X = X | (((mask_lower >> 0n) & 0b001n) << k);
+                //   X = X | ((((mask_upper >> 0n) & 0b001n) << k) << 16n);
 
-                // 		Y = Y | (((mask_lower >> 1n) & 0b001n) << k);
-                // 		Y = Y | ((((mask_upper >> 1n) & 0b001n) << k) << 16n);
+                //   Y = Y | (((mask_lower >> 1n) & 0b001n) << k);
+                //   Y = Y | ((((mask_upper >> 1n) & 0b001n) << k) << 16n);
 
-                // 		Z = Z | (((mask_lower >> 2n) & 0b001n) << k);
-                // 		Z = Z | ((((mask_upper >> 2n) & 0b001n) << k) << 16n);
-                // 	}
+                //   Z = Z | (((mask_lower >> 2n) & 0b001n) << k);
+                //   Z = Z | ((((mask_upper >> 2n) & 0b001n) << k) << 16n);
+                //  }
 
-                // 	reference = [X, Y, Z];
+                //  reference = [X, Y, Z];
                 // }
                 // //dbgad += parseInt(reference[2]);
                 // let [rX, rY, rZ] = reference;
 
                 // if(X !== parseInt(rX)){
-                // 	debugger;
+                //  debugger;
                 // }
                 // if(Y !== parseInt(rY)){
-                // 	debugger;
+                //  debugger;
                 // }
                 // if(Z !== parseInt(rZ)){
-                // 	debugger;
+                //  debugger;
                 // }
 
                 // let mc_upper = view.getBigUint64(byteOffset + 0, true);
@@ -213,17 +213,17 @@ onmessage = function (event) {
                 // let Z = 0n;
 
                 // for(let k = 0n; k < 16n; k++){
-                // 	let mask_lower = (mc_lower >> (3n * k)) & 0b111n;
-                // 	let mask_upper = (mc_upper >> (3n * k)) & 0b111n;
+                //  let mask_lower = (mc_lower >> (3n * k)) & 0b111n;
+                //  let mask_upper = (mc_upper >> (3n * k)) & 0b111n;
 
-                // 	X = X | (((mask_lower >> 0n) & 0b001n) << k);
-                // 	X = X | ((((mask_upper >> 0n) & 0b001n) << k) << 16n);
+                //  X = X | (((mask_lower >> 0n) & 0b001n) << k);
+                //  X = X | ((((mask_upper >> 0n) & 0b001n) << k) << 16n);
 
-                // 	Y = Y | (((mask_lower >> 1n) & 0b001n) << k);
-                // 	Y = Y | ((((mask_upper >> 1n) & 0b001n) << k) << 16n);
+                //  Y = Y | (((mask_lower >> 1n) & 0b001n) << k);
+                //  Y = Y | ((((mask_upper >> 1n) & 0b001n) << k) << 16n);
 
-                // 	Z = Z | (((mask_lower >> 2n) & 0b001n) << k);
-                // 	Z = Z | ((((mask_upper >> 2n) & 0b001n) << k) << 16n);
+                //  Z = Z | (((mask_lower >> 2n) & 0b001n) << k);
+                //  Z = Z | ((((mask_upper >> 2n) & 0b001n) << k) << 16n);
                 // }
 
                 let x = parseInt(X) * scale[0] + offset[0] - min.x;
@@ -250,14 +250,14 @@ onmessage = function (event) {
             let colors = new Uint8Array(buff);
 
             // for (let j = 0; j < numPoints; j++) {
-            // 	let r = view.getUint16(byteOffset + 0, true);
-            // 	let g = view.getUint16(byteOffset + 2, true);
-            // 	let b = view.getUint16(byteOffset + 4, true);
-            // 	byteOffset += 6;
+            //  let r = view.getUint16(byteOffset + 0, true);
+            //  let g = view.getUint16(byteOffset + 2, true);
+            //  let b = view.getUint16(byteOffset + 4, true);
+            //  byteOffset += 6;
 
-            // 	colors[4 * j + 0] = r > 255 ? r / 256 : r;
-            // 	colors[4 * j + 1] = g > 255 ? g / 256 : g;
-            // 	colors[4 * j + 2] = b > 255 ? b / 256 : b;
+            //  colors[4 * j + 0] = r > 255 ? r / 256 : r;
+            //  colors[4 * j + 1] = g > 255 ? g / 256 : g;
+            //  colors[4 * j + 2] = b > 255 ? b / 256 : b;
             // }
 
             // let tStart = performance.now();
@@ -279,7 +279,7 @@ onmessage = function (event) {
                 // let bits = mask_b0[mc_1 >>> 24];
 
                 // if(((r >> 8) & 0b11) !== bits){
-                // 	debugger;
+                //  debugger;
                 // }
 
                 // let r = dealign24b(mc0 >> 0) | (dealign24b(mc1 >> 0) << 8);

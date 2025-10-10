@@ -106,6 +106,6 @@ export class AnnotationTool extends EventDispatcher {
     }
 
     render() {
-        //this.viewer.renderer.render(this.scene, this.viewer.scene.getActiveCamera());
+        // this.viewer.renderer.render(this.scene, this.viewer.scene.getActiveCamera());
     }
 }

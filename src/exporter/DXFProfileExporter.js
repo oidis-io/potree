@@ -18,16 +18,16 @@
 export class DXFProfileExporter {
     static toXYZ(points, flatten = false) {
         /*
-		points: {
-			...
-			data: {
-				mileage: [0, 1, 2...], -> one per point
-				position: [0, 0, 0, 1, 1, 1, 2, 2, 2...], -> X, Y, Z
-				rgba: [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2...] -> R, G, B, A
-			},
-			numPoints: Int
-		}
-		*/
+        points: {
+            ...
+            data: {
+                mileage: [0, 1, 2...], -> one per point
+                position: [0, 0, 0, 1, 1, 1, 2, 2, 2...], -> X, Y, Z
+                rgba: [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2...] -> R, G, B, A
+            },
+            numPoints: Int
+        }
+        */
 
         const pointsXYZ = {
             x: [],

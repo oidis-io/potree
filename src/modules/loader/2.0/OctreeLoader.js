@@ -31,7 +31,7 @@ export class NodeLoader {
         // console.log(node.name, node.numPoints);
 
         // if(loadedNodes.has(node.name)){
-        // 	// debugger;
+        //  // debugger;
         // }
         // loadedNodes.add(node.name);
 
@@ -88,7 +88,7 @@ export class NodeLoader {
                     } else if (property === "rgba") {
                         geometry.setAttribute('rgba', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
                     } else if (property === "NORMAL") {
-                        //geometry.setAttribute('rgba', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
+                        // geometry.setAttribute('rgba', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
                         geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
                     } else if (property === "INDICES") {
                         let bufferAttribute = new THREE.BufferAttribute(new Uint8Array(buffer), 4);
@@ -175,7 +175,7 @@ export class NodeLoader {
             let byteSize = view.getBigInt64(i * bytesPerNode + 14, true);
 
             // if(byteSize === 0n){
-            // 	// debugger;
+            //  // debugger;
             // }
 
             if (current.nodeType === 2) {
@@ -232,15 +232,15 @@ export class NodeLoader {
             }
 
             // if((i % 500) === 0){
-            // 	yield;
+            //  yield;
             // }
         }
 
         let duration = (performance.now() - tStart);
 
         // if(duration > 20){
-        // 	let msg = `duration: ${duration}ms, numNodes: ${numNodes}`;
-        // 	console.log(msg);
+        //  let msg = `duration: ${duration}ms, numNodes: ${numNodes}`;
+        //  console.log(msg);
         // }
     }
 
@@ -263,19 +263,19 @@ export class NodeLoader {
         this.parseHierarchy(node, buffer);
 
         // let promise = new Promise((resolve) => {
-        // 	let generator = this.parseHierarchy(node, buffer);
+        //  let generator = this.parseHierarchy(node, buffer);
 
-        // 	let repeatUntilDone = () => {
-        // 		let result = generator.next();
+        //  let repeatUntilDone = () => {
+        //   let result = generator.next();
 
-        // 		if(result.done){
-        // 			resolve();
-        // 		}else{
-        // 			requestAnimationFrame(repeatUntilDone);
-        // 		}
-        // 	};
+        //   if(result.done){
+        //   resolve();
+        //   }else{
+        //   requestAnimationFrame(repeatUntilDone);
+        //   }
+        //  };
 
-        // 	repeatUntilDone();
+        //  repeatUntilDone();
         // });
 
         // await promise;

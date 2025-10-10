@@ -78,31 +78,31 @@ export class ClippingTool extends EventDispatcher {
         let canvasSize = this.viewer.renderer.getSize(new THREE.Vector2());
 
         let svg = $(`
-		<svg height="${canvasSize.height}" width="${canvasSize.width}" style="position:absolute; pointer-events: none">
+        <svg height="${canvasSize.height}" width="${canvasSize.width}" style="position:absolute; pointer-events: none">
 
-			<defs>
-				 <marker id="diamond" markerWidth="24" markerHeight="24" refX="12" refY="12"
-						markerUnits="userSpaceOnUse">
-					<circle cx="12" cy="12" r="6" fill="white" stroke="black" stroke-width="3"/>
-				</marker>
-			</defs>
+            <defs>
+                 <marker id="diamond" markerWidth="24" markerHeight="24" refX="12" refY="12"
+                        markerUnits="userSpaceOnUse">
+                    <circle cx="12" cy="12" r="6" fill="white" stroke="black" stroke-width="3"/>
+                </marker>
+            </defs>
 
-			<polyline fill="none" stroke="black" 
-				style="stroke:rgb(0, 0, 0);
-				stroke-width:6;"
-				stroke-dasharray="9, 6"
-				stroke-dashoffset="2"
-				/>
+            <polyline fill="none" stroke="black" 
+                style="stroke:rgb(0, 0, 0);
+                stroke-width:6;"
+                stroke-dasharray="9, 6"
+                stroke-dashoffset="2"
+                />
 
-			<polyline fill="none" stroke="black" 
-				style="stroke:rgb(255, 255, 255);
-				stroke-width:2;"
-				stroke-dasharray="5, 10"
-				marker-start="url(#diamond)" 
-				marker-mid="url(#diamond)" 
-				marker-end="url(#diamond)" 
-				/>
-		</svg>`);
+            <polyline fill="none" stroke="black" 
+                style="stroke:rgb(255, 255, 255);
+                stroke-width:2;"
+                stroke-dasharray="5, 10"
+                marker-start="url(#diamond)" 
+                marker-mid="url(#diamond)" 
+                marker-end="url(#diamond)" 
+                />
+        </svg>`);
         $(domElement.parentElement).append(svg);
 
         let polyClipVol = new PolygonClipVolume(this.viewer.scene.getActiveCamera().clone());
@@ -140,13 +140,13 @@ export class ClippingTool extends EventDispatcher {
         };
 
         cancel.callback = e => {
-            //let first = svg.find("polyline")[0].points[0];
-            //svg.find("polyline").each((index, target) => {
-            //	let newPoint = svg[0].createSVGPoint();
-            //	newPoint.x = first.x;
-            //	newPoint.y = first.y;
-            //	let polyline = target.points.appendItem(newPoint);
-            //});
+            // let first = svg.find("polyline")[0].points[0];
+            // svg.find("polyline").each((index, target) => {
+            // let newPoint = svg[0].createSVGPoint();
+            // newPoint.x = first.x;
+            // newPoint.y = first.y;
+            // let polyline = target.points.appendItem(newPoint);
+            // });
             svg.remove();
 
             if (polyClipVol.markers.length > 3) {

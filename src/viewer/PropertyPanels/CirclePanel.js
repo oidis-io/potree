@@ -17,19 +17,19 @@ export class CirclePanel extends MeasurePanel {
 
         let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
         this.elContent = $(`
-			<div class="measurement_content selectable">
-				<span class="coordinates_table_container"></span>
-				<br>
-				<table id="infos_table" class="measurement_value_table"></table>
+            <div class="measurement_content selectable">
+                <span class="coordinates_table_container"></span>
+                <br>
+                <table id="infos_table" class="measurement_value_table"></table>
 
-				<!-- ACTIONS -->
-				<div style="display: flex; margin-top: 12px">
-					<span></span>
-					<span style="flex-grow: 1"></span>
-					<img name="remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
-				</div>
-			</div>
-		`);
+                <!-- ACTIONS -->
+                <div style="display: flex; margin-top: 12px">
+                    <span></span>
+                    <span style="flex-grow: 1"></span>
+                    <img name="remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+                </div>
+            </div>
+        `);
 
         this.elRemove = this.elContent.find("img[name=remove]");
         this.elRemove.click(() => {
@@ -76,23 +76,23 @@ export class CirclePanel extends MeasurePanel {
         const tdStyle = `style="width: 100%; padding: 5px;"`;
 
         elInfos.html(`
-			<tr>
-				<th ${thStyle}>Center: </th>
-				<td ${tdStyle}></td>
-			</tr>
-			<tr>
-				<td ${tdStyle} colspan="2">
-					${txtCenter}
-				</td>
-			</tr>
-			<tr>
-				<th ${thStyle}>Radius: </th>
-				<td ${tdStyle}>${txtRadius}</td>
-			</tr>
-			<tr>
-				<th ${thStyle}>Circumference: </th>
-				<td ${tdStyle}>${txtCircumference}</td>
-			</tr>
-		`);
+            <tr>
+                <th ${thStyle}>Center: </th>
+                <td ${tdStyle}></td>
+            </tr>
+            <tr>
+                <td ${tdStyle} colspan="2">
+                    ${txtCenter}
+                </td>
+            </tr>
+            <tr>
+                <th ${thStyle}>Radius: </th>
+                <td ${tdStyle}>${txtRadius}</td>
+            </tr>
+            <tr>
+                <th ${thStyle}>Circumference: </th>
+                <td ${tdStyle}>${txtCircumference}</td>
+            </tr>
+        `);
     }
 }

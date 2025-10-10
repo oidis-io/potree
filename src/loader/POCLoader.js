@@ -115,7 +115,7 @@ function lasLazAttributes(fMno) {
     attributes.add(new PointAttribute("number of returns", PointAttributeTypes.DATA_TYPE_UINT8, 1));
     attributes.add(new PointAttribute("return number", PointAttributeTypes.DATA_TYPE_UINT8, 1));
     attributes.add(new PointAttribute("source id", PointAttributeTypes.DATA_TYPE_UINT16, 1));
-    //attributes.add(new PointAttribute("pointSourceID", PointAttributeTypes.DATA_TYPE_INT8, 4));
+    // attributes.add(new PointAttribute("pointSourceID", PointAttributeTypes.DATA_TYPE_INT8, 4));
 
     return attributes;
 }
@@ -209,7 +209,7 @@ export class POCLoader {
                             let parentName = name.substring(0, name.length - 1);
                             let parentNode = nodes[parentName];
                             let level = name.length - 1;
-                            //let boundingBox = POCLoader.createChildAABB(parentNode.boundingBox, index);
+                            // let boundingBox = POCLoader.createChildAABB(parentNode.boundingBox, index);
                             let boundingBox = Utils.createChildAABB(parentNode.boundingBox, index);
 
                             let node = new PointCloudOctreeGeometryNode(name, pco, boundingBox);

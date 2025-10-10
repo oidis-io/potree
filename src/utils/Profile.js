@@ -34,11 +34,11 @@ export class Profile extends THREE.Object3D {
 
     createSphereMaterial() {
         let sphereMaterial = new THREE.MeshLambertMaterial({
-                //shading: THREE.SmoothShading,
-                color: 0xff0000,
-                depthTest: false,
-                depthWrite: false
-            }
+            // shading: THREE.SmoothShading,
+            color: 0xff0000,
+            depthTest: false,
+            depthWrite: false
+        }
         );
 
         return sphereMaterial;
@@ -131,11 +131,11 @@ export class Profile extends THREE.Object3D {
                     let i = this.spheres.indexOf(e.drag.object);
                     if (i !== -1) {
                         this.setPosition(i, I.location);
-                        //this.dispatchEvent({
-                        //	'type': 'marker_moved',
-                        //	'profile': this,
-                        //	'index': i
-                        //});
+                        // this.dispatchEvent({
+                        // 'type': 'marker_moved',
+                        // 'profile': this,
+                        // 'index': i
+                        // });
                     }
                 }
             };

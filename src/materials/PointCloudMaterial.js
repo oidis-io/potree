@@ -109,10 +109,10 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
             elevationRange: {type: "2fv", value: [0, 0]},
 
             clipBoxCount: {type: "f", value: 0},
-            //clipSphereCount:	{ type: "f", value: 0 },
+            // clipSphereCount:    { type: "f", value: 0 },
             clipPolygonCount: {type: "i", value: 0},
             clipBoxes: {type: "Matrix4fv", value: []},
-            //clipSpheres:		{ type: "Matrix4fv", value: [] },
+            // clipSpheres:        { type: "Matrix4fv", value: [] },
             clipPolygons: {type: "3fv", value: []},
             clipPolygonVCount: {type: "iv", value: []},
             clipPolygonVP: {type: "Matrix4fv", value: []},
@@ -130,12 +130,12 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 
             intensity_gbc: {type: "fv", value: [1, 0, 0]},
             uRGB_gbc: {type: "fv", value: [1, 0, 0]},
-            // intensityGamma:		{ type: "f", value: 1 },
-            // intensityContrast:	{ type: "f", value: 0 },
+            // intensityGamma:        { type: "f", value: 1 },
+            // intensityContrast:    { type: "f", value: 0 },
             // intensityBrightness:{ type: "f", value: 0 },
-            // rgbGamma:			{ type: "f", value: 1 },
-            // rgbContrast:		{ type: "f", value: 0 },
-            // rgbBrightness:		{ type: "f", value: 0 },
+            // rgbGamma:            { type: "f", value: 1 },
+            // rgbContrast:        { type: "f", value: 0 },
+            // rgbBrightness:        { type: "f", value: 0 },
             wRGB: {type: "f", value: 1},
             wIntensity: {type: "f", value: 0},
             wElevation: {type: "f", value: 0},
@@ -1057,7 +1057,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
         context.fillStyle = ctxGradient;
         context.fill();
 
-        //let texture = new THREE.Texture(canvas);
+        // let texture = new THREE.Texture(canvas);
         let texture = new THREE.CanvasTexture(canvas);
         texture.needsUpdate = true;
 
@@ -1094,14 +1094,14 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 
     // copyFrom(from){
 
-    // 	var a = 10;
+    //  var a = 10;
 
-    // 	for(let name of Object.keys(this.uniforms)){
-    // 		this.uniforms[name].value = from.uniforms[name].value;
-    // 	}
+    //  for(let name of Object.keys(this.uniforms)){
+    //   this.uniforms[name].value = from.uniforms[name].value;
+    //  }
     // }
 
     // copy(from){
-    // 	this.copyFrom(from);
+    //  this.copyFrom(from);
     // }
 }

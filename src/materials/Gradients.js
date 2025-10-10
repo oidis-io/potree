@@ -18,14 +18,14 @@ import * as THREE from "../../libs/three.js/build/three.module.js";
 //
 // let stops = [];
 // for(let i = 0; i <= 10; i++){
-//	let range = chroma.scale(['yellow', 'navy']).mode('lch').domain([10,0])(i)._rgb
-//		.slice(0, 3)
-//		.map(v => (v / 255).toFixed(4))
-//		.join(", ");
+// let range = chroma.scale(['yellow', 'navy']).mode('lch').domain([10,0])(i)._rgb
+//  .slice(0, 3)
+//  .map(v => (v / 255).toFixed(4))
+//  .join(", ");
 //
-//	let line = `[${i / 10}, new THREE.Color(${range})],`;
+// let line = `[${i / 10}, new THREE.Color(${range})],`;
 //
-//	stops.push(line);
+// stops.push(line);
 // }
 // stops.join("\n");
 //
@@ -41,11 +41,11 @@ import * as THREE from "../../libs/three.js/build/three.module.js";
 // cmap = plt.cm.viridis
 //
 // for i in range(0,11):
-//	u = i / 10
-//	rgb = cmap(norm(u))[0:3]
-//	rgb = ["{0:.3f}".format(v) for v in rgb]
-//	rgb = "[" + str(u) + ", new THREE.Color(" +  ", ".join(rgb) + ")],"
-//	print(rgb)
+// u = i / 10
+// rgb = cmap(norm(u))[0:3]
+// rgb = ["{0:.3f}".format(v) for v in rgb]
+// rgb = "[" + str(u) + ", new THREE.Color(" +  ", ".join(rgb) + ")],"
+// print(rgb)
 
 let Gradients = {
     // From chroma spectral http://gka.github.io/chroma.js/

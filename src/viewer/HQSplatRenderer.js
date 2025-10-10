@@ -251,9 +251,9 @@ export class HQSplatRenderer {
             viewer.renderer.setRenderTarget(null);
             viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtAttribute, {
                 clipSpheres: viewer.scene.volumes.filter(v => (v instanceof SphereVolume)),
-                //material: this.attributeMaterial,
+                // material: this.attributeMaterial,
                 blendFunc: [gl.SRC_ALPHA, gl.ONE],
-                //depthTest: false,
+                // depthTest: false,
                 depthWrite: false
             });
         }

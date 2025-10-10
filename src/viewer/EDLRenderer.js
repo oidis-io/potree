@@ -76,8 +76,8 @@ export class EDLRenderer {
 
         let {width, height} = size;
 
-        //let maxTextureSize = viewer.renderer.capabilities.maxTextureSize;
-        //if(width * 4 <
+        // let maxTextureSize = viewer.renderer.capabilities.maxTextureSize;
+        // if(width * 4 <
         width = 2 * width;
         height = 2 * height;
 
@@ -90,7 +90,7 @@ export class EDLRenderer {
         };
 
         // HACK? removed because of error, was this important?
-        //this.viewer.renderer.clearTarget(target, true, true, true);
+        // this.viewer.renderer.clearTarget(target, true, true, true);
 
         this.render();
 
@@ -173,7 +173,7 @@ export class EDLRenderer {
                 originalAttributes.set(pointcloud, pointcloud.material.activeAttributeName);
                 pointcloud.material.disableEvents();
                 pointcloud.material.activeAttributeName = "depth";
-                //pointcloud.material.pointColorType = PointColorType.DEPTH;
+                // pointcloud.material.pointColorType = PointColorType.DEPTH;
             }
 
             this.shadowMap.render(viewer.scene.scenePointCloud, camera);
@@ -235,7 +235,7 @@ export class EDLRenderer {
             viewer.renderer.render(viewer.scene.sceneBG, viewer.scene.cameraBG);
         }
 
-        //TODO adapt to multiple lights
+        // TODO adapt to multiple lights
         this.renderShadowMap(visiblePointClouds, camera, lights);
 
         { // COLOR & DEPTH PASS
@@ -270,20 +270,20 @@ export class EDLRenderer {
                 // //test.updateMatrixWorld = () => {};
 
                 // let mat = new THREE.Matrix4().set(
-                // 	1, 0, 0, 0,
-                // 	0, 0, 1, 0,
-                // 	0, -1, 0, 0,
-                // 	0, 0, 0, 1,
+                //  1, 0, 0, 0,
+                //  0, 0, 1, 0,
+                //  0, -1, 0, 0,
+                //  0, 0, 0, 1,
                 // );
                 // mat.invert()
 
                 // test.matrix.multiplyMatrices(mat, test.matrix);
                 // test.updateMatrixWorld();
 
-                //test.matrixWorld.multiplyMatrices(mat, test.matrixWorld);
-                //test.matrixWorld.multiply(mat);
-                //test.matrixWorldInverse.invert(test.matrixWorld);
-                //test.matrixWorldInverse.multiplyMatrices(test.matrixWorldInverse, mat);
+                // test.matrixWorld.multiplyMatrices(mat, test.matrixWorld);
+                // test.matrixWorld.multiply(mat);
+                // test.matrixWorldInverse.invert(test.matrixWorld);
+                // test.matrixWorldInverse.multiplyMatrices(test.matrixWorldInverse, mat);
 
                 viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtEDL, {
                     clipSpheres: viewer.scene.volumes.filter(v => (v instanceof SphereVolume)),

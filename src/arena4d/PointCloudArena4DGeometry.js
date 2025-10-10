@@ -155,7 +155,7 @@ Potree.PointCloudArena4DGeometryNode = class PointCloudArena4DGeometryNode {
             geometry.setAttribute('classification', new THREE.BufferAttribute(classifications, 1));
             {
                 let bufferAttribute = new THREE.BufferAttribute(new Uint8Array(indices), 4, true);
-                //bufferAttribute.normalized = true;
+                // bufferAttribute.normalized = true;
                 geometry.setAttribute('indices', bufferAttribute);
             }
 

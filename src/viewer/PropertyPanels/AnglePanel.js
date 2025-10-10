@@ -17,30 +17,30 @@ export class AnglePanel extends MeasurePanel {
 
         let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
         this.elContent = $(`
-			<div class="measurement_content selectable">
-				<span class="coordinates_table_container"></span>
-				<br>
-				<table class="measurement_value_table">
-					<tr>
-						<th>\u03b1</th>
-						<th>\u03b2</th>
-						<th>\u03b3</th>
-					</tr>
-					<tr>
-						<td align="center" id="angle_cell_alpha" style="width: 33%"></td>
-						<td align="center" id="angle_cell_betta" style="width: 33%"></td>
-						<td align="center" id="angle_cell_gamma" style="width: 33%"></td>
-					</tr>
-				</table>
+            <div class="measurement_content selectable">
+                <span class="coordinates_table_container"></span>
+                <br>
+                <table class="measurement_value_table">
+                    <tr>
+                        <th>\u03b1</th>
+                        <th>\u03b2</th>
+                        <th>\u03b3</th>
+                    </tr>
+                    <tr>
+                        <td align="center" id="angle_cell_alpha" style="width: 33%"></td>
+                        <td align="center" id="angle_cell_betta" style="width: 33%"></td>
+                        <td align="center" id="angle_cell_gamma" style="width: 33%"></td>
+                    </tr>
+                </table>
 
-				<!-- ACTIONS -->
-				<div style="display: flex; margin-top: 12px">
-					<span></span>
-					<span style="flex-grow: 1"></span>
-					<img name="remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
-				</div>
-			</div>
-		`);
+                <!-- ACTIONS -->
+                <div style="display: flex; margin-top: 12px">
+                    <span></span>
+                    <span style="flex-grow: 1"></span>
+                    <img name="remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+                </div>
+            </div>
+        `);
 
         this.elRemove = this.elContent.find("img[name=remove]");
         this.elRemove.click( () => {

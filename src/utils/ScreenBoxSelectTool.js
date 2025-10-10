@@ -179,7 +179,7 @@ export class ScreenBoxSelectTool extends EventDispatcher {
     }
 
     update(e) {
-        //console.log(e.delta)
+        // console.log(e.delta)
     }
 
     render() {

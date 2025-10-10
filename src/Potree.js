@@ -168,7 +168,7 @@ export function loadPointCloud(path, name, callback) {
         } else if (path.indexOf('cloud.js') > 0) {
             POCLoader.load(path, function (geometry) {
                 if (!geometry) {
-                    //callback({type: 'loading_failed'});
+                    // callback({type: 'loading_failed'});
                     console.error(new Error(`failed to load point cloud from URL: ${path}`));
                 } else {
                     let pointcloud = new PointCloudOctree(geometry);
@@ -200,7 +200,7 @@ export function loadPointCloud(path, name, callback) {
 
             OctreeLoader.load(path, function (geometry) {
                 if (!geometry) {
-                    //callback({type: 'loading_failed'});
+                    // callback({type: 'loading_failed'});
                     console.error(new Error(`failed to load point cloud from URL: ${path}`));
                 } else {
                     let pointcloud = new PointCloudOctree(geometry);
@@ -211,7 +211,7 @@ export function loadPointCloud(path, name, callback) {
         } else if (path.indexOf('.vpc') > 0) {
             PointCloudArena4DGeometry.load(path, function (geometry) {
                 if (!geometry) {
-                    //callback({type: 'loading_failed'});
+                    // callback({type: 'loading_failed'});
                     console.error(new Error(`failed to load point cloud from URL: ${path}`));
                 } else {
                     let pointcloud = new PointCloudArena4D(geometry);
@@ -220,7 +220,7 @@ export function loadPointCloud(path, name, callback) {
                 }
             });
         } else {
-            //callback({'type': 'loading_failed'});
+            // callback({'type': 'loading_failed'});
             console.error(new Error(`failed to load point cloud from URL: ${path}`));
         }
     });
@@ -250,11 +250,11 @@ export function loadPointCloud(path, name, callback) {
                 let optionValue = $(value).prop("value");
 
                 let elButton = $(`
-					<span style="flex-grow: 1; display: inherit">
-					<label for="${buttonID}" class="ui-button" style="width: 100%; padding: .4em .1em">${label}</label>
-					<input type="radio" name="${groupID}" id="${buttonID}" value="${optionValue}" style="display: none"/>
-					</span>
-				`);
+                    <span style="flex-grow: 1; display: inherit">
+                    <label for="${buttonID}" class="ui-button" style="width: 100%; padding: .4em .1em">${label}</label>
+                    <input type="radio" name="${groupID}" id="${buttonID}" value="${optionValue}" style="display: none"/>
+                    </span>
+                `);
                 let elLabel = elButton.find("label");
                 let elInput = elButton.find("input");
 
@@ -264,7 +264,7 @@ export function loadPointCloud(path, name, callback) {
                     if (elInput.is(":checked")) {
                         elLabel.addClass("ui-state-active");
                     } else {
-                        //elLabel.addClass("ui-state-default");
+                        // elLabel.addClass("ui-state-default");
                     }
                 });
 
@@ -272,13 +272,13 @@ export function loadPointCloud(path, name, callback) {
             });
 
             let elFieldset = $(`
-				<fieldset style="border: none; margin: 0px; padding: 0px">
-					<legend>${groupTitle}</legend>
-					<span style="display: flex">
+                <fieldset style="border: none; margin: 0px; padding: 0px">
+                    <legend>${groupTitle}</legend>
+                    <span style="display: flex">
 
-					</span>
-				</fieldset>
-			`);
+                    </span>
+                </fieldset>
+            `);
 
             let elButtonContainer = elFieldset.find("span");
             for (let elButton of elButtons) {

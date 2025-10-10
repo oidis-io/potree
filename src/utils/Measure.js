@@ -36,7 +36,7 @@ function createHeightLine() {
     const heightEdge = new Line2(lineGeometry, lineMaterial);
     heightEdge.visible = false;
 
-    //this.add(this.heightEdge);
+    // this.add(this.heightEdge);
 
     return heightEdge;
 }
@@ -339,11 +339,11 @@ export class Measure extends THREE.Object3D {
 
     createSphereMaterial() {
         let sphereMaterial = new THREE.MeshLambertMaterial({
-                //shading: THREE.SmoothShading,
-                color: this.color,
-                depthTest: false,
-                depthWrite: false
-            }
+            // shading: THREE.SmoothShading,
+            color: this.color,
+            depthTest: false,
+            depthWrite: false
+        }
         );
 
         return sphereMaterial;
@@ -598,15 +598,15 @@ export class Measure extends THREE.Object3D {
     }
 
     // updateAzimuth(){
-    // 	// if(this.points.length !== 2){
-    // 	// 	return;
-    // 	// }
+    //  // if(this.points.length !== 2){
+    //  //  return;
+    //  // }
 
-    // 	// const azimuth = this.azimuth;
+    //  // const azimuth = this.azimuth;
 
-    // 	// const [p0, p1] = this.points;
+    //  // const [p0, p1] = this.points;
 
-    // 	// const r = p0.position.distanceTo(p1.position);
+    //  // const r = p0.position.distanceTo(p1.position);
 
     // }
 
@@ -688,7 +688,7 @@ export class Measure extends THREE.Object3D {
 
                 let suffix = "";
                 if (this.lengthUnit != null && this.lengthUnitDisplay != null) {
-                    distance = distance / this.lengthUnit.unitspermeter * this.lengthUnitDisplay.unitspermeter;  //convert to meters then to the display unit
+                    distance = distance / this.lengthUnit.unitspermeter * this.lengthUnitDisplay.unitspermeter;  // convert to meters then to the display unit
                     suffix = this.lengthUnitDisplay.code;
                 }
 
@@ -757,7 +757,7 @@ export class Measure extends THREE.Object3D {
 
                 let suffix = "";
                 if (this.lengthUnit != null && this.lengthUnitDisplay != null) {
-                    height = height / this.lengthUnit.unitspermeter * this.lengthUnitDisplay.unitspermeter;  //convert to meters then to the display unit
+                    height = height / this.lengthUnit.unitspermeter * this.lengthUnitDisplay.unitspermeter;  // convert to meters then to the display unit
                     suffix = this.lengthUnitDisplay.code;
                 }
 
@@ -795,8 +795,8 @@ export class Measure extends THREE.Object3D {
                 circleCenter.position.copy(center);
                 circleCenter.scale.set(scale, scale, scale);
 
-                //circleRadiusLine.geometry.vertices[0].set(0, 0, 0);
-                //circleRadiusLine.geometry.vertices[1].copy(B.clone().sub(center));
+                // circleRadiusLine.geometry.vertices[0].set(0, 0, 0);
+                // circleRadiusLine.geometry.vertices[1].copy(B.clone().sub(center));
 
                 circleRadiusLine.geometry.setPositions([
                     0, 0, 0,
@@ -826,7 +826,7 @@ export class Measure extends THREE.Object3D {
 
             let suffix = "";
             if (this.lengthUnit != null && this.lengthUnitDisplay != null) {
-                area = area / Math.pow(this.lengthUnit.unitspermeter, 2) * Math.pow(this.lengthUnitDisplay.unitspermeter, 2);  //convert to square meters then to the square display unit
+                area = area / Math.pow(this.lengthUnit.unitspermeter, 2) * Math.pow(this.lengthUnitDisplay.unitspermeter, 2);  // convert to square meters then to the square display unit
                 suffix = this.lengthUnitDisplay.code;
             }
 

@@ -16,22 +16,22 @@ export class CameraAnimationPanel {
         this.animation = animation;
 
         this.elContent = $(`
-			<div class="propertypanel_content">
-				<span id="animation_keyframes"></span>
+            <div class="propertypanel_content">
+                <span id="animation_keyframes"></span>
 
-				<span>
+                <span>
 
-					<span style="display:flex">
-						<span style="display:flex; align-items: center; padding-right: 10px">Duration: </span>
-						<input name="spnDuration" value="5.0" style="flex-grow: 1; width:100%">
-					</span>
+                    <span style="display:flex">
+                        <span style="display:flex; align-items: center; padding-right: 10px">Duration: </span>
+                        <input name="spnDuration" value="5.0" style="flex-grow: 1; width:100%">
+                    </span>
 
-					<span>Time: </span><span id="lblTime"></span> <div id="sldTime"></div>
+                    <span>Time: </span><span id="lblTime"></span> <div id="sldTime"></div>
 
-					<input name="play" type="button" value="play"/>
-				</span>
-			</div>
-		`);
+                    <input name="play" type="button" value="play"/>
+                </span>
+            </div>
+        `);
 
         const elPlay = this.elContent.find("input[name=play]");
         elPlay.click(() => {
@@ -85,20 +85,20 @@ export class CameraAnimationPanel {
         const updateKeyframes = () => {
             elKeyframes.empty();
 
-            //let index = 0;
+            // let index = 0;
 
             // <span style="flex-grow: 0;">
-            // 				<img name="add" src="${Potree.resourcePath}/icons/add.svg" style="width: 1.5em; height: 1.5em"/>
-            // 			</span>
+            //   <img name="add" src="${Potree.resourcePath}/icons/add.svg" style="width: 1.5em; height: 1.5em"/>
+            //   </span>
 
             const addNewKeyframeItem = (index) => {
                 let elNewKeyframe = $(`
-					<div style="display: flex; margin: 0.2em 0em">
-						<span style="flex-grow: 1"></span>
-						<input type="button" name="add" value="insert control point" />
-						<span style="flex-grow: 1"></span>
-					</div>
-				`);
+                    <div style="display: flex; margin: 0.2em 0em">
+                        <span style="flex-grow: 1"></span>
+                        <input type="button" name="add" value="insert control point" />
+                        <span style="flex-grow: 1"></span>
+                    </div>
+                `);
 
                 const elAdd = elNewKeyframe.find("input[name=add]");
                 elAdd.click(() => {
@@ -110,21 +110,21 @@ export class CameraAnimationPanel {
 
             const addKeyframeItem = (index) => {
                 let elKeyframe = $(`
-					<div style="display: flex; margin: 0.2em 0em">
-						<span style="flex-grow: 0;">
-							<img name="assign" src="${Potree.resourcePath}/icons/assign.svg" style="width: 1.5em; height: 1.5em"/>
-						</span>
-						<span style="flex-grow: 0;">
-							<img name="move" src="${Potree.resourcePath}/icons/circled_dot.svg" style="width: 1.5em; height: 1.5em"/>
-						</span>
-						<span style="flex-grow: 0; width: 1.5em; height: 1.5em"></span>
-						<span style="flex-grow: 0; font-size: 1.5em">keyframe</span>
-						<span style="flex-grow: 1"></span>
-						<span style="flex-grow: 0;">
-							<img name="delete" src="${Potree.resourcePath}/icons/remove.svg" style="width: 1.5em; height: 1.5em"/>
-						</span>
-					</div>
-				`);
+                    <div style="display: flex; margin: 0.2em 0em">
+                        <span style="flex-grow: 0;">
+                            <img name="assign" src="${Potree.resourcePath}/icons/assign.svg" style="width: 1.5em; height: 1.5em"/>
+                        </span>
+                        <span style="flex-grow: 0;">
+                            <img name="move" src="${Potree.resourcePath}/icons/circled_dot.svg" style="width: 1.5em; height: 1.5em"/>
+                        </span>
+                        <span style="flex-grow: 0; width: 1.5em; height: 1.5em"></span>
+                        <span style="flex-grow: 0; font-size: 1.5em">keyframe</span>
+                        <span style="flex-grow: 1"></span>
+                        <span style="flex-grow: 0;">
+                            <img name="delete" src="${Potree.resourcePath}/icons/remove.svg" style="width: 1.5em; height: 1.5em"/>
+                        </span>
+                    </div>
+                `);
 
                 const elAssign = elKeyframe.find("img[name=assign]");
                 const elMove = elKeyframe.find("img[name=move]");

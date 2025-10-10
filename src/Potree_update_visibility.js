@@ -90,7 +90,7 @@ export function updateVisibilityStructures(pointclouds, camera, renderer) {
 
         // hide all previously visible nodes
         // if(pointcloud.root instanceof PointCloudOctreeNode){
-        //	pointcloud.hideDescendants(pointcloud.root.sceneNode);
+        // pointcloud.hideDescendants(pointcloud.root.sceneNode);
         // }
         if (pointcloud.root.isTreeNode()) {
             pointcloud.hideDescendants(pointcloud.root.sceneNode);
@@ -168,10 +168,10 @@ export function updateVisibility(pointclouds, camera, renderer) {
         let pointcloud = pointclouds[element.pointcloud];
 
         // { // restrict to certain nodes for debugging
-        //	let allowedNodes = ["r", "r0", "r4"];
-        //	if(!allowedNodes.includes(node.name)){
-        //		continue;
-        //	}
+        // let allowedNodes = ["r", "r0", "r4"];
+        // if(!allowedNodes.includes(node.name)){
+        //  continue;
+        // }
         // }
 
         let box = node.getBoundingBox();
@@ -189,14 +189,14 @@ export function updateVisibility(pointclouds, camera, renderer) {
 
         let clipBoxes = pointcloud.material.clipBoxes;
         if (true && clipBoxes.length > 0) {
-            //node.debug = false;
+            // node.debug = false;
 
             let numIntersecting = 0;
             let numIntersectionVolumes = 0;
 
-            //if(node.name === "r60"){
-            //	var a = 10;
-            //}
+            // if(node.name === "r60"){
+            // var a = 10;
+            // }
 
             for (let clipBox of clipBoxes) {
                 let pcWorldInverse = pointcloud.matrixWorld.clone().invert();
@@ -223,21 +223,21 @@ export function updateVisibility(pointclouds, camera, renderer) {
                 let pzPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(pzN, pz);
                 let nzPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(nzN, nz);
 
-                //if(window.debugdraw !== undefined && window.debugdraw === true && node.name === "r60"){
+                // if(window.debugdraw !== undefined && window.debugdraw === true && node.name === "r60"){
 
-                //	Potree.utils.debugPlane(viewer.scene.scene, pxPlane, 1, 0xFF0000);
-                //	Potree.utils.debugPlane(viewer.scene.scene, nxPlane, 1, 0x990000);
-                //	Potree.utils.debugPlane(viewer.scene.scene, pyPlane, 1, 0x00FF00);
-                //	Potree.utils.debugPlane(viewer.scene.scene, nyPlane, 1, 0x009900);
-                //	Potree.utils.debugPlane(viewer.scene.scene, pzPlane, 1, 0x0000FF);
-                //	Potree.utils.debugPlane(viewer.scene.scene, nzPlane, 1, 0x000099);
+                // Potree.utils.debugPlane(viewer.scene.scene, pxPlane, 1, 0xFF0000);
+                // Potree.utils.debugPlane(viewer.scene.scene, nxPlane, 1, 0x990000);
+                // Potree.utils.debugPlane(viewer.scene.scene, pyPlane, 1, 0x00FF00);
+                // Potree.utils.debugPlane(viewer.scene.scene, nyPlane, 1, 0x009900);
+                // Potree.utils.debugPlane(viewer.scene.scene, pzPlane, 1, 0x0000FF);
+                // Potree.utils.debugPlane(viewer.scene.scene, nzPlane, 1, 0x000099);
 
-                //	Potree.utils.debugBox(viewer.scene.scene, box, new THREE.Matrix4(), 0x00FF00);
-                //	Potree.utils.debugBox(viewer.scene.scene, box, pointcloud.matrixWorld, 0xFF0000);
-                //	Potree.utils.debugBox(viewer.scene.scene, clipBox.box.boundingBox, clipBox.box.matrixWorld, 0xFF0000);
+                // Potree.utils.debugBox(viewer.scene.scene, box, new THREE.Matrix4(), 0x00FF00);
+                // Potree.utils.debugBox(viewer.scene.scene, box, pointcloud.matrixWorld, 0xFF0000);
+                // Potree.utils.debugBox(viewer.scene.scene, clipBox.box.boundingBox, clipBox.box.matrixWorld, 0xFF0000);
 
-                //	window.debugdraw = false;
-                //}
+                // window.debugdraw = false;
+                // }
 
                 let frustum = new THREE.Frustum(pxPlane, nxPlane, pyPlane, nyPlane, pzPlane, nzPlane);
                 let intersects = frustum.intersectsBox(box);
@@ -253,22 +253,22 @@ export function updateVisibility(pointclouds, camera, renderer) {
 
             if (pointcloud.material.clipTask === ClipTask.SHOW_INSIDE) {
                 if (pointcloud.material.clipMethod === ClipMethod.INSIDE_ANY && insideAny) {
-                    //node.debug = true
+                    // node.debug = true
                 } else if (pointcloud.material.clipMethod === ClipMethod.INSIDE_ALL && insideAll) {
-                    //node.debug = true;
+                    // node.debug = true;
                 } else {
                     visible = false;
                 }
             } else if (pointcloud.material.clipTask === ClipTask.SHOW_OUTSIDE) {
-                //if(pointcloud.material.clipMethod === ClipMethod.INSIDE_ANY && !insideAny){
-                //	//visible = true;
-                //	let a = 10;
-                //}else if(pointcloud.material.clipMethod === ClipMethod.INSIDE_ALL && !insideAll){
-                //	//visible = true;
-                //	let a = 20;
-                //}else{
-                //	visible = false;
-                //}
+                // if(pointcloud.material.clipMethod === ClipMethod.INSIDE_ANY && !insideAny){
+                // //visible = true;
+                // let a = 10;
+                // }else if(pointcloud.material.clipMethod === ClipMethod.INSIDE_ALL && !insideAll){
+                // //visible = true;
+                // let a = 20;
+                // }else{
+                // visible = false;
+                // }
             }
         }
 
@@ -340,9 +340,9 @@ export function updateVisibility(pointclouds, camera, renderer) {
             }
 
             // if(node.boundingBoxNode !== undefined && exports.debug.allowedNodes !== undefined){
-            // 	if(!exports.debug.allowedNodes.includes(node.name)){
-            // 		node.boundingBoxNode.visible = false;
-            // 	}
+            //  if(!exports.debug.allowedNodes.includes(node.name)){
+            //   node.boundingBoxNode.visible = false;
+            //  }
             // }
         }
 
@@ -355,7 +355,7 @@ export function updateVisibility(pointclouds, camera, renderer) {
             if (camera.isPerspectiveCamera) {
                 let sphere = child.getBoundingSphere();
                 let center = sphere.center;
-                //let distance = sphere.center.distanceTo(camObjPos);
+                // let distance = sphere.center.distanceTo(camObjPos);
 
                 let dx = camObjPos.x - center.x;
                 let dy = camObjPos.y - center.y;
@@ -385,7 +385,7 @@ export function updateVisibility(pointclouds, camera, renderer) {
                 let bb = child.getBoundingBox();
                 let distance = child.getBoundingSphere().center.distanceTo(camObjPos);
                 let diagonal = bb.max.clone().sub(bb.min).length();
-                //weight = diagonal / distance;
+                // weight = diagonal / distance;
 
                 weight = diagonal;
             }

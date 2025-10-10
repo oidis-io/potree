@@ -19,7 +19,7 @@ export class PointCloudOctreeNode extends PointCloudTreeNode {
     constructor() {
         super();
 
-        //this.children = {};
+        // this.children = {};
         this.children = [];
         this.sceneNode = null;
         this.octree = null;
@@ -212,7 +212,7 @@ export class PointCloudOctree extends PointCloudTree {
         let node = new PointCloudOctreeNode();
 
         // if(geometryNode.name === "r40206"){
-        //	console.log("creating node for r40206");
+        // console.log("creating node for r40206");
         // }
         let sceneNode = new THREE.Points(geometryNode.geometry, this.material);
         sceneNode.name = geometryNode.name;
@@ -243,24 +243,24 @@ export class PointCloudOctree extends PointCloudTree {
         };
 
         // { // DEBUG
-        //	let sg = new THREE.SphereGeometry(1, 16, 16);
-        //	let sm = new THREE.MeshNormalMaterial();
-        //	let s = new THREE.Mesh(sg, sm);
-        //	s.scale.set(5, 5, 5);
-        //	s.position.copy(geometryNode.mean)
-        //		.add(this.position)
-        //		.add(geometryNode.boundingBox.min);
+        // let sg = new THREE.SphereGeometry(1, 16, 16);
+        // let sm = new THREE.MeshNormalMaterial();
+        // let s = new THREE.Mesh(sg, sm);
+        // s.scale.set(5, 5, 5);
+        // s.position.copy(geometryNode.mean)
+        //  .add(this.position)
+        //  .add(geometryNode.boundingBox.min);
         //
-        //	viewer.scene.scene.add(s);
+        // viewer.scene.scene.add(s);
         // }
 
         node.geometryNode = geometryNode;
         node.sceneNode = sceneNode;
         node.pointcloud = this;
         node.children = [];
-        //for (let key in geometryNode.children) {
-        //	node.children[key] = geometryNode.children[key];
-        //}
+        // for (let key in geometryNode.children) {
+        // node.children[key] = geometryNode.children[key];
+        // }
         for (let i = 0; i < 8; i++) {
             node.children[i] = geometryNode.children[i];
         }
@@ -410,7 +410,7 @@ export class PointCloudOctree extends PointCloudTree {
             intersects = intersects || (distance < (bsWorld.radius + profile.width));
         }
 
-        //console.log(`${node.name}: ${intersects}`);
+        // console.log(`${node.name}: ${intersects}`);
 
         return intersects;
     }
@@ -528,13 +528,13 @@ export class PointCloudOctree extends PointCloudTree {
     /**
      * returns points inside the profile points
      *
-     * maxDepth:		search points up to the given octree depth
+     * maxDepth:        search points up to the given octree depth
      *
      *
      * The return value is an array with all segments of the profile path
      *    let segment = {
-     *        start:	THREE.Vector3,
-     *        end:	THREE.Vector3,
+     *        start:    THREE.Vector3,
+     *        end:    THREE.Vector3,
      *        points: {}
      *        project: function()
      *    };
@@ -633,8 +633,8 @@ export class PointCloudOctree extends PointCloudTree {
      * start:
      * end:
      * width:
-     * depth:		search points up to the given octree depth
-     * callback:	if specified, points are loaded before searching
+     * depth:        search points up to the given octree depth
+     * callback:    if specified, points are loaded before searching
      *
      *
      */
@@ -721,7 +721,7 @@ export class PointCloudOctree extends PointCloudTree {
      *
      *
      *
-     * params.pickWindowSize:	Look for points inside a pixel window of this size.
+     * params.pickWindowSize:    Look for points inside a pixel window of this size.
      *                            Use odd values: 1, 3, 5, ...
      *
      *
@@ -780,7 +780,7 @@ export class PointCloudOctree extends PointCloudTree {
 
         { // update pick material
             pickMaterial.pointSizeType = pointSizeType;
-            //pickMaterial.shape = this.material.shape;
+            // pickMaterial.shape = this.material.shape;
             pickMaterial.shape = Potree.PointShape.PARABOLOID;
 
             pickMaterial.uniforms.uFilterReturnNumberRange.value = this.material.uniforms.uFilterReturnNumberRange.value;
@@ -895,25 +895,25 @@ export class PointCloudOctree extends PointCloudTree {
         }
 
         // { // DEBUG: show panel with pick image
-        // 	let img = Utils.pixelsArrayToImage(buffer, w, h);
-        // 	let screenshot = img.src;
+        //  let img = Utils.pixelsArrayToImage(buffer, w, h);
+        //  let screenshot = img.src;
 
-        // 	if(!this.debugDIV){
-        // 		this.debugDIV = $(`
-        // 			<div id="pickDebug"
-        // 			style="position: absolute;
-        // 			right: 400px; width: 300px;
-        // 			bottom: 44px; width: 300px;
-        // 			z-index: 1000;
-        // 			"></div>`);
-        // 		$(document.body).append(this.debugDIV);
-        // 	}
+        //  if(!this.debugDIV){
+        //   this.debugDIV = $(`
+        //   <div id="pickDebug"
+        //   style="position: absolute;
+        //   right: 400px; width: 300px;
+        //   bottom: 44px; width: 300px;
+        //   z-index: 1000;
+        //   "></div>`);
+        //   $(document.body).append(this.debugDIV);
+        //  }
 
-        // 	this.debugDIV.empty();
-        // 	this.debugDIV.append($(`<img src="${screenshot}"
-        // 		style="transform: scaleY(-1); width: 300px"/>`));
-        // 	//$(this.debugWindow.document).append($(`<img src="${screenshot}"/>`));
-        // 	//this.debugWindow.document.write('<img src="'+screenshot+'"/>');
+        //  this.debugDIV.empty();
+        //  this.debugDIV.append($(`<img src="${screenshot}"
+        //   style="transform: scaleY(-1); width: 300px"/>`));
+        //  //$(this.debugWindow.document).append($(`<img src="${screenshot}"/>`));
+        //  //this.debugWindow.document.write('<img src="'+screenshot+'"/>');
         // }
 
         for (let hit of hits) {
@@ -951,16 +951,16 @@ export class PointCloudOctree extends PointCloudTree {
 
                     point[attributeName] = values;
 
-                    //debugger;
-                    //if (values.itemSize === 1) {
-                    //	point[attribute.name] = values.array[hit.pIndex];
-                    //} else {
-                    //	let value = [];
-                    //	for (let j = 0; j < values.itemSize; j++) {
-                    //		value.push(values.array[values.itemSize * hit.pIndex + j]);
-                    //	}
-                    //	point[attribute.name] = value;
-                    //}
+                    // debugger;
+                    // if (values.itemSize === 1) {
+                    // point[attribute.name] = values.array[hit.pIndex];
+                    // } else {
+                    // let value = [];
+                    // for (let j = 0; j < values.itemSize; j++) {
+                    //  value.push(values.array[values.itemSize * hit.pIndex + j]);
+                    // }
+                    // point[attribute.name] = value;
+                    // }
                 }
             }
 
@@ -977,9 +977,9 @@ export class PointCloudOctree extends PointCloudTree {
                 return null;
             } else {
                 return hits[0].point;
-                //let sorted = hits.sort( (a, b) => a.distanceToCenter - b.distanceToCenter);
+                // let sorted = hits.sort( (a, b) => a.distanceToCenter - b.distanceToCenter);
 
-                //return sorted[0].point;
+                // return sorted[0].point;
             }
         }
     }

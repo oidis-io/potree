@@ -471,14 +471,14 @@ export class VRControls extends EventDispatcher {
         // node.add(nInfo);
 
         // {
-        // 	node.rotation.set(-1.5, 0, 0)
-        // 	node.scale.set(0.3, 0.3, 0.3);
-        // 	node.position.set(-0.2, -0.002, -0.1)
+        //  node.rotation.set(-1.5, 0, 0)
+        //  node.scale.set(0.3, 0.3, 0.3);
+        //  node.position.set(-0.2, -0.002, -0.1)
 
-        // 	// nInfo.position.set(0.5, 0, 0);
-        // 	nInfo.scale.set(0.8, 0.6, 0);
+        //  // nInfo.position.set(0.5, 0, 0);
+        //  nInfo.scale.set(0.8, 0.6, 0);
 
-        // 	// controller.add(node);
+        //  // controller.add(node);
         // }
 
         // node.position.set(-0.3, 1.2, 0.2);
@@ -589,7 +589,7 @@ export class VRControls extends EventDispatcher {
 
         // let scale = this.node.scale.x;
         let scale = this.viewer.getMoveSpeed();
-        //camera.near = 0.01 / scale;
+        // camera.near = 0.01 / scale;
         camera.near = 0.1;
         camera.far = 1000;
         // camera.near = reference.near / scale;
@@ -612,15 +612,15 @@ export class VRControls extends EventDispatcher {
 
     update(delta) {
         // if(this.mode === this.mode_fly){
-        // 	let ray = new THREE.Ray(origin, direction);
+        //  let ray = new THREE.Ray(origin, direction);
 
-        // 	for(let object of this.selectables){
+        //  for(let object of this.selectables){
 
-        // 		if(object.intersectsRay(ray)){
-        // 			object.onHit(ray);
-        // 		}
+        //   if(object.intersectsRay(ray)){
+        //   object.onHit(ray);
+        //   }
 
-        // 	}
+        //  }
 
         // }
 

@@ -34,4 +34,4 @@ export class WorkerPool {
     }
 }
 
-//Potree.workerPool = new Potree.WorkerPool();
+// Potree.workerPool = new Potree.WorkerPool();

@@ -560,7 +560,7 @@ export class Renderer {
             let type = this.glTypeMapping.get(bufferAttribute.array.constructor);
 
             if (attributeLocations[attributeName] === undefined) {
-                //attributeLocation = attributeLocations["aExtra"];
+                // attributeLocation = attributeLocations["aExtra"];
             } else {
                 let attributeLocation = attributeLocations[attributeName].location;
 
@@ -624,7 +624,7 @@ export class Renderer {
             gl.bufferData(gl.ARRAY_BUFFER, bufferAttribute.array, gl.STATIC_DRAW);
 
             if (attributeLocations[attributeName] === undefined) {
-                //attributeLocation = attributeLocations["aExtra"];
+                // attributeLocation = attributeLocations["aExtra"];
             } else {
                 let attributeLocation = attributeLocations[attributeName].location;
 
@@ -703,15 +703,15 @@ export class Renderer {
 
             // let isLeaf = false;
             // if(node instanceof PointCloudOctreeNode){
-            // 	isLeaf = Object.keys(node.children).length === 0;
+            //  isLeaf = Object.keys(node.children).length === 0;
             // }else if(node instanceof PointCloudArena4DNode){
-            // 	isLeaf = node.geometryNode.isLeaf;
+            //  isLeaf = node.geometryNode.isLeaf;
             // }
             // shader.setUniform("uIsLeafNode", isLeaf);
 
             // let isLeaf = node.children.filter(n => n != null).length === 0;
             // if(!isLeaf){
-            // 	continue;
+            //  continue;
             // }
 
             // TODO consider passing matrices in an array to avoid uniformMatrix4fv overhead
@@ -722,7 +722,7 @@ export class Renderer {
             }
 
             const lModelView = shader.uniformLocations["modelViewMatrix"];
-            //mat4holder.set(worldView.elements);
+            // mat4holder.set(worldView.elements);
             // faster then set in chrome 63
             for (let j = 0; j < 16; j++) {
                 mat4holder[j] = worldView.elements[j];
@@ -767,8 +767,8 @@ export class Renderer {
                 }
             }
 
-            //shader.setUniformMatrix4("modelMatrix", world);
-            //shader.setUniformMatrix4("modelViewMatrix", worldView);
+            // shader.setUniformMatrix4("modelMatrix", world);
+            // shader.setUniformMatrix4("modelViewMatrix", worldView);
             shader.setUniform1f("uLevel", level);
             shader.setUniform1f("uNodeSpacing", node.geometryNode.estimatedSpacing);
 
@@ -831,7 +831,7 @@ export class Renderer {
 
                 shader.setUniform1f("uGpsScale", scale);
                 shader.setUniform1f("uGpsOffset", offset);
-                //shader.setUniform2f("uFilterGPSTimeClipRange", [-Infinity, Infinity]);
+                // shader.setUniform2f("uFilterGPSTimeClipRange", [-Infinity, Infinity]);
 
                 let uFilterGPSTimeClipRange = material.uniforms.uFilterGPSTimeClipRange.value;
                 // let gpsCliPRangeMin = uFilterGPSTimeClipRange[0]
@@ -854,8 +854,8 @@ export class Renderer {
                 // // normalizedBufferRange: norm buffer within norm global range e.g. [0.2, 0.8]
                 // const globalWidth = globalRange[1] - globalRange[0];
                 // const normalizedBufferRange = [
-                // 	(bufferRange[0] - globalRange[0]) / globalWidth,
-                // 	(bufferRange[1] - globalRange[0]) / globalWidth,
+                //  (bufferRange[0] - globalRange[0]) / globalWidth,
+                //  (bufferRange[1] - globalRange[0]) / globalWidth,
                 // ];
 
                 // shader.setUniform2f("uNormalizedGpsBufferRange", normalizedBufferRange);
@@ -999,7 +999,7 @@ export class Renderer {
 
         let proj = camera.projectionMatrix;
         let projInv = proj.clone().invert();
-        //let worldView = new THREE.Matrix4();
+        // let worldView = new THREE.Matrix4();
 
         let shader = null;
         let visibilityTextureData = null;
@@ -1029,7 +1029,7 @@ export class Renderer {
 
             shader = this.shaders.get(material);
 
-            //if(material.needsUpdate){
+            // if(material.needsUpdate){
             {
                 let [vs, fs] = [material.vertexShader, material.fragmentShader];
 
@@ -1183,10 +1183,10 @@ export class Renderer {
             shader.setUniform1i("clipMethod", material.clipMethod);
 
             if (material.clipBoxes && material.clipBoxes.length > 0) {
-                //let flattenedMatrices = [].concat(...material.clipBoxes.map(c => c.inverse.elements));
+                // let flattenedMatrices = [].concat(...material.clipBoxes.map(c => c.inverse.elements));
 
-                //const lClipBoxes = shader.uniformLocations["clipBoxes[0]"];
-                //gl.uniformMatrix4fv(lClipBoxes, false, flattenedMatrices);
+                // const lClipBoxes = shader.uniformLocations["clipBoxes[0]"];
+                // gl.uniformMatrix4fv(lClipBoxes, false, flattenedMatrices);
 
                 const lClipBoxes = shader.uniformLocations["clipBoxes[0]"];
                 gl.uniformMatrix4fv(lClipBoxes, false, material.uniforms.clipBoxes.value);
@@ -1198,10 +1198,10 @@ export class Renderer {
 
                 let matrices = [];
                 for (let clipSphere of clipSpheres) {
-                    //let mScale = new THREE.Matrix4().makeScale(...clipSphere.scale.toArray());
-                    //let mTranslate = new THREE.Matrix4().makeTranslation(...clipSphere.position.toArray());
+                    // let mScale = new THREE.Matrix4().makeScale(...clipSphere.scale.toArray());
+                    // let mTranslate = new THREE.Matrix4().makeTranslation(...clipSphere.position.toArray());
 
-                    //let clipToWorld = new THREE.Matrix4().multiplyMatrices(mTranslate, mScale);
+                    // let clipToWorld = new THREE.Matrix4().multiplyMatrices(mTranslate, mScale);
                     let clipToWorld = clipSphere.matrixWorld;
                     let viewToWorld = camera.matrixWorld;
                     let worldToClip = clipToWorld.clone().invert();
@@ -1216,8 +1216,8 @@ export class Renderer {
                 const lClipSpheres = shader.uniformLocations["uClipSpheres[0]"];
                 gl.uniformMatrix4fv(lClipSpheres, false, flattenedMatrices);
 
-                //const lClipSpheres = shader.uniformLocations["uClipSpheres[0]"];
-                //gl.uniformMatrix4fv(lClipSpheres, false, material.uniforms.clipSpheres.value);
+                // const lClipSpheres = shader.uniformLocations["uClipSpheres[0]"];
+                // gl.uniformMatrix4fv(lClipSpheres, false, material.uniforms.clipSpheres.value);
             }
 
             shader.setUniform1f("size", material.size);
@@ -1228,9 +1228,9 @@ export class Renderer {
             shader.setUniform1f("uOctreeSpacing", material.spacing);
             shader.setUniform("uOctreeSize", material.uniforms.octreeSize.value);
 
-            //uniform vec3 uColor;
+            // uniform vec3 uColor;
             shader.setUniform3f("uColor", material.color.toArray());
-            //uniform float opacity;
+            // uniform float opacity;
             shader.setUniform1f("uOpacity", material.opacity);
 
             shader.setUniform2f("elevationRange", material.elevationRange);
@@ -1371,7 +1371,7 @@ export class Renderer {
             this.threeRenderer.setRenderTarget(target);
         }
 
-        //camera.updateProjectionMatrix();
+        // camera.updateProjectionMatrix();
         // camera.matrixWorldInverse.invert(camera.matrixWorld);
 
         const traversalResult = this.traverse(scene);

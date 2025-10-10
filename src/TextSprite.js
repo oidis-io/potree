@@ -31,7 +31,7 @@ export class TextSprite extends THREE.Object3D {
         this.texture = texture;
 
         this.material = spriteMaterial;
-        //this.material = getRawMaterial(texture);
+        // this.material = getRawMaterial(texture);
         this.sprite = new THREE.Sprite(this.material);
         this.add(this.sprite);
 
@@ -111,21 +111,21 @@ export class TextSprite extends THREE.Object3D {
         texture.minFilter = THREE.LinearFilter;
         texture.magFilter = THREE.LinearFilter;
         texture.needsUpdate = true;
-        //this.material.needsUpdate = true;
+        // this.material.needsUpdate = true;
 
         // { // screen-space sprite
-        // 	let [screenWidth, screenHeight] = [1620, 937];
+        //  let [screenWidth, screenHeight] = [1620, 937];
 
-        // 	let uniforms = this.sprite.material.uniforms;
-        // 	let aspect = spriteHeight / spriteWidth;
-        // 	let factor = 0.5;
+        //  let uniforms = this.sprite.material.uniforms;
+        //  let aspect = spriteHeight / spriteWidth;
+        //  let factor = 0.5;
 
-        // 	let w = spriteWidth / screenWidth;
-        // 	let h = spriteHeight / screenHeight;
+        //  let w = spriteWidth / screenWidth;
+        //  let h = spriteHeight / screenHeight;
 
-        // 	uniforms.uScale.value = [2 * w, 2 * h];
-        // 	//uniforms.uScale.value = [factor * 1, factor * aspect];
-        //	this.sprite.material.uniforms.map.value = texture;
+        //  uniforms.uScale.value = [2 * w, 2 * h];
+        //  //uniforms.uScale.value = [factor * 1, factor * aspect];
+        // this.sprite.material.uniforms.map.value = texture;
         // }
 
         this.sprite.material.map = texture;

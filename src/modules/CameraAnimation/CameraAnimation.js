@@ -75,7 +75,7 @@ export class CameraAnimation extends EventDispatcher {
 
         const r = camera.position.distanceTo(target) * 0.3;
 
-        //const dir = target.clone().sub(camera.position).normalize();
+        // const dir = target.clone().sub(camera.position).normalize();
         const angle = Utils.computeAzimuth(camera.position, target);
 
         const n = 5;
@@ -437,7 +437,7 @@ export class CameraAnimation extends EventDispatcher {
 
                 const {width, height} = this.viewer.renderer.getSize(new THREE.Vector2());
                 const camera = this.viewer.scene.getActiveCamera();
-                //const cp = this.controlPoints.find(cp => cp.handle.svg === svg);
+                // const cp = this.controlPoints.find(cp => cp.handle.svg === svg);
                 const projected = vector.clone().project(camera);
 
                 projected.x = ((x / width) - 0.5) / 0.5;

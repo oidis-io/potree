@@ -8,13 +8,13 @@
 // getPoints.php?pc=../pointclouds/vol_total/cloud.js&min=693550.968;3915914.169&max=694584.820;3916458.180&minLevel=0&maxLevel=5
 
 function toCoordinate($value){
-	$coord = explode(';', $value);
-	
-	for($i = 0; $i < count($coord); $i++){
-		$coord[$i] = (double)$coord[$i];
-	}
-	
-	return $coord;
+    $coord = explode(';', $value);
+
+    for($i = 0; $i < count($coord); $i++){
+        $coord[$i] = (double)$coord[$i];
+    }
+
+    return $coord;
 }
 
 $min = toCoordinate($_GET['min']);
@@ -37,19 +37,19 @@ $width = ($max[1] - $min[1]) / 2.0;
 $binary = "D:/dev/workspaces/CPotree/master/bin/Release_x64/PotreeElevationProfile.exe";
 
 $command = "$binary " . escapeshellarg($path) . " "
-	. "-o " . escapeshellarg($outputFile) . " "
-	. "--estimate "
-	. "--coordinates " . escapeshellarg($coordinates) . " "
-	. "--width " . escapeshellarg($width) . " "
-	. "--min-level " . escapeshellarg($minLevel) . " "
-	. "--max-level " . escapeshellarg($maxLevel) . " ";
+    . "-o " . escapeshellarg($outputFile) . " "
+    . "--estimate "
+    . "--coordinates " . escapeshellarg($coordinates) . " "
+    . "--width " . escapeshellarg($width) . " "
+    . "--min-level " . escapeshellarg($minLevel) . " "
+    . "--max-level " . escapeshellarg($maxLevel) . " ";
 echo "$command <br/>";
 
 $output = "";
 exec($command, $output);
 
 foreach($output as $line){
-	echo "$line <br/>";
+    echo "$line <br/>";
 }
 
 $path = realpath($_GET['pc']);

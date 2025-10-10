@@ -161,7 +161,7 @@ export class ProfileRequest {
         if (intersectedNodes.length > 0) {
             for (let done of this.getPointsInsideProfile(intersectedNodes, this.temporaryResult)) {
                 if (!done) {
-                    //console.log("updateGenerator yields");
+                    // console.log("updateGenerator yields");
                     yield false;
                 }
             }
@@ -235,7 +235,7 @@ export class ProfileRequest {
             if ((i % 1000) === 0) {
                 let duration = performance.now() - checkpoint;
                 if (duration > 4) {
-                    //console.log(`getAccepted yield after ${duration}ms`);
+                    // console.log(`getAccepted yield after ${duration}ms`);
                     yield false;
                     checkpoint = performance.now();
                 }
@@ -246,11 +246,11 @@ export class ProfileRequest {
         mileage = mileage.subarray(0, numAccepted);
         acceptedPositions = acceptedPositions.subarray(0, numAccepted * 3);
 
-        //let end = performance.now();
-        //let duration = end - start;
-        //console.log("accepted duration ", duration)
+        // let end = performance.now();
+        // let duration = end - start;
+        // console.log("accepted duration ", duration)
 
-        //console.log(`getAccepted finished`);
+        // console.log(`getAccepted finished`);
 
         yield [accepted, mileage, acceptedPositions];
     }
@@ -287,13 +287,13 @@ export class ProfileRequest {
                     }
                 }
 
-                //{// DEBUG
-                //	console.log(node.name);
-                //	let boxHelper = new Potree.Box3Helper(node.getBoundingBox());
-                //	boxHelper.matrixAutoUpdate = false;
-                //	boxHelper.matrix.copy(viewer.scene.pointclouds[0].matrixWorld);
-                //	viewer.scene.scene.add(boxHelper);
-                //}
+                // {// DEBUG
+                // console.log(node.name);
+                // let boxHelper = new Potree.Box3Helper(node.getBoundingBox());
+                // boxHelper.matrixAutoUpdate = false;
+                // boxHelper.matrix.copy(viewer.scene.pointclouds[0].matrixWorld);
+                // viewer.scene.scene.add(boxHelper);
+                // }
 
                 let sv = new THREE.Vector3().subVectors(segment.end, segment.start).setZ(0);
                 let segmentDir = sv.clone().normalize();
@@ -313,7 +313,7 @@ export class ProfileRequest {
                 for (let result of this.getAccepted(numPoints, node, matrix, segment, segmentDir, points, totalMileage)) {
                     if (!result) {
                         let duration = performance.now() - checkpoint;
-                        //console.log(`getPointsInsideProfile yield after ${duration}ms`);
+                        // console.log(`getPointsInsideProfile yield after ${duration}ms`);
                         yield false;
                         checkpoint = performance.now();
                     } else {
@@ -323,7 +323,7 @@ export class ProfileRequest {
 
                 let duration = performance.now() - checkpoint;
                 if (duration > 4) {
-                    //console.log(`getPointsInsideProfile yield after ${duration}ms`);
+                    // console.log(`getPointsInsideProfile yield after ${duration}ms`);
                     yield false;
                     checkpoint = performance.now();
                 }
@@ -372,7 +372,7 @@ export class ProfileRequest {
             target.boundingBox.union(segment.points.boundingBox);
         }
 
-        //console.log(`getPointsInsideProfile finished`);
+        // console.log(`getPointsInsideProfile finished`);
         yield true;
     }
 
@@ -384,7 +384,7 @@ export class ProfileRequest {
         this.maxDepth = this.highestLevelServed;
         this.cancelRequested = true;
 
-        //console.log(`maxDepth: ${this.maxDepth}`);
+        // console.log(`maxDepth: ${this.maxDepth}`);
     }
 
     cancel() {

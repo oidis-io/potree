@@ -15,9 +15,9 @@
  * Reads unsigned integers encoded in a variable amount of bits from the buffer.
  * Bits are aligned into 32bit unsigned integers.
  * for example, given 3 integers:
- * x: 123		encoded in 11 bits, binary: 00001111011
- * y: 7945		encoded in 17 bits, binary: 00001111100001001
- * z: 12		encoded in 6 bits,  binary: 001100
+ * x: 123        encoded in 11 bits, binary: 00001111011
+ * y: 7945        encoded in 17 bits, binary: 00001111100001001
+ * z: 12        encoded in 6 bits,  binary: 001100
  *
  * |        --- 32 bits ---         ||        --- 32 bits ---         |
  * |................................||................................|

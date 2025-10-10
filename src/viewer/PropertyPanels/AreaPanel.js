@@ -17,20 +17,20 @@ export class AreaPanel extends MeasurePanel {
 
         let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
         this.elContent = $(`
-			<div class="measurement_content selectable">
-				<span class="coordinates_table_container"></span>
-				<br>
-				<span style="font-weight: bold">Area: </span>
-				<span id="measurement_area"></span>
+            <div class="measurement_content selectable">
+                <span class="coordinates_table_container"></span>
+                <br>
+                <span style="font-weight: bold">Area: </span>
+                <span id="measurement_area"></span>
 
-				<!-- ACTIONS -->
-				<div style="display: flex; margin-top: 12px">
-					<span></span>
-					<span style="flex-grow: 1"></span>
-					<img name="remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
-				</div>
-			</div>
-		`);
+                <!-- ACTIONS -->
+                <div style="display: flex; margin-top: 12px">
+                    <span></span>
+                    <span style="flex-grow: 1"></span>
+                    <img name="remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+                </div>
+            </div>
+        `);
 
         this.elRemove = this.elContent.find("img[name=remove]");
         this.elRemove.click(() => {

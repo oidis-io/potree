@@ -70,17 +70,17 @@ export const Features = (function () {
                 supported = supported && gl.getExtension('OES_texture_float');
                 supported = supported && gl.getParameter(gl.MAX_VARYING_VECTORS) >= 8;
 
-                //supported = supported || (gl instanceof WebGL2RenderingContext);
+                // supported = supported || (gl instanceof WebGL2RenderingContext);
 
                 return supported;
             }
 
         },
-        //WEBGL2: {
-        //	isSupported: function(){
-        //		return gl instanceof WebGL2RenderingContext;
-        //	}
-        //},
+        // WEBGL2: {
+        // isSupported: function(){
+        //  return gl instanceof WebGL2RenderingContext;
+        // }
+        // },
         precision: precision
     };
 }());

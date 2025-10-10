@@ -34,7 +34,7 @@ function copyMaterial(source, target) {
     target.activeAttributeName = source.activeAttributeName;
     target.ranges = source.ranges;
 
-    //target.updateShaderSource();
+    // target.updateShaderSource();
 }
 
 class Batch {
@@ -64,9 +64,9 @@ class ProfileFakeOctree extends PointCloudTree {
         this.points = [];
         this.visibleNodes = [];
 
-        //this.material = this.trueOctree.material;
+        // this.material = this.trueOctree.material;
         this.material = new PointCloudMaterial();
-        //this.material.copy(this.trueOctree.material);
+        // this.material.copy(this.trueOctree.material);
         copyMaterial(this.trueOctree.material, this.material);
         this.material.pointSizeType = PointSizeType.FIXED;
 
@@ -382,38 +382,38 @@ export class ProfileWindow extends EventDispatcher {
                         if (attributeName === 'position') {
                             let values = [...position].map(v => Utils.addCommas(v.toFixed(3)));
                             html += `
-								<tr>
-									<td>x</td>
-									<td>${values[0]}</td>
-								</tr>
-								<tr>
-									<td>y</td>
-									<td>${values[1]}</td>
-								</tr>
-								<tr>
-									<td>z</td>
-									<td>${values[2]}</td>
-								</tr>`;
+                                <tr>
+                                    <td>x</td>
+                                    <td>${values[0]}</td>
+                                </tr>
+                                <tr>
+                                    <td>y</td>
+                                    <td>${values[1]}</td>
+                                </tr>
+                                <tr>
+                                    <td>z</td>
+                                    <td>${values[2]}</td>
+                                </tr>`;
                         } else if (attributeName === 'rgba') {
                             html += `
-								<tr>
-									<td>${attributeName}</td>
-									<td>${value.join(', ')}</td>
-								</tr>`;
+                                <tr>
+                                    <td>${attributeName}</td>
+                                    <td>${value.join(', ')}</td>
+                                </tr>`;
                         } else if (attributeName === 'normal') {
                             continue;
                         } else if (attributeName === 'mileage') {
                             html += `
-								<tr>
-									<td>${attributeName}</td>
-									<td>${value.toFixed(3)}</td>
-								</tr>`;
+                                <tr>
+                                    <td>${attributeName}</td>
+                                    <td>${value.toFixed(3)}</td>
+                                </tr>`;
                         } else {
                             html += `
-								<tr>
-									<td>${attributeName}</td>
-									<td>${transform(value)}</td>
-								</tr>`;
+                                <tr>
+                                    <td>${attributeName}</td>
+                                    <td>${transform(value)}</td>
+                                </tr>`;
                         }
                     }
                     html += '</table>';
@@ -604,7 +604,7 @@ export class ProfileWindow extends EventDispatcher {
             }
         }
 
-        //console.log(`nodes: ${numTested}, ${numSkipped} || points: ${numTestedPoints}, ${numSkippedPoints}`);
+        // console.log(`nodes: ${numTested}, ${numSkipped} || points: ${numTestedPoints}, ${numSkippedPoints}`);
 
         if (closest.distance < Infinity) {
             let points = closest.points;
@@ -754,10 +754,10 @@ export class ProfileWindow extends EventDispatcher {
             this.scale.set(scale, scale, 1);
             this.camera.position.copy(center);
 
-            //console.log("camera: ", this.camera.position.toArray().join(", "));
+            // console.log("camera: ", this.camera.position.toArray().join(", "));
         }
 
-        //console.log(entry);
+        // console.log(entry);
 
         this.render();
 
@@ -950,7 +950,7 @@ export class ProfileWindowController {
             const mMoveOrigin = new THREE.Matrix4().makeTranslation(-center.x, -center.y, -center.z);
             const mRotate = new THREE.Matrix4().makeRotationZ(radians);
             const mMoveBack = new THREE.Matrix4().makeTranslation(center.x, center.y, center.z);
-            //const transform = mMoveOrigin.multiply(mRotate).multiply(mMoveBack);
+            // const transform = mMoveOrigin.multiply(mRotate).multiply(mMoveBack);
             const transform = mMoveBack.multiply(mRotate).multiply(mMoveOrigin);
 
             const rotatedPoints = points.map(point => point.clone().applyMatrix4(transform));

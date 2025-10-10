@@ -87,173 +87,173 @@ export class PropertiesPanel {
         let material = pointcloud.material;
 
         let panel = $(`
-			<div class="scene_content selectable">
-				<ul class="pv-menu-list">
+            <div class="scene_content selectable">
+                <ul class="pv-menu-list">
 
-				<li>
-				<span data-i18n="appearance.point_size"></span>:&nbsp;<span id="lblPointSize"></span> <div id="sldPointSize"></div>
-				</li>
-				<li>
-				<span data-i18n="appearance.min_point_size"></span>:&nbsp;<span id="lblMinPointSize"></span> <div id="sldMinPointSize"></div>
-				</li>
+                <li>
+                <span data-i18n="appearance.point_size"></span>:&nbsp;<span id="lblPointSize"></span> <div id="sldPointSize"></div>
+                </li>
+                <li>
+                <span data-i18n="appearance.min_point_size"></span>:&nbsp;<span id="lblMinPointSize"></span> <div id="sldMinPointSize"></div>
+                </li>
 
-				<!-- SIZE TYPE -->
-				<li>
-					<label for="optPointSizing" class="pv-select-label" data-i18n="appearance.point_size_type">Point Sizing </label>
-					<select id="optPointSizing" name="optPointSizing">
-						<option>FIXED</option>
-						<option>ATTENUATED</option>
-						<option>ADAPTIVE</option>
-					</select>
-				</li>
+                <!-- SIZE TYPE -->
+                <li>
+                    <label for="optPointSizing" class="pv-select-label" data-i18n="appearance.point_size_type">Point Sizing </label>
+                    <select id="optPointSizing" name="optPointSizing">
+                        <option>FIXED</option>
+                        <option>ATTENUATED</option>
+                        <option>ADAPTIVE</option>
+                    </select>
+                </li>
 
-				<!-- SHAPE -->
-				<li>
-					<label for="optShape" class="pv-select-label" data-i18n="appearance.point_shape"></label><br>
-					<select id="optShape" name="optShape">
-						<option>SQUARE</option>
-						<option>CIRCLE</option>
-						<option>PARABOLOID</option>
-					</select>
-				</li>
+                <!-- SHAPE -->
+                <li>
+                    <label for="optShape" class="pv-select-label" data-i18n="appearance.point_shape"></label><br>
+                    <select id="optShape" name="optShape">
+                        <option>SQUARE</option>
+                        <option>CIRCLE</option>
+                        <option>PARABOLOID</option>
+                    </select>
+                </li>
 
-				<li id="materials_backface_container">
-				<label><input id="set_backface_culling" type="checkbox" /><span data-i18n="appearance.backface_culling"></span></label>
-				</li>
-				
-				<!-- OPACITY -->
-				<li><span data-i18n="appearance.point_opacity"></span>:<span id="lblOpacity"></span><div id="sldOpacity"></div></li>
+                <li id="materials_backface_container">
+                <label><input id="set_backface_culling" type="checkbox" /><span data-i18n="appearance.backface_culling"></span></label>
+                </li>
+                
+                <!-- OPACITY -->
+                <li><span data-i18n="appearance.point_opacity"></span>:<span id="lblOpacity"></span><div id="sldOpacity"></div></li>
 
-				<div class="divider">
-					<span>Attribute</span>
-				</div>
+                <div class="divider">
+                    <span>Attribute</span>
+                </div>
 
-				<li>
-					<select id="optMaterial" name="optMaterial"></select>
-				</li>
+                <li>
+                    <select id="optMaterial" name="optMaterial"></select>
+                </li>
 
-				<div id="materials.composite_weight_container">
-					<div class="divider">
-						<span>Attribute Weights</span>
-					</div>
+                <div id="materials.composite_weight_container">
+                    <div class="divider">
+                        <span>Attribute Weights</span>
+                    </div>
 
-					<li>RGB: <span id="lblWeightRGB"></span> <div id="sldWeightRGB"></div>	</li>
-					<li>Intensity: <span id="lblWeightIntensity"></span> <div id="sldWeightIntensity"></div>	</li>
-					<li>Elevation: <span id="lblWeightElevation"></span> <div id="sldWeightElevation"></div>	</li>
-					<li>Classification: <span id="lblWeightClassification"></span> <div id="sldWeightClassification"></div>	</li>
-					<li>Return Number: <span id="lblWeightReturnNumber"></span> <div id="sldWeightReturnNumber"></div>	</li>
-					<li>Source ID: <span id="lblWeightSourceID"></span> <div id="sldWeightSourceID"></div>	</li>
-				</div>
+                    <li>RGB: <span id="lblWeightRGB"></span> <div id="sldWeightRGB"></div>    </li>
+                    <li>Intensity: <span id="lblWeightIntensity"></span> <div id="sldWeightIntensity"></div>    </li>
+                    <li>Elevation: <span id="lblWeightElevation"></span> <div id="sldWeightElevation"></div>    </li>
+                    <li>Classification: <span id="lblWeightClassification"></span> <div id="sldWeightClassification"></div>    </li>
+                    <li>Return Number: <span id="lblWeightReturnNumber"></span> <div id="sldWeightReturnNumber"></div>    </li>
+                    <li>Source ID: <span id="lblWeightSourceID"></span> <div id="sldWeightSourceID"></div>    </li>
+                </div>
 
-				<div id="materials.rgb_container">
-					<div class="divider">
-						<span>RGB</span>
-					</div>
+                <div id="materials.rgb_container">
+                    <div class="divider">
+                        <span>RGB</span>
+                    </div>
 
-					<li>Gamma: <span id="lblRGBGamma"></span> <div id="sldRGBGamma"></div>	</li>
-					<li>Brightness: <span id="lblRGBBrightness"></span> <div id="sldRGBBrightness"></div>	</li>
-					<li>Contrast: <span id="lblRGBContrast"></span> <div id="sldRGBContrast"></div>	</li>
-				</div>
+                    <li>Gamma: <span id="lblRGBGamma"></span> <div id="sldRGBGamma"></div>    </li>
+                    <li>Brightness: <span id="lblRGBBrightness"></span> <div id="sldRGBBrightness"></div>    </li>
+                    <li>Contrast: <span id="lblRGBContrast"></span> <div id="sldRGBContrast"></div>    </li>
+                </div>
 
-				<div id="materials.extra_container">
-					<div class="divider">
-						<span>Extra Attribute</span>
-					</div>
+                <div id="materials.extra_container">
+                    <div class="divider">
+                        <span>Extra Attribute</span>
+                    </div>
 
-					<li><span data-i18n="appearance.extra_range"></span>: <span id="lblExtraRange"></span> <div id="sldExtraRange"></div></li>
+                    <li><span data-i18n="appearance.extra_range"></span>: <span id="lblExtraRange"></span> <div id="sldExtraRange"></div></li>
 
-					<li>
-						<selectgroup id="extra_gradient_repeat_option">
-							<option id="extra_gradient_repeat_clamp" value="CLAMP">Clamp</option>
-							<option id="extra_gradient_repeat_repeat" value="REPEAT">Repeat</option>
-							<option id="extra_gradient_repeat_mirrored_repeat" value="MIRRORED_REPEAT">Mirrored Repeat</option>
-						</selectgroup>
-					</li>
+                    <li>
+                        <selectgroup id="extra_gradient_repeat_option">
+                            <option id="extra_gradient_repeat_clamp" value="CLAMP">Clamp</option>
+                            <option id="extra_gradient_repeat_repeat" value="REPEAT">Repeat</option>
+                            <option id="extra_gradient_repeat_mirrored_repeat" value="MIRRORED_REPEAT">Mirrored Repeat</option>
+                        </selectgroup>
+                    </li>
 
-					<li>
-						<span>Gradient Scheme:</span>
-						<div id="extra_gradient_scheme_selection" class="gradient_scheme" style="display: flex; padding: 1em 0em">
-						</div>
-					</li>
-				</div>
-				
-				<div id="materials.matcap_container">
-					<div class="divider">
-						<span>MATCAP</span>
-					</div>
+                    <li>
+                        <span>Gradient Scheme:</span>
+                        <div id="extra_gradient_scheme_selection" class="gradient_scheme" style="display: flex; padding: 1em 0em">
+                        </div>
+                    </li>
+                </div>
+                
+                <div id="materials.matcap_container">
+                    <div class="divider">
+                        <span>MATCAP</span>
+                    </div>
 
-					<li>
-						<div id="matcap_scheme_selection" style="display: flex; flex-wrap: wrap;"> </div>
-					</li>
-				</div>
+                    <li>
+                        <div id="matcap_scheme_selection" style="display: flex; flex-wrap: wrap;"> </div>
+                    </li>
+                </div>
 
-				<div id="materials.color_container">
-					<div class="divider">
-						<span>Color</span>
-					</div>
+                <div id="materials.color_container">
+                    <div class="divider">
+                        <span>Color</span>
+                    </div>
 
-					<input id="materials.color.picker" />
-				</div>
-
-
-				<div id="materials.elevation_container">
-					<div class="divider">
-						<span>Elevation</span>
-					</div>
-
-					<li><span data-i18n="appearance.elevation_range"></span>: <span id="lblHeightRange"></span> <div id="sldHeightRange"></div>	</li>
-
-					<li>
-						<selectgroup id="gradient_repeat_option">
-							<option id="gradient_repeat_clamp" value="CLAMP">Clamp</option>
-							<option id="gradient_repeat_repeat" value="REPEAT">Repeat</option>
-							<option id="gradient_repeat_mirrored_repeat" value="MIRRORED_REPEAT">Mirrored Repeat</option>
-						</selectgroup>
-					</li>
-
-					<li>
-						<span>Gradient Scheme:</span>
-						<div id="elevation_gradient_scheme_selection" class="gradient_scheme" style="display: flex; padding: 1em 0em">
-						</div>
-					</li>
-				</div>
-
-				<div id="materials.transition_container">
-					<div class="divider">
-						<span>Transition</span>
-					</div>
-
-					<li>transition: <span id="lblTransition"></span> <div id="sldTransition"></div>	</li>
-				</div>
-
-				<div id="materials.intensity_container">
-					<div class="divider">
-						<span>Intensity</span>
-					</div>
-
-					<li>Range: <span id="lblIntensityRange"></span> <div id="sldIntensityRange"></div>	</li>
-					<li>Gamma: <span id="lblIntensityGamma"></span> <div id="sldIntensityGamma"></div>	</li>
-					<li>Brightness: <span id="lblIntensityBrightness"></span> <div id="sldIntensityBrightness"></div>	</li>
-					<li>Contrast: <span id="lblIntensityContrast"></span> <div id="sldIntensityContrast"></div>	</li>
-				</div>
-
-				<div id="materials.gpstime_container">
-					<div class="divider">
-						<span>GPS Time</span>
-					</div>
-
-				</div>
-				
-				<div id="materials.index_container">
-					<div class="divider">
-						<span>Indices</span>
-					</div>
-				</div>
+                    <input id="materials.color.picker" />
+                </div>
 
 
-				</ul>
-			</div>
-		`);
+                <div id="materials.elevation_container">
+                    <div class="divider">
+                        <span>Elevation</span>
+                    </div>
+
+                    <li><span data-i18n="appearance.elevation_range"></span>: <span id="lblHeightRange"></span> <div id="sldHeightRange"></div>    </li>
+
+                    <li>
+                        <selectgroup id="gradient_repeat_option">
+                            <option id="gradient_repeat_clamp" value="CLAMP">Clamp</option>
+                            <option id="gradient_repeat_repeat" value="REPEAT">Repeat</option>
+                            <option id="gradient_repeat_mirrored_repeat" value="MIRRORED_REPEAT">Mirrored Repeat</option>
+                        </selectgroup>
+                    </li>
+
+                    <li>
+                        <span>Gradient Scheme:</span>
+                        <div id="elevation_gradient_scheme_selection" class="gradient_scheme" style="display: flex; padding: 1em 0em">
+                        </div>
+                    </li>
+                </div>
+
+                <div id="materials.transition_container">
+                    <div class="divider">
+                        <span>Transition</span>
+                    </div>
+
+                    <li>transition: <span id="lblTransition"></span> <div id="sldTransition"></div>    </li>
+                </div>
+
+                <div id="materials.intensity_container">
+                    <div class="divider">
+                        <span>Intensity</span>
+                    </div>
+
+                    <li>Range: <span id="lblIntensityRange"></span> <div id="sldIntensityRange"></div>    </li>
+                    <li>Gamma: <span id="lblIntensityGamma"></span> <div id="sldIntensityGamma"></div>    </li>
+                    <li>Brightness: <span id="lblIntensityBrightness"></span> <div id="sldIntensityBrightness"></div>    </li>
+                    <li>Contrast: <span id="lblIntensityContrast"></span> <div id="sldIntensityContrast"></div>    </li>
+                </div>
+
+                <div id="materials.gpstime_container">
+                    <div class="divider">
+                        <span>GPS Time</span>
+                    </div>
+
+                </div>
+                
+                <div id="materials.index_container">
+                    <div class="divider">
+                        <span>Indices</span>
+                    </div>
+                </div>
+
+
+                </ul>
+            </div>
+        `);
 
         panel.i18n();
         this.container.append(panel);
@@ -360,15 +360,15 @@ export class PropertiesPanel {
                 blockBackface.css('display', 'block');
             }
             /*
-			opt.checkboxradio({
-				clicked: (event, ui) => {
-					// let value = ui.item.value;
-					let value = ui.item.checked;
-					console.log(value);
-					material.backfaceCulling = value; // $('#set_freeze').prop("checked");
-				}
-			});
-			*/
+            opt.checkboxradio({
+                clicked: (event, ui) => {
+    // let value = ui.item.value;
+                    let value = ui.item.checked;
+                    console.log(value);
+                    material.backfaceCulling = value; // $('#set_freeze').prop("checked");
+                }
+            });
+            */
         }
 
         { // OPACITY
@@ -563,9 +563,9 @@ export class PropertiesPanel {
             for (let scheme of schemes) {
                 elSchemeContainers.each(function (index, container) {
                     let elScheme = $(`
-						<span style="flex-grow: 1;">
-						</span>
-					`);
+                        <span style="flex-grow: 1;">
+                        </span>
+                    `);
 
                     const svg = Potree.Utils.createSvgGradient(scheme.values);
                     svg.setAttributeNS(null, "class", `button-icon`);
@@ -615,8 +615,8 @@ export class PropertiesPanel {
 
             for (let matcap of matcaps) {
                 let elMatcap = $(`
-						<img src="${matcap.icon}" class="button-icon" style="width: 25%;" />
-				`);
+                        <img src="${matcap.icon}" class="button-icon" style="width: 25%;" />
+                `);
 
                 elMatcap.click(() => {
                     material.matcap = matcap.icon.substring(matcap.icon.lastIndexOf('/'));
@@ -959,7 +959,7 @@ export class PropertiesPanel {
             }
         };
 
-        //this.container.html("measurement");
+        // this.container.html("measurement");
 
         let type = getType(object);
         let Panel = type.panel;

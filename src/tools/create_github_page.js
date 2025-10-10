@@ -37,9 +37,9 @@ function toCode(files, data) {
             .filter(file => file !== "page.html");
 
         // for(let file of unhandled){
-        // 	unhandledCode += `
-        // 		<a href="${file}" class="unhandled">${file}</a>
-        // 	`;
+        //  unhandledCode += `
+        //   <a href="${file}" class="unhandled">${file}</a>
+        //  `;
         // }
     }
 
@@ -65,20 +65,20 @@ function toCode(files, data) {
                 `http://potree.org/potree/examples/${example.url}`;
 
             thumbnails += `<td>
-					<a href="${url}" target="_blank">
-						<img src="examples/${example.thumb}" width="100%" />
-					</a>
-				</td>`;
+                    <a href="${url}" target="_blank">
+                        <img src="examples/${example.thumb}" width="100%" />
+                    </a>
+                </td>`;
 
             labels += `<th>${example.label}</th>`;
         }
 
         code += `<tr>
-				${thumbnails}
-			</tr>
-			<tr>
-				${labels}
-			</tr>`;
+                ${thumbnails}
+            </tr>
+            <tr>
+                ${labels}
+            </tr>`;
     }
 
     return code;
@@ -99,29 +99,29 @@ async function createGithubPage() {
 
     let page = `
 
-		<h1>Examples</h1>
+        <h1>Examples</h1>
 
-		<table>
-			${exampleCode}
-		</table>
+        <table>
+            ${exampleCode}
+        </table>
 
-		<h1>VR</h1>
+        <h1>VR</h1>
 
-		<table>
-			${vrCode}
-		</table>
+        <table>
+            ${vrCode}
+        </table>
 
-		<h1>Showcase</h1>
+        <h1>Showcase</h1>
 
-		<table>
-			${showcaseCode}
-		</table>
+        <table>
+            ${showcaseCode}
+        </table>
 
-		<h1>Third Party Showcase</h1>
+        <h1>Third Party Showcase</h1>
 
-		<table>
-			${thirdpartyCode}
-		</table>`;
+        <table>
+            ${thirdpartyCode}
+        </table>`;
 
     fs.writeFile(`examples/github.html`, page, (err) => {
         if (err) {

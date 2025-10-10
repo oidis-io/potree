@@ -103,7 +103,7 @@ SEQEND
 
     static measurementSection(measurement) {
         // if(measurement.points.length <= 1){
-        //	return "";
+        // return "";
         // }
 
         if (measurement.points.length === 0) {

@@ -18,32 +18,32 @@ export class ProfilePanel extends MeasurePanel {
 
         let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
         this.elContent = $(`
-			<div class="measurement_content selectable">
-				<span class="coordinates_table_container"></span>
-				<br>
-				<span style="display:flex">
-					<span style="display:flex; align-items: center; padding-right: 10px">Width: </span>
-					<input id="sldProfileWidth" name="sldProfileWidth" value="5.06" style="flex-grow: 1; width:100%">
-				</span>
-				<br>
+            <div class="measurement_content selectable">
+                <span class="coordinates_table_container"></span>
+                <br>
+                <span style="display:flex">
+                    <span style="display:flex; align-items: center; padding-right: 10px">Width: </span>
+                    <input id="sldProfileWidth" name="sldProfileWidth" value="5.06" style="flex-grow: 1; width:100%">
+                </span>
+                <br>
 
-				<li style="margin-top: 10px">
-					<input name="download_profile" type="button" value="prepare download" style="width: 100%" />
-					<div name="download_message"></div>
-				</li>
+                <li style="margin-top: 10px">
+                    <input name="download_profile" type="button" value="prepare download" style="width: 100%" />
+                    <div name="download_message"></div>
+                </li>
 
-				<br>
+                <br>
 
-				<input type="button" id="show_2d_profile" value="show 2d profile" style="width: 100%"/>
+                <input type="button" id="show_2d_profile" value="show 2d profile" style="width: 100%"/>
 
-				<!-- ACTIONS -->
-				<div style="display: flex; margin-top: 12px">
-					<span></span>
-					<span style="flex-grow: 1"></span>
-					<img name="remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
-				</div>
-			</div>
-		`);
+                <!-- ACTIONS -->
+                <div style="display: flex; margin-top: 12px">
+                    <span></span>
+                    <span style="flex-grow: 1"></span>
+                    <img name="remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+                </div>
+            </div>
+        `);
 
         this.elRemove = this.elContent.find("img[name=remove]");
         this.elRemove.click(() => {
@@ -203,13 +203,13 @@ export class ProfilePanel extends MeasurePanel {
         { // START FILTER
             let url = `${viewer.server}/create_regions_filter?pointclouds=[${pointcloudsArg}]&regions=[${regionsArg}]`;
 
-            //console.log(url);
+            // console.log(url);
 
             info("estimating results ...");
 
             let response = await fetch(url);
             let jsResponse = await response.json();
-            //console.log(jsResponse);
+            // console.log(jsResponse);
 
             if (!jsResponse.handle) {
                 error(jsResponse.message);

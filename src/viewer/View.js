@@ -52,7 +52,7 @@ export class View {
     }
 
     set direction(dir) {
-        //if(dir.x === dir.y){
+        // if(dir.x === dir.y){
         if (dir.x === 0 && dir.y === 0) {
             this.pitch = Math.PI / 2 * Math.sign(dir.z);
         } else {
@@ -149,8 +149,8 @@ export class View {
         const startPosition = this.position.clone();
         const startTarget = this.getPivot();
 
-        //const endPosition = position.clone();
-        //const endTarget = target.clone();
+        // const endPosition = position.clone();
+        // const endTarget = target.clone();
 
         let easing = TWEEN.Easing.Quartic.Out;
 
@@ -161,12 +161,12 @@ export class View {
             let value = {x: 0};
             let tween = new TWEEN.Tween(value).to({x: 1}, duration);
             tween.easing(easing);
-            //this.tweens.push(tween);
+            // this.tweens.push(tween);
 
             tween.onUpdate(() => {
                 let t = value.x;
 
-                //console.log(t);
+                // console.log(t);
 
                 const pos = new THREE.Vector3(
                     (1 - t) * startPosition.x + t * endPosition.x,

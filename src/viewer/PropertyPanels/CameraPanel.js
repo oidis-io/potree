@@ -22,35 +22,35 @@ export class CameraPanel {
 
         let copyIconPath = Potree.resourcePath + '/icons/copy.svg';
         this.elContent = $(`
-		<div class="propertypanel_content">
-			<table>
-				<tr>
-					<th colspan="3">position</th>
-					<th></th>
-				</tr>
-				<tr>
-					<td align="center" id="camera_position_x" style="width: 25%"></td>
-					<td align="center" id="camera_position_y" style="width: 25%"></td>
-					<td align="center" id="camera_position_z" style="width: 25%"></td>
-					<td align="right" id="copy_camera_position" style="width: 25%">
-						<img name="copyPosition" title="copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
-					</td>
-				</tr>
-				<tr>
-					<th colspan="3">target</th>
-					<th></th>
-				</tr>
-				<tr>
-					<td align="center" id="camera_target_x" style="width: 25%"></td>
-					<td align="center" id="camera_target_y" style="width: 25%"></td>
-					<td align="center" id="camera_target_z" style="width: 25%"></td>
-					<td align="right" id="copy_camera_target" style="width: 25%">
-						<img name="copyTarget" title="copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
-					</td>
-				</tr>
-			</table>
-		</div>
-		`);
+        <div class="propertypanel_content">
+            <table>
+                <tr>
+                    <th colspan="3">position</th>
+                    <th></th>
+                </tr>
+                <tr>
+                    <td align="center" id="camera_position_x" style="width: 25%"></td>
+                    <td align="center" id="camera_position_y" style="width: 25%"></td>
+                    <td align="center" id="camera_position_z" style="width: 25%"></td>
+                    <td align="right" id="copy_camera_position" style="width: 25%">
+                        <img name="copyPosition" title="copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
+                    </td>
+                </tr>
+                <tr>
+                    <th colspan="3">target</th>
+                    <th></th>
+                </tr>
+                <tr>
+                    <td align="center" id="camera_target_x" style="width: 25%"></td>
+                    <td align="center" id="camera_target_y" style="width: 25%"></td>
+                    <td align="center" id="camera_target_z" style="width: 25%"></td>
+                    <td align="right" id="copy_camera_target" style="width: 25%">
+                        <img name="copyTarget" title="copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        `);
 
         this.elCopyPosition = this.elContent.find("img[name=copyPosition]");
         this.elCopyPosition.click(() => {
@@ -80,7 +80,7 @@ export class CameraPanel {
     }
 
     update() {
-        //console.log("updating camera panel");
+        // console.log("updating camera panel");
 
         let camera = this.viewer.scene.getActiveCamera();
         let view = this.viewer.scene.view;

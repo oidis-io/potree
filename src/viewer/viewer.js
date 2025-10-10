@@ -57,21 +57,21 @@ export class Viewer extends EventDispatcher {
 
         this.messages = [];
         this.elMessages = $(`
-		<div id="message_listing" 
-			style="position: absolute; z-index: 1000; left: 10px; bottom: 10px">
-		</div>`);
+        <div id="message_listing" 
+            style="position: absolute; z-index: 1000; left: 10px; bottom: 10px">
+        </div>`);
         $(domElement).append(this.elMessages);
 
         try {
             { // generate missing dom hierarchy
                 if ($(domElement).find('#potree_map').length === 0) {
                     let potreeMap = $(`
-					<div id="potree_map" class="mapBox" style="position: absolute; left: 50px; top: 50px; width: 400px; height: 400px; display: none">
-						<div id="potree_map_header" style="position: absolute; width: 100%; height: 25px; top: 0px; background-color: rgba(0,0,0,0.5); z-index: 1000; border-top-left-radius: 3px; border-top-right-radius: 3px;">
-						</div>
-						<div id="potree_map_content" class="map" style="position: absolute; z-index: 100; top: 25px; width: 100%; height: calc(100% - 25px); border: 2px solid rgba(0,0,0,0.5); box-sizing: border-box;"></div>
-					</div>
-				`);
+                    <div id="potree_map" class="mapBox" style="position: absolute; left: 50px; top: 50px; width: 400px; height: 400px; display: none">
+                        <div id="potree_map_header" style="position: absolute; width: 100%; height: 25px; top: 0px; background-color: rgba(0,0,0,0.5); z-index: 1000; border-top-left-radius: 3px; border-top-right-radius: 3px;">
+                        </div>
+                        <div id="potree_map_content" class="map" style="position: absolute; z-index: 100; top: 25px; width: 100%; height: calc(100% - 25px); border: 2px solid rgba(0,0,0,0.5); box-sizing: border-box;"></div>
+                    </div>
+                `);
                     $(domElement).append(potreeMap);
                 }
 
@@ -82,42 +82,42 @@ export class Viewer extends EventDispatcher {
 
                 if ($(domElement).find('#potree_annotations').length === 0) {
                     let potreeAnnotationContainer = $(`
-					<div id="potree_annotation_container" 
-						style="position: absolute; z-index: 100000; width: 100%; height: 100%; pointer-events: none;"></div>`);
+                    <div id="potree_annotation_container" 
+                        style="position: absolute; z-index: 100000; width: 100%; height: 100%; pointer-events: none;"></div>`);
                     $(domElement).append(potreeAnnotationContainer);
                 }
 
                 if ($(domElement).find('#potree_quick_buttons').length === 0) {
                     let potreeMap = $(`
-					<div id="potree_quick_buttons" class="quick_buttons_container" style="">
-					</div>
-				`);
+                    <div id="potree_quick_buttons" class="quick_buttons_container" style="">
+                    </div>
+                `);
 
                     // {
-                    // 	let imgMenuToggle = document.createElement('img');
-                    // 	imgMenuToggle.src = new URL(Potree.resourcePath + '/icons/menu_button.svg').href;
-                    // 	imgMenuToggle.onclick = this.toggleSidebar;
-                    // 	// imgMenuToggle.classList.add('potree_menu_toggle');
+                    //  let imgMenuToggle = document.createElement('img');
+                    //  imgMenuToggle.src = new URL(Potree.resourcePath + '/icons/menu_button.svg').href;
+                    //  imgMenuToggle.onclick = this.toggleSidebar;
+                    //  // imgMenuToggle.classList.add('potree_menu_toggle');
 
-                    // 	potreeMap.append(imgMenuToggle);
+                    //  potreeMap.append(imgMenuToggle);
                     // }
 
                     // {
-                    // 	let imgMenuToggle = document.createElement('img');
-                    // 	imgMenuToggle.src = new URL(Potree.resourcePath + '/icons/menu_button.svg').href;
-                    // 	imgMenuToggle.onclick = this.toggleSidebar;
-                    // 	// imgMenuToggle.classList.add('potree_menu_toggle');
+                    //  let imgMenuToggle = document.createElement('img');
+                    //  imgMenuToggle.src = new URL(Potree.resourcePath + '/icons/menu_button.svg').href;
+                    //  imgMenuToggle.onclick = this.toggleSidebar;
+                    //  // imgMenuToggle.classList.add('potree_menu_toggle');
 
-                    // 	potreeMap.append(imgMenuToggle);
+                    //  potreeMap.append(imgMenuToggle);
                     // }
 
                     // {
-                    // 	let imgMenuToggle = document.createElement('img');
-                    // 	imgMenuToggle.src = new URL(Potree.resourcePath + '/icons/menu_button.svg').href;
-                    // 	imgMenuToggle.onclick = this.toggleSidebar;
-                    // 	// imgMenuToggle.classList.add('potree_menu_toggle');
+                    //  let imgMenuToggle = document.createElement('img');
+                    //  imgMenuToggle.src = new URL(Potree.resourcePath + '/icons/menu_button.svg').href;
+                    //  imgMenuToggle.onclick = this.toggleSidebar;
+                    //  // imgMenuToggle.classList.add('potree_menu_toggle');
 
-                    // 	potreeMap.append(imgMenuToggle);
+                    //  potreeMap.append(imgMenuToggle);
                     // }
 
                     $(domElement).append(potreeMap);
@@ -128,7 +128,7 @@ export class Viewer extends EventDispatcher {
             };
 
             // if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
-            //	defaultSettings.navigation = "Orbit";
+            // defaultSettings.navigation = "Orbit";
             // }
 
             this.server = null;
@@ -317,9 +317,9 @@ export class Viewer extends EventDispatcher {
             }
 
             // start rendering!
-            //if(args.useDefaultRenderLoop === undefined || args.useDefaultRenderLoop === true){
-            //requestAnimationFrame(this.loop.bind(this));
-            //}
+            // if(args.useDefaultRenderLoop === undefined || args.useDefaultRenderLoop === true){
+            // requestAnimationFrame(this.loop.bind(this));
+            // }
 
             this.renderer.setAnimationLoop(this.loop.bind(this));
 
@@ -339,34 +339,31 @@ export class Viewer extends EventDispatcher {
 
         if ($(this.renderArea).find('#potree_failpage').length === 0) {
             let elFailPage = $(`
-			<div id="#potree_failpage" class="potree_failpage"> 
-				
-				<h1>Potree Encountered An Error </h1>
-
-				<p>
-				This may happen if your browser or graphics card is not supported.
-				<br>
-				We recommend to use 
-				<a href="https://www.google.com/chrome/browser" target="_blank" style="color:initial">Chrome</a>
-				or 
-				<a href="https://www.mozilla.org/" target="_blank">Firefox</a>.
-				</p>
-
-				<p>
-				Please also visit <a href="http://webglreport.com/" target="_blank">webglreport.com</a> and 
-				check whether your system supports WebGL.
-				</p>
-				<p>
-				If you are already using one of the recommended browsers and WebGL is enabled, 
-				consider filing an issue report at <a href="https://github.com/potree/potree/issues" target="_blank">github</a>,<br>
-				including your operating system, graphics card, browser and browser version, as well as the 
-				error message below.<br>
-				Please do not report errors on unsupported browsers.
-				</p>
-
-				<pre id="potree_error_console" style="width: 100%; height: 100%"></pre>
-				
-			</div>`);
+            <div id="#potree_failpage" class="potree_failpage"> 
+                <h1>Potree Encountered An Error </h1>
+                <p>
+                This may happen if your browser or graphics card is not supported.
+                <br>
+                We recommend to use 
+                <a href="https://www.google.com/chrome/browser" target="_blank" style="color:initial">Chrome</a>
+                or 
+                <a href="https://www.mozilla.org/" target="_blank">Firefox</a>.
+                </p>
+                
+                <p>
+                Please also visit <a href="http://webglreport.com/" target="_blank">webglreport.com</a> and 
+                check whether your system supports WebGL.
+                </p>
+                <p>
+                If you are already using one of the recommended browsers and WebGL is enabled, 
+                consider filing an issue report at <a href="https://github.com/potree/potree/issues" target="_blank">github</a>,<br>
+                including your operating system, graphics card, browser and browser version, as well as the 
+                error message below.<br>
+                Please do not report errors on unsupported browsers.
+                </p>
+                
+                <pre id="potree_error_console" style="width: 100%; height: 100%"></pre>
+            </div>`);
 
             let elErrorMessage = elFailPage.find('#potree_error_console');
             elErrorMessage.html(error.stack);
@@ -399,7 +396,7 @@ export class Viewer extends EventDispatcher {
             $('.annotation').detach();
 
             // for(let annotation of this.scene.annotations){
-            //	this.renderArea.appendChild(annotation.domElement[0]);
+            // this.renderArea.appendChild(annotation.domElement[0]);
             // }
 
             this.scene.annotations.traverse(annotation => {
@@ -412,7 +409,7 @@ export class Viewer extends EventDispatcher {
 
                     e.annotation.traverse(node => {
                         $("#potree_annotation_container").append(node.domElement);
-                        //this.renderArea.appendChild(node.domElement[0]);
+                        // this.renderArea.appendChild(node.domElement[0]);
                         node.scene = this.scene;
                     });
                 };
@@ -478,7 +475,7 @@ export class Viewer extends EventDispatcher {
         this.description = value;
 
         $('#potree_description').html(value);
-        //$('#potree_description').text(value);
+        // $('#potree_description').text(value);
     }
 
     getDescription() {
@@ -1001,7 +998,7 @@ export class Viewer extends EventDispatcher {
             Potree.loadProject(viewer, json);
         }
 
-        //Potree.loadProject(this, url);
+        // Potree.loadProject(this, url);
     }
 
     saveProject() {
@@ -1090,14 +1087,14 @@ export class Viewer extends EventDispatcher {
         }
 
         // if(Utils.getParameterByName("elevationRange")){
-        //	let value = Utils.getParameterByName("elevationRange");
-        //	value = value.replace("[", "").replace("]", "");
-        //	let tokens = value.split(";");
-        //	let x = parseFloat(tokens[0]);
-        //	let y = parseFloat(tokens[1]);
+        // let value = Utils.getParameterByName("elevationRange");
+        // value = value.replace("[", "").replace("]", "");
+        // let tokens = value.split(";");
+        // let x = parseFloat(tokens[0]);
+        // let y = parseFloat(tokens[1]);
         //
-        //	this.setElevationRange(x, y);
-        //	//this.scene.view.target.set(x, y, z);
+        // this.setElevationRange(x, y);
+        // //this.scene.view.target.set(x, y, z);
         // }
     }
 
@@ -1114,13 +1111,13 @@ export class Viewer extends EventDispatcher {
         }
 
         // { // create GEO CONTROLS
-        //	this.geoControls = new GeoControls(this.scene.camera, this.renderer.domElement);
-        //	this.geoControls.enabled = false;
-        //	this.geoControls.addEventListener("start", this.disableAnnotations.bind(this));
-        //	this.geoControls.addEventListener("end", this.enableAnnotations.bind(this));
-        //	this.geoControls.addEventListener("move_speed_changed", (event) => {
-        //		this.setMoveSpeed(this.geoControls.moveSpeed);
-        //	});
+        // this.geoControls = new GeoControls(this.scene.camera, this.renderer.domElement);
+        // this.geoControls.enabled = false;
+        // this.geoControls.addEventListener("start", this.disableAnnotations.bind(this));
+        // this.geoControls.addEventListener("end", this.enableAnnotations.bind(this));
+        // this.geoControls.addEventListener("move_speed_changed", (event) => {
+        //  this.setMoveSpeed(this.geoControls.moveSpeed);
+        // });
         // }
 
         { // create ORBIT CONTROLS
@@ -1267,15 +1264,15 @@ export class Viewer extends EventDispatcher {
             });
 
             $(() => {
-                //initSidebar(this);
+                // initSidebar(this);
                 let sidebar = new Sidebar(this);
                 sidebar.init();
 
                 this.sidebar = sidebar;
 
-                //if (callback) {
-                //	$(callback);
-                //}
+                // if (callback) {
+                // $(callback);
+                // }
 
                 let elProfile = $('<div>').load(new URL(Potree.scriptPath + '/profile.html').href, () => {
                     $(document.body).append(elProfile.children());
@@ -1389,19 +1386,19 @@ export class Viewer extends EventDispatcher {
             depth: true,
             stencil: false,
             antialias: false,
-            //premultipliedAlpha: _premultipliedAlpha,
+            // premultipliedAlpha: _premultipliedAlpha,
             preserveDrawingBuffer: true,
             powerPreference: "high-performance",
         };
 
         // let contextAttributes = {
-        // 	alpha: false,
-        // 	preserveDrawingBuffer: true,
+        //  alpha: false,
+        //  preserveDrawingBuffer: true,
         // };
 
         // let contextAttributes = {
-        // 	alpha: false,
-        // 	preserveDrawingBuffer: true,
+        //  alpha: false,
+        //  preserveDrawingBuffer: true,
         // };
 
         let canvas = document.createElement("canvas");
@@ -1423,14 +1420,14 @@ export class Viewer extends EventDispatcher {
         this.renderer.domElement.addEventListener('mousedown', () => {
             this.renderer.domElement.focus();
         });
-        //this.renderer.domElement.focus();
+        // this.renderer.domElement.focus();
 
         // NOTE: If extension errors occur, pass the string into this.renderer.extensions.get(x) before enabling
         // enable frag_depth extension for the interpolation shader, if available
         let gl = this.renderer.getContext();
         gl.getExtension('EXT_frag_depth');
         gl.getExtension('WEBGL_depth_texture');
-        gl.getExtension('WEBGL_color_buffer_float'); 	// Enable explicitly for more portability, EXT_color_buffer_float is the proper name in WebGL 2
+        gl.getExtension('WEBGL_color_buffer_float');     // Enable explicitly for more portability, EXT_color_buffer_float is the proper name in WebGL 2
 
         if (gl.createVertexArray == null) {
             let extVAO = gl.getExtension('OES_vertex_array_object');
@@ -1504,7 +1501,7 @@ export class Viewer extends EventDispatcher {
 
             element.css("left", screenPos.x + "px");
             element.css("top", screenPos.y + "px");
-            //element.css("display", "block");
+            // element.css("display", "block");
 
             let zIndex = 10000000 - distance * (10000000 / this.scene.cameraP.far);
             if (annotation.descriptionVisible) {
@@ -1517,7 +1514,7 @@ export class Viewer extends EventDispatcher {
                 annotation.expand = expand;
 
                 if (!expand) {
-                    //annotation.display = (screenPos.z >= -1 && screenPos.z <= 1);
+                    // annotation.display = (screenPos.z >= -1 && screenPos.z <= 1);
                     let inFrustum = (screenPos.z >= -1 && screenPos.z <= 1);
                     if (inFrustum) {
                         visibleNow.push(annotation);
@@ -1526,7 +1523,7 @@ export class Viewer extends EventDispatcher {
 
                 return expand;
             } else {
-                //annotation.display = (screenPos.z >= -1 && screenPos.z <= 1);
+                // annotation.display = (screenPos.z >= -1 && screenPos.z <= 1);
                 let inFrustum = (screenPos.z >= -1 && screenPos.z <= 1);
                 if (inFrustum) {
                     visibleNow.push(annotation);
@@ -1568,17 +1565,17 @@ export class Viewer extends EventDispatcher {
 
         // const attIntensity = pointcloud.getAttribute("intensity");
         // if(attIntensity && material.intensityRange[0] === Infinity){
-        // 	material.intensityRange = [...attIntensity.range];
+        //  material.intensityRange = [...attIntensity.range];
         // }
 
         // let attributes = pointcloud.getAttributes();
 
         // for(let attribute of attributes.attributes){
-        // 	if(attribute.range){
-        // 		let range = [...attribute.range];
-        // 		material.computedRange.set(attribute.name, range);
-        // 		//material.setRange(attribute.name, range);
-        // 	}
+        //  if(attribute.range){
+        //   let range = [...attribute.range];
+        //   material.computedRange.set(attribute.name, range);
+        //   //material.setRange(attribute.name, range);
+        //  }
         // }
     }
 
@@ -1645,35 +1642,35 @@ export class Viewer extends EventDispatcher {
             let result = Potree.updatePointClouds(scene.pointclouds, camera, this.renderer);
 
             // DEBUG - ONLY DISPLAY NODES THAT INTERSECT MOUSE
-            //if(false){
+            // if(false){
 
-            //	let renderer = viewer.renderer;
-            //	let mouse = viewer.inputHandler.mouse;
+            // let renderer = viewer.renderer;
+            // let mouse = viewer.inputHandler.mouse;
 
-            //	let nmouse = {
-            //		x: (mouse.x / renderer.domElement.clientWidth) * 2 - 1,
-            //		y: -(mouse.y / renderer.domElement.clientHeight) * 2 + 1
-            //	};
+            // let nmouse = {
+            //  x: (mouse.x / renderer.domElement.clientWidth) * 2 - 1,
+            //  y: -(mouse.y / renderer.domElement.clientHeight) * 2 + 1
+            // };
 
-            //	let pickParams = {};
+            // let pickParams = {};
 
-            //	//if(params.pickClipped){
-            //	//	pickParams.pickClipped = params.pickClipped;
-            //	//}
+            // //if(params.pickClipped){
+            // // pickParams.pickClipped = params.pickClipped;
+            // //}
 
-            //	pickParams.x = mouse.x;
-            //	pickParams.y = renderer.domElement.clientHeight - mouse.y;
+            // pickParams.x = mouse.x;
+            // pickParams.y = renderer.domElement.clientHeight - mouse.y;
 
-            //	let raycaster = new THREE.Raycaster();
-            //	raycaster.setFromCamera(nmouse, camera);
-            //	let ray = raycaster.ray;
+            // let raycaster = new THREE.Raycaster();
+            // raycaster.setFromCamera(nmouse, camera);
+            // let ray = raycaster.ray;
 
-            //	for(let pointcloud of scene.pointclouds){
-            //		let nodes = pointcloud.nodesOnRay(pointcloud.visibleNodes, ray);
-            //		pointcloud.visibleNodes = nodes;
+            // for(let pointcloud of scene.pointclouds){
+            //  let nodes = pointcloud.nodesOnRay(pointcloud.visibleNodes, ray);
+            //  pointcloud.visibleNodes = nodes;
 
-            //	}
-            //}
+            // }
+            // }
 
             // const tStart = performance.now();
             // const worldPos = new THREE.Vector3();
@@ -1682,24 +1679,24 @@ export class Viewer extends EventDispatcher {
             // let numNodes = 0;
 
             // viewer.scene.scene.traverse(node => {
-            // 	node.getWorldPosition(worldPos);
+            //  node.getWorldPosition(worldPos);
 
-            // 	const distance = worldPos.distanceTo(camPos);
+            //  const distance = worldPos.distanceTo(camPos);
 
-            // 	lowestDistance = Math.min(lowestDistance, distance);
+            //  lowestDistance = Math.min(lowestDistance, distance);
 
-            // 	numNodes++;
+            //  numNodes++;
 
-            // 	if(Number.isNaN(distance)){
-            // 		console.error(":(");
-            // 	}
+            //  if(Number.isNaN(distance)){
+            //   console.error(":(");
+            //  }
             // });
             // const duration = (performance.now() - tStart).toFixed(2);
 
             // Potree.debug.computeNearDuration = duration;
             // Potree.debug.numNodes = numNodes;
 
-            //console.log(lowestDistance.toString(2), duration);
+            // console.log(lowestDistance.toString(2), duration);
 
             const tStart = performance.now();
             const campos = camera.position;
@@ -1795,7 +1792,7 @@ export class Viewer extends EventDispatcher {
             let boxes = [];
 
             // volumes with clipping enabled
-            //boxes.push(...this.scene.volumes.filter(v => (v.clip)));
+            // boxes.push(...this.scene.volumes.filter(v => (v.clip)));
             boxes.push(...this.scene.volumes.filter(v => (v.clip && v instanceof BoxVolume)));
 
             // profile segments
@@ -1992,7 +1989,7 @@ export class Viewer extends EventDispatcher {
             // automatically switch to paraboloids because they cause far less flickering in VR,
             // when point sizes are larger than around 2 pixels
             // if(Features.SHADER_INTERPOLATION.isSupported()){
-            // 	pointcloud.material.shape = Potree.PointShape.PARABOLOID;
+            //  pointcloud.material.shape = Potree.PointShape.PARABOLOID;
             // }
         }
 
@@ -2206,12 +2203,12 @@ export class Viewer extends EventDispatcher {
 
         // let vrActive = viewer.renderer.xr.isPresenting;
         // if(vrActive){
-        // 	this.update(this.clock.getDelta(), timestamp);
-        // 	this.render();
+        //  this.update(this.clock.getDelta(), timestamp);
+        //  this.render();
         // }else{
 
-        // 	this.update(this.clock.getDelta(), timestamp);
-        // 	this.render();
+        //  this.update(this.clock.getDelta(), timestamp);
+        //  this.render();
         // }
 
         if (Potree.measureTimings) {

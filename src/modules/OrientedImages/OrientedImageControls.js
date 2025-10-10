@@ -80,7 +80,7 @@ export class OrientedImageControls extends EventDispatcher {
         };
 
         this.addEventListener('mousewheel', scroll);
-        //this.addEventListener("mousemove", onMove);
+        // this.addEventListener("mousemove", onMove);
     }
 
     hasSomethingCaptured() {
@@ -136,8 +136,8 @@ export class OrientedImageControls extends EventDispatcher {
 
         // let prevTotal = this.shearCam.projectionMatrix.elements.reduce( (a, i) => a + i, 0);
 
-        //const progression = Math.min(1, this.fadeFactor * delta);
-        //const attenuation = Math.max(0, 1 - this.fadeFactor * delta);
+        // const progression = Math.min(1, this.fadeFactor * delta);
+        // const attenuation = Math.max(0, 1 - this.fadeFactor * delta);
         const progression = 1;
         const attenuation = 0;
 

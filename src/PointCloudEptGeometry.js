@@ -61,11 +61,11 @@ class U {
 
 class BaseGeometry {
     constructor({
-                    cube,
-                    boundsConforming,
-                    spacing,
-                    srs,
-                }) {
+        cube,
+        boundsConforming,
+        spacing,
+        srs,
+    }) {
         this.cube = cube;
 
         this.boundingBox = U.toBox3(cube);

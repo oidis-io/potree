@@ -18,31 +18,31 @@ import { EventDispatcher } from "../../EventDispatcher.js";
 
 function createMaterial() {
     let vertexShader = `
-	uniform float uNear;
-	varying vec2 vUV;
-	varying vec4 vDebug;
-	
-	void main(){
-		vDebug = vec4(0.0, 1.0, 0.0, 1.0);
-		vec4 modelViewPosition = modelViewMatrix * vec4(position, 1.0);
-		// make sure that this mesh is at least in front of the near plane
-		modelViewPosition.xyz += normalize(modelViewPosition.xyz) * uNear;
-		gl_Position = projectionMatrix * modelViewPosition;
-		vUV = uv;
-	}
-	`;
+    uniform float uNear;
+    varying vec2 vUV;
+    varying vec4 vDebug;
+    
+    void main(){
+        vDebug = vec4(0.0, 1.0, 0.0, 1.0);
+        vec4 modelViewPosition = modelViewMatrix * vec4(position, 1.0);
+    // make sure that this mesh is at least in front of the near plane
+        modelViewPosition.xyz += normalize(modelViewPosition.xyz) * uNear;
+        gl_Position = projectionMatrix * modelViewPosition;
+        vUV = uv;
+    }
+    `;
 
     let fragmentShader = `
-	uniform sampler2D tColor;
-	uniform float uOpacity;
-	varying vec2 vUV;
-	varying vec4 vDebug;
-	void main(){
-		vec4 color = texture2D(tColor, vUV);
-		gl_FragColor = color;
-		gl_FragColor.a = uOpacity;
-	}
-	`;
+    uniform sampler2D tColor;
+    uniform float uOpacity;
+    varying vec2 vUV;
+    varying vec4 vDebug;
+    void main(){
+        vec4 color = texture2D(tColor, vUV);
+        gl_FragColor = color;
+        gl_FragColor.a = uOpacity;
+    }
+    `;
     const material = new THREE.ShaderMaterial({
         uniforms: {
             // time: { value: 1.0 },
@@ -219,13 +219,13 @@ export class OrientedImageLoader {
 
             // const whitelist = ["47518.jpg"];
             // if(whitelist.includes(params.id)){
-            // 	imageParams.push(params);
+            //  imageParams.push(params);
             // }
             imageParams.push(params);
         }
 
         // debug
-        //return [imageParams[50]];
+        // return [imageParams[50]];
 
         return imageParams;
     }
@@ -248,11 +248,11 @@ export class OrientedImageLoader {
         // const lg = new THREE.Geometry();
 
         // lg.vertices.push(
-        // 	new THREE.Vector3(-0.5, -0.5, 0),
-        // 	new THREE.Vector3( 0.5, -0.5, 0),
-        // 	new THREE.Vector3( 0.5,  0.5, 0),
-        // 	new THREE.Vector3(-0.5,  0.5, 0),
-        // 	new THREE.Vector3(-0.5, -0.5, 0),
+        //  new THREE.Vector3(-0.5, -0.5, 0),
+        //  new THREE.Vector3( 0.5, -0.5, 0),
+        //  new THREE.Vector3( 0.5,  0.5, 0),
+        //  new THREE.Vector3(-0.5,  0.5, 0),
+        //  new THREE.Vector3(-0.5, -0.5, 0),
         // );
 
         const {width, height} = cameraParams;
@@ -267,18 +267,18 @@ export class OrientedImageLoader {
 
             const {x, y, z, omega, phi, kappa} = params;
             // const [rx, ry, rz] = [omega, phi, kappa]
-            // 	.map(THREE.Math.degToRad);
+            //  .map(THREE.Math.degToRad);
 
             // mesh.position.set(x, y, z);
             // mesh.scale.set(width / height, 1, 1);
             // mesh.rotation.set(rx, ry, rz);
             // {
-            // 	mesh.updateMatrixWorld();
-            // 	const dir = mesh.getWorldDirection();
-            // 	const alpha = THREE.Math.degToRad(cameraParams.fov / 2);
-            // 	const d = -0.5 / Math.tan(alpha);
-            // 	const move = dir.clone().multiplyScalar(d);
-            // 	mesh.position.add(move);
+            //  mesh.updateMatrixWorld();
+            //  const dir = mesh.getWorldDirection();
+            //  const alpha = THREE.Math.degToRad(cameraParams.fov / 2);
+            //  const d = -0.5 / Math.tan(alpha);
+            //  const move = dir.clone().multiplyScalar(d);
+            //  mesh.position.add(move);
             // }
             // sceneNode.add(mesh);
 
@@ -313,7 +313,7 @@ export class OrientedImageLoader {
             }
             evt.preventDefault();
 
-            //var array = getMousePosition( container, evt.clientX, evt.clientY );
+            // var array = getMousePosition( container, evt.clientX, evt.clientY );
             const rect = viewer.renderer.domElement.getBoundingClientRect();
             const [x, y] = [evt.clientX, evt.clientY];
             const array = [
@@ -321,7 +321,7 @@ export class OrientedImageLoader {
                 (y - rect.top) / rect.height
             ];
             const onClickPosition = new THREE.Vector2(...array);
-            //const intersects = getIntersects(onClickPosition, scene.children);
+            // const intersects = getIntersects(onClickPosition, scene.children);
             const camera = viewer.scene.getActiveCamera();
             const mouse = new THREE.Vector3(
                 +(onClickPosition.x * 2) - 1,
@@ -332,7 +332,7 @@ export class OrientedImageLoader {
             let selectionChanged = false;
 
             if (intersects.length > 0) {
-                //console.log(intersects);
+                // console.log(intersects);
                 const intersection = intersects[0];
                 const orientedImage = intersection.object.orientedImage;
                 orientedImage.line.material.color.setRGB(1, 0, 0);
@@ -389,7 +389,7 @@ export class OrientedImageLoader {
                 clipVolume = volume;
             }
             const tEnd = performance.now();
-            //console.log(tEnd - tStart);
+            // console.log(tEnd - tStart);
         };
 
         const moveToImage = (image) => {

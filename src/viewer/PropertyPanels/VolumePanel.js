@@ -38,80 +38,80 @@ export class VolumePanel extends MeasurePanel {
         ]).get(measurement.constructor);
 
         this.elContent = $(`
-			<div class="measurement_content selectable">
-				<span class="coordinates_table_container"></span>
+            <div class="measurement_content selectable">
+                <span class="coordinates_table_container"></span>
 
-				<table class="measurement_value_table">
-					<tr>
-						<th>\u03b1</th>
-						<th>\u03b2</th>
-						<th>\u03b3</th>
-						<th></th>
-					</tr>
-					<tr>
-						<td align="center" id="angle_cell_alpha" style="width: 33%"></td>
-						<td align="center" id="angle_cell_betta" style="width: 33%"></td>
-						<td align="center" id="angle_cell_gamma" style="width: 33%"></td>
-						<td align="right" style="width: 25%">
-							<img name="copyRotation" title="copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
-						</td>
-					</tr>
-				</table>
+                <table class="measurement_value_table">
+                    <tr>
+                        <th>\u03b1</th>
+                        <th>\u03b2</th>
+                        <th>\u03b3</th>
+                        <th></th>
+                    </tr>
+                    <tr>
+                        <td align="center" id="angle_cell_alpha" style="width: 33%"></td>
+                        <td align="center" id="angle_cell_betta" style="width: 33%"></td>
+                        <td align="center" id="angle_cell_gamma" style="width: 33%"></td>
+                        <td align="right" style="width: 25%">
+                            <img name="copyRotation" title="copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
+                        </td>
+                    </tr>
+                </table>
 
-				<table class="measurement_value_table">
-					<tr>
-						<th>${lblLengthText}</th>
-						<th>${lblWidthText}</th>
-						<th>${lblHeightText}</th>
-						<th></th>
-					</tr>
-					<tr>
-						<td align="center" id="cell_length" style="width: 33%"></td>
-						<td align="center" id="cell_width" style="width: 33%"></td>
-						<td align="center" id="cell_height" style="width: 33%"></td>
-						<td align="right" style="width: 25%">
-							<img name="copyScale" title="copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
-						</td>
-					</tr>
-				</table>
+                <table class="measurement_value_table">
+                    <tr>
+                        <th>${lblLengthText}</th>
+                        <th>${lblWidthText}</th>
+                        <th>${lblHeightText}</th>
+                        <th></th>
+                    </tr>
+                    <tr>
+                        <td align="center" id="cell_length" style="width: 33%"></td>
+                        <td align="center" id="cell_width" style="width: 33%"></td>
+                        <td align="center" id="cell_height" style="width: 33%"></td>
+                        <td align="right" style="width: 25%">
+                            <img name="copyScale" title="copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
+                        </td>
+                    </tr>
+                </table>
 
-				<br>
-				<span style="font-weight: bold">Volume: </span>
-				<span id="measurement_volume"></span>
+                <br>
+                <span style="font-weight: bold">Volume: </span>
+                <span id="measurement_volume"></span>
 
-				<!--
-				<li>
-					<label style="whitespace: nowrap">
-						<input id="volume_show" type="checkbox"/>
-						<span>show volume</span>
-					</label>
-				</li>-->
+                <!--
+                <li>
+                    <label style="whitespace: nowrap">
+                        <input id="volume_show" type="checkbox"/>
+                        <span>show volume</span>
+                    </label>
+                </li>-->
 
-				<li>
-					<label style="whitespace: nowrap">
-						<input id="volume_clip" type="checkbox"/>
-						<span>make clip volume</span>
-					</label>
-				</li>
+                <li>
+                    <label style="whitespace: nowrap">
+                        <input id="volume_clip" type="checkbox"/>
+                        <span>make clip volume</span>
+                    </label>
+                </li>
 
-				<li style="margin-top: 10px">
-					<input name="download_volume" type="button" value="prepare download" style="width: 100%" />
-					<div name="download_message"></div>
-				</li>
+                <li style="margin-top: 10px">
+                    <input name="download_volume" type="button" value="prepare download" style="width: 100%" />
+                    <div name="download_message"></div>
+                </li>
 
 
-				<!-- ACTIONS -->
-				<li style="display: grid; grid-template-columns: auto auto; grid-column-gap: 5px; margin-top: 10px">
-					<input id="volume_reset_orientation" type="button" value="reset orientation"/>
-					<input id="volume_make_uniform" type="button" value="make uniform"/>
-				</li>
-				<div style="display: flex; margin-top: 12px">
-					<span></span>
-					<span style="flex-grow: 1"></span>
-					<img name="remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
-				</div>
-			</div>
-		`);
+                <!-- ACTIONS -->
+                <li style="display: grid; grid-template-columns: auto auto; grid-column-gap: 5px; margin-top: 10px">
+                    <input id="volume_reset_orientation" type="button" value="reset orientation"/>
+                    <input id="volume_make_uniform" type="button" value="make uniform"/>
+                </li>
+                <div style="display: flex; margin-top: 12px">
+                    <span></span>
+                    <span style="flex-grow: 1"></span>
+                    <img name="remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+                </div>
+            </div>
+        `);
 
         { // download
             this.elDownloadButton = this.elContent.find("input[name=download_volume]");
@@ -181,7 +181,7 @@ export class VolumePanel extends MeasurePanel {
         let clipBox = this.measurement;
 
         let regions = [];
-        //for(let clipBox of boxes){
+        // for(let clipBox of boxes){
         {
             let toClip = clipBox.matrixWorld;
 
@@ -258,13 +258,13 @@ export class VolumePanel extends MeasurePanel {
         { // START FILTER
             let url = `${viewer.server}/create_regions_filter?pointclouds=[${pointcloudsArg}]&regions=[${regionsArg}]`;
 
-            //console.log(url);
+            // console.log(url);
 
             info("estimating results ...");
 
             let response = await fetch(url);
             let jsResponse = await response.json();
-            //console.log(jsResponse);
+            // console.log(jsResponse);
 
             if (!jsResponse.handle) {
                 error(jsResponse.message);
@@ -357,7 +357,7 @@ export class VolumePanel extends MeasurePanel {
         {
             let angles = this.measurement.rotation.toVector3();
             angles = angles.toArray();
-            //angles = [angles.z, angles.x, angles.y];
+            // angles = [angles.z, angles.x, angles.y];
             angles = angles.map(v => 180 * v / Math.PI);
             angles = angles.map(a => a.toFixed(1) + '\u00B0');
 

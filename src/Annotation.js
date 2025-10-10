@@ -56,18 +56,18 @@ export class Annotation extends EventDispatcher {
         let iconClose = exports.resourcePath + '/icons/close.svg';
 
         this.domElement = $(`
-			<div class="annotation" oncontextmenu="return false;">
-				<div class="annotation-titlebar">
-					<span class="annotation-label"></span>
-				</div>
-				<div class="annotation-description">
-					<span class="annotation-description-close">
-						<img src="${iconClose}" width="16px">
-					</span>
-					<span class="annotation-description-content">${this._description}</span>
-				</div>
-			</div>
-		`);
+            <div class="annotation" oncontextmenu="return false;">
+                <div class="annotation-titlebar">
+                    <span class="annotation-label"></span>
+                </div>
+                <div class="annotation-description">
+                    <span class="annotation-description-close">
+                        <img src="${iconClose}" width="16px">
+                    </span>
+                    <span class="annotation-description-content">${this._description}</span>
+                </div>
+            </div>
+        `);
 
         this.elTitlebar = this.domElement.find('.annotation-titlebar');
         this.elTitle = this.elTitlebar.find('.annotation-label');
@@ -121,7 +121,7 @@ export class Annotation extends EventDispatcher {
         });
 
         this.display = false;
-        //this.display = true;
+        // this.display = true;
     }
 
     installHandles(viewer) {
@@ -130,14 +130,14 @@ export class Annotation extends EventDispatcher {
         }
 
         let domElement = $(`
-			<div style="position: absolute; left: 300; top: 200; pointer-events: none">
-				<svg width="300" height="600">
-					<line x1="0" y1="0" x2="1200" y2="200" style="stroke: black; stroke-width:2" />
-					<circle cx="50" cy="50" r="4" stroke="black" stroke-width="2" fill="gray" />
-					<circle cx="150" cy="50" r="4" stroke="black" stroke-width="2" fill="gray" />
-				</svg>
-			</div>
-		`);
+            <div style="position: absolute; left: 300; top: 200; pointer-events: none">
+                <svg width="300" height="600">
+                    <line x1="0" y1="0" x2="1200" y2="200" style="stroke: black; stroke-width:2" />
+                    <circle cx="50" cy="50" r="4" stroke="black" stroke-width="2" fill="gray" />
+                    <circle cx="150" cy="50" r="4" stroke="black" stroke-width="2" fill="gray" />
+                </svg>
+            </div>
+        `);
 
         let svg = domElement.find("svg")[0];
         let elLine = domElement.find("line")[0];
@@ -193,7 +193,7 @@ export class Annotation extends EventDispatcher {
             },
             drag: (event, ui) => {
                 let renderAreaWidth = viewer.renderer.getSize(new THREE.Vector2()).width;
-                //let renderAreaHeight = viewer.renderer.getSize().height;
+                // let renderAreaHeight = viewer.renderer.getSize().height;
 
                 let diff = {
                     x: ui.originalPosition.left - ui.position.left,
@@ -270,7 +270,7 @@ export class Annotation extends EventDispatcher {
             return;
         }
 
-        //$(viewer.renderArea).remove(this.handles.domElement);
+        // $(viewer.renderArea).remove(this.handles.domElement);
         this.handles.domElement.remove();
         viewer.removeEventListener("update", this.handles.updateCallback);
 
@@ -288,9 +288,9 @@ export class Annotation extends EventDispatcher {
 
         this._visible = value;
 
-        //this.traverse(node => {
-        //	node.display = value;
-        //});
+        // this.traverse(node => {
+        // node.display = value;
+        // });
 
         this.dispatchEvent({
             type: 'visibility_changed',
