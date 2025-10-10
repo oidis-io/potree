@@ -262,8 +262,7 @@ export function saveProject(viewer) {
         profiles: scene.profiles.map(createProfileData),
         annotations: createAnnotationsData(viewer),
         orientedImages: scene.orientedImages.map(createOrientedImagesData),
-        geopackages: scene.geopackages.map(createGeopackageData),
-        // objects: createSceneContentData(viewer),
+        geopackages: scene.geopackages.map(createGeopackageData)
     };
 
     return data;

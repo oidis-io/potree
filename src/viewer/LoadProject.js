@@ -52,8 +52,6 @@ function loadPointCloud(viewer, data) {
             }
         } else if (data.activeAttributeName != null) {
             target.activeAttributeName = data.activeAttributeName;
-        } else {
-            // no material data
         }
     };
 

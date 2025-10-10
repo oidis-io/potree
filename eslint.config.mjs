@@ -14,7 +14,7 @@ import unusedImports from "eslint-plugin-unused-imports";
 
 export default [
     {
-        ignores: [".github/", ".idea/", "build/", "node_modules/", "resources/", "pointclouds/", "docs/", "examples/", "libs/", "**/*.min.js", "gulpfile.js", "rollup.*.js"],
+        ignores: [".github/", ".idea/", "build/", "node_modules/", "resources/", "pointclouds/", "docs/", "examples/", "libs/", "**/*.min.js"],
     },
     {
         languageOptions: {

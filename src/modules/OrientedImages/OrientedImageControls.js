@@ -37,7 +37,6 @@ export class OrientedImageControls extends EventDispatcher {
 
         this.shear = [0, 0];
 
-        // const style = ``;
         this.elUp = $(`<input type="button" value="🡅" style="position: absolute; top: 10px; left: calc(50%); z-index: 1000" />`);
         this.elRight = $(`<input type="button" value="🡆" style="position: absolute; top: calc(50%); right: 10px; z-index: 1000" />`);
         this.elDown = $(`<input type="button" value="🡇" style="position: absolute; bottom: 10px; left: calc(50%); z-index: 1000" />`);
@@ -80,7 +79,6 @@ export class OrientedImageControls extends EventDispatcher {
         };
 
         this.addEventListener("mousewheel", scroll);
-        // this.addEventListener("mousemove", onMove);
     }
 
     hasSomethingCaptured() {
@@ -132,12 +130,6 @@ export class OrientedImageControls extends EventDispatcher {
     }
 
     update(delta) {
-        // const view = this.scene.view;
-
-        // let prevTotal = this.shearCam.projectionMatrix.elements.reduce( (a, i) => a + i, 0);
-
-        // const progression = Math.min(1, this.fadeFactor * delta);
-        // const attenuation = Math.max(0, 1 - this.fadeFactor * delta);
         const progression = 1;
         const attenuation = 0;
 

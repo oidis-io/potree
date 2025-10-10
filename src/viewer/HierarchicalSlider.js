@@ -103,7 +103,6 @@ export class HierarchicalSlider {
             step: this.step,
             values: [min, max],
             slide: (event, ui) => {
-                // set all descendants to same range
                 let levels = this.sliders.length;
                 for (let i = level + 1; i < levels; i++) {
                     let descendant = this.sliders[i];

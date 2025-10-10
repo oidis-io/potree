@@ -90,7 +90,6 @@ onmessage = function (event) {
     let gridSize = 32;
     let grid = new Uint32Array(gridSize ** 3);
     let toIndex = (x, y, z) => {
-        // min is already subtracted
         let dx = gridSize * x / size.x;
         let dy = gridSize * y / size.y;
         let dz = gridSize * z / size.z;
@@ -108,8 +107,6 @@ onmessage = function (event) {
     let byteOffset = 0;
     for (let pointAttribute of pointAttributes.attributes) {
         if (["POSITION_CARTESIAN", "position"].includes(pointAttribute.name)) {
-            // let tStart = performance.now();
-
             let buff = new ArrayBuffer(numPoints * 4 * 3);
             let positions = new Float32Array(buff);
 
@@ -141,91 +138,6 @@ onmessage = function (event) {
                         | (dealign24b(((mc_1 >>> 24) | (mc_0 << 8)) >>> 2) << 24);
                 }
 
-                // =======================
-                // VERIFY AGAINST LOOP VERSION
-                // =======================
-                // let reference;
-                // { // correct reference
-
-                //  let mc_upper = view.getBigUint64(byteOffset + 0, true);
-                //  let mc_lower = view.getBigUint64(byteOffset + 8, true);
-
-                //  let X = 0n;
-                //  let Y = 0n;
-                //  let Z = 0n;
-
-                //  for(let k = 0n; k < 16n; k++){
-                //   let mask_lower = (mc_lower >> (3n * k)) & 0b111n;
-                //   let mask_upper = (mc_upper >> (3n * k)) & 0b111n;
-
-                //   X = X | (((mask_lower >> 0n) & 0b001n) << k);
-                //   X = X | ((((mask_upper >> 0n) & 0b001n) << k) << 16n);
-
-                //   Y = Y | (((mask_lower >> 1n) & 0b001n) << k);
-                //   Y = Y | ((((mask_upper >> 1n) & 0b001n) << k) << 16n);
-
-                //   Z = Z | (((mask_lower >> 2n) & 0b001n) << k);
-                //   Z = Z | ((((mask_upper >> 2n) & 0b001n) << k) << 16n);
-                //  }
-
-                //  reference = [X, Y, Z];
-                // }
-                // //dbgad += parseInt(reference[2]);
-                // let [rX, rY, rZ] = reference;
-
-                // if(X !== parseInt(rX)){
-                //  debugger;
-                // }
-                // if(Y !== parseInt(rY)){
-                //  debugger;
-                // }
-                // if(Z !== parseInt(rZ)){
-                //  debugger;
-                // }
-
-                // let mc_upper = view.getBigUint64(byteOffset + 0, true);
-                // let mc_lower = view.getBigUint64(byteOffset + 8, true);
-                // byteOffset += 16;
-
-                // =======================
-                // MAGIC NUMBERS 32BIT
-                // =======================
-                // let mc0 = parseInt((mc_lower >>  0n) & 0x00FFFFFFn);
-                // let mc1 = parseInt((mc_lower >> 24n) & 0x00FFFFFFn);
-                // let mc2 = parseInt((mc_lower >> 48n) & 0x00FFFFFFn);
-
-                // let X = dealign24b(mc0 >> 0) | (dealign24b(mc1 >> 0) << 8) | (dealign24b(mc2 >> 0) << 16);
-                // let Y = dealign24b(mc0 >> 1) | (dealign24b(mc1 >> 1) << 8) | (dealign24b(mc2 >> 1) << 16);
-                // let Z = dealign24b(mc0 >> 2) | (dealign24b(mc1 >> 2) << 8) | (dealign24b(mc2 >> 2) << 16);
-
-                // =======================
-                // MAGIC NUMBERS BIGINT
-                // =======================
-                // let X = dealign(mc_lower >> 0n);// | (dealign(mc_upper >> 0n) << 16n);
-                // let Y = dealign(mc_lower >> 1n);// | (dealign(mc_upper >> 1n) << 16n);
-                // let Z = dealign(mc_lower >> 2n);// | (dealign(mc_upper >> 2n) << 16n);
-
-                // =======================
-                // LOOP
-                // =======================
-                // let X = 0n;
-                // let Y = 0n;
-                // let Z = 0n;
-
-                // for(let k = 0n; k < 16n; k++){
-                //  let mask_lower = (mc_lower >> (3n * k)) & 0b111n;
-                //  let mask_upper = (mc_upper >> (3n * k)) & 0b111n;
-
-                //  X = X | (((mask_lower >> 0n) & 0b001n) << k);
-                //  X = X | ((((mask_upper >> 0n) & 0b001n) << k) << 16n);
-
-                //  Y = Y | (((mask_lower >> 1n) & 0b001n) << k);
-                //  Y = Y | ((((mask_upper >> 1n) & 0b001n) << k) << 16n);
-
-                //  Z = Z | (((mask_lower >> 2n) & 0b001n) << k);
-                //  Z = Z | ((((mask_upper >> 2n) & 0b001n) << k) << 16n);
-                // }
-
                 let x = parseInt(X) * scale[0] + offset[0] - min.x;
                 let y = parseInt(Y) * scale[1] + offset[1] - min.y;
                 let z = parseInt(Z) * scale[2] + offset[2] - min.z;
@@ -241,26 +153,10 @@ onmessage = function (event) {
                 positions[3 * j + 2] = z;
             }
 
-            // let duration = performance.now() - tStart;
-            // console.log(`xyz: ${duration.toFixed(1)}ms`);
-
             attributeBuffers[pointAttribute.name] = {buffer: buff, attribute: pointAttribute};
         } else if (["RGBA", "rgba"].includes(pointAttribute.name)) {
             let buff = new ArrayBuffer(numPoints * 4);
             let colors = new Uint8Array(buff);
-
-            // for (let j = 0; j < numPoints; j++) {
-            //  let r = view.getUint16(byteOffset + 0, true);
-            //  let g = view.getUint16(byteOffset + 2, true);
-            //  let b = view.getUint16(byteOffset + 4, true);
-            //  byteOffset += 6;
-
-            //  colors[4 * j + 0] = r > 255 ? r / 256 : r;
-            //  colors[4 * j + 1] = g > 255 ? g / 256 : g;
-            //  colors[4 * j + 2] = b > 255 ? b / 256 : b;
-            // }
-
-            // let tStart = performance.now();
 
             for (let j = 0; j < numPoints; j++) {
                 let mc_0 = view.getUint32(byteOffset + 4, true);
@@ -276,22 +172,10 @@ onmessage = function (event) {
                 let b = dealign24b((mc_1 & 0x00FFFFFF) >>> 2)
                     | (dealign24b(((mc_1 >>> 24) | (mc_0 << 8)) >>> 2) << 8);
 
-                // let bits = mask_b0[mc_1 >>> 24];
-
-                // if(((r >> 8) & 0b11) !== bits){
-                //  debugger;
-                // }
-
-                // let r = dealign24b(mc0 >> 0) | (dealign24b(mc1 >> 0) << 8);
-                // let g = dealign24b(mc0 >> 1) | (dealign24b(mc1 >> 1) << 8);
-                // let b = dealign24b(mc0 >> 2) | (dealign24b(mc1 >> 2) << 8);
-
                 colors[4 * j + 0] = r > 255 ? r / 256 : r;
                 colors[4 * j + 1] = g > 255 ? g / 256 : g;
                 colors[4 * j + 2] = b > 255 ? b / 256 : b;
             }
-            // let duration = performance.now() - tStart;
-            // console.log(`rgb: ${duration.toFixed(1)}ms`);
 
             attributeBuffers[pointAttribute.name] = {buffer: buff, attribute: pointAttribute};
         } else {
@@ -307,17 +191,14 @@ onmessage = function (event) {
                 "int8": view.getInt8,
                 "int16": view.getInt16,
                 "int32": view.getInt32,
-                // "int64":  view.getInt64,
                 "uint8": view.getUint8,
                 "uint16": view.getUint16,
                 "uint32": view.getUint32,
-                // "uint64": view.getUint64,
                 "float": view.getFloat32,
                 "double": view.getFloat64,
             };
             const getter = getterMap[pointAttribute.type.name].bind(view);
 
-            // compute offset and scale to pack larger types into 32 bit floats
             if (pointAttribute.type.size > 4) {
                 let [amin, amax] = pointAttribute.range;
                 offset = amin;
@@ -325,7 +206,6 @@ onmessage = function (event) {
             }
 
             for (let j = 0; j < numPoints; j++) {
-                // let pointOffset = j * bytesPerPoint;
                 let value = getter(byteOffset, true);
                 byteOffset += pointAttribute.byteSize;
 
@@ -341,14 +221,11 @@ onmessage = function (event) {
                 scale: scale,
             };
         }
-
-        // attributeOffset += pointAttribute.byteSize;
     }
 
     let occupancy = parseInt(numPoints / numOccupiedCells);
-    // console.log(`${name}: #points: ${numPoints}: #occupiedCells: ${numOccupiedCells}, occupancy: ${occupancy} points/cell`);
 
-    { // add indices
+    {
         let buff = new ArrayBuffer(numPoints * 4);
         let indices = new Uint32Array(buff);
 
@@ -359,7 +236,7 @@ onmessage = function (event) {
         attributeBuffers["INDICES"] = {buffer: buff, attribute: PointAttribute.INDICES};
     }
 
-    { // handle attribute vectors
+    {
         let vectors = pointAttributes.vectors;
 
         for (let vector of vectors) {
@@ -396,7 +273,6 @@ onmessage = function (event) {
 
     let duration = performance.now() - tStart;
     let pointsPerMs = numPoints / duration;
-    // console.log(`duration: ${duration.toFixed(1)}ms, #points: ${numPoints}, points/ms: ${pointsPerMs.toFixed(1)}`);
 
     let message = {
         buffer: buffer,
@@ -408,7 +284,6 @@ onmessage = function (event) {
     for (let property in message.attributeBuffers) {
         transferables.push(message.attributeBuffers[property].buffer);
     }
-    // transferables.push(buffer);
 
     postMessage(message, transferables);
 };

@@ -55,7 +55,6 @@ export class DeviceOrientationControls extends EventDispatcher {
         } else {
             console.warn("No device orientation found.");
         }
-        // window.addEventListener('deviceorientation', deviceOrientationChange);
         window.addEventListener("orientationchange", screenOrientationChange);
     }
 

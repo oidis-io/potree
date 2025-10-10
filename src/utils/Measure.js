@@ -339,7 +339,6 @@ export class Measure extends THREE.Object3D {
 
     createSphereMaterial() {
         let sphereMaterial = new THREE.MeshLambertMaterial({
-            // shading: THREE.SmoothShading,
             color: this.color,
             depthTest: false,
             depthWrite: false
@@ -357,13 +356,12 @@ export class Measure extends THREE.Object3D {
         }
         this.points.push(point);
 
-        // sphere
         let sphere = new THREE.Mesh(this.sphereGeometry, this.createSphereMaterial());
 
         this.add(sphere);
         this.spheres.push(sphere);
 
-        { // edges
+        {
             let lineGeometry = new LineGeometry();
             lineGeometry.setPositions([
                 0, 0, 0,
@@ -385,7 +383,7 @@ export class Measure extends THREE.Object3D {
             this.edges.push(edge);
         }
 
-        { // edge labels
+        {
             let edgeLabel = new TextSprite();
             edgeLabel.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
             edgeLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
@@ -396,7 +394,7 @@ export class Measure extends THREE.Object3D {
             this.add(edgeLabel);
         }
 
-        { // angle labels
+        {
             let angleLabel = new TextSprite();
             angleLabel.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
             angleLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
@@ -408,7 +406,7 @@ export class Measure extends THREE.Object3D {
             this.add(angleLabel);
         }
 
-        { // coordinate labels
+        {
             let coordinateLabel = new TextSprite();
             coordinateLabel.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
             coordinateLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
@@ -420,7 +418,7 @@ export class Measure extends THREE.Object3D {
             this.add(coordinateLabel);
         }
 
-        { // Event Listeners
+        {
             let drag = (e) => {
                 let I = Utils.getMousePointCloudIntersection(
                     e.drag.end,
@@ -576,7 +574,6 @@ export class Measure extends THREE.Object3D {
         let v1 = new THREE.Vector3().subVectors(point1.position, cornerPoint.position);
         let v2 = new THREE.Vector3().subVectors(point2.position, cornerPoint.position);
 
-        // avoid the error printed by threejs if denominator is 0
         const denominator = Math.sqrt(v1.lengthSq() * v2.lengthSq());
         if (denominator === 0) {
             return 0;
@@ -597,19 +594,6 @@ export class Measure extends THREE.Object3D {
         return this.getAngleBetweenLines(point, previous, next);
     }
 
-    // updateAzimuth(){
-    //  // if(this.points.length !== 2){
-    //  //  return;
-    //  // }
-
-    //  // const azimuth = this.azimuth;
-
-    //  // const [p0, p1] = this.points;
-
-    //  // const r = p0.position.distanceTo(p1.position);
-
-    // }
-
     update() {
         if (this.points.length === 0) {
             return;
@@ -618,12 +602,10 @@ export class Measure extends THREE.Object3D {
             let position = point.position;
             this.spheres[0].position.copy(position);
 
-            { // coordinate labels
+            {
                 let coordinateLabel = this.coordinateLabels[0];
-
                 let msg = position.toArray().map(p => Utils.addCommas(p.toFixed(2))).join(" / ");
                 coordinateLabel.setText(msg);
-
                 coordinateLabel.visible = this.showCoordinates;
             }
 
@@ -650,11 +632,10 @@ export class Measure extends THREE.Object3D {
 
             let sphere = this.spheres[index];
 
-            // spheres
             sphere.position.copy(point.position);
             sphere.material.color = this.color;
 
-            { // edges
+            {
                 let edge = this.edges[index];
 
                 edge.material.color = this.color;
@@ -676,7 +657,7 @@ export class Measure extends THREE.Object3D {
                 }
             }
 
-            { // edge labels
+            {
                 let edgeLabel = this.edgeLabels[i];
 
                 let center = new THREE.Vector3().add(point.position);
@@ -697,7 +678,7 @@ export class Measure extends THREE.Object3D {
                 edgeLabel.visible = this.showDistances && (index < lastIndex || this.closed) && this.points.length >= 2 && distance > 0;
             }
 
-            { // angle labels
+            {
                 let angleLabel = this.angleLabels[i];
                 let angle = this.getAngleBetweenLines(point, previousPoint, nextPoint);
 
@@ -718,7 +699,7 @@ export class Measure extends THREE.Object3D {
             }
         }
 
-        { // update height stuff
+        {
             let heightEdge = this.heightEdge;
             heightEdge.visible = this.showHeight;
             this.heightLabel.visible = this.showHeight;
@@ -744,13 +725,8 @@ export class Measure extends THREE.Object3D {
                 ]);
 
                 heightEdge.geometry.verticesNeedUpdate = true;
-                // heightEdge.geometry.computeLineDistances();
-                // heightEdge.geometry.lineDistancesNeedUpdate = true;
                 heightEdge.geometry.computeBoundingSphere();
                 heightEdge.computeLineDistances();
-
-                // heightEdge.material.dashSize = height / 40;
-                // heightEdge.material.gapSize = height / 40;
 
                 let heightLabelPosition = start.clone().add(end).multiplyScalar(0.5);
                 this.heightLabel.position.copy(heightLabelPosition);
@@ -767,7 +743,7 @@ export class Measure extends THREE.Object3D {
             }
         }
 
-        { // update circle stuff
+        {
             const circleRadiusLabel = this.circleRadiusLabel;
             const circleRadiusLine = this.circleRadiusLine;
             const circleLine = this.circleLine;
@@ -795,9 +771,6 @@ export class Measure extends THREE.Object3D {
                 circleCenter.position.copy(center);
                 circleCenter.scale.set(scale, scale, scale);
 
-                // circleRadiusLine.geometry.vertices[0].set(0, 0, 0);
-                // circleRadiusLine.geometry.vertices[1].copy(B.clone().sub(center));
-
                 circleRadiusLine.geometry.setPositions([
                     0, 0, 0,
                     ...B.clone().sub(center).toArray()
@@ -819,7 +792,7 @@ export class Measure extends THREE.Object3D {
             }
         }
 
-        { // update area label
+        {
             this.areaLabel.position.copy(centroid);
             this.areaLabel.visible = this.showArea && this.points.length >= 3;
             let area = this.getArea();
@@ -834,8 +807,6 @@ export class Measure extends THREE.Object3D {
             let msg = `${txtArea} ${suffix}\u00B2`;
             this.areaLabel.setText(msg);
         }
-
-        // this.updateAzimuth();
     }
 
     raycast(raycaster, intersects) {

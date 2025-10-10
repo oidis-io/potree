@@ -171,18 +171,6 @@ export class InputHandler extends EventDispatcher {
                 changedTouches: e.changedTouches
             });
         }
-
-        // DEBUG CODE
-        // let debugTouches = [...e.touches, {
-        // pageX: this.domElement.clientWidth / 2,
-        // pageY: this.domElement.clientHeight / 2}];
-        // for(let inputListener of this.getSortedListeners()){
-        // inputListener.dispatchEvent({
-        //  type: e.type,
-        //  touches: debugTouches,
-        //  changedTouches: e.changedTouches
-        // });
-        // }
     }
 
     onKeyDown(e) {
@@ -204,17 +192,7 @@ export class InputHandler extends EventDispatcher {
             event: e
         });
 
-        // for(let l of this.getSortedListeners()){
-        // l.dispatchEvent({
-        //  type: "keydown",
-        //  keyCode: e.keyCode,
-        //  event: e
-        // });
-        // }
-
         this.pressedKeys[e.keyCode] = true;
-
-        // e.preventDefault();
     }
 
     onKeyUp(e) {
@@ -491,13 +469,6 @@ export class InputHandler extends EventDispatcher {
             }
         }
 
-        // for (let inputListener of this.getSortedListeners()) {
-        //  inputListener.dispatchEvent({
-        //   type: 'mousemove',
-        //   object: null
-        //  });
-        // }
-
         this.hoveredElements = hoveredElements;
     }
 
@@ -516,8 +487,6 @@ export class InputHandler extends EventDispatcher {
         }
 
         let ndelta = Math.sign(delta);
-
-        // this.wheelDelta += Math.sign(delta);
 
         if (this.hoveredElement) {
             this.hoveredElement.object.dispatchEvent({

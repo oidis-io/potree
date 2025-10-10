@@ -193,7 +193,6 @@ export class PointCloudCopcGeometryNode extends PointCloudTreeNode {
         this.spacing = this.owner.spacing / Math.pow(2, Key.depth(this.key));
         this.boundingSphere = U.sphereFrom(this.boundingBox);
 
-        // These are set during hierarchy loading.
         this.hasChildren = false;
         this.children = {};
         this.nodeinfo = undefined;
@@ -340,7 +339,6 @@ export class PointCloudCopcGeometryNode extends PointCloudTreeNode {
             this.geometry = null;
             this.loaded = false;
 
-            // this.dispatchEvent( { type: 'dispose' } );
             for (let i = 0; i < this.oneTimeDisposeHandlers.length; i++) {
                 let handler = this.oneTimeDisposeHandlers[i];
                 handler();

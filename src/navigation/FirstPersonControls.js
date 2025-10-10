@@ -154,12 +154,11 @@ export class FirstPersonControls extends EventDispatcher {
 
         let d = this.scene.view.direction.multiplyScalar(-1);
         let cameraTargetPosition = new THREE.Vector3().addVectors(I.location, d.multiplyScalar(targetRadius));
-        // TODO Unused: let controlsTargetPosition = I.location;
 
         let animationDuration = 600;
         let easing = TWEEN.Easing.Quartic.Out;
 
-        { // animate
+        {
             let value = {x: 0};
             let tween = new TWEEN.Tween(value).to({x: 1}, animationDuration);
             tween.easing(easing);
@@ -191,7 +190,7 @@ export class FirstPersonControls extends EventDispatcher {
     update(delta) {
         let view = this.scene.view;
 
-        { // cancel move animations on user input
+        {
             let changes = [this.yawDelta,
                 this.pitchDelta,
                 this.translationDelta.length(),
@@ -203,7 +202,7 @@ export class FirstPersonControls extends EventDispatcher {
             }
         }
 
-        { // accelerate while input is given
+        {
             let ih = this.viewer.inputHandler;
 
             let moveForward = this.keys.FORWARD.some(e => ih.pressedKeys[e]);
@@ -252,7 +251,7 @@ export class FirstPersonControls extends EventDispatcher {
             }
         }
 
-        { // apply rotation
+        {
             let yaw = view.yaw;
             let pitch = view.pitch;
 
@@ -263,7 +262,7 @@ export class FirstPersonControls extends EventDispatcher {
             view.pitch = pitch;
         }
 
-        { // apply translation
+        {
             view.translate(
                 this.translationDelta.x * delta,
                 this.translationDelta.y * delta,
@@ -277,11 +276,11 @@ export class FirstPersonControls extends EventDispatcher {
             );
         }
 
-        { // set view target according to speed
+        {
             view.radius = 3 * this.viewer.getMoveSpeed();
         }
 
-        { // decelerate over time
+        {
             let attenuation = Math.max(0, 1 - this.fadeFactor * delta);
             this.yawDelta *= attenuation;
             this.pitchDelta *= attenuation;

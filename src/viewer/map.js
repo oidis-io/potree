@@ -134,7 +134,6 @@ export class MapView {
         let DownloadSelectionControl = function (optOptions) {
             let options = optOptions || {};
 
-            // TOGGLE TILES
             let btToggleTiles = document.createElement("button");
             btToggleTiles.innerHTML = "T";
             btToggleTiles.addEventListener("click", () => {
@@ -144,7 +143,6 @@ export class MapView {
             btToggleTiles.style.float = "left";
             btToggleTiles.title = "show / hide tiles";
 
-            // DOWNLOAD SELECTED TILES
             let link = document.createElement("a");
             link.href = "#";
             link.download = "list.txt";
@@ -215,7 +213,6 @@ export class MapView {
                     collapsible: false
                 })
             }).extend([
-                // this.controls.zoomToExtent,
                 new DownloadSelectionControl(),
                 mousePositionControl
             ]),
@@ -236,7 +233,6 @@ export class MapView {
             })
         });
 
-        // DRAGBOX / SELECTION
         this.dragBoxLayer = new ol.layer.Vector({
             source: new ol.source.Vector({}),
             style: new ol.style.Style({
@@ -259,22 +255,6 @@ export class MapView {
 
         this.map.addInteraction(dragBox);
 
-        // this.map.on('pointermove', evt => {
-        //  let pixel = evt.pixel;
-        //  let feature = this.map.forEachFeatureAtPixel(pixel, function (feature) {
-        //   return feature;
-        //  });
-
-        //  // console.log(feature);
-        //  // this.elTooltip.css("display", feature ? '' : 'none');
-        //  this.elTooltip.css('display', 'none');
-        //  if (feature && feature.onHover) {
-        //   feature.onHover(evt);
-        //   // overlay.setPosition(evt.coordinate);
-        //   // tooltip.innerHTML = feature.get('name');
-        //  }
-        // });
-
         this.map.on("click", evt => {
             let pixel = evt.pixel;
             let feature = this.map.forEachFeatureAtPixel(pixel, function (feature) {
@@ -287,16 +267,12 @@ export class MapView {
         });
 
         dragBox.on("boxend", (e) => {
-            // features that intersect the box are added to the collection of
-            // selected features, and their names are displayed in the "info"
-            // div
             let extent = dragBox.getGeometry().getExtent();
             this.getSourcesLayer().getSource().forEachFeatureIntersectingExtent(extent, (feature) => {
                 selectedFeatures.push(feature);
             });
         });
 
-        // clear selection when drawing a new box and when clicking on the map
         dragBox.on("boxstart", (e) => {
             selectedFeatures.clear();
         });

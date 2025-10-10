@@ -200,16 +200,13 @@ export class ProfilePanel extends MeasurePanel {
         };
 
         let handle = null;
-        { // START FILTER
+        {
             let url = `${viewer.server}/create_regions_filter?pointclouds=[${pointcloudsArg}]&regions=[${regionsArg}]`;
-
-            // console.log(url);
 
             info("estimating results ...");
 
             let response = await fetch(url);
             let jsResponse = await response.json();
-            // console.log(jsResponse);
 
             if (!jsResponse.handle) {
                 error(jsResponse.message);
@@ -219,7 +216,7 @@ export class ProfilePanel extends MeasurePanel {
             }
         }
 
-        { // WAIT, CHECK PROGRESS, HANDLE FINISH
+        {
             let url = `${viewer.server}/check_regions_filter?handle=${handle}`;
 
             let sleep = (function (duration) {

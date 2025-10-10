@@ -76,8 +76,6 @@ export class EDLRenderer {
 
         let {width, height} = size;
 
-        // let maxTextureSize = viewer.renderer.capabilities.maxTextureSize;
-        // if(width * 4 <
         width = 2 * width;
         height = 2 * height;
 
@@ -89,9 +87,6 @@ export class EDLRenderer {
             target: target
         };
 
-        // HACK? removed because of error, was this important?
-        // this.viewer.renderer.clearTarget(target, true, true, true);
-
         this.render();
 
         let pixelCount = width * height;
@@ -99,7 +94,6 @@ export class EDLRenderer {
 
         this.viewer.renderer.readRenderTargetPixels(target, 0, 0, width, height, buffer);
 
-        // flip vertically
         let bytesPerLine = width * 4;
         for (let i = 0; i < parseInt(height / 2); i++) {
             let j = height - i - 1;
@@ -173,7 +167,6 @@ export class EDLRenderer {
                 originalAttributes.set(pointcloud, pointcloud.material.activeAttributeName);
                 pointcloud.material.disableEvents();
                 pointcloud.material.activeAttributeName = "depth";
-                // pointcloud.material.pointColorType = PointColorType.DEPTH;
             }
 
             this.shadowMap.render(viewer.scene.scenePointCloud, camera);
@@ -264,27 +257,6 @@ export class EDLRenderer {
                     transparent: false,
                 });
             } else {
-                // let test = camera.clone();
-                // test.matrixAutoUpdate = false;
-
-                // //test.updateMatrixWorld = () => {};
-
-                // let mat = new THREE.Matrix4().set(
-                //  1, 0, 0, 0,
-                //  0, 0, 1, 0,
-                //  0, -1, 0, 0,
-                //  0, 0, 0, 1,
-                // );
-                // mat.invert()
-
-                // test.matrix.multiplyMatrices(mat, test.matrix);
-                // test.updateMatrixWorld();
-
-                // test.matrixWorld.multiplyMatrices(mat, test.matrixWorld);
-                // test.matrixWorld.multiply(mat);
-                // test.matrixWorldInverse.invert(test.matrixWorld);
-                // test.matrixWorldInverse.multiplyMatrices(test.matrixWorldInverse, mat);
-
                 viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtEDL, {
                     clipSpheres: viewer.scene.volumes.filter(v => (v instanceof SphereVolume)),
                     transparent: false,
@@ -296,7 +268,7 @@ export class EDLRenderer {
         viewer.renderer.setRenderTarget(null);
         viewer.renderer.render(viewer.scene.scene, camera);
 
-        { // EDL PASS
+        {
             const uniforms = this.edlMaterial.uniforms;
 
             uniforms.screenWidth.value = width;

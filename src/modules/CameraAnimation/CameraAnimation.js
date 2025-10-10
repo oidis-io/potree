@@ -47,7 +47,6 @@ export class CameraAnimation extends EventDispatcher {
         this.name = "Camera Animation";
         this.duration = 5;
         this.t = 0;
-        // "centripetal", "chordal", "catmullrom"
         this.curveType = "centripetal";
         this.visible = true;
 
@@ -199,9 +198,6 @@ export class CameraAnimation extends EventDispatcher {
             cp.position.copy(cp1.position.clone().add(cp2.position).multiplyScalar(0.5));
             cp.target.copy(cp1.target.clone().add(cp2.target).multiplyScalar(0.5));
         }
-
-        // cp.position.copy(viewer.scene.view.position);
-        // cp.target.copy(viewer.scene.view.getPivot());
 
         cp.positionHandle = this.createHandle(cp.position);
         cp.targetHandle = this.createHandle(cp.target);
@@ -437,7 +433,6 @@ export class CameraAnimation extends EventDispatcher {
 
                 const {width, height} = this.viewer.renderer.getSize(new THREE.Vector2());
                 const camera = this.viewer.scene.getActiveCamera();
-                // const cp = this.controlPoints.find(cp => cp.handle.svg === svg);
                 const projected = vector.clone().project(camera);
 
                 projected.x = ((x / width) - 0.5) / 0.5;

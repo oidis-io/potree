@@ -37,7 +37,6 @@ function computeMove(vrControls, controller) {
     let pad = controller.inputSource.gamepad;
 
     let axes = pad.axes;
-    // [0,1] are for touchpad, [2,3] for thumbsticks?
     let y = 0;
     if (axes.length === 2) {
         y = axes[1];
@@ -340,7 +339,6 @@ export class VRControls extends EventDispatcher {
             controller.addEventListener("connected", function (event) {
                 const xrInputSource = event.data;
                 controller.inputSource = xrInputSource;
-                // initInfo(controller);
             });
 
             controller.addEventListener("selectstart", () => {
@@ -353,24 +351,20 @@ export class VRControls extends EventDispatcher {
             this.cPrimary = controller;
         }
 
-        { // setup secondary controller
+        {
             let controller = xr.getController(1);
 
             let grip = xr.getControllerGrip(1);
-
-            // ADD CONTROLLER MODEL
             let model = controllerModelFactory.createControllerModel(grip);
             grip.add(model);
             this.viewer.sceneVR.add(grip);
-
-            // ADD SPHERE
             let sphere = new THREE.Mesh(sg, sm);
             sphere.scale.set(0.005, 0.005, 0.005);
             controller.add(sphere);
             controller.visible = true;
             this.viewer.sceneVR.add(controller);
 
-            { // ADD LINE
+            {
                 let lineGeometry = new LineGeometry();
 
                 lineGeometry.setPositions([
@@ -463,33 +457,7 @@ export class VRControls extends EventDispatcher {
         }
 
         let node = new THREE.Object3D("vr menu");
-
-        // let nSlider = this.createSlider("speed", 0, 1);
-        // let nInfo = this.createInfo();
-
-        // // node.add(nSlider);
-        // node.add(nInfo);
-
-        // {
-        //  node.rotation.set(-1.5, 0, 0)
-        //  node.scale.set(0.3, 0.3, 0.3);
-        //  node.position.set(-0.2, -0.002, -0.1)
-
-        //  // nInfo.position.set(0.5, 0, 0);
-        //  nInfo.scale.set(0.8, 0.6, 0);
-
-        //  // controller.add(node);
-        // }
-
-        // node.position.set(-0.3, 1.2, 0.2);
-        // node.scale.set(0.3, 0.2, 0.3);
-        // node.lookAt(new THREE.Vector3(0, 1.5, 0.1));
-
-        // this.viewer.sceneVR.add(node);
-
         this.menu = node;
-
-        // window.vrSlider = nSlider;
         window.vrMenu = node;
     }
 
@@ -586,14 +554,9 @@ export class VRControls extends EventDispatcher {
     getCamera() {
         let reference = this.viewer.scene.getActiveCamera();
         let camera = new THREE.PerspectiveCamera();
-
-        // let scale = this.node.scale.x;
         let scale = this.viewer.getMoveSpeed();
-        // camera.near = 0.01 / scale;
         camera.near = 0.1;
         camera.far = 1000;
-        // camera.near = reference.near / scale;
-        // camera.far = reference.far / scale;
         camera.up.set(0, 0, 1);
         camera.lookAt(new THREE.Vector3(0, -1, 0));
         camera.updateMatrix();
@@ -611,19 +574,6 @@ export class VRControls extends EventDispatcher {
     }
 
     update(delta) {
-        // if(this.mode === this.mode_fly){
-        //  let ray = new THREE.Ray(origin, direction);
-
-        //  for(let object of this.selectables){
-
-        //   if(object.intersectsRay(ray)){
-        //   object.onHit(ray);
-        //   }
-
-        //  }
-
-        // }
-
         this.mode.update(this, delta);
     }
 }

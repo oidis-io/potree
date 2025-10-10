@@ -102,10 +102,6 @@ SEQEND
     }
 
     static measurementSection(measurement) {
-        // if(measurement.points.length <= 1){
-        // return "";
-        // }
-
         if (measurement.points.length === 0) {
             return "";
         } else if (measurement.points.length === 1) {

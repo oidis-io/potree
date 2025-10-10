@@ -44,12 +44,8 @@ export class GeoControls extends EventDispatcher {
         this.object = object;
         this.domElement = (domElement !== undefined) ? domElement : document;
 
-        // Set to false to disable this control
         this.enabled = true;
-
-        // Set this to a THREE.SplineCurve3 instance
         this.track = null;
-        // position on track in intervall [0,1]
         this.trackPos = 0;
 
         this.rotateSpeed = 1.0;
@@ -148,10 +144,6 @@ export class GeoControls extends EventDispatcher {
 
         this.trackPos = newTrackPos;
 
-        // let pStart = this.track.getPointAt(oldTrackPos);
-        // let pEnd = this.track.getPointAt(newTrackPos);
-        // let pDiff = pEnd.sub(pStart);
-
         if (newTrackPos !== oldTrackPos) {
             let event = {
                 type: "move",
@@ -177,38 +169,31 @@ export class GeoControls extends EventDispatcher {
         phiDelta -= angle;
     }
 
-    // pass in distance in world space to move left
     panLeft(distance) {
         let te = this.object.matrix.elements;
 
-        // get X column of matrix
         panOffset.set(te[0], te[1], te[2]);
         panOffset.multiplyScalar(-distance);
 
         pan.add(panOffset);
     }
 
-    // pass in distance in world space to move up
     panUp(distance) {
         let te = this.object.matrix.elements;
 
-        // get Y column of matrix
         panOffset.set(te[4], te[5], te[6]);
         panOffset.multiplyScalar(distance);
 
         pan.add(panOffset);
     }
 
-    // pass in distance in world space to move forward
     panForward(distance) {
         if (this.track) {
             this.setTrackPos(this.getTrackPos() - distance / this.track.getLength());
         } else {
             let te = this.object.matrix.elements;
 
-            // get Y column of matrix
             panOffset.set(te[8], te[9], te[10]);
-            // panOffset.set( te[ 8 ], 0, te[ 10 ] );
             panOffset.multiplyScalar(distance);
 
             pan.add(panOffset);
@@ -219,23 +204,17 @@ export class GeoControls extends EventDispatcher {
         let element = this.domElement === document ? this.domElement.body : this.domElement;
 
         if (this.object.fov !== undefined) {
-            // perspective
             let position = this.object.position;
             let offset = position.clone();
             let targetDistance = offset.length();
 
-            // half of the fov is center to top of screen
             targetDistance *= Math.tan((this.object.fov / 2) * Math.PI / 180.0);
-
-            // we actually don't use screenWidth, since perspective camera is fixed to screen height
             this.panLeft(2 * deltaX * targetDistance / element.clientHeight);
             this.panUp(2 * deltaY * targetDistance / element.clientHeight);
         } else if (this.object.top !== undefined) {
-            // orthographic
             this.panLeft(deltaX * (this.object.right - this.object.left) / element.clientWidth);
             this.panUp(deltaY * (this.object.top - this.object.bottom) / element.clientHeight);
         } else {
-            // camera neither orthographic or perspective
             console.warn("WARNING: GeoControls.js encountered an unknown camera type - pan disabled.");
         }
     }
@@ -274,11 +253,9 @@ export class GeoControls extends EventDispatcher {
                 this.rotateLeft(0.5 * Math.PI * delta / this.rotateSpeed);
             }
             if (this.raiseCamera) {
-                // this.rotateUp( -0.5 * Math.PI * delta / this.rotateSpeed );
                 this.panUp(delta * this.moveSpeed * multiplier);
             }
             if (this.lowerCamera) {
-                // this.rotateUp( 0.5 * Math.PI * delta / this.rotateSpeed );
                 this.panUp(-delta * this.moveSpeed * multiplier);
             }
         }
@@ -310,7 +287,6 @@ export class GeoControls extends EventDispatcher {
         this.object.rotation.x += phiDelta;
         this.object.updateMatrixWorld();
 
-        // send transformation proposal to listeners
         let proposeTransformEvent = {
             type: "proposeTransform",
             oldPosition: object.position,
@@ -320,7 +296,6 @@ export class GeoControls extends EventDispatcher {
         };
         this.dispatchEvent(proposeTransformEvent);
 
-        // check some counter proposals if transformation wasn't accepted
         if (proposeTransformEvent.objections > 0) {
             if (proposeTransformEvent.counterProposals.length > 0) {
                 let cp = proposeTransformEvent.counterProposals;
@@ -331,7 +306,6 @@ export class GeoControls extends EventDispatcher {
             }
         }
 
-        // apply transformation, if accepted
         if (proposeTransformEvent.objections > 0) {
 
         } else {
@@ -377,13 +351,9 @@ export class GeoControls extends EventDispatcher {
 
             panStart.set(event.clientX, event.clientY);
         } else if (event.button === 2) {
-            // state = STATE.PAN;
-            // panStart.set( event.clientX, event.clientY );
             this.moveForwardMouse = true;
         }
 
-        // this.domElement.addEventListener( 'mousemove', onMouseMove, false );
-        // this.domElement.addEventListener( 'mouseup', onMouseUp, false );
         this.dispatchEvent(startEvent);
     }
 
@@ -398,17 +368,14 @@ export class GeoControls extends EventDispatcher {
             rotateEnd.set(event.clientX, event.clientY);
             rotateDelta.subVectors(rotateEnd, rotateStart);
 
-            // rotating across whole screen goes 360 degrees around
             this.rotateLeft(2 * Math.PI * rotateDelta.x / element.clientWidth * this.rotateSpeed);
 
-            // rotating up and down along whole screen attempts to go 360, but limited to 180
             this.rotateUp(2 * Math.PI * rotateDelta.y / element.clientHeight * this.rotateSpeed);
 
             rotateStart.copy(rotateEnd);
         } else if (state === STATE.PAN) {
             panEnd.set(event.clientX, event.clientY);
             panDelta.subVectors(panEnd, panStart);
-            // panDelta.multiplyScalar(this.moveSpeed).multiplyScalar(0.0001);
             panDelta.multiplyScalar(0.002).multiplyScalar(this.moveSpeed);
 
             this.pan(panDelta.x, panDelta.y);
@@ -420,13 +387,9 @@ export class GeoControls extends EventDispatcher {
     onMouseUp(event) {
         if (this.enabled === false) return;
 
-        // console.log(event.which);
-
         if (event.button === 2) {
             this.moveForwardMouse = false;
         } else {
-            // this.domElement.removeEventListener( 'mousemove', onMouseMove, false );
-            // this.domElement.removeEventListener( 'mouseup', onMouseUp, false );
             this.dispatchEvent(endEvent);
             state = STATE.NONE;
         }

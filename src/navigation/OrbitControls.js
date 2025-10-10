@@ -200,8 +200,6 @@ export class OrbitControls extends EventDispatcher {
 
         let d = this.scene.view.direction.multiplyScalar(-1);
         let cameraTargetPosition = new THREE.Vector3().addVectors(I.location, d.multiplyScalar(targetRadius));
-        // TODO Unused: let controlsTargetPosition = I.location;
-
         let animationDuration = 600;
         let easing = TWEEN.Easing.Quartic.Out;
 
@@ -271,12 +269,9 @@ export class OrbitControls extends EventDispatcher {
             view.pan(px, py);
         }
 
-        { // apply zoom
+        {
             let progression = Math.min(1, this.fadeFactor * delta);
-
-            // let radius = view.radius + progression * this.radiusDelta * view.radius * 0.1;
             let radius = view.radius + progression * this.radiusDelta;
-
             let V = view.direction.multiplyScalar(-radius);
             let position = new THREE.Vector3().addVectors(view.getPivot(), V);
             view.radius = radius;
@@ -289,14 +284,13 @@ export class OrbitControls extends EventDispatcher {
             this.viewer.setMoveSpeed(speed);
         }
 
-        { // decelerate over time
+        {
             let progression = Math.min(1, this.fadeFactor * delta);
             let attenuation = Math.max(0, 1 - this.fadeFactor * delta);
 
             this.yawDelta *= attenuation;
             this.pitchDelta *= attenuation;
             this.panDelta.multiplyScalar(attenuation);
-            // this.radiusDelta *= attenuation;
             this.radiusDelta -= progression * this.radiusDelta;
         }
     }

@@ -20,10 +20,6 @@ export class Volume extends THREE.Object3D {
             console.warn("Can't create object of class Volume directly. Use classes BoxVolume or SphereVolume instead.");
         }
 
-        // console.log(this);
-        // console.log(this.constructor);
-        // console.log(this.constructor.name);
-
         this._clip = args.clip || false;
         this._visible = true;
         this.showVolumeLabel = true;
@@ -169,7 +165,6 @@ export class BoxVolume extends Volume {
         this.add(this.box);
 
         this.frame = new THREE.LineSegments(boxFrameGeometry, new THREE.LineBasicMaterial({color: 0x000000}));
-        // this.frame.mode = THREE.Lines;
         this.add(this.frame);
 
         this.update();
@@ -297,11 +292,6 @@ export class SphereVolume extends Volume {
 
         let frameMaterial = new THREE.MeshBasicMaterial({wireframe: true, color: 0x000000});
         this.frame = new THREE.Mesh(sphereGeometry, frameMaterial);
-        // this.add(this.frame);
-
-        // this.frame = new THREE.LineSegments(boxFrameGeometry, new THREE.LineBasicMaterial({color: 0x000000}));
-        // this.frame.mode = THREE.Lines;
-        // this.add(this.frame);
 
         this.update();
     }
@@ -309,14 +299,6 @@ export class SphereVolume extends Volume {
     update() {
         this.boundingBox = this.sphere.geometry.boundingBox;
         this.boundingSphere = this.boundingBox.getBoundingSphere(new THREE.Sphere());
-
-        // if (this._clip) {
-        // this.sphere.visible = false;
-        // this.label.visible = false;
-        // } else {
-        // this.sphere.visible = true;
-        // this.label.visible = this.showVolumeLabel;
-        // }
     }
 
     raycast(raycaster, intersects) {

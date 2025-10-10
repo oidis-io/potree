@@ -9,7 +9,6 @@
  *
  * ********************************************************************************************************* */
 
-// import {Version} from "../../Version.js";
 import { PointAttribute, PointAttributeTypes } from "../../../loader/PointAttributes.js";
 
 const typedArrayMapping = {
@@ -45,11 +44,6 @@ onmessage = function (event) {
     let gridSize = 32;
     let grid = new Uint32Array(gridSize ** 3);
     let toIndex = (x, y, z) => {
-        // let dx = gridSize * (x - min.x) / size.x;
-        // let dy = gridSize * (y - min.y) / size.y;
-        // let dz = gridSize * (z - min.z) / size.z;
-
-        // min is already subtracted
         let dx = gridSize * x / size.x;
         let dy = gridSize * y / size.y;
         let dz = gridSize * z / size.z;
@@ -118,17 +112,14 @@ onmessage = function (event) {
                 "int8": view.getInt8,
                 "int16": view.getInt16,
                 "int32": view.getInt32,
-                // "int64":  view.getInt64,
                 "uint8": view.getUint8,
                 "uint16": view.getUint16,
                 "uint32": view.getUint32,
-                // "uint64": view.getUint64,
                 "float": view.getFloat32,
                 "double": view.getFloat64,
             };
             const getter = getterMap[pointAttribute.type.name].bind(view);
 
-            // compute offset and scale to pack larger types into 32 bit floats
             if (pointAttribute.type.size > 4) {
                 let [amin, amax] = pointAttribute.range;
                 offset = amin;
@@ -203,10 +194,6 @@ onmessage = function (event) {
             };
         }
     }
-
-    // let duration = performance.now() - tStart;
-    // let pointsPerMs = numPoints / duration;
-    // console.log(`duration: ${duration.toFixed(1)}ms, #points: ${numPoints}, points/ms: ${pointsPerMs.toFixed(1)}`);
 
     let message = {
         buffer: buffer,

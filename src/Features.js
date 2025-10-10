@@ -17,18 +17,14 @@ export const Features = (function () {
         return null;
     }
 
-    // -- code taken from THREE.WebGLRenderer --
     let _vertexShaderPrecisionHighpFloat = gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.HIGH_FLOAT);
     let _vertexShaderPrecisionMediumpFloat = gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.MEDIUM_FLOAT);
-    // Unused: let _vertexShaderPrecisionLowpFloat = gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.LOW_FLOAT);
 
     let _fragmentShaderPrecisionHighpFloat = gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT);
     let _fragmentShaderPrecisionMediumpFloat = gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.MEDIUM_FLOAT);
-    // Unused: let _fragmentShaderPrecisionLowpFloat = gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.LOW_FLOAT);
 
     let highpAvailable = _vertexShaderPrecisionHighpFloat.precision > 0 && _fragmentShaderPrecisionHighpFloat.precision > 0;
     let mediumpAvailable = _vertexShaderPrecisionMediumpFloat.precision > 0 && _fragmentShaderPrecisionMediumpFloat.precision > 0;
-    // -----------------------------------------
 
     let precision;
     if (highpAvailable) {
@@ -60,7 +56,6 @@ export const Features = (function () {
 
                 return supported;
             }
-
         },
         SHADER_EDL: {
             isSupported: function () {
@@ -70,17 +65,9 @@ export const Features = (function () {
                 supported = supported && gl.getExtension("OES_texture_float");
                 supported = supported && gl.getParameter(gl.MAX_VARYING_VECTORS) >= 8;
 
-                // supported = supported || (gl instanceof WebGL2RenderingContext);
-
                 return supported;
             }
-
         },
-        // WEBGL2: {
-        // isSupported: function(){
-        //  return gl instanceof WebGL2RenderingContext;
-        // }
-        // },
         precision: precision
     };
 }());

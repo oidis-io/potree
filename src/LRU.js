@@ -23,11 +23,8 @@ class LRUItem {
  */
 class LRU {
     constructor() {
-        // the least recently used item
         this.first = null;
-        // the most recently used item
         this.last = null;
-        // a list of all items in the lru list
         this.items = {};
         this.elements = 0;
         this.numPoints = 0;
@@ -48,7 +45,6 @@ class LRU {
 
         let item;
         if (this.items[node.id] == null) {
-            // add to list
             item = new LRUItem(node);
             item.previous = this.last;
             this.last = item;
@@ -64,7 +60,6 @@ class LRU {
             }
             this.numPoints += node.numPoints;
         } else {
-            // update in list
             item = this.items[node.id];
             if (item.previous === null) {
                 // handle touch on first element
@@ -79,7 +74,6 @@ class LRU {
             } else if (item.next === null) {
                 // handle touch on last element
             } else {
-                // handle touch on any other element
                 item.previous.next = item.next;
                 item.next.previous = item.previous;
                 item.previous = this.last;

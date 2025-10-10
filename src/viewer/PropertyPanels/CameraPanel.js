@@ -80,8 +80,6 @@ export class CameraPanel {
     }
 
     update() {
-        // console.log("updating camera panel");
-
         let camera = this.viewer.scene.getActiveCamera();
         let view = this.viewer.scene.view;
 

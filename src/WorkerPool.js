@@ -33,5 +33,4 @@ export class WorkerPool {
         this.workers[url].push(worker);
     }
 }
-
 // Potree.workerPool = new Potree.WorkerPool();

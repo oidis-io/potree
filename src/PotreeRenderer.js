@@ -265,7 +265,6 @@ class Shader {
                 }
             }
 
-            // uniform blocks
             if (gl instanceof WebGL2RenderingContext) {
                 let numBlocks = gl.getProgramParameter(program, gl.ACTIVE_UNIFORM_BLOCKS);
 
@@ -701,19 +700,6 @@ export class Renderer {
                 shader.setUniform("uDebug", false);
             }
 
-            // let isLeaf = false;
-            // if(node instanceof PointCloudOctreeNode){
-            //  isLeaf = Object.keys(node.children).length === 0;
-            // }else if(node instanceof PointCloudArena4DNode){
-            //  isLeaf = node.geometryNode.isLeaf;
-            // }
-            // shader.setUniform("uIsLeafNode", isLeaf);
-
-            // let isLeaf = node.children.filter(n => n != null).length === 0;
-            // if(!isLeaf){
-            //  continue;
-            // }
-
             // TODO consider passing matrices in an array to avoid uniformMatrix4fv overhead
             const lModel = shader.uniformLocations["modelMatrix"];
             if (lModel) {
@@ -767,13 +753,10 @@ export class Renderer {
                 }
             }
 
-            // shader.setUniformMatrix4("modelMatrix", world);
-            // shader.setUniformMatrix4("modelViewMatrix", worldView);
             shader.setUniform1f("uLevel", level);
             shader.setUniform1f("uNodeSpacing", node.geometryNode.estimatedSpacing);
 
             shader.setUniform1f("uPCIndex", i);
-            // uBBSize
 
             if (shadowMaps.length > 0) {
                 const lShadowMap = shader.uniformLocations["uShadowMap[0]"];
@@ -831,12 +814,8 @@ export class Renderer {
 
                 shader.setUniform1f("uGpsScale", scale);
                 shader.setUniform1f("uGpsOffset", offset);
-                // shader.setUniform2f("uFilterGPSTimeClipRange", [-Infinity, Infinity]);
 
                 let uFilterGPSTimeClipRange = material.uniforms.uFilterGPSTimeClipRange.value;
-                // let gpsCliPRangeMin = uFilterGPSTimeClipRange[0]
-                // let gpsCliPRangeMax = uFilterGPSTimeClipRange[1]
-                // shader.setUniform2f("uFilterGPSTimeClipRange", [gpsCliPRangeMin, gpsCliPRangeMax]);
 
                 let normalizedClipRange = [
                     (uFilterGPSTimeClipRange[0] - globalRange[0]) / globalRangeSize,
@@ -844,29 +823,6 @@ export class Renderer {
                 ];
 
                 shader.setUniform2f("uFilterGPSTimeClipRange", normalizedClipRange);
-
-                // // ranges in full gps coordinate system
-                // const globalRange = attGPS.range;
-                // const bufferRange = bufferAttribute.potree.range;
-
-                // // ranges in [0, 1]
-                // // normalizedGlobalRange = [0, 1]
-                // // normalizedBufferRange: norm buffer within norm global range e.g. [0.2, 0.8]
-                // const globalWidth = globalRange[1] - globalRange[0];
-                // const normalizedBufferRange = [
-                //  (bufferRange[0] - globalRange[0]) / globalWidth,
-                //  (bufferRange[1] - globalRange[0]) / globalWidth,
-                // ];
-
-                // shader.setUniform2f("uNormalizedGpsBufferRange", normalizedBufferRange);
-
-                // let uFilterGPSTimeClipRange = material.uniforms.uFilterGPSTimeClipRange.value;
-                // let gpsCliPRangeMin = uFilterGPSTimeClipRange[0]
-                // let gpsCliPRangeMax = uFilterGPSTimeClipRange[1]
-                // shader.setUniform2f("uFilterGPSTimeClipRange", [gpsCliPRangeMin, gpsCliPRangeMax]);
-
-                // shader.setUniform1f("uGpsScale", bufferAttribute.potree.scale);
-                // shader.setUniform1f("uGpsOffset", bufferAttribute.potree.offset);
             }
 
             {
@@ -1019,7 +975,7 @@ export class Renderer {
             }
         }
 
-        { // UPDATE SHADER AND TEXTURES
+        {
             if (!this.shaders.has(material)) {
                 let [vs, fs] = [material.vertexShader, material.fragmentShader];
                 let shader = new Shader(gl, "pointcloud", vs, fs);
@@ -1029,7 +985,6 @@ export class Renderer {
 
             shader = this.shaders.get(material);
 
-            // if(material.needsUpdate){
             {
                 let [vs, fs] = [material.vertexShader, material.fragmentShader];
 
@@ -1215,24 +1170,15 @@ export class Renderer {
 
                 const lClipSpheres = shader.uniformLocations["uClipSpheres[0]"];
                 gl.uniformMatrix4fv(lClipSpheres, false, flattenedMatrices);
-
-                // const lClipSpheres = shader.uniformLocations["uClipSpheres[0]"];
-                // gl.uniformMatrix4fv(lClipSpheres, false, material.uniforms.clipSpheres.value);
             }
 
             shader.setUniform1f("size", material.size);
             shader.setUniform1f("maxSize", material.uniforms.maxSize.value);
             shader.setUniform1f("minSize", material.uniforms.minSize.value);
-
-            // uniform float uPCIndex
             shader.setUniform1f("uOctreeSpacing", material.spacing);
             shader.setUniform("uOctreeSize", material.uniforms.octreeSize.value);
-
-            // uniform vec3 uColor;
             shader.setUniform3f("uColor", material.color.toArray());
-            // uniform float opacity;
             shader.setUniform1f("uOpacity", material.opacity);
-
             shader.setUniform2f("elevationRange", material.elevationRange);
             shader.setUniform2f("intensityRange", material.intensityRange);
 
@@ -1366,23 +1312,15 @@ export class Renderer {
     render(scene, camera, target = null, params = {}) {
         const gl = this.gl;
 
-        // PREPARE
         if (target != null) {
             this.threeRenderer.setRenderTarget(target);
         }
 
-        // camera.updateProjectionMatrix();
-        // camera.matrixWorldInverse.invert(camera.matrixWorld);
-
         const traversalResult = this.traverse(scene);
-
-        // RENDER
         for (const octree of traversalResult.octrees) {
             let nodes = octree.visibleNodes;
             this.renderOctree(octree, nodes, camera, target, params);
         }
-
-        // CLEANUP
         gl.activeTexture(gl.TEXTURE1);
         gl.bindTexture(gl.TEXTURE_2D, null);
         gl.bindBuffer(gl.ARRAY_BUFFER, null);

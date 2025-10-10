@@ -49,7 +49,6 @@ function readUsingTempArrays(event) {
     let pointSourceIDs = new Uint16Array(psBuff);
 
     for (let i = 0; i < numPoints; i++) {
-        // POSITION
         tempUint8[0] = sourceUint8[i * sourcePointSize + 0];
         tempUint8[1] = sourceUint8[i * sourcePointSize + 1];
         tempUint8[2] = sourceUint8[i * sourcePointSize + 2];
@@ -88,7 +87,6 @@ function readUsingTempArrays(event) {
         tightBoundingBox.max[1] = Math.max(tightBoundingBox.max[1], y);
         tightBoundingBox.max[2] = Math.max(tightBoundingBox.max[2], z);
 
-        // INTENSITY
         tempUint8[0] = sourceUint8[i * sourcePointSize + 12];
         tempUint8[1] = sourceUint8[i * sourcePointSize + 13];
         let intensity = tempUint16[0];
@@ -103,17 +101,14 @@ function readUsingTempArrays(event) {
 
         debugger;
 
-        // CLASSIFICATION
         let classification = sourceUint8[i * sourcePointSize + 15];
         classifications[i] = classification;
 
-        // POINT SOURCE ID
         tempUint8[0] = sourceUint8[i * sourcePointSize + 18];
         tempUint8[1] = sourceUint8[i * sourcePointSize + 19];
         let pointSourceID = tempUint16[0];
         pointSourceIDs[i] = pointSourceID;
 
-        // COLOR, if available
         if (pointFormatID === 2) {
             tempUint8[0] = sourceUint8[i * sourcePointSize + 20];
             tempUint8[1] = sourceUint8[i * sourcePointSize + 21];
@@ -298,14 +293,6 @@ function readUsingDataView(event) {
     }
 
     performance.mark("laslaz-end");
-
-    // { // print timings
-    // performance.measure("laslaz", "laslaz-start", "laslaz-end");
-    // let measure = performance.getEntriesByType("measure")[0];
-    // let dpp = 1000 * measure.duration / numPoints;
-    // let debugMessage = `${measure.duration.toFixed(3)} ms, ${numPoints} points, ${dpp.toFixed(3)} µs / point`;
-    // console.log(debugMessage);
-    // }
     performance.clearMarks();
     performance.clearMeasures();
 
@@ -345,4 +332,3 @@ function readUsingDataView(event) {
 }
 
 onmessage = readUsingDataView;
-// onmessage = readUsingTempArrays;

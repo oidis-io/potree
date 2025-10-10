@@ -35,12 +35,6 @@ function toCode(files, data) {
         unhandled = unhandled
             .filter(file => file.indexOf(".html") > 0)
             .filter(file => file !== "page.html");
-
-        // for(let file of unhandled){
-        //  unhandledCode += `
-        //   <a href="${file}" class="unhandled">${file}</a>
-        //  `;
-        // }
     }
 
     const rows = [];

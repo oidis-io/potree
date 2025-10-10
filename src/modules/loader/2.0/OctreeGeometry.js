@@ -94,7 +94,6 @@ export class OctreeGeometryNode {
             this.geometry = null;
             this.loaded = false;
 
-            // this.dispatchEvent( { type: 'dispose' } );
             for (let i = 0; i < this.oneTimeDisposeHandlers.length; i++) {
                 let handler = this.oneTimeDisposeHandlers[i];
                 handler();

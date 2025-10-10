@@ -18,11 +18,10 @@ export class SpotLightHelper extends THREE.Object3D {
         this.light = light;
         this.color = color;
 
-        // this.up.set(0, 0, 1);
         this.updateMatrix();
         this.updateMatrixWorld();
 
-        { // SPHERE
+        {
             let sg = new THREE.SphereGeometry(1, 32, 32);
             let sm = new THREE.MeshNormalMaterial();
             this.sphere = new THREE.Mesh(sg, sm);
@@ -30,7 +29,7 @@ export class SpotLightHelper extends THREE.Object3D {
             this.add(this.sphere);
         }
 
-        { // LINES
+        {
             let positions = new Float32Array([
                 +0, +0, +0, +0, +0, -1,
 

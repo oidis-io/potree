@@ -144,7 +144,6 @@ export function loadPointCloud(path, name, callback) {
     };
 
     let promise = new Promise(resolve => {
-        // load pointcloud
         if (!path) {
             // TODO: callback? comment? Hello? Bueller? Anyone?
         } else if (path.includes("ept.json")) {
@@ -168,11 +167,9 @@ export function loadPointCloud(path, name, callback) {
         } else if (path.indexOf("cloud.js") > 0) {
             POCLoader.load(path, function (geometry) {
                 if (!geometry) {
-                    // callback({type: 'loading_failed'});
                     console.error(new Error(`failed to load point cloud from URL: ${path}`));
                 } else {
                     let pointcloud = new PointCloudOctree(geometry);
-                    // loaded(pointcloud);
                     resolve({type: "pointcloud_loaded", pointcloud: pointcloud});
                 }
             });
@@ -193,34 +190,28 @@ export function loadPointCloud(path, name, callback) {
                         aPosition.range[1][2],
                     ];
 
-                    // loaded(pointcloud);
                     resolve({type: "pointcloud_loaded", pointcloud: pointcloud});
                 }
             });
 
             OctreeLoader.load(path, function (geometry) {
                 if (!geometry) {
-                    // callback({type: 'loading_failed'});
                     console.error(new Error(`failed to load point cloud from URL: ${path}`));
                 } else {
                     let pointcloud = new PointCloudOctree(geometry);
-                    // loaded(pointcloud);
                     resolve({type: "pointcloud_loaded", pointcloud: pointcloud});
                 }
             });
         } else if (path.indexOf(".vpc") > 0) {
             PointCloudArena4DGeometry.load(path, function (geometry) {
                 if (!geometry) {
-                    // callback({type: 'loading_failed'});
                     console.error(new Error(`failed to load point cloud from URL: ${path}`));
                 } else {
                     let pointcloud = new PointCloudArena4D(geometry);
-                    // loaded(pointcloud);
                     resolve({type: "pointcloud_loaded", pointcloud: pointcloud});
                 }
             });
         } else {
-            // callback({'type': 'loading_failed'});
             console.error(new Error(`failed to load point cloud from URL: ${path}`));
         }
     });
@@ -234,7 +225,6 @@ export function loadPointCloud(path, name, callback) {
     }
 }
 
-// add selectgroup
 (function ($) {
     $.fn.extend({
         selectgroup: function (args = {}) {
@@ -263,8 +253,6 @@ export function loadPointCloud(path, name, callback) {
                     elGroup.find("label").addClass("ui-state-default");
                     if (elInput.is(":checked")) {
                         elLabel.addClass("ui-state-active");
-                    } else {
-                        // elLabel.addClass("ui-state-default");
                     }
                 });
 

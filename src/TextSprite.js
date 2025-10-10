@@ -31,7 +31,6 @@ export class TextSprite extends THREE.Object3D {
         this.texture = texture;
 
         this.material = spriteMaterial;
-        // this.material = getRawMaterial(texture);
         this.sprite = new THREE.Sprite(this.material);
         this.add(this.sprite);
 
@@ -88,10 +87,8 @@ export class TextSprite extends THREE.Object3D {
         context.canvas.height = spriteHeight;
         context.font = "Bold " + this.fontsize + "px " + this.fontface;
 
-        // background color
         context.fillStyle = "rgba(" + this.backgroundColor.r + "," + this.backgroundColor.g + "," +
             this.backgroundColor.b + "," + this.backgroundColor.a + ")";
-        // border color
         context.strokeStyle = "rgba(" + this.borderColor.r + "," + this.borderColor.g + "," +
             this.borderColor.b + "," + this.borderColor.a + ")";
 
@@ -99,7 +96,6 @@ export class TextSprite extends THREE.Object3D {
         this.roundRect(context, this.borderThickness / 2, this.borderThickness / 2,
             textWidth + this.borderThickness + 2 * margin, this.fontsize * 1.4 + this.borderThickness, 6);
 
-        // text color
         context.strokeStyle = "rgba(0, 0, 0, 1.0)";
         context.strokeText(this.text, this.borderThickness + margin, this.fontsize + this.borderThickness);
 
@@ -111,22 +107,6 @@ export class TextSprite extends THREE.Object3D {
         texture.minFilter = THREE.LinearFilter;
         texture.magFilter = THREE.LinearFilter;
         texture.needsUpdate = true;
-        // this.material.needsUpdate = true;
-
-        // { // screen-space sprite
-        //  let [screenWidth, screenHeight] = [1620, 937];
-
-        //  let uniforms = this.sprite.material.uniforms;
-        //  let aspect = spriteHeight / spriteWidth;
-        //  let factor = 0.5;
-
-        //  let w = spriteWidth / screenWidth;
-        //  let h = spriteHeight / screenHeight;
-
-        //  uniforms.uScale.value = [2 * w, 2 * h];
-        //  //uniforms.uScale.value = [factor * 1, factor * aspect];
-        // this.sprite.material.uniforms.map.value = texture;
-        // }
 
         this.sprite.material.map = texture;
         this.texture = texture;

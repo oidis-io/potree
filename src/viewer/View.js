@@ -52,7 +52,6 @@ export class View {
     }
 
     set direction(dir) {
-        // if(dir.x === dir.y){
         if (dir.x === 0 && dir.y === 0) {
             this.pitch = Math.PI / 2 * Math.sign(dir.z);
         } else {
@@ -95,9 +94,6 @@ export class View {
         dir.applyAxisAngle(new THREE.Vector3(1, 0, 0), this.pitch);
         dir.applyAxisAngle(new THREE.Vector3(0, 0, 1), this.yaw);
 
-        // let side = new THREE.Vector3(1, 0, 0);
-        // side.applyAxisAngle(new THREE.Vector3(0, 0, 1), this.yaw);
-
         let side = this.getSide();
 
         let up = side.clone().cross(dir);
@@ -105,7 +101,6 @@ export class View {
         let pan = side.multiplyScalar(x).add(up.multiplyScalar(y));
 
         this.position = this.position.add(pan);
-        // this.target = this.target.add(pan);
     }
 
     translate(x, y, z) {
@@ -149,9 +144,6 @@ export class View {
         const startPosition = this.position.clone();
         const startTarget = this.getPivot();
 
-        // const endPosition = position.clone();
-        // const endTarget = target.clone();
-
         let easing = TWEEN.Easing.Quartic.Out;
 
         if (duration === 0) {
@@ -161,12 +153,9 @@ export class View {
             let value = {x: 0};
             let tween = new TWEEN.Tween(value).to({x: 1}, duration);
             tween.easing(easing);
-            // this.tweens.push(tween);
 
             tween.onUpdate(() => {
                 let t = value.x;
-
-                // console.log(t);
 
                 const pos = new THREE.Vector3(
                     (1 - t) * startPosition.x + t * endPosition.x,

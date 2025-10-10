@@ -67,7 +67,6 @@ export class Sidebar {
     }
 
     initToolbar() {
-        // ANGLE
         let elToolbar = $("#tools");
         elToolbar.append(this.createToolIcon(
             Potree.resourcePath + "/icons/angle.png",
@@ -90,7 +89,6 @@ export class Sidebar {
             }
         ));
 
-        // POINT
         elToolbar.append(this.createToolIcon(
             Potree.resourcePath + "/icons/point.svg",
             "[title]tt.point_measurement",
@@ -113,7 +111,6 @@ export class Sidebar {
             }
         ));
 
-        // DISTANCE
         elToolbar.append(this.createToolIcon(
             Potree.resourcePath + "/icons/distance.svg",
             "[title]tt.distance_measurement",
@@ -155,7 +152,6 @@ export class Sidebar {
             }
         ));
 
-        // CIRCLE
         elToolbar.append(this.createToolIcon(
             Potree.resourcePath + "/icons/circle.svg",
             "[title]tt.circle_measurement",
@@ -179,7 +175,6 @@ export class Sidebar {
             }
         ));
 
-        // AZIMUTH
         elToolbar.append(this.createToolIcon(
             Potree.resourcePath + "/icons/azimuth.svg",
             "Azimuth",
@@ -204,7 +199,6 @@ export class Sidebar {
             }
         ));
 
-        // AREA
         elToolbar.append(this.createToolIcon(
             Potree.resourcePath + "/icons/area.svg",
             "[title]tt.area_measurement",
@@ -224,7 +218,6 @@ export class Sidebar {
             }
         ));
 
-        // VOLUME
         elToolbar.append(this.createToolIcon(
             Potree.resourcePath + "/icons/volume.svg",
             "[title]tt.volume_measurement",
@@ -238,7 +231,6 @@ export class Sidebar {
             }
         ));
 
-        // SPHERE VOLUME
         elToolbar.append(this.createToolIcon(
             Potree.resourcePath + "/icons/sphere_distances.svg",
             "[title]tt.volume_measurement",
@@ -252,7 +244,6 @@ export class Sidebar {
             }
         ));
 
-        // PROFILE
         elToolbar.append(this.createToolIcon(
             Potree.resourcePath + "/icons/profile.svg",
             "[title]tt.height_profile",
@@ -267,7 +258,6 @@ export class Sidebar {
             }
         ));
 
-        // ANNOTATION
         elToolbar.append(this.createToolIcon(
             Potree.resourcePath + "/icons/annotation.svg",
             "[title]tt.annotation",
@@ -453,7 +443,6 @@ export class Sidebar {
             let node = instance.get_node(e.target);
             let object = node.data;
 
-            // ignore double click on checkbox
             if (e.target.classList.contains("jstree-checkbox")) {
                 return;
             }
@@ -524,14 +513,6 @@ export class Sidebar {
                 }
             } else if (object instanceof OrientedImage) {
                 // TODO zoom to images
-
-                // let box = new THREE.Box3().setFromObject(object);
-
-                // if(box.getSize(new THREE.Vector3()).length() > 0){
-                //  let node = new THREE.Object3D();
-                //  node.boundingBox = box;
-                //  this.viewer.zoomTo(node, 1, 500);
-                // }
             } else if (object instanceof Images360) {
                 // TODO
             } else if (object instanceof Geopackage) {
@@ -1038,37 +1019,6 @@ export class Sidebar {
                 }
             });
         }
-
-        // let lblPointSourceID = elPointSourceIDFilterPanel.find("#lblPointSourceID");
-        // let elPointSourceID = elPointSourceIDFilterPanel.find("#spnPointSourceID");
-
-        // let slider = new ZoomableSlider();
-        // elPointSourceID[0].appendChild(slider.element);
-        // slider.update();
-
-        // slider.change( () => {
-        //  let range = slider.chosenRange;
-        //  this.viewer.setFilterPointSourceIDRange(range[0], range[1]);
-        // });
-
-        // let onPointSourceIDExtentChanged = (event) => {
-        //  let range = this.viewer.filterPointSourceIDExtent;
-        //  slider.setVisibleRange(range);
-        // };
-
-        // let onPointSourceIDChanged = (event) => {
-        //  let range = this.viewer.filterPointSourceIDRange;
-
-        //  let precision = 1;
-        //  let from = `${Utils.addCommas(range[0].toFixed(precision))}`;
-        //  let to = `${Utils.addCommas(range[1].toFixed(precision))}`;
-        //  lblPointSourceID[0].innerHTML = `${from} to ${to}`;
-
-        //  slider.setRange(range);
-        // };
-
-        // this.viewer.addEventListener('filter_point_source_id_range_changed', onPointSourceIDChanged);
-        // this.viewer.addEventListener('filter_point_source_id_extent_changed', onPointSourceIDExtentChanged);
     }
 
     initClassificationList() {
@@ -1102,7 +1052,6 @@ export class Sidebar {
             defaultColor = `rgb(${defaultColor})`;
 
             elColorPicker.spectrum({
-                // flat: true,
                 color: defaultColor,
                 showInput: true,
                 preferredFormat: "rgb",
@@ -1123,7 +1072,7 @@ export class Sidebar {
             elClassificationList.append(element);
         };
 
-        const addToggleAllButton = () => { // toggle all button
+        const addToggleAllButton = () => {
             const element = $(`
                 <li>
                     <label style="whitespace: nowrap">
@@ -1210,9 +1159,6 @@ export class Sidebar {
             let header = $(this);
             let content = $(this).next();
 
-            // header.addClass('accordion-header ui-widget');
-            // content.addClass('accordion-content ui-widget');
-
             content.hide();
 
             header.click(() => {
@@ -1248,12 +1194,6 @@ export class Sidebar {
                 elLanguages.append($(document.createTextNode(" - ")));
             }
         }
-
-        // to close all, call
-        // $(".accordion > div").hide()
-
-        // to open the, for example, tool menu, call:
-        // $("#menu_tools").next().show()
     }
 
     initAppearance() {

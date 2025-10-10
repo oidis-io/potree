@@ -181,7 +181,6 @@ export class VolumePanel extends MeasurePanel {
         let clipBox = this.measurement;
 
         let regions = [];
-        // for(let clipBox of boxes){
         {
             let toClip = clipBox.matrixWorld;
 
@@ -255,16 +254,13 @@ export class VolumePanel extends MeasurePanel {
         };
 
         let handle = null;
-        { // START FILTER
+        {
             let url = `${viewer.server}/create_regions_filter?pointclouds=[${pointcloudsArg}]&regions=[${regionsArg}]`;
-
-            // console.log(url);
 
             info("estimating results ...");
 
             let response = await fetch(url);
             let jsResponse = await response.json();
-            // console.log(jsResponse);
 
             if (!jsResponse.handle) {
                 error(jsResponse.message);
@@ -274,7 +270,7 @@ export class VolumePanel extends MeasurePanel {
             }
         }
 
-        { // WAIT, CHECK PROGRESS, HANDLE FINISH
+        {
             let url = `${viewer.server}/check_regions_filter?handle=${handle}`;
 
             let sleep = (function (duration) {
@@ -357,7 +353,6 @@ export class VolumePanel extends MeasurePanel {
         {
             let angles = this.measurement.rotation.toVector3();
             angles = angles.toArray();
-            // angles = [angles.z, angles.x, angles.y];
             angles = angles.map(v => 180 * v / Math.PI);
             angles = angles.map(a => a.toFixed(1) + "\u00B0");
 

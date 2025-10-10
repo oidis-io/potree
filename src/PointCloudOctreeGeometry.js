@@ -149,8 +149,6 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode {
 
     loadHierachyThenPoints() {
         let node = this;
-
-        // load hierarchy
         let callback = function (node, hbuffer) {
             let tStart = performance.now();
 
@@ -223,7 +221,6 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode {
             node.loadPoints();
         };
         if ((node.level % node.pcoGeometry.hierarchyStepSize) === 0) {
-            // let hurl = node.pcoGeometry.octreeDir + "/../hierarchy/" + node.name + ".hrc";
             let hurl = node.pcoGeometry.octreeDir + "/" + node.getHierarchyPath() + "/" + node.name + ".hrc";
 
             let xhr = XHRFactory.createXMLHttpRequest();

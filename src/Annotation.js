@@ -74,7 +74,6 @@ export class Annotation extends EventDispatcher {
         this.elTitle.append(this._title);
         this.elDescription = this.domElement.find(".annotation-description");
         this.elDescriptionClose = this.elDescription.find(".annotation-description-close");
-        // this.elDescriptionContent = this.elDescription.find(".annotation-description-content");
 
         this.clickTitle = () => {
             if (this.hasView()) {
@@ -121,7 +120,6 @@ export class Annotation extends EventDispatcher {
         });
 
         this.display = false;
-        // this.display = true;
     }
 
     installHandles(viewer) {
@@ -239,7 +237,6 @@ export class Annotation extends EventDispatcher {
 
                 let worldView = new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
                 let ndc = new THREE.Vector4(position.x, position.y, position.z, 1.0).applyMatrix4(worldView);
-                // limit w to small positive value, in case position is behind the camera
                 ndc.w = Math.max(ndc.w, 0.1);
                 ndc.divideScalar(ndc.w);
 
@@ -288,10 +285,6 @@ export class Annotation extends EventDispatcher {
 
         this._visible = value;
 
-        // this.traverse(node => {
-        // node.display = value;
-        // });
-
         this.dispatchEvent({
             type: "visibility_changed",
             annotation: this
@@ -310,10 +303,8 @@ export class Annotation extends EventDispatcher {
         this._display = display;
 
         if (display) {
-            // this.domElement.fadeIn(200);
             this.domElement.show();
         } else {
-            // this.domElement.fadeOut(200);
             this.domElement.hide();
         }
     }

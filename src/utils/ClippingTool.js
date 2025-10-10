@@ -140,13 +140,6 @@ export class ClippingTool extends EventDispatcher {
         };
 
         cancel.callback = e => {
-            // let first = svg.find("polyline")[0].points[0];
-            // svg.find("polyline").each((index, target) => {
-            // let newPoint = svg[0].createSVGPoint();
-            // newPoint.x = first.x;
-            // newPoint.y = first.y;
-            // let polyline = target.points.appendItem(newPoint);
-            // });
             svg.remove();
 
             if (polyClipVol.markers.length > 3) {

@@ -109,10 +109,8 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
             elevationRange: {type: "2fv", value: [0, 0]},
 
             clipBoxCount: {type: "f", value: 0},
-            // clipSphereCount:    { type: "f", value: 0 },
             clipPolygonCount: {type: "i", value: 0},
             clipBoxes: {type: "Matrix4fv", value: []},
-            // clipSpheres:        { type: "Matrix4fv", value: [] },
             clipPolygons: {type: "3fv", value: []},
             clipPolygonVCount: {type: "iv", value: []},
             clipPolygonVP: {type: "Matrix4fv", value: []},
@@ -130,12 +128,6 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 
             intensity_gbc: {type: "fv", value: [1, 0, 0]},
             uRGB_gbc: {type: "fv", value: [1, 0, 0]},
-            // intensityGamma:        { type: "f", value: 1 },
-            // intensityContrast:    { type: "f", value: 0 },
-            // intensityBrightness:{ type: "f", value: 0 },
-            // rgbGamma:            { type: "f", value: 1 },
-            // rgbContrast:        { type: "f", value: 0 },
-            // rgbBrightness:        { type: "f", value: 0 },
             wRGB: {type: "f", value: 1},
             wIntensity: {type: "f", value: 0},
             wElevation: {type: "f", value: 0},
@@ -496,7 +488,6 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
     set fov(value) {
         if (this.uniforms.fov.value !== value) {
             this.uniforms.fov.value = value;
-            // this.updateShaderSource();
         }
     }
 
@@ -507,7 +498,6 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
     set screenWidth(value) {
         if (this.uniforms.screenWidth.value !== value) {
             this.uniforms.screenWidth.value = value;
-            // this.updateShaderSource();
         }
     }
 
@@ -518,7 +508,6 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
     set screenHeight(value) {
         if (this.uniforms.screenHeight.value !== value) {
             this.uniforms.screenHeight.value = value;
-            // this.updateShaderSource();
         }
     }
 
@@ -1057,14 +1046,12 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
         context.fillStyle = ctxGradient;
         context.fill();
 
-        // let texture = new THREE.Texture(canvas);
         let texture = new THREE.CanvasTexture(canvas);
         texture.needsUpdate = true;
 
         texture.minFilter = THREE.LinearFilter;
         texture.wrap = THREE.RepeatWrapping;
         texture.repeat = 2;
-        // textureImage = texture.image;
 
         return texture;
     }
@@ -1091,17 +1078,4 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
         this._listeners = this._hiddenListeners;
         this._hiddenListeners = undefined;
     }
-
-    // copyFrom(from){
-
-    //  var a = 10;
-
-    //  for(let name of Object.keys(this.uniforms)){
-    //   this.uniforms[name].value = from.uniforms[name].value;
-    //  }
-    // }
-
-    // copy(from){
-    //  this.copyFrom(from);
-    // }
 }

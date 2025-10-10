@@ -19,7 +19,6 @@ export class PointCloudOctreeNode extends PointCloudTreeNode {
     constructor() {
         super();
 
-        // this.children = {};
         this.children = [];
         this.sceneNode = null;
         this.octree = null;
@@ -210,10 +209,6 @@ export class PointCloudOctree extends PointCloudTree {
 
     toTreeNode(geometryNode, parent) {
         let node = new PointCloudOctreeNode();
-
-        // if(geometryNode.name === "r40206"){
-        // console.log("creating node for r40206");
-        // }
         let sceneNode = new THREE.Points(geometryNode.geometry, this.material);
         sceneNode.name = geometryNode.name;
         sceneNode.position.copy(geometryNode.boundingBox.min);
@@ -242,25 +237,11 @@ export class PointCloudOctree extends PointCloudTree {
             }
         };
 
-        // { // DEBUG
-        // let sg = new THREE.SphereGeometry(1, 16, 16);
-        // let sm = new THREE.MeshNormalMaterial();
-        // let s = new THREE.Mesh(sg, sm);
-        // s.scale.set(5, 5, 5);
-        // s.position.copy(geometryNode.mean)
-        //  .add(this.position)
-        //  .add(geometryNode.boundingBox.min);
-        //
-        // viewer.scene.scene.add(s);
-        // }
-
         node.geometryNode = geometryNode;
         node.sceneNode = sceneNode;
         node.pointcloud = this;
         node.children = [];
-        // for (let key in geometryNode.children) {
-        // node.children[key] = geometryNode.children[key];
-        // }
+
         for (let i = 0; i < 8; i++) {
             node.children[i] = geometryNode.children[i];
         }
@@ -330,7 +311,6 @@ export class PointCloudOctree extends PointCloudTree {
         let data = new Uint8Array(nodes.length * 4);
         let visibleNodeTextureOffsets = new Map();
 
-        // copy array
         nodes = nodes.slice();
 
         // sort by level and index, e.g. r, r0, r3, r4, r01, r07, r30, ...
@@ -558,7 +538,6 @@ export class PointCloudOctree extends PointCloudTree {
             projectedBoundingBox: new THREE.Box2()
         };
 
-        // evaluate segments
         for (let i = 0; i < profile.points.length - 1; i++) {
             let start = profile.points[i];
             let end = profile.points[i + 1];
@@ -577,7 +556,6 @@ export class PointCloudOctree extends PointCloudTree {
             points.boundingBox.expandByPoint(ps.boundingBox.max);
         }
 
-        // add projection functions to the segments
         let mileage = new THREE.Vector3();
         for (let i = 0; i < points.segments.length; i++) {
             let segment = points.segments[i];
@@ -894,28 +872,6 @@ export class PointCloudOctree extends PointCloudTree {
             }
         }
 
-        // { // DEBUG: show panel with pick image
-        //  let img = Utils.pixelsArrayToImage(buffer, w, h);
-        //  let screenshot = img.src;
-
-        //  if(!this.debugDIV){
-        //   this.debugDIV = $(`
-        //   <div id="pickDebug"
-        //   style="position: absolute;
-        //   right: 400px; width: 300px;
-        //   bottom: 44px; width: 300px;
-        //   z-index: 1000;
-        //   "></div>`);
-        //   $(document.body).append(this.debugDIV);
-        //  }
-
-        //  this.debugDIV.empty();
-        //  this.debugDIV.append($(`<img src="${screenshot}"
-        //   style="transform: scaleY(-1); width: 300px"/>`));
-        //  //$(this.debugWindow.document).append($(`<img src="${screenshot}"/>`));
-        //  //this.debugWindow.document.write('<img src="'+screenshot+'"/>');
-        // }
-
         for (let hit of hits) {
             let point = {};
 
@@ -950,17 +906,6 @@ export class PointCloudOctree extends PointCloudTree {
                     }
 
                     point[attributeName] = values;
-
-                    // debugger;
-                    // if (values.itemSize === 1) {
-                    // point[attribute.name] = values.array[hit.pIndex];
-                    // } else {
-                    // let value = [];
-                    // for (let j = 0; j < values.itemSize; j++) {
-                    //  value.push(values.array[values.itemSize * hit.pIndex + j]);
-                    // }
-                    // point[attribute.name] = value;
-                    // }
                 }
             }
 
@@ -977,9 +922,6 @@ export class PointCloudOctree extends PointCloudTree {
                 return null;
             } else {
                 return hits[0].point;
-                // let sorted = hits.sort( (a, b) => a.distanceToCenter - b.distanceToCenter);
-
-                // return sorted[0].point;
             }
         }
     }

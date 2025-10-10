@@ -71,11 +71,9 @@ export class PropertiesPanel {
         }
     }
 
-    //
     // Used for events that should be removed when the property object changes.
     // This is for listening to materials, scene, point clouds, etc.
     // not required for DOM listeners, since they are automatically cleared by removing the DOM subtree.
-    //
     addVolatileListener(target, type, callback) {
         target.addEventListener(type, callback);
         this.cleanupTasks.push(() => {

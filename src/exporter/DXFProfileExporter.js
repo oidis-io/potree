@@ -52,21 +52,15 @@ export class DXFProfileExporter {
             const poCoordX = pCoords[((pIx * 3) + 0)];
             const poCoordY = pCoords[((pIx * 3) + 1)];
             const poCoordZ = pCoords[((pIx * 3) + 2)];
-            // const poColorR  = pColor[ ((pIx * 4) + 0) ];
-            // const poColorG  = pColor[ ((pIx * 4) + 1) ];
-            // const poColorB  = pColor[ ((pIx * 4) + 2) ];
-            // const poColorA  = pColor[ ((pIx * 4) + 3) ];
 
             if (flatten === true) {
                 pointsXYZ.x.push(poMileage);
                 pointsXYZ.y.push(0);
                 pointsXYZ.z.push(poCoordZ);
 
-                // Get boundaries X
                 if (pointsXYZ.maxX < poMileage) pointsXYZ.maxX = poMileage;
                 if (pointsXYZ.minX > poMileage) pointsXYZ.minX = poMileage;
 
-                // Get boundaries Z
                 if (pointsXYZ.maxZ < poCoordZ) pointsXYZ.maxZ = poCoordZ;
                 if (pointsXYZ.minZ > poCoordZ) pointsXYZ.minZ = poCoordZ;
             } else {
@@ -74,22 +68,18 @@ export class DXFProfileExporter {
                 pointsXYZ.y.push(poCoordY);
                 pointsXYZ.z.push(poCoordZ);
 
-                // Get boundaries X
                 if (pointsXYZ.maxX < poCoordX) pointsXYZ.maxX = poCoordX;
                 if (pointsXYZ.minX > poCoordX) pointsXYZ.minX = poCoordX;
 
-                // Get boundaries Y
                 if (pointsXYZ.maxY < poCoordY) pointsXYZ.maxY = poCoordY;
                 if (pointsXYZ.minY > poCoordY) pointsXYZ.minY = poCoordY;
 
-                // Get boundaries Z
                 if (pointsXYZ.maxZ < poCoordZ) pointsXYZ.maxZ = poCoordZ;
                 if (pointsXYZ.minZ > poCoordZ) pointsXYZ.minZ = poCoordZ;
             }
         }
 
         if (flatten === true) {
-            // Set boundaries Y
             pointsXYZ.maxY = 0;
             pointsXYZ.minY = 0;
         }

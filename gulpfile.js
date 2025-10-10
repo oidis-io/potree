@@ -9,16 +9,16 @@
  *
  * ********************************************************************************************************* */
 
-const path = require('path');
-const gulp = require('gulp');
-const del = require('del');
-const exec = require('child_process').exec;
+const path = require("path");
+const gulp = require("gulp");
+const del = require("del");
+const exec = require("child_process").exec;
 
 const fs = require("fs");
 const fsp = fs.promises;
-const concat = require('gulp-concat');
-const merge = require('merge-stream');
-const connect = require('gulp-connect');
+const concat = require("gulp-concat");
+const merge = require("merge-stream");
+const connect = require("gulp-connect");
 const {watch} = gulp;
 
 const {createExamplesPage} = require("./src/tools/create_potree_page");
@@ -59,7 +59,7 @@ let workers = {
     ],
     "EptZstandardDecoderWorker": [
         "src/workers/EptZstandardDecoder_preamble.js",
-        'libs/zstd-codec/bundle.js',
+        "libs/zstd-codec/bundle.js",
         "libs/ept/ParseBuffer.js",
         "src/workers/EptZstandardDecoderWorker.js"
     ]
@@ -87,12 +87,12 @@ let shaders = [
     "src/materials/shaders/blur.fs",
 ];
 
-let assets = ['build/potree', 'build/shaders', "pointclouds", "libs", "examples", "docs", "LICENSE", "README.md"];
+let assets = ["build/potree", "build/shaders", "pointclouds", "libs", "examples", "docs", "LICENSE", "README.md"];
 
 // For development, it is now possible to use 'gulp webserver'
 // from the command line to start the server (default port is 8080)
-gulp.task('clean', async () => {
-    return del.deleteAsync(['build']);
+gulp.task("clean", async () => {
+    return del.deleteAsync(["build"]);
 });
 
 gulp.task("archive", async () => {
@@ -102,15 +102,15 @@ gulp.task("archive", async () => {
 
     const baseName = `Potree-${pkg.version.replace(/\./gm, "-")}`;
     const output = fs.createWriteStream(`build/${baseName}.zip`);
-    const archive = archiver('zip', {zlib: {level: 9}});
+    const archive = archiver("zip", {zlib: {level: 9}});
 
-    output.on('close', () => {
+    output.on("close", () => {
         console.log("archive " + output.path + " constructed");
     });
-    output.on('end', () => {
+    output.on("end", () => {
         console.log("finished");
     });
-    archive.on('warning', (err) => {
+    archive.on("warning", (err) => {
         if (err.code !== "ENOENT") {
             throw err;
         }
@@ -132,44 +132,43 @@ gulp.task("archive", async () => {
     return archive.finalize();
 });
 
-gulp.task('webserver', gulp.series(async function () {
+gulp.task("webserver", gulp.series(async function () {
     server = connect.server({
         port: 1234,
         https: false,
     });
 }));
 
-gulp.task('examples_page', async () => {
+gulp.task("examples_page", async () => {
     await Promise.all([
         createExamplesPage(),
         createGithubPage(),
     ]);
 });
 
-gulp.task('icons_viewer', async () => {
+gulp.task("icons_viewer", async () => {
     await createIconsPage();
 });
 
-gulp.task('test', async () => {
+gulp.task("test", async () => {
     console.log("asdfiae8ofh");
 });
 
-gulp.task('workers', function () {
+gulp.task("workers", function () {
     const workerStreams = Object.keys(workers).map(workerName => {
         return gulp.src(workers[workerName])
             .pipe(concat(`${workerName}.js`))
-            .pipe(gulp.dest('build/potree/workers'));
+            .pipe(gulp.dest("build/potree/workers"));
     });
 
-    const wasmStream = gulp.src('./libs/copc/laz-perf.wasm', { encoding: false })
-        .pipe(gulp.dest('./build/potree/workers'));
+    const wasmStream = gulp.src("./libs/copc/laz-perf.wasm", { encoding: false })
+        .pipe(gulp.dest("./build/potree/workers"));
 
     return merge(...workerStreams, wasmStream);
 });
 
 gulp.task("lazylibs", async () => {
     for (let libname of Object.keys(lazyLibs)) {
-
         const libpath = lazyLibs[libname];
 
         gulp.src([`${libpath}/**/*`])
@@ -206,7 +205,7 @@ gulp.task("shaders", async () => {
 
 gulp.task("pack", async () => {
     return new Promise((resolve, reject) => {
-        exec('rollup -c', (err, stdout, stderr) => {
+        exec("rollup -c", (err, stdout, stderr) => {
             console.log(stdout);
             console.error(stderr);
 
@@ -219,42 +218,55 @@ gulp.task("pack", async () => {
     });
 });
 
-gulp.task('build',
+gulp.task("pack-min", async () => {
+    return new Promise((resolve, reject) => {
+        exec("rollup -c rollup.distro.mjs", (err, stdout, stderr) => {
+            console.log(stdout);
+            console.error(stderr);
+
+            if (err) {
+                reject(err);
+            } else {
+                resolve();
+            }
+        });
+    });
+});
+
+gulp.task("build",
     gulp.series(
         gulp.parallel("workers", "lazylibs", "shaders", "icons_viewer", "examples_page"),
         async () => {
-            gulp.src(paths.html).pipe(gulp.dest('build/potree'));
+            gulp.src(paths.html).pipe(gulp.dest("build/potree"));
 
-            gulp.src(paths.resources).pipe(gulp.dest('build/potree/resources'));
+            gulp.src(paths.resources).pipe(gulp.dest("build/potree/resources"));
 
-            gulp.src(["LICENSE"]).pipe(gulp.dest('build/potree'));
+            gulp.src(["LICENSE"]).pipe(gulp.dest("build/potree"));
         }
     )
 );
 
-gulp.task('release',
+gulp.task("release",
     gulp.series(
         "clean",
         "build",
-        "pack",
+        "pack-min",
         "archive"
     )
 );
 
-gulp.task('watch', gulp.parallel("build", "pack", "webserver", async () => {
+gulp.task("watch", gulp.parallel("build", "pack", "webserver", async () => {
     let watchlist = [
-        'src/**/*.js',
-        'src/**/**/*.js',
-        'src/**/*.css',
-        'src/**/*.html',
-        'src/**/*.vs',
-        'src/**/*.fs',
-        'resources/**/*',
-        'examples//**/*.json',
-        '!resources/icons/index.html',
+        "src/**/*.js",
+        "src/**/**/*.js",
+        "src/**/*.css",
+        "src/**/*.html",
+        "src/**/*.vs",
+        "src/**/*.fs",
+        "resources/**/*",
+        "examples//**/*.json",
+        "!resources/icons/index.html",
     ];
 
     watch(watchlist, gulp.series("build", "pack"));
 }));
-
-

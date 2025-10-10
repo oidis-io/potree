@@ -28,13 +28,6 @@ export class NodeLoader {
         node.loading = true;
         Potree.numNodesLoading++;
 
-        // console.log(node.name, node.numPoints);
-
-        // if(loadedNodes.has(node.name)){
-        //  // debugger;
-        // }
-        // loadedNodes.add(node.name);
-
         try {
             if (node.nodeType === 2) {
                 await this.loadHierarchy(node);
@@ -160,7 +153,6 @@ export class NodeLoader {
         let numNodes = buffer.byteLength / bytesPerNode;
 
         let octree = node.octreeGeometry;
-        // let nodes = [node];
         let nodes = new Array(numNodes);
         nodes[0] = node;
         let nodePos = 1;
@@ -174,31 +166,21 @@ export class NodeLoader {
             let byteOffset = view.getBigInt64(i * bytesPerNode + 6, true);
             let byteSize = view.getBigInt64(i * bytesPerNode + 14, true);
 
-            // if(byteSize === 0n){
-            //  // debugger;
-            // }
-
             if (current.nodeType === 2) {
-                // replace proxy with real node
                 current.byteOffset = byteOffset;
                 current.byteSize = byteSize;
                 current.numPoints = numPoints;
             } else if (type === 2) {
-                // load proxy
                 current.hierarchyByteOffset = byteOffset;
                 current.hierarchyByteSize = byteSize;
                 current.numPoints = numPoints;
             } else {
-                // load real node
                 current.byteOffset = byteOffset;
                 current.byteSize = byteSize;
                 current.numPoints = numPoints;
             }
 
             if (current.byteSize === 0n) {
-                // workaround for issue #1125
-                // some inner nodes erroneously report >0 points even though have 0 points
-                // however, they still report a byteSize of 0, so based on that we now set node.numPoints to 0
                 current.numPoints = 0;
             }
 
@@ -226,22 +208,10 @@ export class NodeLoader {
                 current.children[childIndex] = child;
                 child.parent = current;
 
-                // nodes.push(child);
                 nodes[nodePos] = child;
                 nodePos++;
             }
-
-            // if((i % 500) === 0){
-            //  yield;
-            // }
         }
-
-        let duration = (performance.now() - tStart);
-
-        // if(duration > 20){
-        //  let msg = `duration: ${duration}ms, numNodes: ${numNodes}`;
-        //  console.log(msg);
-        // }
     }
 
     async loadHierarchy(node) {
@@ -261,24 +231,6 @@ export class NodeLoader {
         let buffer = await response.arrayBuffer();
 
         this.parseHierarchy(node, buffer);
-
-        // let promise = new Promise((resolve) => {
-        //  let generator = this.parseHierarchy(node, buffer);
-
-        //  let repeatUntilDone = () => {
-        //   let result = generator.next();
-
-        //   if(result.done){
-        //   resolve();
-        //   }else{
-        //   requestAnimationFrame(repeatUntilDone);
-        //   }
-        //  };
-
-        //  repeatUntilDone();
-        // });
-
-        // await promise;
     }
 }
 
@@ -358,7 +310,6 @@ export class OctreeLoader {
         }
 
         {
-            // check if it has normals
             let hasNormals =
                 attributes.attributes.find(a => a.name === "NormalX") !== undefined &&
                 attributes.attributes.find(a => a.name === "NormalY") !== undefined &&
@@ -392,9 +343,6 @@ export class OctreeLoader {
         octree.url = url;
         octree.spacing = metadata.spacing;
         octree.scale = metadata.scale;
-
-        // let aPosition = metadata.attributes.find(a => a.name === "position");
-        // octree
 
         let min = new THREE.Vector3(...metadata.boundingBox.min);
         let max = new THREE.Vector3(...metadata.boundingBox.max);

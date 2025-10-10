@@ -28,7 +28,6 @@ export class PolygonClipVolume extends THREE.Object3D {
         this.viewMatrix = this.camera.matrixWorldInverse.clone();
         this.projMatrix = this.camera.projectionMatrix.clone();
 
-        // projected markers
         this.markers = [];
         this.initialized = false;
     }

@@ -41,7 +41,6 @@ export class DistancePanel extends MeasurePanel {
 
         this.elMakeProfile = this.elContent.find("input[name=make_profile]");
         this.elMakeProfile.click(() => {
-            // measurement.points;
             const profile = new Profile();
 
             profile.name = measurement.name;

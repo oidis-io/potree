@@ -124,7 +124,6 @@ export class ProfileTool extends EventDispatcher {
 
         this.light.position.copy(camera.position);
 
-        // make size independant of distance
         for (let profile of profiles) {
             for (let sphere of profile.spheres) {
                 let distance = camera.position.distanceTo(sphere.getWorldPosition(new THREE.Vector3()));

@@ -38,7 +38,6 @@ function createIconsPage() {
             </span>
             `;
 
-            // iconsCode += `<img src="${item}" />\n`;
             iconsCode += iconCode;
         }
 

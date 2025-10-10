@@ -40,9 +40,8 @@ function updateAzimuth(viewer, measure) {
     azimuth.center.scale.set(2, 2, 2);
 
     azimuth.center.visible = false;
-    // azimuth.target.visible = false;
 
-    { // north
+    {
         azimuth.north.position.copy(northPos);
         azimuth.north.scale.set(2, 2, 2);
 
@@ -53,7 +52,7 @@ function updateAzimuth(viewer, measure) {
         azimuth.north.scale.set(scale, scale, scale);
     }
 
-    { // target
+    {
         azimuth.target.position.copy(p1.position);
         azimuth.target.position.z = azimuth.north.position.z;
 
@@ -68,7 +67,6 @@ function updateAzimuth(viewer, measure) {
     azimuth.circle.scale.set(r, r, r);
     azimuth.circle.material.resolution.set(width, height);
 
-    // to target
     azimuth.centerToTarget.geometry.setPositions([
         0, 0, 0,
         ...p1.position.clone().sub(p0.position).toArray(),
@@ -79,7 +77,6 @@ function updateAzimuth(viewer, measure) {
     azimuth.centerToTarget.computeLineDistances();
     azimuth.centerToTarget.material.resolution.set(width, height);
 
-    // to target ground
     azimuth.centerToTargetground.geometry.setPositions([
         0, 0, 0,
         p1.position.x - p0.position.x,
@@ -92,7 +89,6 @@ function updateAzimuth(viewer, measure) {
     azimuth.centerToTargetground.computeLineDistances();
     azimuth.centerToTargetground.material.resolution.set(width, height);
 
-    // to north
     azimuth.centerToNorth.geometry.setPositions([
         0, 0, 0,
         northPos.x - p0.position.x,
@@ -264,7 +260,6 @@ export class MeasuringTool extends EventDispatcher {
 
         this.light.position.copy(camera.position);
 
-        // make size independant of distance
         for (let measure of measurements) {
             measure.lengthUnit = this.viewer.lengthUnit;
             measure.lengthUnitDisplay = this.viewer.lengthUnitDisplay;
@@ -272,7 +267,6 @@ export class MeasuringTool extends EventDispatcher {
 
             updateAzimuth(this.viewer, measure);
 
-            // spheres
             for (let sphere of measure.spheres) {
                 let distance = camera.position.distanceTo(sphere.getWorldPosition(new THREE.Vector3()));
                 let pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
@@ -280,7 +274,6 @@ export class MeasuringTool extends EventDispatcher {
                 sphere.scale.set(scale, scale, scale);
             }
 
-            // labels
             let labels = measure.edgeLabels.concat(measure.angleLabels);
             for (let label of labels) {
                 let distance = camera.position.distanceTo(label.getWorldPosition(new THREE.Vector3()));
@@ -294,7 +287,6 @@ export class MeasuringTool extends EventDispatcher {
                 label.scale.set(scale, scale, scale);
             }
 
-            // coordinate labels
             for (let j = 0; j < measure.coordinateLabels.length; j++) {
                 let label = measure.coordinateLabels[j];
                 let sphere = measure.spheres[j];
@@ -323,7 +315,6 @@ export class MeasuringTool extends EventDispatcher {
                 label.scale.set(scale, scale, scale);
             }
 
-            // height label
             if (measure.showHeight) {
                 let label = measure.heightLabel;
 
@@ -334,7 +325,7 @@ export class MeasuringTool extends EventDispatcher {
                     label.scale.set(scale, scale, scale);
                 }
 
-                { // height edge
+                {
                     let edge = measure.heightEdge;
 
                     let sorted = measure.points.slice().sort((a, b) => a.position.z - b.position.z);
@@ -374,7 +365,7 @@ export class MeasuringTool extends EventDispatcher {
                 }
             }
 
-            { // area label
+            {
                 let label = measure.areaLabel;
                 let distance = label.position.distanceTo(camera.position);
                 let pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
@@ -383,7 +374,7 @@ export class MeasuringTool extends EventDispatcher {
                 label.scale.set(scale, scale, scale);
             }
 
-            { // radius label
+            {
                 let label = measure.circleRadiusLabel;
                 let distance = label.position.distanceTo(camera.position);
                 let pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
@@ -392,7 +383,7 @@ export class MeasuringTool extends EventDispatcher {
                 label.scale.set(scale, scale, scale);
             }
 
-            { // edges
+            {
                 const materials = [
                     measure.circleRadiusLine.material,
                     ...measure.edges.map((e) => e.material),

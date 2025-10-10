@@ -108,8 +108,6 @@ class ProfileFakeOctree extends PointCloudTree {
 
         for (let i = 0; i < data.numPoints; i++) {
             if (updateRange.start + updateRange.count >= this.batchSize) {
-                // current batch full, start new batch
-
                 for (let key of Object.keys(this.currentBatch.geometry.attributes)) {
                     let attribute = this.currentBatch.geometry.attributes[key];
                     attribute.updateRange.offset = updateRange.start;
@@ -322,7 +320,6 @@ export class ProfileWindow extends EventDispatcher {
             let newMouse = new THREE.Vector2(x, y);
 
             if (this.mouseIsDown) {
-                // DRAG
                 this.autoFit = false;
                 this.lastDrag = new Date().getTime();
 
@@ -334,7 +331,6 @@ export class ProfileWindow extends EventDispatcher {
 
                 this.render();
             } else if (this.pointclouds.size > 0) {
-                // FIND HOVERED POINT
                 let radius = Math.abs(this.scaleX.invert(0) - this.scaleX.invert(40));
                 let mileage = this.scaleX.invert(newMouse.x);
                 let elevation = this.scaleY.invert(newMouse.y);
@@ -421,9 +417,6 @@ export class ProfileWindow extends EventDispatcher {
 
                     this.selectedPoint = point;
                 } else {
-                    // this.pickSphere.visible = false;
-                    // this.selectedPoint = null;
-
                     this.viewer.scene.scene.add(this.viewerPickSphere);
 
                     let index = this.viewer.scene.scene.children.indexOf(this.viewerPickSphere);
@@ -603,8 +596,6 @@ export class ProfileWindow extends EventDispatcher {
                 }
             }
         }
-
-        // console.log(`nodes: ${numTested}, ${numSkipped} || points: ${numTestedPoints}, ${numSkippedPoints}`);
 
         if (closest.distance < Infinity) {
             let points = closest.points;
@@ -950,7 +941,6 @@ export class ProfileWindowController {
             const mMoveOrigin = new THREE.Matrix4().makeTranslation(-center.x, -center.y, -center.z);
             const mRotate = new THREE.Matrix4().makeRotationZ(radians);
             const mMoveBack = new THREE.Matrix4().makeTranslation(center.x, center.y, center.z);
-            // const transform = mMoveOrigin.multiply(mRotate).multiply(mMoveBack);
             const transform = mMoveBack.multiply(mRotate).multiply(mMoveOrigin);
 
             const rotatedPoints = points.map(point => point.clone().applyMatrix4(transform));

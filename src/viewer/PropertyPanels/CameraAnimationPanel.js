@@ -84,13 +84,6 @@ export class CameraAnimationPanel {
 
         const updateKeyframes = () => {
             elKeyframes.empty();
-
-            // let index = 0;
-
-            // <span style="flex-grow: 0;">
-            //   <img name="add" src="${Potree.resourcePath}/icons/add.svg" style="width: 1.5em; height: 1.5em"/>
-            //   </span>
-
             const addNewKeyframeItem = (index) => {
                 let elNewKeyframe = $(`
                     <div style="display: flex; margin: 0.2em 0em">
@@ -167,10 +160,6 @@ export class CameraAnimationPanel {
 
         animation.addEventListener("controlpoint_added", updateKeyframes);
         animation.addEventListener("controlpoint_removed", updateKeyframes);
-
-        // this._update = () => { this.update(); };
-
-        // this.update();
     }
 
     update() {

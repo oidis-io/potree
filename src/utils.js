@@ -472,7 +472,6 @@ export class Utils {
 
         let img = new Image();
         img.src = canvas.toDataURL();
-        // img.style.transform = "scaleY(-1)";
 
         return img;
     }
@@ -508,11 +507,6 @@ export class Utils {
 
         pixels = new pixels.constructor(pixels);
 
-        // for (let i = 0; i < pixels.length; i++) {
-        // pixels[i * 4 + 3] = 255;
-        // }
-
-        // flip vertically
         let bytesPerLine = width * 4;
         for (let i = 0; i < parseInt(height / 2); i++) {
             let j = height - i - 1;
@@ -900,14 +894,6 @@ export class Utils {
         const center = Utils.lineToLineIntersection(P0, P1, P2, P3);
 
         return center;
-
-        // Potree.Utils.debugLine(viewer.scene.scene, P0, P1, 0x00ff00);
-        // Potree.Utils.debugLine(viewer.scene.scene, P2, P3, 0x0000ff);
-
-        // Potree.Utils.debugSphere(viewer.scene.scene, center, 0.03, 0xff00ff);
-
-        // const radius = center.distanceTo(A);
-        // Potree.Utils.debugCircle(viewer.scene.scene, center, radius, new THREE.Vector3(0, 0, 1), 0xff00ff);
     }
 
     static getNorthVec(p1, distance, projection) {
@@ -993,20 +979,6 @@ export class Utils {
     }
 
     static createSvgGradient(scheme) {
-        // this is what we are creating:
-        //
-        // <svg width="1em" height="3em"  xmlns="http://www.w3.org/2000/svg">
-        // <defs>
-        //  <linearGradient id="gradientID" gradientTransform="rotate(90)">
-        //  <stop offset="0%"  stop-color="rgb(93, 78, 162)" />
-        //  ...
-        //  <stop offset="100%"  stop-color="rgb(157, 0, 65)" />
-        //  </linearGradient>
-        // </defs>
-        //
-        // <rect width="100%" height="100%" fill="url('#myGradient')" stroke="black" stroke-width="0.1em"/>
-        // </svg>
-
         const gradientId = `${Math.random()}_${Date.now()}`;
 
         const svgn = "http://www.w3.org/2000/svg";

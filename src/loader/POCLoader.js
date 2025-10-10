@@ -85,7 +85,6 @@ function parseAttributes(cloudjs) {
         }
 
         {
-            // check if it has normals
             let hasNormals =
                 pointAttributes.find(a => a.name === "NormalX") !== undefined &&
                 pointAttributes.find(a => a.name === "NormalY") !== undefined &&
@@ -134,7 +133,6 @@ export class POCLoader {
 
                     let version = new Version(fMno.version);
 
-                    // assume octreeDir is absolute if it starts with http
                     if (fMno.octreeDir.indexOf("http") === 0) {
                         pco.octreeDir = fMno.octreeDir;
                     } else {
@@ -209,7 +207,6 @@ export class POCLoader {
                             let parentName = name.substring(0, name.length - 1);
                             let parentNode = nodes[parentName];
                             let level = name.length - 1;
-                            // let boundingBox = POCLoader.createChildAABB(parentNode.boundingBox, index);
                             let boundingBox = Utils.createChildAABB(parentNode.boundingBox, index);
 
                             let node = new PointCloudOctreeGeometryNode(name, pco, boundingBox);

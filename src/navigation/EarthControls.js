@@ -59,8 +59,6 @@ export class EarthControls extends EventDispatcher {
             let camStart = this.camStart;
             let camera = this.scene.getActiveCamera();
             let view = this.viewer.scene.view;
-
-            // let camera = this.viewer.scene.camera;
             let mouse = e.drag.end;
             let domElement = this.viewer.renderer.domElement;
 
@@ -116,7 +114,6 @@ export class EarthControls extends EventDispatcher {
                 pivotToCamTarget.applyAxisAngle(new THREE.Vector3(0, 0, 1), yawDelta);
 
                 let newCam = new THREE.Vector3().addVectors(this.pivot, pivotToCam);
-                // TODO: Unused: let newCamTarget = new THREE.Vector3().addVectors(this.pivot, pivotToCamTarget);
 
                 view.position.copy(newCam);
                 view.yaw += yawDelta;
@@ -244,7 +241,6 @@ export class EarthControls extends EventDispatcher {
         let progression = 1 - fade;
         let camera = this.scene.getActiveCamera();
 
-        // compute zoom
         if (this.wheelDelta !== 0) {
             let I = Utils.getMousePointCloudIntersection(
                 this.viewer.inputHandler.mouse,
@@ -271,7 +267,6 @@ export class EarthControls extends EventDispatcher {
             }
         }
 
-        // apply zoom
         if (this.zoomDelta.length() !== 0) {
             let p = this.zoomDelta.clone().multiplyScalar(progression);
 
@@ -288,7 +283,6 @@ export class EarthControls extends EventDispatcher {
             this.pivotIndicator.scale.set(scale, scale, scale);
         }
 
-        // decelerate over time
         {
             this.zoomDelta.multiplyScalar(fade);
             this.wheelDelta = 0;

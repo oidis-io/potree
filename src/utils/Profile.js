@@ -34,7 +34,6 @@ export class Profile extends THREE.Object3D {
 
     createSphereMaterial() {
         let sphereMaterial = new THREE.MeshLambertMaterial({
-            // shading: THREE.SmoothShading,
             color: 0xff0000,
             depthTest: false,
             depthWrite: false
@@ -131,11 +130,6 @@ export class Profile extends THREE.Object3D {
                     let i = this.spheres.indexOf(e.drag.object);
                     if (i !== -1) {
                         this.setPosition(i, I.location);
-                        // this.dispatchEvent({
-                        // 'type': 'marker_moved',
-                        // 'profile': this,
-                        // 'index': i
-                        // });
                     }
                 }
             };
@@ -241,18 +235,10 @@ export class Profile extends THREE.Object3D {
             let point = this.points[i];
             let sphere = this.spheres[i];
             let leftIndex = (i === 0) ? lastIndex : i - 1;
-            // let rightIndex = (i === lastIndex) ? 0 : i + 1;
             let leftVertex = this.points[leftIndex];
-            // let rightVertex = this.points[rightIndex];
             let leftEdge = this.edges[leftIndex];
             let rightEdge = this.edges[i];
             let leftBox = this.boxes[leftIndex];
-            // rightBox = this.boxes[i];
-
-            // let leftEdgeLength = point.distanceTo(leftVertex);
-            // let rightEdgeLength = point.distanceTo(rightVertex);
-            // let leftEdgeCenter = new THREE.Vector3().addVectors(leftVertex, point).multiplyScalar(0.5);
-            // let rightEdgeCenter = new THREE.Vector3().addVectors(point, rightVertex).multiplyScalar(0.5);
 
             sphere.position.copy(point);
 

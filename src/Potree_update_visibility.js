@@ -61,13 +61,11 @@ export function updateVisibilityStructures(pointclouds, camera, renderer) {
         pointcloud.visibleNodes = [];
         pointcloud.visibleGeometry = [];
 
-        // frustum in object space
         camera.updateMatrixWorld();
         let frustum = new THREE.Frustum();
         let viewI = camera.matrixWorldInverse;
         let world = pointcloud.matrixWorld;
 
-        // use close near plane for frustum intersection
         let frustumCam = camera.clone();
         frustumCam.near = Math.min(camera.near, 0.1);
         frustumCam.updateProjectionMatrix();
@@ -77,7 +75,6 @@ export function updateVisibilityStructures(pointclouds, camera, renderer) {
         frustum.setFromProjectionMatrix(fm);
         frustums.push(frustum);
 
-        // camera position in object space
         let view = camera.matrixWorld;
         let worldI = world.clone().invert();
         let camMatrixObject = new THREE.Matrix4().multiply(worldI).multiply(view);
@@ -88,10 +85,6 @@ export function updateVisibilityStructures(pointclouds, camera, renderer) {
             priorityQueue.push({pointcloud: i, node: pointcloud.root, weight: Number.MAX_VALUE});
         }
 
-        // hide all previously visible nodes
-        // if(pointcloud.root instanceof PointCloudOctreeNode){
-        // pointcloud.hideDescendants(pointcloud.root.sceneNode);
-        // }
         if (pointcloud.root.isTreeNode()) {
             pointcloud.hideDescendants(pointcloud.root.sceneNode);
         }
@@ -167,13 +160,6 @@ export function updateVisibility(pointclouds, camera, renderer) {
         let parent = element.parent;
         let pointcloud = pointclouds[element.pointcloud];
 
-        // { // restrict to certain nodes for debugging
-        // let allowedNodes = ["r", "r0", "r4"];
-        // if(!allowedNodes.includes(node.name)){
-        //  continue;
-        // }
-        // }
-
         let box = node.getBoundingBox();
         let frustum = frustums[element.pointcloud];
         let camObjPos = camObjPositions[element.pointcloud];
@@ -189,14 +175,8 @@ export function updateVisibility(pointclouds, camera, renderer) {
 
         let clipBoxes = pointcloud.material.clipBoxes;
         if (true && clipBoxes.length > 0) {
-            // node.debug = false;
-
             let numIntersecting = 0;
             let numIntersectionVolumes = 0;
-
-            // if(node.name === "r60"){
-            // var a = 10;
-            // }
 
             for (let clipBox of clipBoxes) {
                 let pcWorldInverse = pointcloud.matrixWorld.clone().invert();
@@ -223,22 +203,6 @@ export function updateVisibility(pointclouds, camera, renderer) {
                 let pzPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(pzN, pz);
                 let nzPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(nzN, nz);
 
-                // if(window.debugdraw !== undefined && window.debugdraw === true && node.name === "r60"){
-
-                // Potree.utils.debugPlane(viewer.scene.scene, pxPlane, 1, 0xFF0000);
-                // Potree.utils.debugPlane(viewer.scene.scene, nxPlane, 1, 0x990000);
-                // Potree.utils.debugPlane(viewer.scene.scene, pyPlane, 1, 0x00FF00);
-                // Potree.utils.debugPlane(viewer.scene.scene, nyPlane, 1, 0x009900);
-                // Potree.utils.debugPlane(viewer.scene.scene, pzPlane, 1, 0x0000FF);
-                // Potree.utils.debugPlane(viewer.scene.scene, nzPlane, 1, 0x000099);
-
-                // Potree.utils.debugBox(viewer.scene.scene, box, new THREE.Matrix4(), 0x00FF00);
-                // Potree.utils.debugBox(viewer.scene.scene, box, pointcloud.matrixWorld, 0xFF0000);
-                // Potree.utils.debugBox(viewer.scene.scene, clipBox.box.boundingBox, clipBox.box.matrixWorld, 0xFF0000);
-
-                // window.debugdraw = false;
-                // }
-
                 let frustum = new THREE.Frustum(pxPlane, nxPlane, pyPlane, nyPlane, pzPlane, nzPlane);
                 let intersects = frustum.intersectsBox(box);
 
@@ -259,21 +223,8 @@ export function updateVisibility(pointclouds, camera, renderer) {
                 } else {
                     visible = false;
                 }
-            } else if (pointcloud.material.clipTask === ClipTask.SHOW_OUTSIDE) {
-                // if(pointcloud.material.clipMethod === ClipMethod.INSIDE_ANY && !insideAny){
-                // //visible = true;
-                // let a = 10;
-                // }else if(pointcloud.material.clipMethod === ClipMethod.INSIDE_ALL && !insideAll){
-                // //visible = true;
-                // let a = 20;
-                // }else{
-                // visible = false;
-                // }
             }
         }
-
-        // visible = ["r", "r0", "r06", "r060"].includes(node.name);
-        // visible = ["r"].includes(node.name);
 
         if (node.spacing) {
             lowestSpacing = Math.min(lowestSpacing, node.spacing);
@@ -289,8 +240,6 @@ export function updateVisibility(pointclouds, camera, renderer) {
             continue;
         }
 
-        // TODO: not used, same as the declaration?
-        // numVisibleNodes++;
         numVisiblePoints += node.getNumPoints();
         let numVisiblePointsInPointcloud = numVisiblePointsInPointclouds.get(pointcloud);
         numVisiblePointsInPointclouds.set(pointcloud, numVisiblePointsInPointcloud + node.getNumPoints());
@@ -338,15 +287,8 @@ export function updateVisibility(pointclouds, camera, renderer) {
             } else if (!pointcloud.showBoundingBox && node.boundingBoxNode) {
                 node.boundingBoxNode.visible = false;
             }
-
-            // if(node.boundingBoxNode !== undefined && exports.debug.allowedNodes !== undefined){
-            //  if(!exports.debug.allowedNodes.includes(node.name)){
-            //   node.boundingBoxNode.visible = false;
-            //  }
-            // }
         }
 
-        // add child nodes to priorityQueue
         let children = node.getChildren();
         for (let i = 0; i < children.length; i++) {
             let child = children[i];
@@ -355,7 +297,6 @@ export function updateVisibility(pointclouds, camera, renderer) {
             if (camera.isPerspectiveCamera) {
                 let sphere = child.getBoundingSphere();
                 let center = sphere.center;
-                // let distance = sphere.center.distanceTo(camObjPos);
 
                 let dx = camObjPos.x - center.x;
                 let dy = camObjPos.y - center.y;
@@ -385,16 +326,15 @@ export function updateVisibility(pointclouds, camera, renderer) {
                 let bb = child.getBoundingBox();
                 let distance = child.getBoundingSphere().center.distanceTo(camObjPos);
                 let diagonal = bb.max.clone().sub(bb.min).length();
-                // weight = diagonal / distance;
 
                 weight = diagonal;
             }
 
             priorityQueue.push({pointcloud: element.pointcloud, node: child, parent: node, weight: weight});
         }
-    }// end priority queue loop
+    }
 
-    { // update DEM
+    {
         let maxDEMLevel = 4;
         let candidates = pointclouds
             .filter(p => (p.generateDEM && p.dem instanceof Potree.DEM));
