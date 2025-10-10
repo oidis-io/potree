@@ -14,22 +14,22 @@ const fs = require("fs");
 const fsp = fs.promises;
 
 function createIconsPage() {
-	let iconsPath = "resources/icons";
+    let iconsPath = "resources/icons";
 
-	fs.readdir(iconsPath, function(err, items) {
-		let svgs = items.filter(item => item.endsWith(".svg"));
-		let other = items.filter(item => !item.endsWith(".svg"));
+    fs.readdir(iconsPath, function (err, items) {
+        let svgs = items.filter(item => item.endsWith(".svg"));
+        let other = items.filter(item => !item.endsWith(".svg"));
 
-		items = [...svgs, ...other];
+        items = [...svgs, ...other];
 
-		let iconsCode = ``;
-		for (let item of items) {
-			let extension = path.extname(item);
-			if (![".png", ".svg", ".jpg", ".jpeg"].includes(extension)) {
-				continue;
-			}
+        let iconsCode = ``;
+        for (let item of items) {
+            let extension = path.extname(item);
+            if (![".png", ".svg", ".jpg", ".jpeg"].includes(extension)) {
+                continue;
+            }
 
-			let iconCode = `
+            let iconCode = `
 			<span class="icon_container" style="position: relative; float: left">
 				<center>
 				<img src="${item}" style="height: 32px;"/>
@@ -38,11 +38,11 @@ function createIconsPage() {
 			</span>
 			`;
 
-			//iconsCode += `<img src="${item}" />\n`;
-			iconsCode += iconCode;
-		}
+            //iconsCode += `<img src="${item}" />\n`;
+            iconsCode += iconCode;
+        }
 
-		let page = `
+        let page = `
 			<html>
 				<head>
 					<style>
@@ -61,14 +61,14 @@ function createIconsPage() {
 			</html>
 		`;
 
-		fs.writeFile(`${iconsPath}/index.html`, page, (err) => {
-			if (err) {
-				console.log(err);
-			} else {
-				console.log(`created ${iconsPath}/index.html`);
-			}
-		});
-	});
+        fs.writeFile(`${iconsPath}/index.html`, page, (err) => {
+            if (err) {
+                console.log(err);
+            } else {
+                console.log(`created ${iconsPath}/index.html`);
+            }
+        });
+    });
 }
 
 exports.createIconsPage = createIconsPage;

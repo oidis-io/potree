@@ -12,11 +12,11 @@
 import {MeasurePanel} from "./MeasurePanel.js";
 
 export class AnglePanel extends MeasurePanel {
-	constructor(viewer, measurement, propertiesPanel) {
-		super(viewer, measurement, propertiesPanel);
+    constructor(viewer, measurement, propertiesPanel) {
+        super(viewer, measurement, propertiesPanel);
 
-		let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
-		this.elContent = $(`
+        let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
+        this.elContent = $(`
 			<div class="measurement_content selectable">
 				<span class="coordinates_table_container"></span>
 				<br>
@@ -42,35 +42,35 @@ export class AnglePanel extends MeasurePanel {
 			</div>
 		`);
 
-		this.elRemove = this.elContent.find("img[name=remove]");
-		this.elRemove.click( () => {
-			this.viewer.scene.removeMeasurement(measurement);
-		});
+        this.elRemove = this.elContent.find("img[name=remove]");
+        this.elRemove.click( () => {
+            this.viewer.scene.removeMeasurement(measurement);
+        });
 
-		this.propertiesPanel.addVolatileListener(measurement, "marker_added", this._update);
-		this.propertiesPanel.addVolatileListener(measurement, "marker_removed", this._update);
-		this.propertiesPanel.addVolatileListener(measurement, "marker_moved", this._update);
+        this.propertiesPanel.addVolatileListener(measurement, "marker_added", this._update);
+        this.propertiesPanel.addVolatileListener(measurement, "marker_removed", this._update);
+        this.propertiesPanel.addVolatileListener(measurement, "marker_moved", this._update);
 
-		this.update();
-	}
+        this.update();
+    }
 
-	update() {
-		let elCoordiantesContainer = this.elContent.find('.coordinates_table_container');
-		elCoordiantesContainer.empty();
-		elCoordiantesContainer.append(this.createCoordinatesTable(this.measurement.points.map(p => p.position)));
+    update() {
+        let elCoordiantesContainer = this.elContent.find('.coordinates_table_container');
+        elCoordiantesContainer.empty();
+        elCoordiantesContainer.append(this.createCoordinatesTable(this.measurement.points.map(p => p.position)));
 
-		let angles = [];
-		for (let i = 0; i < this.measurement.points.length; i++) {
-			angles.push(this.measurement.getAngle(i) * (180.0 / Math.PI));
-		}
-		angles = angles.map(a => a.toFixed(1) + '\u00B0');
+        let angles = [];
+        for (let i = 0; i < this.measurement.points.length; i++) {
+            angles.push(this.measurement.getAngle(i) * (180.0 / Math.PI));
+        }
+        angles = angles.map(a => a.toFixed(1) + '\u00B0');
 
-		let elAlpha = this.elContent.find(`#angle_cell_alpha`);
-		let elBetta = this.elContent.find(`#angle_cell_betta`);
-		let elGamma = this.elContent.find(`#angle_cell_gamma`);
+        let elAlpha = this.elContent.find(`#angle_cell_alpha`);
+        let elBetta = this.elContent.find(`#angle_cell_betta`);
+        let elGamma = this.elContent.find(`#angle_cell_gamma`);
 
-		elAlpha.html(angles[0]);
-		elBetta.html(angles[1]);
-		elGamma.html(angles[2]);
-	}
+        elAlpha.html(angles[0]);
+        elBetta.html(angles[1]);
+        elGamma.html(angles[2]);
+    }
 }

@@ -15,89 +15,89 @@ const fsp = fs.promises;
 const JSON5 = require('json5');
 
 function toCode(files, data) {
-	let code = "";
+    let code = "";
 
-	{
-		let urls = data.map(e => e.url);
-		let unhandled = [];
-		for (let file of files) {
-			let isHandled = false;
-			for (let url of urls) {
-				if (file.indexOf(url) !== -1) {
-					isHandled = true;
-				}
-			}
+    {
+        let urls = data.map(e => e.url);
+        let unhandled = [];
+        for (let file of files) {
+            let isHandled = false;
+            for (let url of urls) {
+                if (file.indexOf(url) !== -1) {
+                    isHandled = true;
+                }
+            }
 
-			if (!isHandled) {
-				unhandled.push(file);
-			}
-		}
-		unhandled = unhandled
-			.filter(file => file.indexOf(".html") > 0)
-			.filter(file => file !== "page.html");
+            if (!isHandled) {
+                unhandled.push(file);
+            }
+        }
+        unhandled = unhandled
+            .filter(file => file.indexOf(".html") > 0)
+            .filter(file => file !== "page.html");
 
-		// for(let file of unhandled){
-		// 	unhandledCode += `
-		// 		<a href="${file}" class="unhandled">${file}</a>
-		// 	`;
-		// }
-	}
+        // for(let file of unhandled){
+        // 	unhandledCode += `
+        // 		<a href="${file}" class="unhandled">${file}</a>
+        // 	`;
+        // }
+    }
 
-	const rows = [];
-	let row = [];
-	for (let example of data) {
-		row.push(example);
+    const rows = [];
+    let row = [];
+    for (let example of data) {
+        row.push(example);
 
-		if (row.length >= 6) {
-			rows.push(row);
-			row = [];
-		}
-	}
-	rows.push(row);
+        if (row.length >= 6) {
+            rows.push(row);
+            row = [];
+        }
+    }
+    rows.push(row);
 
-	for (const row of rows) {
-		let thumbnails = "";
-		let labels = "";
+    for (const row of rows) {
+        let thumbnails = "";
+        let labels = "";
 
-		for (let example of row) {
-			let url = example.url.startsWith("http") ?
-				example.url :
-				`http://potree.org/potree/examples/${example.url}`;
+        for (let example of row) {
+            let url = example.url.startsWith("http") ?
+                example.url :
+                `http://potree.org/potree/examples/${example.url}`;
 
-			thumbnails += `<td>
+            thumbnails += `<td>
 					<a href="${url}" target="_blank">
 						<img src="examples/${example.thumb}" width="100%" />
 					</a>
 				</td>`;
 
-			labels += `<th>${example.label}</th>`;
-		}
+            labels += `<th>${example.label}</th>`;
+        }
 
-		code += `<tr>
+        code += `<tr>
 				${thumbnails}
 			</tr>
 			<tr>
 				${labels}
 			</tr>`;
-	}
+    }
 
-	return code;
+    return code;
 }
 
 async function createGithubPage() {
-	const content = await fsp.readFile("./examples/page.json", 'utf8');
-	const settings = JSON5.parse(content);
+    const content = await fsp.readFile("./examples/page.json", 'utf8');
+    const settings = JSON5.parse(content);
 
-	const files = await fsp.readdir("./examples");
+    const files = await fsp.readdir("./examples");
 
-	let unhandledCode = ``;
+    let unhandledCode = ``;
 
-	let exampleCode = toCode(files, settings.examples);
-	let vrCode = toCode(files, settings.VR);
-	let showcaseCode = toCode(files, settings.showcase);
-	let thirdpartyCode = toCode(files, settings.thirdparty);
+    let exampleCode = toCode(files, settings.examples);
+    let vrCode = toCode(files, settings.VR);
+    let showcaseCode = toCode(files, settings.showcase);
+    let thirdpartyCode = toCode(files, settings.thirdparty);
 
-	let page = `
+    let page = `
 
 		<h1>Examples</h1>
 
@@ -123,13 +123,13 @@ async function createGithubPage() {
 			${thirdpartyCode}
 		</table>`;
 
-	fs.writeFile(`examples/github.html`, page, (err) => {
-		if (err) {
-			console.log(err);
-		} else {
-			console.log(`created examples/github.html`);
-		}
-	});
+    fs.writeFile(`examples/github.html`, page, (err) => {
+        if (err) {
+            console.log(err);
+        } else {
+            console.log(`created examples/github.html`);
+        }
+    });
 }
 
 exports.createGithubPage = createGithubPage;

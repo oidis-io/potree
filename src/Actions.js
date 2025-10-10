@@ -9,44 +9,44 @@
  *
  * ********************************************************************************************************* */
 
-import {EventDispatcher} from "./EventDispatcher.js";
+import { EventDispatcher } from "./EventDispatcher.js";
 
 export class Action extends EventDispatcher {
-	constructor (args = {}) {
-		super();
+    constructor(args = {}) {
+        super();
 
-		this.icon = args.icon || '';
-		this.tooltip = args.tooltip;
+        this.icon = args.icon || '';
+        this.tooltip = args.tooltip;
 
-		if (args.onclick !== undefined) {
-			this.onclick = args.onclick;
-		}
-	}
+        if (args.onclick !== undefined) {
+            this.onclick = args.onclick;
+        }
+    }
 
-	onclick (event) {
+    onclick(event) {
 
-	}
+    }
 
-	pairWith (object) {
+    pairWith(object) {
 
-	}
+    }
 
-	setIcon (newIcon) {
-		let oldIcon = this.icon;
+    setIcon(newIcon) {
+        let oldIcon = this.icon;
 
-		if (newIcon === oldIcon) {
-			return;
-		}
+        if (newIcon === oldIcon) {
+            return;
+        }
 
-		this.icon = newIcon;
+        this.icon = newIcon;
 
-		this.dispatchEvent({
-			type: 'icon_changed',
-			action: this,
-			icon: newIcon,
-			oldIcon: oldIcon
-		});
-	}
+        this.dispatchEvent({
+            type: 'icon_changed',
+            action: this,
+            icon: newIcon,
+            oldIcon: oldIcon
+        });
+    }
 }
 
 //Potree.Actions = {};

@@ -10,12 +10,12 @@
  * ********************************************************************************************************* */
 
 export class CameraAnimationPanel {
-	constructor(viewer, propertiesPanel, animation) {
-		this.viewer = viewer;
-		this.propertiesPanel = propertiesPanel;
-		this.animation = animation;
+    constructor(viewer, propertiesPanel, animation) {
+        this.viewer = viewer;
+        this.propertiesPanel = propertiesPanel;
+        this.animation = animation;
 
-		this.elContent = $(`
+        this.elContent = $(`
 			<div class="propertypanel_content">
 				<span id="animation_keyframes"></span>
 
@@ -33,65 +33,66 @@ export class CameraAnimationPanel {
 			</div>
 		`);
 
-		const elPlay = this.elContent.find("input[name=play]");
-		elPlay.click( () => {
-			animation.play();
-		});
+        const elPlay = this.elContent.find("input[name=play]");
+        elPlay.click(() => {
+            animation.play();
+        });
 
-		const elSlider = this.elContent.find('#sldTime');
-		elSlider.slider({
-			value: 0,
-			min: 0,
-			max: 1,
-			step: 0.001,
-			slide: (event, ui) => { 
-				animation.set(ui.value);
-			}
-		});
+        const elSlider = this.elContent.find('#sldTime');
+        elSlider.slider({
+            value: 0,
+            min: 0,
+            max: 1,
+            step: 0.001,
+            slide: (event, ui) => {
+                animation.set(ui.value);
+            }
+        });
 
-		let elDuration = this.elContent.find(`input[name=spnDuration]`);
-		elDuration.spinner({
-			min: 0, max: 300, step: 0.01,
-			numberFormat: 'n',
-			start: () => {},
-			spin: (event, ui) => {
-				let value = elDuration.spinner('value');
-				animation.setDuration(value);
-			},
-			change: (event, ui) => {
-				let value = elDuration.spinner('value');
-				animation.setDuration(value);
-			},
-			stop: (event, ui) => {
-				let value = elDuration.spinner('value');
-				animation.setDuration(value);
-			},
-			incremental: (count) => {
-				let value = elDuration.spinner('value');
-				let step = elDuration.spinner('option', 'step');
+        let elDuration = this.elContent.find(`input[name=spnDuration]`);
+        elDuration.spinner({
+            min: 0, max: 300, step: 0.01,
+            numberFormat: 'n',
+            start: () => {
+            },
+            spin: (event, ui) => {
+                let value = elDuration.spinner('value');
+                animation.setDuration(value);
+            },
+            change: (event, ui) => {
+                let value = elDuration.spinner('value');
+                animation.setDuration(value);
+            },
+            stop: (event, ui) => {
+                let value = elDuration.spinner('value');
+                animation.setDuration(value);
+            },
+            incremental: (count) => {
+                let value = elDuration.spinner('value');
+                let step = elDuration.spinner('option', 'step');
 
-				let delta = value * 0.05;
-				let increments = Math.max(1, parseInt(delta / step));
+                let delta = value * 0.05;
+                let increments = Math.max(1, parseInt(delta / step));
 
-				return increments;
-			}
-		});
-		elDuration.spinner('value', animation.getDuration());
-		elDuration.spinner('widget').css('width', '100%');
+                return increments;
+            }
+        });
+        elDuration.spinner('value', animation.getDuration());
+        elDuration.spinner('widget').css('width', '100%');
 
-		const elKeyframes = this.elContent.find("#animation_keyframes");
+        const elKeyframes = this.elContent.find("#animation_keyframes");
 
-		const updateKeyframes = () => {
-			elKeyframes.empty();
+        const updateKeyframes = () => {
+            elKeyframes.empty();
 
-			//let index = 0;
+            //let index = 0;
 
-			// <span style="flex-grow: 0;">
-			// 				<img name="add" src="${Potree.resourcePath}/icons/add.svg" style="width: 1.5em; height: 1.5em"/>
-			// 			</span>
+            // <span style="flex-grow: 0;">
+            // 				<img name="add" src="${Potree.resourcePath}/icons/add.svg" style="width: 1.5em; height: 1.5em"/>
+            // 			</span>
 
-			const addNewKeyframeItem = (index) => {
-				let elNewKeyframe = $(`
+            const addNewKeyframeItem = (index) => {
+                let elNewKeyframe = $(`
 					<div style="display: flex; margin: 0.2em 0em">
 						<span style="flex-grow: 1"></span>
 						<input type="button" name="add" value="insert control point" />
@@ -99,16 +100,16 @@ export class CameraAnimationPanel {
 					</div>
 				`);
 
-				const elAdd = elNewKeyframe.find("input[name=add]");
-				elAdd.click( () => {
-					animation.createControlPoint(index);
-				});
+                const elAdd = elNewKeyframe.find("input[name=add]");
+                elAdd.click(() => {
+                    animation.createControlPoint(index);
+                });
 
-				elKeyframes.append(elNewKeyframe);
-			};
+                elKeyframes.append(elNewKeyframe);
+            };
 
-			const addKeyframeItem = (index) => {
-				let elKeyframe = $(`
+            const addKeyframeItem = (index) => {
+                let elKeyframe = $(`
 					<div style="display: flex; margin: 0.2em 0em">
 						<span style="flex-grow: 0;">
 							<img name="assign" src="${Potree.resourcePath}/icons/assign.svg" style="width: 1.5em; height: 1.5em"/>
@@ -125,54 +126,54 @@ export class CameraAnimationPanel {
 					</div>
 				`);
 
-				const elAssign = elKeyframe.find("img[name=assign]");
-				const elMove = elKeyframe.find("img[name=move]");
-				const elDelete = elKeyframe.find("img[name=delete]");
+                const elAssign = elKeyframe.find("img[name=assign]");
+                const elMove = elKeyframe.find("img[name=move]");
+                const elDelete = elKeyframe.find("img[name=delete]");
 
-				elAssign.click( () => {
-					const cp = animation.controlPoints[index];
+                elAssign.click(() => {
+                    const cp = animation.controlPoints[index];
 
-					cp.position.copy(viewer.scene.view.position);
-					cp.target.copy(viewer.scene.view.getPivot());
-				});
+                    cp.position.copy(viewer.scene.view.position);
+                    cp.target.copy(viewer.scene.view.getPivot());
+                });
 
-				elMove.click( () => {
-					const cp = animation.controlPoints[index];
+                elMove.click(() => {
+                    const cp = animation.controlPoints[index];
 
-					viewer.scene.view.position.copy(cp.position);
-					viewer.scene.view.lookAt(cp.target);
-				});
+                    viewer.scene.view.position.copy(cp.position);
+                    viewer.scene.view.lookAt(cp.target);
+                });
 
-				elDelete.click( () => {
-					const cp = animation.controlPoints[index];
-					animation.removeControlPoint(cp);
-				});
+                elDelete.click(() => {
+                    const cp = animation.controlPoints[index];
+                    animation.removeControlPoint(cp);
+                });
 
-				elKeyframes.append(elKeyframe);
-			};
+                elKeyframes.append(elKeyframe);
+            };
 
-			let index = 0;
+            let index = 0;
 
-			addNewKeyframeItem(index);
+            addNewKeyframeItem(index);
 
-			for (const cp of animation.controlPoints) {
-				addKeyframeItem(index);
-				index++;
-				addNewKeyframeItem(index);
-			}
-		};
+            for (const cp of animation.controlPoints) {
+                addKeyframeItem(index);
+                index++;
+                addNewKeyframeItem(index);
+            }
+        };
 
-		updateKeyframes();
+        updateKeyframes();
 
-		animation.addEventListener("controlpoint_added", updateKeyframes);
-		animation.addEventListener("controlpoint_removed", updateKeyframes);
+        animation.addEventListener("controlpoint_added", updateKeyframes);
+        animation.addEventListener("controlpoint_removed", updateKeyframes);
 
-		// this._update = () => { this.update(); };
+        // this._update = () => { this.update(); };
 
-		// this.update();
-	}
+        // this.update();
+    }
 
-	update() {
-		
-	}
+    update() {
+
+    }
 }

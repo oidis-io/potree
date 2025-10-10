@@ -9,7 +9,7 @@
  *
  * ********************************************************************************************************* */
 
-import {EptBinaryLoader} from "./BinaryLoader.js";
+import { EptBinaryLoader } from "./BinaryLoader.js";
 
 export class EptZstandardLoader extends EptBinaryLoader {
     extension() {

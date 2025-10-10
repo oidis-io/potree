@@ -14,21 +14,21 @@
 import * as THREE from "../../libs/three.js/build/three.module.js";
 
 Potree.BlurMaterial = class BlurMaterial extends THREE.ShaderMaterial {
-	constructor(parameters = {}) {
-		super();
+    constructor(parameters = {}) {
+        super();
 
-		let uniforms = {
-			near: { type: 'f', value: 0 },
-			far: { type: 'f', value: 0 },
-			screenWidth: { type: 'f', value: 0 },
-			screenHeight: { type: 'f', value: 0 },
-			map: { type: 't', value: null }
-		};
+        let uniforms = {
+            near: {type: 'f', value: 0},
+            far: {type: 'f', value: 0},
+            screenWidth: {type: 'f', value: 0},
+            screenHeight: {type: 'f', value: 0},
+            map: {type: 't', value: null}
+        };
 
-		this.setValues({
-			uniforms: uniforms,
-			vertexShader: Potree.Shaders['blur.vs'],
-			fragmentShader: Potree.Shaders['blur.fs']
-		});
-	}
+        this.setValues({
+            uniforms: uniforms,
+            vertexShader: Potree.Shaders['blur.vs'],
+            fragmentShader: Potree.Shaders['blur.fs']
+        });
+    }
 };
