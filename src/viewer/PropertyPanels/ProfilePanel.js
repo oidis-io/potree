@@ -11,6 +11,7 @@
 
 import * as THREE from "../../../libs/three.js/build/three.module.js";
 import { MeasurePanel } from "./MeasurePanel.js";
+import { Fetcher } from "../../utils/Fetcher";
 
 export class ProfilePanel extends MeasurePanel {
     constructor(viewer, measurement, propertiesPanel) {
@@ -205,7 +206,7 @@ export class ProfilePanel extends MeasurePanel {
 
             info("estimating results ...");
 
-            let response = await fetch(url);
+            let response = await Fetcher.download(url);
             let jsResponse = await response.json();
 
             if (!jsResponse.handle) {
@@ -268,7 +269,7 @@ export class ProfilePanel extends MeasurePanel {
             let start = Date.now();
 
             while (true) {
-                let response = await fetch(url);
+                let response = await Fetcher.download(url);
                 let jsResponse = await response.json();
 
                 if (jsResponse.status === "ERROR") {

@@ -9,13 +9,15 @@
  *
  * ********************************************************************************************************* */
 
+import { Fetcher } from "../utils/Fetcher";
+
 /**
  * @author Connor Manning
  */
 
 export class EptLoader {
     static async load(file, callback) {
-        let response = await fetch(file);
+        let response = await Fetcher.download(file);
         let json = await response.json();
 
         let url = file.substr(0, file.lastIndexOf("/ept.json"));

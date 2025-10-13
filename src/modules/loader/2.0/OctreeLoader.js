@@ -12,6 +12,7 @@
 import * as THREE from "../../../../libs/three.js/build/three.module.js";
 import { PointAttribute, PointAttributes, PointAttributeTypes } from "../../../loader/PointAttributes.js";
 import { OctreeGeometry, OctreeGeometryNode } from "./OctreeGeometry.js";
+import { Fetcher } from "../../../utils/Fetcher";
 
 // let loadedNodes = new Set();
 
@@ -46,7 +47,7 @@ export class NodeLoader {
                 buffer = new ArrayBuffer(0);
                 console.warn(`loaded node with 0 bytes: ${node.name}`);
             } else {
-                let response = await fetch(urlOctree, {
+                let response = await Fetcher.download(urlOctree, {
                     headers: {
                         "content-type": "multipart/byteranges",
                         "Range": `bytes=${first}-${last}`,
@@ -221,7 +222,7 @@ export class NodeLoader {
         let first = hierarchyByteOffset;
         let last = first + hierarchyByteSize - 1n;
 
-        let response = await fetch(hierarchyPath, {
+        let response = await Fetcher.download(hierarchyPath, {
             headers: {
                 "content-type": "multipart/byteranges",
                 "Range": `bytes=${first}-${last}`,
@@ -328,7 +329,7 @@ export class OctreeLoader {
     }
 
     static async load(url) {
-        let response = await fetch(url);
+        let response = await Fetcher.download(url);
         let metadata = await response.json();
 
         let attributes = OctreeLoader.parseAttributes(metadata.attributes);

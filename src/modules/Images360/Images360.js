@@ -11,6 +11,7 @@
 
 import * as THREE from "../../../libs/three.js/build/three.module.js";
 import { EventDispatcher } from "../../EventDispatcher.js";
+import { Fetcher } from "../../utils/Fetcher";
 
 let sg = new THREE.SphereGeometry(1, 8, 8);
 let sgHigh = new THREE.SphereGeometry(1, 128, 128);
@@ -252,7 +253,7 @@ export class Images360Loader {
             };
         }
 
-        let response = await fetch(`${url}/coordinates.txt`);
+        let response = await Fetcher.download(`${url}/coordinates.txt`);
         let text = await response.text();
 
         let lines = text.split(/\r?\n/);

@@ -10,6 +10,7 @@
  * ********************************************************************************************************* */
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
+import { Fetcher } from "../utils/Fetcher";
 
 // http://epsg.io/
 proj4.defs([
@@ -676,9 +677,7 @@ export class MapView {
         }
 
         let url = `${pointcloud.pcoGeometry.url}/../sources.json`;
-        // let response = await fetch(url);
-
-        fetch(url).then(async (response) => {
+        Fetcher.download(url).then(async (response) => {
             let data = await response.json();
 
             let sources = data.sources;

@@ -14,6 +14,7 @@ import { Line2 } from "../../libs/three.js/lines/Line2.js";
 import { LineGeometry } from "../../libs/three.js/lines/LineGeometry.js";
 import { LineMaterial } from "../../libs/three.js/lines/LineMaterial.js";
 import { Utils } from "../utils.js";
+import { Fetcher } from "../utils/Fetcher";
 
 const defaultColors = {
     "landuse": [0.5, 0.5, 0.5],
@@ -53,7 +54,7 @@ export class GeoPackageLoader {
             Utils.loadScript(`${Potree.scriptPath}/lazylibs/sql.js/sql-wasm.js`),
         ]);
 
-        const result = await fetch(url);
+        const result = await Fetcher.download(url);
         const buffer = await result.arrayBuffer();
 
         params = params || {};

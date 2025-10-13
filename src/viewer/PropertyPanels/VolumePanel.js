@@ -14,6 +14,7 @@ import { Utils } from "../../utils.js";
 import { BoxVolume, SphereVolume } from "../../utils/Volume.js";
 
 import { MeasurePanel } from "./MeasurePanel.js";
+import { Fetcher } from "../../utils/Fetcher";
 
 export class VolumePanel extends MeasurePanel {
     constructor(viewer, measurement, propertiesPanel) {
@@ -259,7 +260,7 @@ export class VolumePanel extends MeasurePanel {
 
             info("estimating results ...");
 
-            let response = await fetch(url);
+            let response = await Fetcher.download(url);
             let jsResponse = await response.json();
 
             if (!jsResponse.handle) {
@@ -322,7 +323,7 @@ export class VolumePanel extends MeasurePanel {
             let start = Date.now();
 
             while (true) {
-                let response = await fetch(url);
+                let response = await Fetcher.download(url);
                 let jsResponse = await response.json();
 
                 if (jsResponse.status === "ERROR") {

@@ -44,6 +44,7 @@ import { ClassificationScheme } from "../materials/ClassificationScheme.js";
 import { VRButton } from "../../libs/three.js/extra/VRButton.js";
 
 import JSON5 from "../../libs/json5-2.1.3/json5.mjs";
+import { Fetcher } from "../utils/Fetcher";
 
 export class Viewer extends EventDispatcher {
     constructor(domElement, args = {}) {
@@ -929,7 +930,7 @@ export class Viewer extends EventDispatcher {
     }
 
     async loadProject(url) {
-        const response = await fetch(url);
+        const response = await Fetcher.download(url);
 
         const text = await response.text();
         const json = JSON5.parse(text);

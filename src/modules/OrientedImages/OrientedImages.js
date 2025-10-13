@@ -12,6 +12,7 @@
 import * as THREE from "../../../libs/three.js/build/three.module.js";
 import { OrientedImageControls } from "./OrientedImageControls.js";
 import { EventDispatcher } from "../../EventDispatcher.js";
+import { Fetcher } from "../../utils/Fetcher";
 
 // https://support.pix4d.com/hc/en-us/articles/205675256-How-are-yaw-pitch-roll-defined
 // https://support.pix4d.com/hc/en-us/articles/202558969-How-are-omega-phi-kappa-defined
@@ -157,7 +158,7 @@ export class OrientedImages extends EventDispatcher {
 
 export class OrientedImageLoader {
     static async loadCameraParams(path) {
-        const res = await fetch(path);
+        const res = await Fetcher.download(path);
         const text = await res.text();
 
         const parser = new DOMParser();
@@ -182,7 +183,7 @@ export class OrientedImageLoader {
     }
 
     static async loadImageParams(path) {
-        const response = await fetch(path);
+        const response = await Fetcher.download(path);
         if (!response.ok) {
             console.error(`failed to load ${path}`);
             return;

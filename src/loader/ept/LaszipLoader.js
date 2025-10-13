@@ -10,6 +10,7 @@
  * ********************************************************************************************************* */
 
 import * as THREE from "../../../libs/three.js/build/three.module.js";
+import { Fetcher } from "../../utils/Fetcher";
 
 export class EptLaszipLoader {
     async load(node) {
@@ -18,7 +19,7 @@ export class EptLaszipLoader {
         const {Key} = window.Copc;
 
         const url = `${node.owner.base}/ept-data/${Key.toString(node.key)}.laz`;
-        const response = await fetch(url);
+        const response = await Fetcher.download(url);
         const buffer = await response.arrayBuffer();
         this.parse(node, buffer);
     }

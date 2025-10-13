@@ -12,6 +12,7 @@
 import { PointCloudTreeNode } from "./PointCloudTree.js";
 import { PointAttributes, PointAttribute, PointAttributeTypes } from "./loader/PointAttributes.js";
 import * as THREE from "../libs/three.js/build/three.module.js";
+import { Fetcher } from "./utils/Fetcher";
 
 class U {
     static toVector3(v, offset) {
@@ -170,7 +171,7 @@ export class PointCloudEptGeometry extends BaseGeometry {
         const {Ept, Key} = window.Copc;
 
         const filename = `${this.base}/ept-hierarchy/${Key.toString(key)}.json`;
-        const response = await fetch(filename);
+        const response = await Fetcher.download(filename);
         const json = await response.json();
         return Ept.Hierarchy.parse(json);
     }

@@ -70,6 +70,7 @@ export * from "./utils/VolumeTool.js";
 export * from "./utils/Compass.js";
 
 export * from "./viewer/viewer.js";
+export * from "./utils/Fetcher.js";
 export * from "./viewer/Scene.js";
 export * from "./viewer/HierarchicalSlider.js";
 
