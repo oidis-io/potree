@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -9,373 +10,345 @@
  * ********************************************************************************************************* */
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
-import {Annotation} from "../Annotation.js";
-import {Measure} from "../utils/Measure.js";
-import {CameraAnimation} from "../modules/CameraAnimation/CameraAnimation.js";
-import {Utils} from "../utils.js";
-import {PointSizeType} from "../defines.js";
+import { Annotation } from "../Annotation.js";
+import { Measure } from "../utils/Measure.js";
+import { CameraAnimation } from "../modules/CameraAnimation/CameraAnimation.js";
+import { Utils } from "../utils.js";
+import { PointSizeType } from "../defines.js";
 
-function loadPointCloud(viewer, data){
+function loadPointCloud(viewer, data) {
+    let loadMaterial = (target) => {
+        if (data.material) {
+            if (data.material.activeAttributeName != null) {
+                target.activeAttributeName = data.material.activeAttributeName;
+            }
 
-	let loadMaterial = (target) => {
+            if (data.material.ranges != null) {
+                for (let range of data.material.ranges) {
+                    if (range.name === "elevationRange") {
+                        target.elevationRange = range.value;
+                    } else if (range.name === "intensityRange") {
+                        target.intensityRange = range.value;
+                    } else {
+                        target.setRange(range.name, range.value);
+                    }
+                }
+            }
 
-		if(data.material){
+            if (data.material.size != null) {
+                target.size = data.material.size;
+            }
 
-			if(data.material.activeAttributeName != null){
-				target.activeAttributeName = data.material.activeAttributeName;
-			}
+            if (data.material.minSize != null) {
+                target.minSize = data.material.minSize;
+            }
 
-			if(data.material.ranges != null){
-				for(let range of data.material.ranges){
+            if (data.material.pointSizeType != null) {
+                target.pointSizeType = PointSizeType[data.material.pointSizeType];
+            }
 
-					if(range.name === "elevationRange"){
-						target.elevationRange = range.value;
-					}else if(range.name === "intensityRange"){
-						target.intensityRange = range.value;
-					}else{
-						target.setRange(range.name, range.value);
-					}
+            if (data.material.matcap != null) {
+                target.matcap = data.material.matcap;
+            }
+        } else if (data.activeAttributeName != null) {
+            target.activeAttributeName = data.activeAttributeName;
+        }
+    };
 
-				}
-			}
+    const promise = new Promise((resolve) => {
+        const names = viewer.scene.pointclouds.map(p => p.name);
+        const alreadyExists = names.includes(data.name);
 
-			if(data.material.size != null){
-				target.size = data.material.size;
-			}
+        if (alreadyExists) {
+            resolve();
+            return;
+        }
 
-			if(data.material.minSize != null){
-				target.minSize = data.material.minSize;
-			}
+        Potree.loadPointCloud(data.url, data.name, (e) => {
+            const {pointcloud} = e;
 
-			if(data.material.pointSizeType != null){
-				target.pointSizeType = PointSizeType[data.material.pointSizeType];
-			}
+            pointcloud.position.set(...data.position);
+            pointcloud.rotation.set(...data.rotation);
+            pointcloud.scale.set(...data.scale);
 
-			if(data.material.matcap != null){
-				target.matcap = data.material.matcap;
-			}
+            loadMaterial(pointcloud.material);
 
-		}else if(data.activeAttributeName != null){
-			target.activeAttributeName = data.activeAttributeName;
-		}else{
-			// no material data
-		}
+            viewer.scene.addPointCloud(pointcloud);
 
-	};
+            resolve(pointcloud);
+        });
+    });
 
-	const promise = new Promise((resolve) => {
-
-		const names = viewer.scene.pointclouds.map(p => p.name);
-		const alreadyExists = names.includes(data.name);
-
-		if(alreadyExists){
-			resolve();
-			return;
-		}
-
-		Potree.loadPointCloud(data.url, data.name, (e) => {
-			const {pointcloud} = e;
-
-			pointcloud.position.set(...data.position);
-			pointcloud.rotation.set(...data.rotation);
-			pointcloud.scale.set(...data.scale);
-
-			loadMaterial(pointcloud.material);
-
-			viewer.scene.addPointCloud(pointcloud);
-
-			resolve(pointcloud);
-		});
-	});
-
-	return promise;
+    return promise;
 }
 
-function loadMeasurement(viewer, data){
+function loadMeasurement(viewer, data) {
+    const duplicate = viewer.scene.measurements.find(measure => measure.uuid === data.uuid);
+    if (duplicate) {
+        return;
+    }
 
-	const duplicate = viewer.scene.measurements.find(measure => measure.uuid === data.uuid);
-	if(duplicate){
-		return;
-	}
+    const measure = new Measure();
 
-	const measure = new Measure();
+    measure.uuid = data.uuid;
+    measure.name = data.name;
+    measure.showDistances = data.showDistances;
+    measure.showCoordinates = data.showCoordinates;
+    measure.showArea = data.showArea;
+    measure.closed = data.closed;
+    measure.showAngles = data.showAngles;
+    measure.showHeight = data.showHeight;
+    measure.showCircle = data.showCircle;
+    measure.showAzimuth = data.showAzimuth;
+    measure.showEdges = data.showEdges;
+    // color
 
-	measure.uuid = data.uuid;
-	measure.name = data.name;
-	measure.showDistances = data.showDistances;
-	measure.showCoordinates = data.showCoordinates;
-	measure.showArea = data.showArea;
-	measure.closed = data.closed;
-	measure.showAngles = data.showAngles;
-	measure.showHeight = data.showHeight;
-	measure.showCircle = data.showCircle;
-	measure.showAzimuth = data.showAzimuth;
-	measure.showEdges = data.showEdges;
-	// color
+    for (const point of data.points) {
+        const pos = new THREE.Vector3(...point);
+        measure.addMarker(pos);
+    }
 
-	for(const point of data.points){
-		const pos = new THREE.Vector3(...point);
-		measure.addMarker(pos);
-	}
-
-	viewer.scene.addMeasurement(measure);
-
+    viewer.scene.addMeasurement(measure);
 }
 
-function loadVolume(viewer, data){
+function loadVolume(viewer, data) {
+    const duplicate = viewer.scene.volumes.find(volume => volume.uuid === data.uuid);
+    if (duplicate) {
+        return;
+    }
 
-	const duplicate = viewer.scene.volumes.find(volume => volume.uuid === data.uuid);
-	if(duplicate){
-		return;
-	}
+    let volume = new Potree[data.type];
 
-	let volume = new Potree[data.type];
+    volume.uuid = data.uuid;
+    volume.name = data.name;
+    volume.position.set(...data.position);
+    volume.rotation.set(...data.rotation);
+    volume.scale.set(...data.scale);
+    volume.visible = data.visible;
+    volume.clip = data.clip;
 
-	volume.uuid = data.uuid;
-	volume.name = data.name;
-	volume.position.set(...data.position);
-	volume.rotation.set(...data.rotation);
-	volume.scale.set(...data.scale);
-	volume.visible = data.visible;
-	volume.clip = data.clip;
-
-	viewer.scene.addVolume(volume);
+    viewer.scene.addVolume(volume);
 }
 
-function loadCameraAnimation(viewer, data){
+function loadCameraAnimation(viewer, data) {
+    const duplicate = viewer.scene.cameraAnimations.find(a => a.uuid === data.uuid);
+    if (duplicate) {
+        return;
+    }
 
-	const duplicate = viewer.scene.cameraAnimations.find(a => a.uuid === data.uuid);
-	if(duplicate){
-		return;
-	}
+    const animation = new CameraAnimation(viewer);
 
-	const animation = new CameraAnimation(viewer);
+    animation.uuid = data.uuid;
+    animation.name = data.name;
+    animation.duration = data.duration;
+    animation.t = data.t;
+    animation.curveType = data.curveType;
+    animation.visible = data.visible;
+    animation.controlPoints = [];
 
-	animation.uuid = data.uuid;
-	animation.name = data.name;
-	animation.duration = data.duration;
-	animation.t = data.t;
-	animation.curveType = data.curveType;
-	animation.visible = data.visible;
-	animation.controlPoints = [];
+    for (const cpdata of data.controlPoints) {
+        const cp = animation.createControlPoint();
 
-	for(const cpdata of data.controlPoints){
-		const cp = animation.createControlPoint();
+        cp.position.set(...cpdata.position);
+        cp.target.set(...cpdata.target);
+    }
 
-		cp.position.set(...cpdata.position);
-		cp.target.set(...cpdata.target);
-	}
-
-	viewer.scene.addCameraAnimation(animation);
+    viewer.scene.addCameraAnimation(animation);
 }
 
-function loadOrientedImages(viewer, images){
+function loadOrientedImages(viewer, images) {
+    const {cameraParamsPath, imageParamsPath} = images;
 
-	const {cameraParamsPath, imageParamsPath} = images;
+    const duplicate = viewer.scene.orientedImages.find(i => i.imageParamsPath === imageParamsPath);
+    if (duplicate) {
+        return;
+    }
 
-	const duplicate = viewer.scene.orientedImages.find(i => i.imageParamsPath === imageParamsPath);
-	if(duplicate){
-		return;
-	}
-
-	Potree.OrientedImageLoader.load(cameraParamsPath, imageParamsPath, viewer).then( images => {
-		viewer.scene.addOrientedImages(images);
-	});
-
+    Potree.OrientedImageLoader.load(cameraParamsPath, imageParamsPath, viewer).then(images => {
+        viewer.scene.addOrientedImages(images);
+    });
 }
 
-function loadGeopackage(viewer, geopackage){
+function loadGeopackage(viewer, geopackage) {
+    const path = geopackage.path;
 
-	const path = geopackage.path;
+    const duplicate = viewer.scene.geopackages.find(i => i.path === path);
+    if (duplicate) {
+        return;
+    }
 
-	const duplicate = viewer.scene.geopackages.find(i => i.path === path);
-	if(duplicate){
-		return;
-	}
+    const projection = viewer.getProjection();
 
-	const projection = viewer.getProjection();
+    proj4.defs("WGS84", "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs");
+    proj4.defs("pointcloud", projection);
+    const transform = proj4("WGS84", "pointcloud");
+    const params = {
+        transform: transform,
+    };
 
-	proj4.defs("WGS84", "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs");
-	proj4.defs("pointcloud", projection);
-	const transform = proj4("WGS84", "pointcloud");
-	const params = {
-		transform: transform,
-	};
-
-	Potree.GeoPackageLoader.loadUrl(path, params).then(data => {
-		viewer.scene.addGeopackage(data);
-	});
-	
-
+    Potree.GeoPackageLoader.loadUrl(path, params).then(data => {
+        viewer.scene.addGeopackage(data);
+    });
 }
 
-function loadSettings(viewer, data){
-	if(!data){
-		return;
-	}
+function loadSettings(viewer, data) {
+    if (!data) {
+        return;
+    }
 
-	viewer.setPointBudget(data.pointBudget);
-	viewer.setFOV(data.fov);
-	viewer.setEDLEnabled(data.edlEnabled);
-	viewer.setEDLRadius(data.edlRadius);
-	viewer.setEDLStrength(data.edlStrength);
-	viewer.setBackground(data.background);
-	viewer.setMinNodeSize(data.minNodeSize);
-	viewer.setShowBoundingBox(data.showBoundingBoxes);
+    viewer.setPointBudget(data.pointBudget);
+    viewer.setFOV(data.fov);
+    viewer.setEDLEnabled(data.edlEnabled);
+    viewer.setEDLRadius(data.edlRadius);
+    viewer.setEDLStrength(data.edlStrength);
+    viewer.setBackground(data.background);
+    viewer.setMinNodeSize(data.minNodeSize);
+    viewer.setShowBoundingBox(data.showBoundingBoxes);
 }
 
-function loadView(viewer, view){
-	viewer.scene.view.position.set(...view.position);
-	viewer.scene.view.lookAt(...view.target);
+function loadView(viewer, view) {
+    viewer.scene.view.position.set(...view.position);
+    viewer.scene.view.lookAt(...view.target);
 }
 
-function loadAnnotationItem(item){
+function loadAnnotationItem(item) {
+    const annotation = new Annotation({
+        position: item.position,
+        title: item.title,
+        cameraPosition: item.cameraPosition,
+        cameraTarget: item.cameraTarget,
+    });
 
-	const annotation = new Annotation({
-		position: item.position,
-		title: item.title,
-		cameraPosition: item.cameraPosition,
-		cameraTarget: item.cameraTarget,
-	});
+    annotation.description = item.description;
+    annotation.uuid = item.uuid;
 
+    if (item.offset) {
+        annotation.offset.set(...item.offset);
+    }
 
-	annotation.description = item.description;
-	annotation.uuid = item.uuid;
-
-	if(item.offset){
-		annotation.offset.set(...item.offset);
-	}
-
-	return annotation;
+    return annotation;
 }
 
-function loadAnnotations(viewer, data){
+function loadAnnotations(viewer, data) {
+    if (!data) {
+        return;
+    }
 
-	if(!data){
-		return;
-	}
+    const findDuplicate = (item) => {
+        let duplicate = null;
 
-	const findDuplicate = (item) => {
+        viewer.scene.annotations.traverse(a => {
+            if (a.uuid === item.uuid) {
+                duplicate = a;
+            }
+        });
 
-		let duplicate = null;
+        return duplicate;
+    };
 
-		viewer.scene.annotations.traverse( a => {
-			if(a.uuid === item.uuid){
-				duplicate = a;
-			}
-		});
+    const traverse = (item, parent) => {
+        const duplicate = findDuplicate(item);
+        if (duplicate) {
+            return;
+        }
 
-		return duplicate;
-	};
+        const annotation = loadAnnotationItem(item);
 
-	const traverse = (item, parent) => {
+        for (const childItem of item.children) {
+            traverse(childItem, annotation);
+        }
 
-		const duplicate = findDuplicate(item);
-		if(duplicate){
-			return;
-		}
+        parent.add(annotation);
+    };
 
-		const annotation = loadAnnotationItem(item);
-
-		for(const childItem of item.children){
-			traverse(childItem, annotation);
-		}
-
-		parent.add(annotation);
-
-	};
-
-	for(const item of data){
-		traverse(item, viewer.scene.annotations);
-	}
-
+    for (const item of data) {
+        traverse(item, viewer.scene.annotations);
+    }
 }
 
-function loadProfile(viewer, data){
-	
-	const {name, points} = data;
+function loadProfile(viewer, data) {
+    const {name, points} = data;
 
-	const duplicate = viewer.scene.profiles.find(profile => profile.uuid === data.uuid);
-	if(duplicate){
-		return;
-	}
+    const duplicate = viewer.scene.profiles.find(profile => profile.uuid === data.uuid);
+    if (duplicate) {
+        return;
+    }
 
-	let profile = new Potree.Profile();
-	profile.name = name;
-	profile.uuid = data.uuid;
+    let profile = new Potree.Profile();
+    profile.name = name;
+    profile.uuid = data.uuid;
 
-	profile.setWidth(data.width);
+    profile.setWidth(data.width);
 
-	for(const point of points){
-		profile.addMarker(new THREE.Vector3(...point));
-	}
-	
-	viewer.scene.addProfile(profile);
+    for (const point of points) {
+        profile.addMarker(new THREE.Vector3(...point));
+    }
+
+    viewer.scene.addProfile(profile);
 }
 
-function loadClassification(viewer, data){
-	if(!data){
-		return;
-	}
+function loadClassification(viewer, data) {
+    if (!data) {
+        return;
+    }
 
-	const classifications = data;
+    const classifications = data;
 
-	viewer.setClassifications(classifications);
+    viewer.setClassifications(classifications);
 }
 
-export async function loadProject(viewer, data){
+export async function loadProject(viewer, data) {
+    if (data.type !== "Potree") {
+        console.error("not a valid Potree project");
+        return;
+    }
 
-	if(data.type !== "Potree"){
-		console.error("not a valid Potree project");
-		return;
-	}
+    loadSettings(viewer, data.settings);
 
-	loadSettings(viewer, data.settings);
+    loadView(viewer, data.view);
 
-	loadView(viewer, data.view);
+    const pointcloudPromises = [];
+    for (const pointcloud of data.pointclouds) {
+        const promise = loadPointCloud(viewer, pointcloud);
+        pointcloudPromises.push(promise);
+    }
 
-	const pointcloudPromises = [];
-	for(const pointcloud of data.pointclouds){
-		const promise = loadPointCloud(viewer, pointcloud);
-		pointcloudPromises.push(promise);
-	}
+    for (const measure of data.measurements) {
+        loadMeasurement(viewer, measure);
+    }
 
-	for(const measure of data.measurements){
-		loadMeasurement(viewer, measure);
-	}
+    for (const volume of data.volumes) {
+        loadVolume(viewer, volume);
+    }
 
-	for(const volume of data.volumes){
-		loadVolume(viewer, volume);
-	}
+    for (const animation of data.cameraAnimations) {
+        loadCameraAnimation(viewer, animation);
+    }
 
-	for(const animation of data.cameraAnimations){
-		loadCameraAnimation(viewer, animation);
-	}
+    for (const profile of data.profiles) {
+        loadProfile(viewer, profile);
+    }
 
-	for(const profile of data.profiles){
-		loadProfile(viewer, profile);
-	}
+    if (data.orientedImages) {
+        for (const images of data.orientedImages) {
+            loadOrientedImages(viewer, images);
+        }
+    }
 
-	if(data.orientedImages){
-		for(const images of data.orientedImages){
-			loadOrientedImages(viewer, images);
-		}
-	}
+    loadAnnotations(viewer, data.annotations);
 
-	loadAnnotations(viewer, data.annotations);
+    loadClassification(viewer, data.classification);
 
-	loadClassification(viewer, data.classification);
+    // need to load at least one point cloud that defines the scene projection,
+    // before we can load stuff in other projections such as geopackages
+    // await Promise.any(pointcloudPromises); // (not yet supported)
+    Utils.waitAny(pointcloudPromises).then(() => {
+        if (data.geopackages) {
+            for (const geopackage of data.geopackages) {
+                loadGeopackage(viewer, geopackage);
+            }
+        }
+    });
 
-	// need to load at least one point cloud that defines the scene projection,
-	// before we can load stuff in other projections such as geopackages
-	//await Promise.any(pointcloudPromises); // (not yet supported)
-	Utils.waitAny(pointcloudPromises).then( () => {
-		if(data.geopackages){
-			for(const geopackage of data.geopackages){
-				loadGeopackage(viewer, geopackage);
-			}
-		}
-	});
-
-	await Promise.all(pointcloudPromises);
+    await Promise.all(pointcloudPromises);
 }

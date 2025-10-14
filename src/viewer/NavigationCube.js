@@ -46,78 +46,78 @@ export class NavigationCube extends THREE.Object3D {
     cubeMap = {
         corners: {
             FRONT: {
-                0: {links: [{side: 'LEFT', id: 2}, {side: 'BOTTOM', id: 0}], name: "BOTTOM_FRONT_LEFT"},
-                1: {links: [{side: 'LEFT', id: 0}, {side: 'TOP', id: 0}], name: "TOP_FRONT_LEFT"},
-                2: {links: [{side: 'RIGHT', id: 2}, {side: 'BOTTOM', id: 2}], name: "BOTTOM_FRONT_RIGHT"},
-                3: {links: [{side: 'RIGHT', id: 0}, {side: 'TOP', id: 2}], name: "TOP_FRONT_RIGHT"}
+                0: {links: [{side: "LEFT", id: 2}, {side: "BOTTOM", id: 0}], name: "BOTTOM_FRONT_LEFT"},
+                1: {links: [{side: "LEFT", id: 0}, {side: "TOP", id: 0}], name: "TOP_FRONT_LEFT"},
+                2: {links: [{side: "RIGHT", id: 2}, {side: "BOTTOM", id: 2}], name: "BOTTOM_FRONT_RIGHT"},
+                3: {links: [{side: "RIGHT", id: 0}, {side: "TOP", id: 2}], name: "TOP_FRONT_RIGHT"}
             },
             BACK: {
-                0: {links: [{side: 'LEFT', id: 1}, {side: 'TOP', id: 1}], name: "TOP_BACK_LEFT"},
-                1: {links: [{side: 'LEFT', id: 3}, {side: 'BOTTOM', id: 1}], name: "BOTTOM_BACK_LEFT"},
-                2: {links: [{side: 'RIGHT', id: 1}, {side: 'TOP', id: 3}], name: "TOP_BACK_RIGHT"},
-                3: {links: [{side: 'RIGHT', id: 3}, {side: 'BOTTOM', id: 3}], name: "BOTTOM_BACK_RIGHT"}
+                0: {links: [{side: "LEFT", id: 1}, {side: "TOP", id: 1}], name: "TOP_BACK_LEFT"},
+                1: {links: [{side: "LEFT", id: 3}, {side: "BOTTOM", id: 1}], name: "BOTTOM_BACK_LEFT"},
+                2: {links: [{side: "RIGHT", id: 1}, {side: "TOP", id: 3}], name: "TOP_BACK_RIGHT"},
+                3: {links: [{side: "RIGHT", id: 3}, {side: "BOTTOM", id: 3}], name: "BOTTOM_BACK_RIGHT"}
             },
             LEFT: {
-                0: {links: [{side: 'FRONT', id: 1}, {side: 'TOP', id: 0}], name: "TOP_FRONT_LEFT"},
-                1: {links: [{side: 'BACK', id: 0}, {side: 'TOP', id: 1}], name: "TOP_BACK_LEFT"},
-                2: {links: [{side: 'FRONT', id: 0}, {side: 'BOTTOM', id: 0}], name: "BOTTOM_FRONT_LEFT"},
-                3: {links: [{side: 'BACK', id: 1}, {side: 'BOTTOM', id: 1}], name: "BOTTOM_BACK_LEFT"}
+                0: {links: [{side: "FRONT", id: 1}, {side: "TOP", id: 0}], name: "TOP_FRONT_LEFT"},
+                1: {links: [{side: "BACK", id: 0}, {side: "TOP", id: 1}], name: "TOP_BACK_LEFT"},
+                2: {links: [{side: "FRONT", id: 0}, {side: "BOTTOM", id: 0}], name: "BOTTOM_FRONT_LEFT"},
+                3: {links: [{side: "BACK", id: 1}, {side: "BOTTOM", id: 1}], name: "BOTTOM_BACK_LEFT"}
             },
             RIGHT: {
-                0: {links: [{side: 'FRONT', id: 3}, {side: 'TOP', id: 2}], name: "TOP_FRONT_RIGHT"},
-                1: {links: [{side: 'BACK', id: 2}, {side: 'TOP', id: 3}], name: "TOP_BACK_RIGHT"},
-                2: {links: [{side: 'FRONT', id: 2}, {side: 'BOTTOM', id: 2}], name: "BOTTOM_FRONT_RIGHT"},
-                3: {links: [{side: 'BACK', id: 3}, {side: 'BOTTOM', id: 3}], name: "BOTTOM_BACK_RIGHT"}
+                0: {links: [{side: "FRONT", id: 3}, {side: "TOP", id: 2}], name: "TOP_FRONT_RIGHT"},
+                1: {links: [{side: "BACK", id: 2}, {side: "TOP", id: 3}], name: "TOP_BACK_RIGHT"},
+                2: {links: [{side: "FRONT", id: 2}, {side: "BOTTOM", id: 2}], name: "BOTTOM_FRONT_RIGHT"},
+                3: {links: [{side: "BACK", id: 3}, {side: "BOTTOM", id: 3}], name: "BOTTOM_BACK_RIGHT"}
             },
             TOP: {
-                0: {links: [{side: 'FRONT', id: 1}, {side: 'LEFT', id: 0}], name: "TOP_FRONT_LEFT"},
-                1: {links: [{side: 'BACK', id: 0}, {side: 'LEFT', id: 1}], name: "TOP_BACK_LEFT"},
-                2: {links: [{side: 'FRONT', id: 3}, {side: 'RIGHT', id: 0}], name: "TOP_FRONT_RIGHT"},
-                3: {links: [{side: 'BACK', id: 2}, {side: 'RIGHT', id: 1}], name: "TOP_BACK_RIGHT"}
+                0: {links: [{side: "FRONT", id: 1}, {side: "LEFT", id: 0}], name: "TOP_FRONT_LEFT"},
+                1: {links: [{side: "BACK", id: 0}, {side: "LEFT", id: 1}], name: "TOP_BACK_LEFT"},
+                2: {links: [{side: "FRONT", id: 3}, {side: "RIGHT", id: 0}], name: "TOP_FRONT_RIGHT"},
+                3: {links: [{side: "BACK", id: 2}, {side: "RIGHT", id: 1}], name: "TOP_BACK_RIGHT"}
             },
             BOTTOM: {
-                0: {links: [{side: 'FRONT', id: 0}, {side: 'LEFT', id: 2}], name: "BOTTOM_FRONT_LEFT"},
-                1: {links: [{side: 'BACK', id: 1}, {side: 'LEFT', id: 3}], name: "BOTTOM_BACK_LEFT"},
-                2: {links: [{side: 'FRONT', id: 2}, {side: 'RIGHT', id: 2}], name: "BOTTOM_FRONT_RIGHT"},
-                3: {links: [{side: 'BACK', id: 3}, {side: 'RIGHT', id: 3}], name: "BOTTOM_BACK_RIGHT"}
+                0: {links: [{side: "FRONT", id: 0}, {side: "LEFT", id: 2}], name: "BOTTOM_FRONT_LEFT"},
+                1: {links: [{side: "BACK", id: 1}, {side: "LEFT", id: 3}], name: "BOTTOM_BACK_LEFT"},
+                2: {links: [{side: "FRONT", id: 2}, {side: "RIGHT", id: 2}], name: "BOTTOM_FRONT_RIGHT"},
+                3: {links: [{side: "BACK", id: 3}, {side: "RIGHT", id: 3}], name: "BOTTOM_BACK_RIGHT"}
             }
         },
         edges: {
             FRONT: {
-                0: {links: [{side: 'TOP', id: 1}], name: "TOP_FRONT"},
-                1: {links: [{side: 'BOTTOM', id: 1}], name: "BOTTOM_FRONT"},
-                2: {links: [{side: 'LEFT', id: 1}], name: "FRONT_LEFT"},
-                3: {links: [{side: 'RIGHT', id: 1}], name: "FRONT_RIGHT"}
+                0: {links: [{side: "TOP", id: 1}], name: "TOP_FRONT"},
+                1: {links: [{side: "BOTTOM", id: 1}], name: "BOTTOM_FRONT"},
+                2: {links: [{side: "LEFT", id: 1}], name: "FRONT_LEFT"},
+                3: {links: [{side: "RIGHT", id: 1}], name: "FRONT_RIGHT"}
             },
             BACK: {
-                0: {links: [{side: 'BOTTOM', id: 0}], name: "BOTTOM_BACK"},
-                1: {links: [{side: 'TOP', id: 0}], name: "TOP_BACK"},
-                2: {links: [{side: 'LEFT', id: 0}], name: "BACK_LEFT"},
-                3: {links: [{side: 'RIGHT', id: 0}], name: "BACK_RIGHT"}
+                0: {links: [{side: "BOTTOM", id: 0}], name: "BOTTOM_BACK"},
+                1: {links: [{side: "TOP", id: 0}], name: "TOP_BACK"},
+                2: {links: [{side: "LEFT", id: 0}], name: "BACK_LEFT"},
+                3: {links: [{side: "RIGHT", id: 0}], name: "BACK_RIGHT"}
             },
             LEFT: {
-                0: {links: [{side: 'BACK', id: 2}], name: "BACK_LEFT"},
-                1: {links: [{side: 'FRONT', id: 2}], name: "FRONT_LEFT"},
-                2: {links: [{side: 'TOP', id: 2}], name: "TOP_LEFT"},
-                3: {links: [{side: 'BOTTOM', id: 2}], name: "BOTTOM_LEFT"}
+                0: {links: [{side: "BACK", id: 2}], name: "BACK_LEFT"},
+                1: {links: [{side: "FRONT", id: 2}], name: "FRONT_LEFT"},
+                2: {links: [{side: "TOP", id: 2}], name: "TOP_LEFT"},
+                3: {links: [{side: "BOTTOM", id: 2}], name: "BOTTOM_LEFT"}
             },
             RIGHT: {
-                0: {links: [{side: 'BACK', id: 3}], name: "BACK_RIGHT"},
-                1: {links: [{side: 'FRONT', id: 3}], name: "FRONT_RIGHT"},
-                2: {links: [{side: 'TOP', id: 3}], name: "TOP_RIGHT"},
-                3: {links: [{side: 'BOTTOM', id: 3}], name: "BOTTOM_RIGHT"}
+                0: {links: [{side: "BACK", id: 3}], name: "BACK_RIGHT"},
+                1: {links: [{side: "FRONT", id: 3}], name: "FRONT_RIGHT"},
+                2: {links: [{side: "TOP", id: 3}], name: "TOP_RIGHT"},
+                3: {links: [{side: "BOTTOM", id: 3}], name: "BOTTOM_RIGHT"}
             },
             TOP: {
-                0: {links: [{side: 'BACK', id: 1}], name: "TOP_BACK"},
-                1: {links: [{side: 'FRONT', id: 0}], name: "TOP_FRONT"},
-                2: {links: [{side: 'LEFT', id: 2}], name: "TOP_LEFT"},
-                3: {links: [{side: 'RIGHT', id: 2}], name: "TOP_RIGHT"}
+                0: {links: [{side: "BACK", id: 1}], name: "TOP_BACK"},
+                1: {links: [{side: "FRONT", id: 0}], name: "TOP_FRONT"},
+                2: {links: [{side: "LEFT", id: 2}], name: "TOP_LEFT"},
+                3: {links: [{side: "RIGHT", id: 2}], name: "TOP_RIGHT"}
             },
             BOTTOM: {
-                0: {links: [{side: 'BACK', id: 0}], name: "BOTTOM_BACK"},
-                1: {links: [{side: 'FRONT', id: 1}], name: "BOTTOM_FRONT"},
-                2: {links: [{side: 'LEFT', id: 3}], name: "BOTTOM_LEFT"},
-                3: {links: [{side: 'RIGHT', id: 3}], name: "BOTTOM_RIGHT"}
+                0: {links: [{side: "BACK", id: 0}], name: "BOTTOM_BACK"},
+                1: {links: [{side: "FRONT", id: 1}], name: "BOTTOM_FRONT"},
+                2: {links: [{side: "LEFT", id: 3}], name: "BOTTOM_LEFT"},
+                3: {links: [{side: "RIGHT", id: 3}], name: "BOTTOM_RIGHT"}
             }
         }
     };
@@ -151,10 +151,10 @@ export class NavigationCube extends THREE.Object3D {
         });
         this.navRenderer.setPixelRatio(window.devicePixelRatio * this.width);
         this.navRenderer.setSize(this.width, this.width);
-        this.navRenderer.domElement.style.position = 'absolute';
-        this.navRenderer.domElement.style.right = '0px';
-        this.navRenderer.domElement.style.bottom = '0px';
-        this.navRenderer.domElement.style.pointerEvents = 'none';
+        this.navRenderer.domElement.style.position = "absolute";
+        this.navRenderer.domElement.style.right = "0px";
+        this.navRenderer.domElement.style.bottom = "0px";
+        this.navRenderer.domElement.style.pointerEvents = "none";
         document.body.appendChild(this.navRenderer.domElement);
         viewer.postRenderCallbacks = viewer.postRenderCallbacks || [];
         viewer.postRenderCallbacks.push(() => {
@@ -163,36 +163,36 @@ export class NavigationCube extends THREE.Object3D {
             this.navRenderer.render(this, this.camera);
         });
 
-        this.front = this.createSide('FRONT');
+        this.front = this.createSide("FRONT");
         this.front.rotation.x = Math.PI / 2;
         this.front.position.y = -0.5;
         this.front.updateMatrixWorld();
         this.add(this.front);
 
-        this.back = this.createSide('BACK');
+        this.back = this.createSide("BACK");
         this.back.rotation.x = -Math.PI / 2;
         this.back.position.y = 0.5;
         this.back.updateMatrixWorld();
         this.add(this.back);
 
-        this.left = this.createSide('LEFT');
+        this.left = this.createSide("LEFT");
         this.left.rotation.y = Math.PI / 2;
         this.left.position.x = -0.5;
         this.left.updateMatrixWorld();
         this.add(this.left);
 
-        this.right = this.createSide('RIGHT');
+        this.right = this.createSide("RIGHT");
         this.right.rotation.y = Math.PI / 2;
         this.right.position.x = 0.5;
         this.right.updateMatrixWorld();
         this.add(this.right);
 
-        this.bottom = this.createSide('BOTTOM');
+        this.bottom = this.createSide("BOTTOM");
         this.bottom.position.z = -0.5;
         this.bottom.updateMatrixWorld();
         this.add(this.bottom);
 
-        this.top = this.createSide('TOP');
+        this.top = this.createSide("TOP");
         this.top.position.z = 0.5;
         this.top.updateMatrixWorld();
         this.add(this.top);
@@ -205,7 +205,7 @@ export class NavigationCube extends THREE.Object3D {
             this.edgeMeshes[side] = sideGroup.children.filter(o => o.userData.type === "edge");
         });
 
-        window.addEventListener('resize', () => {
+        window.addEventListener("resize", () => {
             this.navRenderer.setSize(this.width, this.width);
         });
 
@@ -213,17 +213,17 @@ export class NavigationCube extends THREE.Object3D {
             this.onMouseMove(event);
         });
 
-        this.viewer.renderer.domElement.addEventListener('mousedown', (event) => {
+        this.viewer.renderer.domElement.addEventListener("mousedown", (event) => {
             this.onMouseDown(event);
         }, false);
     }
 
-    createTextLabel(text, size = 256, color = '#000000', background = null) {
+    createTextLabel(text, size = 256, color = "#000000", background = null) {
         const dpi = window.devicePixelRatio || 1;
-        const canvas = document.createElement('canvas');
+        const canvas = document.createElement("canvas");
         canvas.width = size * dpi;
         canvas.height = size * dpi;
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext("2d");
         ctx.scale(dpi, dpi);
 
         if (background) {
@@ -233,8 +233,8 @@ export class NavigationCube extends THREE.Object3D {
 
         ctx.fillStyle = color;
         ctx.font = `${size / 5}px Arial`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
         ctx.fillText(text, size / 2, size / 2);
 
         const texture = new THREE.CanvasTexture(canvas);
@@ -303,24 +303,24 @@ export class NavigationCube extends THREE.Object3D {
         };
 
         switch (name.toLowerCase()) {
-            case 'top':
-            case 'front':
+            case "top":
+            case "front":
                 textMesh.position.z = 0.001;
                 break;
-            case 'back':
+            case "back":
                 textMesh.rotation.y = -Math.PI;
                 textMesh.rotation.x = -Math.PI;
                 textMesh.position.z = 0.001;
                 break;
-            case 'left':
+            case "left":
                 textMesh.rotation.z = Math.PI / 2;
                 textMesh.rotation.x = Math.PI;
                 textMesh.position.z = -0.001;
                 break;
-            case 'right':
+            case "right":
                 textMesh.rotation.z = Math.PI / 2;
                 break;
-            case 'bottom':
+            case "bottom":
                 textMesh.rotation.z = -Math.PI;
                 textMesh.rotation.y = -Math.PI;
                 textMesh.position.z = -0.001;
@@ -329,7 +329,7 @@ export class NavigationCube extends THREE.Object3D {
 
         faceMesh.add(textMesh);
         return group;
-    };
+    }
 
     fitToContainer(event) {
         if (!this.visible) {

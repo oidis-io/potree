@@ -14,7 +14,7 @@ import unusedImports from "eslint-plugin-unused-imports";
 
 export default [
     {
-        ignores: [".github/", ".idea/", "build/", "node_modules/", "resources/", "pointclouds/", "docs/", "examples/", "libs/", "**/*.min.js", "gulpfile.js", "rollup.*.js"],
+        ignores: [".github/", ".idea/", "build/", "node_modules/", "resources/", "pointclouds/", "docs/", "examples/", "libs/", "**/*.min.js"],
     },
     {
         languageOptions: {
@@ -32,7 +32,29 @@ export default [
             }
         },
         rules: {
-            semi: "error",
+            semi: ["error", "always"],
+            "semi-spacing": ["error", { "before": false, "after": true }],
+            "semi-style": ["error", "last"],
+            "no-extra-semi": "error",
+            "no-multiple-empty-lines": ["error", { "max": 1, "maxEOF": 0 }],
+            "eol-last": ["error", "always"],
+            "padded-blocks": ["error", "never"],
+            "keyword-spacing": ["error", { "before": true, "after": true }],
+            "space-before-blocks": ["error", "always"],
+            "indent": ["error", 4, { "SwitchCase": 1 }],
+            "no-tabs": "error",
+            "spaced-comment": ["error", "always", {
+                "line": {
+                    "markers": ["//"],
+                    "exceptions": ["-","+"]
+                },
+                "block": {
+                    "markers": ["!"],
+                    "exceptions": ["*"]
+                }
+            }],
+            "quotes": ["error", "double", { "allowTemplateLiterals": true }],
+
             "no-unused-imports": "off",
             "no-unused-vars": "off",
             "unused-imports/no-unused-imports": "error",

@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -11,38 +12,38 @@
 import * as THREE from "../../libs/three.js/build/three.module.js";
 
 THREE.PerspectiveCamera.prototype.zoomTo = function (node, factor) {
-	if (!node.geometry && !node.boundingSphere && !node.boundingBox) {
-		return;
-	}
+    if (!node.geometry && !node.boundingSphere && !node.boundingBox) {
+        return;
+    }
 
-	if (node.geometry && node.geometry.boundingSphere === null) {
-		node.geometry.computeBoundingSphere();
-	}
+    if (node.geometry && node.geometry.boundingSphere === null) {
+        node.geometry.computeBoundingSphere();
+    }
 
-	node.updateMatrixWorld();
+    node.updateMatrixWorld();
 
-	let bs;
+    let bs;
 
-	if (node.boundingSphere) {
-		bs = node.boundingSphere;
-	} else if (node.geometry && node.geometry.boundingSphere) {
-		bs = node.geometry.boundingSphere;
-	} else {
-		bs = node.boundingBox.getBoundingSphere(new THREE.Sphere());
-	}
+    if (node.boundingSphere) {
+        bs = node.boundingSphere;
+    } else if (node.geometry && node.geometry.boundingSphere) {
+        bs = node.geometry.boundingSphere;
+    } else {
+        bs = node.boundingBox.getBoundingSphere(new THREE.Sphere());
+    }
 
-	let _factor = factor || 1;
+    let _factor = factor || 1;
 
-	bs = bs.clone().applyMatrix4(node.matrixWorld);
-	let radius = bs.radius;
-	let fovr = this.fov * Math.PI / 180;
+    bs = bs.clone().applyMatrix4(node.matrixWorld);
+    let radius = bs.radius;
+    let fovr = this.fov * Math.PI / 180;
 
-	if (this.aspect < 1) {
-		fovr = fovr * this.aspect;
-	}
+    if (this.aspect < 1) {
+        fovr = fovr * this.aspect;
+    }
 
-	let distanceFactor = Math.abs(radius / Math.sin(fovr / 2)) * _factor;
+    let distanceFactor = Math.abs(radius / Math.sin(fovr / 2)) * _factor;
 
-	let offset = this.getWorldDirection(new THREE.Vector3()).multiplyScalar(-distanceFactor);
-	this.position.copy(bs.center.clone().add(offset));
+    let offset = this.getWorldDirection(new THREE.Vector3()).multiplyScalar(-distanceFactor);
+    this.position.copy(bs.center.clone().add(offset));
 };

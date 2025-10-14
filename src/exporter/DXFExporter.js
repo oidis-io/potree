@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -17,18 +18,17 @@
  */
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
-import {Measure} from "../utils/Measure.js";
+import { Measure } from "../utils/Measure.js";
 
 export class DXFExporter {
+    static measurementPointSection(measurement) {
+        let position = measurement.points[0].position;
 
-	static measurementPointSection (measurement) {
-		let position = measurement.points[0].position;
+        if (!position) {
+            return "";
+        }
 
-		if (!position) {
-			return '';
-		}
-
-		let dxfSection = `0
+        let dxfSection = `0
 CIRCLE
 8
 layer_point
@@ -42,18 +42,18 @@ ${position.z}
 1.0
 `;
 
-		return dxfSection;
-	}
+        return dxfSection;
+    }
 
-	static measurementPolylineSection (measurement) {
-		// bit code for polygons/polylines:
-		// https://www.autodesk.com/techpubs/autocad/acad2000/dxf/polyline_dxf_06.htm
-		let geomCode = 8;
-		if (measurement.closed) {
-			geomCode += 1;
-		}
+    static measurementPolylineSection(measurement) {
+        // bit code for polygons/polylines:
+        // https://www.autodesk.com/techpubs/autocad/acad2000/dxf/polyline_dxf_06.htm
+        let geomCode = 8;
+        if (measurement.closed) {
+            geomCode += 1;
+        }
 
-		let dxfSection = `0
+        let dxfSection = `0
 POLYLINE
 8
 layer_polyline
@@ -71,16 +71,16 @@ layer_polyline
 ${geomCode}
 `;
 
-		let xMax = 0.0;
-		let yMax = 0.0;
-		let zMax = 0.0;
-		for (let point of measurement.points) {
-			point = point.position;
-			xMax = Math.max(xMax, point.x);
-			yMax = Math.max(yMax, point.y);
-			zMax = Math.max(zMax, point.z);
+        let xMax = 0.0;
+        let yMax = 0.0;
+        let zMax = 0.0;
+        for (let point of measurement.points) {
+            point = point.position;
+            xMax = Math.max(xMax, point.x);
+            yMax = Math.max(yMax, point.y);
+            zMax = Math.max(zMax, point.z);
 
-			dxfSection += `0
+            dxfSection += `0
 VERTEX
 8
 0
@@ -93,47 +93,43 @@ ${point.z}
 70
 32
 `;
-		}
-		dxfSection += `0
+        }
+        dxfSection += `0
 SEQEND
 `;
 
-		return dxfSection;
-	}
+        return dxfSection;
+    }
 
-	static measurementSection (measurement) {
-		// if(measurement.points.length <= 1){
-		//	return "";
-		// }
+    static measurementSection(measurement) {
+        if (measurement.points.length === 0) {
+            return "";
+        } else if (measurement.points.length === 1) {
+            return DXFExporter.measurementPointSection(measurement);
+        } else if (measurement.points.length >= 2) {
+            return DXFExporter.measurementPolylineSection(measurement);
+        }
+    }
 
-		if (measurement.points.length === 0) {
-			return '';
-		} else if (measurement.points.length === 1) {
-			return DXFExporter.measurementPointSection(measurement);
-		} else if (measurement.points.length >= 2) {
-			return DXFExporter.measurementPolylineSection(measurement);
-		}
-	}
+    static toString(measurements) {
+        if (!(measurements instanceof Array)) {
+            measurements = [measurements];
+        }
+        measurements = measurements.filter(m => m instanceof Measure);
 
-	static toString(measurements){
-		if (!(measurements instanceof Array)) {
-			measurements = [measurements];
-		}
-		measurements = measurements.filter(m => m instanceof Measure);
+        let points = measurements.filter(m => (m instanceof Measure))
+            .map(m => m.points)
+            .reduce((a, v) => a.concat(v))
+            .map(p => p.position);
 
-		let points = measurements.filter(m => (m instanceof Measure))
-			.map(m => m.points)
-			.reduce((a, v) => a.concat(v))
-			.map(p => p.position);
+        let min = new THREE.Vector3(Infinity, Infinity, Infinity);
+        let max = new THREE.Vector3(-Infinity, -Infinity, -Infinity);
+        for (let point of points) {
+            min.min(point);
+            max.max(point);
+        }
 
-		let min = new THREE.Vector3(Infinity, Infinity, Infinity);
-		let max = new THREE.Vector3(-Infinity, -Infinity, -Infinity);
-		for (let point of points) {
-			min.min(point);
-			max.max(point);
-		}
-
-		let dxfHeader = `999
+        let dxfHeader = `999
 DXF created from potree
 0
 SECTION
@@ -171,23 +167,22 @@ ${max.z}
 ENDSEC
 `;
 
-		let dxfBody = `0
+        let dxfBody = `0
 SECTION
 2
 ENTITIES
 `;
 
-		for (let measurement of measurements) {
-			dxfBody += DXFExporter.measurementSection(measurement);
-		}
+        for (let measurement of measurements) {
+            dxfBody += DXFExporter.measurementSection(measurement);
+        }
 
-		dxfBody += `0
+        dxfBody += `0
 ENDSEC
 `;
 
-		let dxf = dxfHeader + dxfBody + '0\nEOF';
+        let dxf = dxfHeader + dxfBody + "0\nEOF";
 
-		return dxf;
-	}
-
+        return dxf;
+    }
 }

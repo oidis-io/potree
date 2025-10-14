@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -10,102 +11,96 @@
 
 import * as THREE from "../../../../libs/three.js/build/three.module.js";
 
-export class OctreeGeometry{
+export class OctreeGeometry {
+    constructor() {
+        this.url = null;
+        this.spacing = 0;
+        this.boundingBox = null;
+        this.root = null;
+        this.pointAttributes = null;
+        this.loader = null;
+    }
+}
 
-	constructor(){
-		this.url = null;
-		this.spacing = 0;
-		this.boundingBox = null;
-		this.root = null;
-		this.pointAttributes = null;
-		this.loader = null;
-	}
+export class OctreeGeometryNode {
+    constructor(name, octreeGeometry, boundingBox) {
+        this.id = OctreeGeometryNode.IDCount++;
+        this.name = name;
+        this.index = parseInt(name.charAt(name.length - 1));
+        this.octreeGeometry = octreeGeometry;
+        this.boundingBox = boundingBox;
+        this.boundingSphere = boundingBox.getBoundingSphere(new THREE.Sphere());
+        this.children = {};
+        this.numPoints = 0;
+        this.level = null;
+        this.oneTimeDisposeHandlers = [];
+    }
 
-};
+    isGeometryNode() {
+        return true;
+    }
 
-export class OctreeGeometryNode{
+    getLevel() {
+        return this.level;
+    }
 
-	constructor(name, octreeGeometry, boundingBox){
-		this.id = OctreeGeometryNode.IDCount++;
-		this.name = name;
-		this.index = parseInt(name.charAt(name.length - 1));
-		this.octreeGeometry = octreeGeometry;
-		this.boundingBox = boundingBox;
-		this.boundingSphere = boundingBox.getBoundingSphere(new THREE.Sphere());
-		this.children = {};
-		this.numPoints = 0;
-		this.level = null;
-		this.oneTimeDisposeHandlers = [];
-	}
+    isTreeNode() {
+        return false;
+    }
 
-	isGeometryNode(){
-		return true;
-	}
+    isLoaded() {
+        return this.loaded;
+    }
 
-	getLevel(){
-		return this.level;
-	}
+    getBoundingSphere() {
+        return this.boundingSphere;
+    }
 
-	isTreeNode(){
-		return false;
-	}
+    getBoundingBox() {
+        return this.boundingBox;
+    }
 
-	isLoaded(){
-		return this.loaded;
-	}
+    getChildren() {
+        let children = [];
 
-	getBoundingSphere(){
-		return this.boundingSphere;
-	}
+        for (let i = 0; i < 8; i++) {
+            if (this.children[i]) {
+                children.push(this.children[i]);
+            }
+        }
 
-	getBoundingBox(){
-		return this.boundingBox;
-	}
+        return children;
+    }
 
-	getChildren(){
-		let children = [];
+    getBoundingBox() {
+        return this.boundingBox;
+    }
 
-		for (let i = 0; i < 8; i++) {
-			if (this.children[i]) {
-				children.push(this.children[i]);
-			}
-		}
+    load() {
+        if (Potree.numNodesLoading >= Potree.maxNodesLoading) {
+            return;
+        }
 
-		return children;
-	}
+        this.octreeGeometry.loader.load(this);
+    }
 
-	getBoundingBox(){
-		return this.boundingBox;
-	}
+    getNumPoints() {
+        return this.numPoints;
+    }
 
-	load(){
+    dispose() {
+        if (this.geometry && this.parent != null) {
+            this.geometry.dispose();
+            this.geometry = null;
+            this.loaded = false;
 
-		if (Potree.numNodesLoading >= Potree.maxNodesLoading) {
-			return;
-		}
-
-		this.octreeGeometry.loader.load(this);
-	}
-
-	getNumPoints(){
-		return this.numPoints;
-	}
-
-	dispose(){
-		if (this.geometry && this.parent != null) {
-			this.geometry.dispose();
-			this.geometry = null;
-			this.loaded = false;
-
-			// this.dispatchEvent( { type: 'dispose' } );
-			for (let i = 0; i < this.oneTimeDisposeHandlers.length; i++) {
-				let handler = this.oneTimeDisposeHandlers[i];
-				handler();
-			}
-			this.oneTimeDisposeHandlers = [];
-		}
-	}
-
-};
+            for (let i = 0; i < this.oneTimeDisposeHandlers.length; i++) {
+                let handler = this.oneTimeDisposeHandlers[i];
+                handler();
+            }
+            this.oneTimeDisposeHandlers = [];
+        }
+    }
+}
 
 OctreeGeometryNode.IDCount = 0;

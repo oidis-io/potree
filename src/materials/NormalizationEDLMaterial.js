@@ -1,6 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -9,73 +10,68 @@
  * ********************************************************************************************************* */
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
-import {Shaders} from "../../build/shaders/shaders.js";
+import { Shaders } from "../../build/shaders/shaders.js";
 
+export class NormalizationEDLMaterial extends THREE.RawShaderMaterial {
+    constructor(parameters = {}) {
+        super();
 
-export class NormalizationEDLMaterial extends THREE.RawShaderMaterial{
+        let uniforms = {
+            screenWidth: {type: "f", value: 0},
+            screenHeight: {type: "f", value: 0},
+            edlStrength: {type: "f", value: 1.0},
+            radius: {type: "f", value: 1.0},
+            neighbours: {type: "2fv", value: []},
+            uEDLMap: {type: "t", value: null},
+            uDepthMap: {type: "t", value: null},
+            uWeightMap: {type: "t", value: null},
+        };
 
-	constructor(parameters = {}){
-		super();
+        this.setValues({
+            uniforms: uniforms,
+            vertexShader: this.getDefines() + Shaders["normalize.vs"],
+            fragmentShader: this.getDefines() + Shaders["normalize_and_edl.fs"],
+        });
 
-		let uniforms = {
-			screenWidth:    { type: 'f',   value: 0 },
-			screenHeight:   { type: 'f',   value: 0 },
-			edlStrength:    { type: 'f',   value: 1.0 },
-			radius:         { type: 'f',   value: 1.0 },
-			neighbours:     { type: '2fv', value: [] },
-			uEDLMap:        { type: 't',   value: null },
-			uDepthMap:      { type: 't',   value: null },
-			uWeightMap:     { type: 't',   value: null },
-		};
+        this.neighbourCount = 8;
+    }
 
-		this.setValues({
-			uniforms: uniforms,
-			vertexShader: this.getDefines() + Shaders['normalize.vs'],
-			fragmentShader: this.getDefines() + Shaders['normalize_and_edl.fs'],
-		});
+    getDefines() {
+        let defines = "";
 
-		this.neighbourCount = 8;
-	}
+        defines += "#define NEIGHBOUR_COUNT " + this.neighbourCount + "\n";
 
-	getDefines() {
-		let defines = '';
+        return defines;
+    }
 
-		defines += '#define NEIGHBOUR_COUNT ' + this.neighbourCount + '\n';
+    updateShaderSource() {
+        let vs = this.getDefines() + Shaders["normalize.vs"];
+        let fs = this.getDefines() + Shaders["normalize_and_edl.fs"];
 
-		return defines;
-	}
+        this.setValues({
+            vertexShader: vs,
+            fragmentShader: fs
+        });
 
-	updateShaderSource() {
+        this.uniforms.neighbours.value = this.neighbours;
 
-		let vs = this.getDefines() + Shaders['normalize.vs'];
-		let fs = this.getDefines() + Shaders['normalize_and_edl.fs'];
+        this.needsUpdate = true;
+    }
 
-		this.setValues({
-			vertexShader: vs,
-			fragmentShader: fs
-		});
+    get neighbourCount() {
+        return this._neighbourCount;
+    }
 
-		this.uniforms.neighbours.value = this.neighbours;
+    set neighbourCount(value) {
+        if (this._neighbourCount !== value) {
+            this._neighbourCount = value;
+            this.neighbours = new Float32Array(this._neighbourCount * 2);
+            for (let c = 0; c < this._neighbourCount; c++) {
+                this.neighbours[2 * c + 0] = Math.cos(2 * c * Math.PI / this._neighbourCount);
+                this.neighbours[2 * c + 1] = Math.sin(2 * c * Math.PI / this._neighbourCount);
+            }
 
-		this.needsUpdate = true;
-	}
-
-	get neighbourCount(){
-		return this._neighbourCount;
-	}
-
-	set neighbourCount(value){
-		if (this._neighbourCount !== value) {
-			this._neighbourCount = value;
-			this.neighbours = new Float32Array(this._neighbourCount * 2);
-			for (let c = 0; c < this._neighbourCount; c++) {
-				this.neighbours[2 * c + 0] = Math.cos(2 * c * Math.PI / this._neighbourCount);
-				this.neighbours[2 * c + 1] = Math.sin(2 * c * Math.PI / this._neighbourCount);
-			}
-
-			this.updateShaderSource();
-		}
-	}
-	
+            this.updateShaderSource();
+        }
+    }
 }
-
