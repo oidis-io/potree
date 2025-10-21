@@ -123,7 +123,7 @@ export class PointCloudArena4D extends PointCloudTree {
         this.pcoGeometry = geometry;
         this.boundingBox = this.pcoGeometry.boundingBox;
         this.boundingSphere = this.pcoGeometry.boundingSphere;
-        this.material = new PointCloudMaterial({vertexColors: THREE.VertexColors, size: 0.05, treeType: TreeType.KDTREE});
+        this.material = new PointCloudMaterial({ vertexColors: THREE.VertexColors, size: 0.05, treeType: TreeType.KDTREE });
         this.material.sizeType = PointSizeType.ATTENUATED;
         this.material.size = 0.05;
         this.profileRequests = [];
@@ -142,7 +142,7 @@ export class PointCloudArena4D extends PointCloudTree {
     setName(name) {
         if (this.name !== name) {
             this.name = name;
-            this.dispatchEvent({type: "name_changed", name: name, pointcloud: this});
+            this.dispatchEvent({ type: "name_changed", name: name, pointcloud: this });
         }
     }
 

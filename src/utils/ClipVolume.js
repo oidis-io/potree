@@ -91,9 +91,9 @@ export class ClipVolume extends THREE.Object3D {
         this.boundingBox = this.box.geometry.boundingBox;
         this.add(this.box);
 
-        this.frame = new THREE.LineSegments(boxFrameGeometry, new THREE.LineBasicMaterial({color: 0x000000}));
+        this.frame = new THREE.LineSegments(boxFrameGeometry, new THREE.LineBasicMaterial({ color: 0x000000 }));
         this.add(this.frame);
-        this.planeFrame = new THREE.LineSegments(planeFrameGeometry, new THREE.LineBasicMaterial({color: 0xff0000}));
+        this.planeFrame = new THREE.LineSegments(planeFrameGeometry, new THREE.LineBasicMaterial({ color: 0xff0000 }));
         this.add(this.planeFrame);
 
         // set default thickness
@@ -230,7 +230,7 @@ export class ClipVolume extends THREE.Object3D {
             }
         }
 
-        this.dispatchEvent({"type": "clip_volume_changed", "viewer": viewer, "volume": this});
+        this.dispatchEvent({ "type": "clip_volume_changed", "viewer": viewer, "volume": this });
     }
 
     rotate(args) {
@@ -264,7 +264,7 @@ export class ClipVolume extends THREE.Object3D {
 
         this.updateLocalSystem();
 
-        this.dispatchEvent({"type": "clip_volume_changed", "viewer": viewer, "volume": this});
+        this.dispatchEvent({ "type": "clip_volume_changed", "viewer": viewer, "volume": this });
     }
 
     update() {

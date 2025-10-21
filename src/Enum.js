@@ -31,7 +31,7 @@ class Enum {
             if (typeof value === "object") {
                 value.name = key;
             } else {
-                value = {name: key, value: value};
+                value = { name: key, value: value };
             }
 
             this[key] = new EnumItem(value);

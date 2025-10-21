@@ -38,7 +38,7 @@ export class ProfileTool extends EventDispatcher {
         this.onAdd = e => this.scene.add(e.profile);
 
         for (let profile of viewer.scene.profiles) {
-            this.onAdd({profile: profile});
+            this.onAdd({ profile: profile });
         }
 
         viewer.addEventListener("update", this.update.bind(this));

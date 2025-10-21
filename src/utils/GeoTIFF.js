@@ -20,18 +20,18 @@ var GeoTIFF = (function (exports) {
     });
 
     const Type = new Enum({
-        BYTE: {value: 1, bytes: 1},
-        ASCII: {value: 2, bytes: 1},
-        SHORT: {value: 3, bytes: 2},
-        LONG: {value: 4, bytes: 4},
-        RATIONAL: {value: 5, bytes: 8},
-        SBYTE: {value: 6, bytes: 1},
-        UNDEFINED: {value: 7, bytes: 1},
-        SSHORT: {value: 8, bytes: 2},
-        SLONG: {value: 9, bytes: 4},
-        SRATIONAL: {value: 10, bytes: 8},
-        FLOAT: {value: 11, bytes: 4},
-        DOUBLE: {value: 12, bytes: 8},
+        BYTE: { value: 1, bytes: 1 },
+        ASCII: { value: 2, bytes: 1 },
+        SHORT: { value: 3, bytes: 2 },
+        LONG: { value: 4, bytes: 4 },
+        RATIONAL: { value: 5, bytes: 8 },
+        SBYTE: { value: 6, bytes: 1 },
+        UNDEFINED: { value: 7, bytes: 1 },
+        SSHORT: { value: 8, bytes: 2 },
+        SLONG: { value: 9, bytes: 4 },
+        SRATIONAL: { value: 10, bytes: 8 },
+        FLOAT: { value: 11, bytes: 4 },
+        DOUBLE: { value: 12, bytes: 8 },
     });
 
     const Tag = new Enum({
@@ -346,7 +346,7 @@ var GeoTIFF = (function (exports) {
                 image.buffer
             ]);
 
-            return {width: width, height: height, buffer: tiffBuffer};
+            return { width: width, height: height, buffer: tiffBuffer };
         }
     }
 

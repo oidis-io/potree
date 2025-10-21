@@ -45,9 +45,9 @@ function createHeightLine() {
 function createHeightLabel() {
     const heightLabel = new TextSprite("");
 
-    heightLabel.setTextColor({r: 140, g: 250, b: 140, a: 1.0});
-    heightLabel.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
-    heightLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
+    heightLabel.setTextColor({ r: 140, g: 250, b: 140, a: 1.0 });
+    heightLabel.setBorderColor({ r: 0, g: 0, b: 0, a: 1.0 });
+    heightLabel.setBackgroundColor({ r: 0, g: 0, b: 0, a: 1.0 });
     heightLabel.fontsize = 16;
     heightLabel.material.depthTest = false;
     heightLabel.material.opacity = 1;
@@ -59,9 +59,9 @@ function createHeightLabel() {
 function createAreaLabel() {
     const areaLabel = new TextSprite("");
 
-    areaLabel.setTextColor({r: 140, g: 250, b: 140, a: 1.0});
-    areaLabel.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
-    areaLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
+    areaLabel.setTextColor({ r: 140, g: 250, b: 140, a: 1.0 });
+    areaLabel.setBorderColor({ r: 0, g: 0, b: 0, a: 1.0 });
+    areaLabel.setBackgroundColor({ r: 0, g: 0, b: 0, a: 1.0 });
     areaLabel.fontsize = 16;
     areaLabel.material.depthTest = false;
     areaLabel.material.opacity = 1;
@@ -73,9 +73,9 @@ function createAreaLabel() {
 function createCircleRadiusLabel() {
     const circleRadiusLabel = new TextSprite("");
 
-    circleRadiusLabel.setTextColor({r: 140, g: 250, b: 140, a: 1.0});
-    circleRadiusLabel.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
-    circleRadiusLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
+    circleRadiusLabel.setTextColor({ r: 140, g: 250, b: 140, a: 1.0 });
+    circleRadiusLabel.setBorderColor({ r: 0, g: 0, b: 0, a: 1.0 });
+    circleRadiusLabel.setBackgroundColor({ r: 0, g: 0, b: 0, a: 1.0 });
     circleRadiusLabel.fontsize = 16;
     circleRadiusLabel.material.depthTest = false;
     circleRadiusLabel.material.opacity = 1;
@@ -253,9 +253,9 @@ function createAzimuth() {
     {
         const label = new TextSprite("");
 
-        label.setTextColor({r: 140, g: 250, b: 140, a: 1.0});
-        label.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
-        label.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
+        label.setTextColor({ r: 140, g: 250, b: 140, a: 1.0 });
+        label.setBorderColor({ r: 0, g: 0, b: 0, a: 1.0 });
+        label.setBackgroundColor({ r: 0, g: 0, b: 0, a: 1.0 });
         label.fontsize = 16;
         label.material.depthTest = false;
         label.material.opacity = 1;
@@ -351,9 +351,9 @@ export class Measure extends THREE.Object3D {
 
     addMarker(point) {
         if (point.x != null) {
-            point = {position: point};
+            point = { position: point };
         } else if (point instanceof Array) {
-            point = {position: new THREE.Vector3(...point)};
+            point = { position: new THREE.Vector3(...point) };
         }
         this.points.push(point);
 
@@ -386,8 +386,8 @@ export class Measure extends THREE.Object3D {
 
         {
             let edgeLabel = new TextSprite();
-            edgeLabel.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
-            edgeLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
+            edgeLabel.setBorderColor({ r: 0, g: 0, b: 0, a: 1.0 });
+            edgeLabel.setBackgroundColor({ r: 0, g: 0, b: 0, a: 1.0 });
             edgeLabel.material.depthTest = false;
             edgeLabel.visible = false;
             edgeLabel.fontsize = 16;
@@ -397,8 +397,8 @@ export class Measure extends THREE.Object3D {
 
         {
             let angleLabel = new TextSprite();
-            angleLabel.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
-            angleLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
+            angleLabel.setBorderColor({ r: 0, g: 0, b: 0, a: 1.0 });
+            angleLabel.setBackgroundColor({ r: 0, g: 0, b: 0, a: 1.0 });
             angleLabel.fontsize = 16;
             angleLabel.material.depthTest = false;
             angleLabel.material.opacity = 1;
@@ -409,8 +409,8 @@ export class Measure extends THREE.Object3D {
 
         {
             let coordinateLabel = new TextSprite();
-            coordinateLabel.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
-            coordinateLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
+            coordinateLabel.setBorderColor({ r: 0, g: 0, b: 0, a: 1.0 });
+            coordinateLabel.setBackgroundColor({ r: 0, g: 0, b: 0, a: 1.0 });
             coordinateLabel.fontsize = 16;
             coordinateLabel.material.depthTest = false;
             coordinateLabel.material.opacity = 1;
@@ -426,7 +426,7 @@ export class Measure extends THREE.Object3D {
                     e.viewer.scene.getActiveCamera(),
                     e.viewer,
                     e.viewer.scene.pointclouds,
-                    {pickClipped: true});
+                    { pickClipped: true });
 
                 if (I) {
                     let i = this.spheres.indexOf(e.drag.object);
@@ -499,7 +499,7 @@ export class Measure extends THREE.Object3D {
 
         this.update();
 
-        this.dispatchEvent({type: "marker_removed", measurement: this});
+        this.dispatchEvent({ type: "marker_removed", measurement: this });
     }
 
     setMarker(index, point) {

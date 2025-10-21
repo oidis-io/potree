@@ -411,8 +411,8 @@ export class VRControls extends EventDispatcher {
     createSlider(label, min, max) {
         let sg = new THREE.SphereGeometry(1, 8, 8);
         let cg = new THREE.CylinderGeometry(1, 1, 1, 8);
-        let matHandle = new THREE.MeshBasicMaterial({color: 0xff0000});
-        let matScale = new THREE.MeshBasicMaterial({color: 0xff4444});
+        let matHandle = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        let matScale = new THREE.MeshBasicMaterial({ color: 0xff4444 });
         let matValue = new THREE.MeshNormalMaterial();
 
         let node = new THREE.Object3D("slider");
@@ -448,7 +448,7 @@ export class VRControls extends EventDispatcher {
     createInfo() {
         let texture = new THREE.TextureLoader().load(`${PotreeConfig.resourcePath}/images/vr_controller_help.jpg`);
         let plane = new THREE.PlaneBufferGeometry(1, 1, 1, 1);
-        let infoMaterial = new THREE.MeshBasicMaterial({map: texture});
+        let infoMaterial = new THREE.MeshBasicMaterial({ map: texture });
         let infoNode = new THREE.Mesh(plane, infoMaterial);
 
         return infoNode;

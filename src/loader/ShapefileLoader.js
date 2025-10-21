@@ -55,7 +55,7 @@ export class ShapefileLoader {
 
         let transform = this.transform;
         if (transform === null) {
-            transform = {forward: (v) => v};
+            transform = { forward: (v) => v };
         }
 
         if (feature.geometry.type === "Point") {

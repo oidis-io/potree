@@ -171,4 +171,4 @@ class LRU {
     }
 }
 
-export {LRU, LRUItem};
+export { LRU, LRUItem };

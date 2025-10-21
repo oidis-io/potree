@@ -17,8 +17,8 @@ import { Utils } from "../../utils.js";
 let sg = new THREE.SphereGeometry(1, 8, 8);
 let sgHigh = new THREE.SphereGeometry(1, 128, 128);
 
-let sm = new THREE.MeshBasicMaterial({side: THREE.BackSide});
-let smHovered = new THREE.MeshBasicMaterial({side: THREE.BackSide, color: 0xff0000});
+let sm = new THREE.MeshBasicMaterial({ side: THREE.BackSide });
+let smHovered = new THREE.MeshBasicMaterial({ side: THREE.BackSide, color: 0xff0000 });
 
 let raycaster = new THREE.Raycaster();
 let currentlyHovered = null;
@@ -139,7 +139,7 @@ export class Images360 extends EventDispatcher {
         });
 
         { // orientation
-            let {course, pitch, roll} = image360;
+            let { course, pitch, roll } = image360;
             this.sphere.rotation.set(
                 THREE.Math.degToRad(+roll + 90),
                 THREE.Math.degToRad(-pitch),
@@ -233,7 +233,7 @@ export class Images360 extends EventDispatcher {
     }
 
     update() {
-        let {viewer} = this;
+        let { viewer } = this;
 
         if (currentlyHovered) {
             currentlyHovered.material = sm;
@@ -297,7 +297,7 @@ export class Images360Loader {
 
     static createSceneNodes(images360, transform) {
         for (let image360 of images360.images) {
-            let {longitude, latitude, altitude} = image360;
+            let { longitude, latitude, altitude } = image360;
             let xy = transform.forward([longitude, latitude]);
 
             let mesh = new THREE.Mesh(sg, sm);
@@ -308,7 +308,7 @@ export class Images360Loader {
             mesh.image360 = image360;
 
             { // orientation
-                var {course, pitch, roll} = image360;
+                var { course, pitch, roll } = image360;
                 mesh.rotation.set(
                     THREE.Math.degToRad(+roll + 90),
                     THREE.Math.degToRad(-pitch),

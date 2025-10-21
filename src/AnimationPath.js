@@ -38,8 +38,8 @@ export class PathAnimation {
         let tEnd = this.endPoint / this.length;
         let animationDuration = (tEnd - tStart) * this.length * 1000 / this.speed;
 
-        let progress = {t: tStart};
-        this.tween = new TWEEN.Tween(progress).to({t: tEnd}, animationDuration);
+        let progress = { t: tStart };
+        this.tween = new TWEEN.Tween(progress).to({ t: tEnd }, animationDuration);
         this.tween.easing(TWEEN.Easing.Linear.None);
         this.tween.onUpdate((e) => {
             this.t = progress.t;

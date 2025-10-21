@@ -278,7 +278,7 @@ export class InputHandler extends EventDispatcher {
                     el.object._listeners["drag"].length > 0));
 
             if (target) {
-                this.startDragging(target.object, {location: target.point});
+                this.startDragging(target.object, { location: target.point });
             } else {
                 this.startDragging(null);
             }

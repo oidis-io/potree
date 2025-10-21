@@ -49,7 +49,7 @@ export class Profile extends THREE.Object3D {
         for (let i = 0; i < this.points.length - 1; i++) {
             let start = this.points[i].clone();
             let end = this.points[i + 1].clone();
-            segments.push({start: start, end: end});
+            segments.push({ start: start, end: end });
         }
 
         return segments;
@@ -60,7 +60,7 @@ export class Profile extends THREE.Object3D {
         let matrices = [];
 
         for (let segment of segments) {
-            let {start, end} = segment;
+            let { start, end } = segment;
 
             let box = new THREE.Object3D();
 
@@ -110,7 +110,7 @@ export class Profile extends THREE.Object3D {
             this.edges.push(edge);
 
             let boxGeometry = new THREE.BoxGeometry(1, 1, 1);
-            let boxMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, transparent: true, opacity: 0.2});
+            let boxMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0.2 });
             let box = new THREE.Mesh(boxGeometry, boxMaterial);
             box.visible = false;
 

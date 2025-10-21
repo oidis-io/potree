@@ -34,7 +34,7 @@ export class PotreeRenderer {
     }
 
     clear() {
-        let {viewer, renderer} = this;
+        let { viewer, renderer } = this;
 
         // render skybox
         if (viewer.background === "skybox") {
@@ -53,11 +53,11 @@ export class PotreeRenderer {
     }
 
     render(params) {
-        let {viewer, renderer} = this;
+        let { viewer, renderer } = this;
 
         const camera = params.camera ? params.camera : viewer.scene.getActiveCamera();
 
-        viewer.dispatchEvent({type: "render.pass.begin", viewer: viewer});
+        viewer.dispatchEvent({ type: "render.pass.begin", viewer: viewer });
 
         const renderAreaSize = renderer.getSize(new THREE.Vector2());
         const width = params.viewport ? params.viewport[2] : renderAreaSize.x;
@@ -79,7 +79,7 @@ export class PotreeRenderer {
         }
 
         for (let pointcloud of this.viewer.scene.pointclouds) {
-            const {material} = pointcloud;
+            const { material } = pointcloud;
             material.useEDL = false;
         }
 
@@ -89,7 +89,7 @@ export class PotreeRenderer {
 
         renderer.render(viewer.scene.scene, camera);
 
-        viewer.dispatchEvent({type: "render.pass.scene", viewer: viewer});
+        viewer.dispatchEvent({ type: "render.pass.scene", viewer: viewer });
 
         viewer.clippingTool.update();
         renderer.render(viewer.clippingTool.sceneMarker, viewer.scene.cameraScreenSpace);
@@ -101,7 +101,7 @@ export class PotreeRenderer {
 
         viewer.transformationTool.update();
 
-        viewer.dispatchEvent({type: "render.pass.perspective_overlay", viewer: viewer});
-        viewer.dispatchEvent({type: "render.pass.end", viewer: viewer});
+        viewer.dispatchEvent({ type: "render.pass.perspective_overlay", viewer: viewer });
+        viewer.dispatchEvent({ type: "render.pass.end", viewer: viewer });
     }
 }

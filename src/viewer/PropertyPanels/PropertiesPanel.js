@@ -273,7 +273,7 @@ export class PropertiesPanel {
 
             let update = (e) => {
                 lblPointSize.html(material.size.toFixed(2));
-                sldPointSize.slider({value: material.size});
+                sldPointSize.slider({ value: material.size });
             };
             this.addVolatileListener(material, "point_size_changed", update);
 
@@ -296,7 +296,7 @@ export class PropertiesPanel {
 
             let update = (e) => {
                 lblMinPointSize.html(material.minSize.toFixed(2));
-                sldMinPointSize.slider({value: material.minSize});
+                sldMinPointSize.slider({ value: material.minSize });
             };
             this.addVolatileListener(material, "point_size_changed", update);
 
@@ -386,7 +386,7 @@ export class PropertiesPanel {
 
             let update = (e) => {
                 lblOpacity.html(material.opacity.toFixed(2));
-                sldOpacity.slider({value: material.opacity});
+                sldOpacity.slider({ value: material.opacity });
             };
             this.addVolatileListener(material, "opacity_changed", update);
 
@@ -542,7 +542,7 @@ export class PropertiesPanel {
                 }
             };
 
-            attributeSelection.selectmenu({change: updateMaterialPanel});
+            attributeSelection.selectmenu({ change: updateMaterialPanel });
 
             let update = () => {
                 attributeSelection.val(material.activeAttributeName).selectmenu("refresh");
@@ -555,7 +555,7 @@ export class PropertiesPanel {
         }
 
         {
-            const schemes = Object.keys(Gradients).map(name => ({name: name, values: Gradients[name]}));
+            const schemes = Object.keys(Gradients).map(name => ({ name: name, values: Gradients[name] }));
 
             let elSchemeContainers = panel.find("div.gradient_scheme");
 
@@ -582,32 +582,32 @@ export class PropertiesPanel {
 
         {
             let matcaps = [
-                {name: "Normals", icon: `${PotreeConfig.resourcePath}/icons/matcap/check_normal+y.jpg`},
-                {name: "Basic 1", icon: `${PotreeConfig.resourcePath}/icons/matcap/basic_1.jpg`},
-                {name: "Basic 2", icon: `${PotreeConfig.resourcePath}/icons/matcap/basic_2.jpg`},
-                {name: "Basic Dark", icon: `${PotreeConfig.resourcePath}/icons/matcap/basic_dark.jpg`},
-                {name: "Basic Side", icon: `${PotreeConfig.resourcePath}/icons/matcap/basic_side.jpg`},
-                {name: "Ceramic Dark", icon: `${PotreeConfig.resourcePath}/icons/matcap/ceramic_dark.jpg`},
-                {name: "Ceramic Lightbulb", icon: `${PotreeConfig.resourcePath}/icons/matcap/ceramic_lightbulb.jpg`},
-                {name: "Clay Brown", icon: `${PotreeConfig.resourcePath}/icons/matcap/clay_brown.jpg`},
-                {name: "Clay Muddy", icon: `${PotreeConfig.resourcePath}/icons/matcap/clay_muddy.jpg`},
-                {name: "Clay Studio", icon: `${PotreeConfig.resourcePath}/icons/matcap/clay_studio.jpg`},
-                {name: "Resin", icon: `${PotreeConfig.resourcePath}/icons/matcap/resin.jpg`},
-                {name: "Skin", icon: `${PotreeConfig.resourcePath}/icons/matcap/skin.jpg`},
-                {name: "Jade", icon: `${PotreeConfig.resourcePath}/icons/matcap/jade.jpg`},
-                {name: "Metal_ Anisotropic", icon: `${PotreeConfig.resourcePath}/icons/matcap/metal_anisotropic.jpg`},
-                {name: "Metal Carpaint", icon: `${PotreeConfig.resourcePath}/icons/matcap/metal_carpaint.jpg`},
-                {name: "Metal Lead", icon: `${PotreeConfig.resourcePath}/icons/matcap/metal_lead.jpg`},
-                {name: "Metal Shiny", icon: `${PotreeConfig.resourcePath}/icons/matcap/metal_shiny.jpg`},
-                {name: "Pearl", icon: `${PotreeConfig.resourcePath}/icons/matcap/pearl.jpg`},
-                {name: "Toon", icon: `${PotreeConfig.resourcePath}/icons/matcap/toon.jpg`},
-                {name: "Check Rim Light", icon: `${PotreeConfig.resourcePath}/icons/matcap/check_rim_light.jpg`},
-                {name: "Check Rim Dark", icon: `${PotreeConfig.resourcePath}/icons/matcap/check_rim_dark.jpg`},
-                {name: "Contours 1", icon: `${PotreeConfig.resourcePath}/icons/matcap/contours_1.jpg`},
-                {name: "Contours 2", icon: `${PotreeConfig.resourcePath}/icons/matcap/contours_2.jpg`},
-                {name: "Contours 3", icon: `${PotreeConfig.resourcePath}/icons/matcap/contours_3.jpg`},
-                {name: "Reflection Check Horizontal", icon: `${PotreeConfig.resourcePath}/icons/matcap/reflection_check_horizontal.jpg`},
-                {name: "Reflection Check Vertical", icon: `${PotreeConfig.resourcePath}/icons/matcap/reflection_check_vertical.jpg`},
+                { name: "Normals", icon: `${PotreeConfig.resourcePath}/icons/matcap/check_normal+y.jpg` },
+                { name: "Basic 1", icon: `${PotreeConfig.resourcePath}/icons/matcap/basic_1.jpg` },
+                { name: "Basic 2", icon: `${PotreeConfig.resourcePath}/icons/matcap/basic_2.jpg` },
+                { name: "Basic Dark", icon: `${PotreeConfig.resourcePath}/icons/matcap/basic_dark.jpg` },
+                { name: "Basic Side", icon: `${PotreeConfig.resourcePath}/icons/matcap/basic_side.jpg` },
+                { name: "Ceramic Dark", icon: `${PotreeConfig.resourcePath}/icons/matcap/ceramic_dark.jpg` },
+                { name: "Ceramic Lightbulb", icon: `${PotreeConfig.resourcePath}/icons/matcap/ceramic_lightbulb.jpg` },
+                { name: "Clay Brown", icon: `${PotreeConfig.resourcePath}/icons/matcap/clay_brown.jpg` },
+                { name: "Clay Muddy", icon: `${PotreeConfig.resourcePath}/icons/matcap/clay_muddy.jpg` },
+                { name: "Clay Studio", icon: `${PotreeConfig.resourcePath}/icons/matcap/clay_studio.jpg` },
+                { name: "Resin", icon: `${PotreeConfig.resourcePath}/icons/matcap/resin.jpg` },
+                { name: "Skin", icon: `${PotreeConfig.resourcePath}/icons/matcap/skin.jpg` },
+                { name: "Jade", icon: `${PotreeConfig.resourcePath}/icons/matcap/jade.jpg` },
+                { name: "Metal_ Anisotropic", icon: `${PotreeConfig.resourcePath}/icons/matcap/metal_anisotropic.jpg` },
+                { name: "Metal Carpaint", icon: `${PotreeConfig.resourcePath}/icons/matcap/metal_carpaint.jpg` },
+                { name: "Metal Lead", icon: `${PotreeConfig.resourcePath}/icons/matcap/metal_lead.jpg` },
+                { name: "Metal Shiny", icon: `${PotreeConfig.resourcePath}/icons/matcap/metal_shiny.jpg` },
+                { name: "Pearl", icon: `${PotreeConfig.resourcePath}/icons/matcap/pearl.jpg` },
+                { name: "Toon", icon: `${PotreeConfig.resourcePath}/icons/matcap/toon.jpg` },
+                { name: "Check Rim Light", icon: `${PotreeConfig.resourcePath}/icons/matcap/check_rim_light.jpg` },
+                { name: "Check Rim Dark", icon: `${PotreeConfig.resourcePath}/icons/matcap/check_rim_dark.jpg` },
+                { name: "Contours 1", icon: `${PotreeConfig.resourcePath}/icons/matcap/contours_1.jpg` },
+                { name: "Contours 2", icon: `${PotreeConfig.resourcePath}/icons/matcap/contours_2.jpg` },
+                { name: "Contours 3", icon: `${PotreeConfig.resourcePath}/icons/matcap/contours_3.jpg` },
+                { name: "Reflection Check Horizontal", icon: `${PotreeConfig.resourcePath}/icons/matcap/reflection_check_horizontal.jpg` },
+                { name: "Reflection Check Vertical", icon: `${PotreeConfig.resourcePath}/icons/matcap/reflection_check_vertical.jpg` },
             ];
 
             let elMatcapContainer = panel.find("#matcap_scheme_selection");
@@ -809,7 +809,7 @@ export class PropertiesPanel {
                 let range = material.elevationRange;
 
                 panel.find("#lblHeightRange").html(`${range[0].toFixed(2)} to ${range[1].toFixed(2)}`);
-                panel.find("#sldHeightRange").slider({min: bMin, max: bMax, values: range});
+                panel.find("#sldHeightRange").slider({ min: bMin, max: bMax, values: range });
             };
 
             let updateExtraRange = function () {
@@ -855,7 +855,7 @@ export class PropertiesPanel {
 
             {
                 let elGradientRepeat = panel.find("#gradient_repeat_option");
-                elGradientRepeat.selectgroup({title: "Gradient"});
+                elGradientRepeat.selectgroup({ title: "Gradient" });
 
                 elGradientRepeat.find("input").click((e) => {
                     this.viewer.setElevationGradientRepeat(ElevationGradientRepeat[e.target.value]);
@@ -868,7 +868,7 @@ export class PropertiesPanel {
 
             {
                 let elGradientRepeat = panel.find("#extra_gradient_repeat_option");
-                elGradientRepeat.selectgroup({title: "Gradient"});
+                elGradientRepeat.selectgroup({ title: "Gradient" });
 
                 elGradientRepeat.find("input").click((e) => {
                     this.viewer.setElevationGradientRepeat(ElevationGradientRepeat[e.target.value]);
@@ -890,9 +890,9 @@ export class PropertiesPanel {
                 panel.find("#lblIntensityContrast").html(contrast.toFixed(2));
                 panel.find("#lblIntensityBrightness").html(brightness.toFixed(2));
 
-                panel.find("#sldIntensityGamma").slider({value: gamma});
-                panel.find("#sldIntensityContrast").slider({value: contrast});
-                panel.find("#sldIntensityBrightness").slider({value: brightness});
+                panel.find("#sldIntensityGamma").slider({ value: gamma });
+                panel.find("#sldIntensityContrast").slider({ value: contrast });
+                panel.find("#sldIntensityBrightness").slider({ value: brightness });
             };
 
             let onRGBChange = () => {
@@ -904,9 +904,9 @@ export class PropertiesPanel {
                 panel.find("#lblRGBContrast").html(contrast.toFixed(2));
                 panel.find("#lblRGBBrightness").html(brightness.toFixed(2));
 
-                panel.find("#sldRGBGamma").slider({value: gamma});
-                panel.find("#sldRGBContrast").slider({value: contrast});
-                panel.find("#sldRGBBrightness").slider({value: brightness});
+                panel.find("#sldRGBGamma").slider({ value: gamma });
+                panel.find("#sldRGBContrast").slider({ value: contrast });
+                panel.find("#sldRGBBrightness").slider({ value: brightness });
             };
 
             this.addVolatileListener(material, "material_property_changed", updateExtraRange);
@@ -923,15 +923,15 @@ export class PropertiesPanel {
 
     setMeasurement(object) {
         let TYPE = {
-            DISTANCE: {panel: DistancePanel},
-            AREA: {panel: AreaPanel},
-            POINT: {panel: PointPanel},
-            ANGLE: {panel: AnglePanel},
-            HEIGHT: {panel: HeightPanel},
-            PROFILE: {panel: ProfilePanel},
-            VOLUME: {panel: VolumePanel},
-            CIRCLE: {panel: CirclePanel},
-            OTHER: {panel: PointPanel},
+            DISTANCE: { panel: DistancePanel },
+            AREA: { panel: AreaPanel },
+            POINT: { panel: PointPanel },
+            ANGLE: { panel: AnglePanel },
+            HEIGHT: { panel: HeightPanel },
+            PROFILE: { panel: ProfilePanel },
+            VOLUME: { panel: VolumePanel },
+            CIRCLE: { panel: CirclePanel },
+            OTHER: { panel: PointPanel },
         };
 
         let getType = (measurement) => {

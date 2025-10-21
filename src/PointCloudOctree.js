@@ -188,7 +188,7 @@ export class PointCloudOctree extends PointCloudTree {
     setName(name) {
         if (this.name !== name) {
             this.name = name;
-            this.dispatchEvent({type: "name_changed", name: name, pointcloud: this});
+            this.dispatchEvent({ type: "name_changed", name: name, pointcloud: this });
         }
     }
 
@@ -896,7 +896,7 @@ export class PointCloudOctree extends PointCloudTree {
                     let values = attribute.array.slice(attribute.itemSize * hit.pIndex, attribute.itemSize * (hit.pIndex + 1));
 
                     if (attribute.potree) {
-                        const {scale, offset} = attribute.potree;
+                        const { scale, offset } = attribute.potree;
                         values = values.map(v => v / scale + offset);
                     }
 
@@ -1058,7 +1058,7 @@ export class PointCloudOctree extends PointCloudTree {
         if (value !== this._visible) {
             this._visible = value;
 
-            this.dispatchEvent({type: "visibility_changed", pointcloud: this});
+            this.dispatchEvent({ type: "visibility_changed", pointcloud: this });
         }
     }
 }

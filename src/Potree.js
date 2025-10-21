@@ -76,7 +76,7 @@ PotreeConfig.loadPointCloud = (path, name, callback) => {
                     console.error(new Error(`failed to load point cloud from URL: ${path}`));
                 } else {
                     let pointcloud = new PointCloudOctree(geometry);
-                    resolve({type: "pointcloud_loaded", pointcloud: pointcloud});
+                    resolve({ type: "pointcloud_loaded", pointcloud: pointcloud });
                 }
             });
         } else if (path.includes(".copc.laz")) {
@@ -85,7 +85,7 @@ PotreeConfig.loadPointCloud = (path, name, callback) => {
                     console.error(new Error(`failed to load point cloud from URL: ${path}`));
                 } else {
                     let pointcloud = new PointCloudOctree(geometry);
-                    resolve({type: "pointcloud_loaded", pointcloud: pointcloud});
+                    resolve({ type: "pointcloud_loaded", pointcloud: pointcloud });
                 }
             });
         } else if (path.indexOf("cloud.js") > 0) {
@@ -94,7 +94,7 @@ PotreeConfig.loadPointCloud = (path, name, callback) => {
                     console.error(new Error(`failed to load point cloud from URL: ${path}`));
                 } else {
                     let pointcloud = new PointCloudOctree(geometry);
-                    resolve({type: "pointcloud_loaded", pointcloud: pointcloud});
+                    resolve({ type: "pointcloud_loaded", pointcloud: pointcloud });
                 }
             });
         } else if (path.indexOf("metadata.json") > 0) {
@@ -114,7 +114,7 @@ PotreeConfig.loadPointCloud = (path, name, callback) => {
                         aPosition.range[1][2],
                     ];
 
-                    resolve({type: "pointcloud_loaded", pointcloud: pointcloud});
+                    resolve({ type: "pointcloud_loaded", pointcloud: pointcloud });
                 }
             });
 
@@ -123,7 +123,7 @@ PotreeConfig.loadPointCloud = (path, name, callback) => {
                     console.error(new Error(`failed to load point cloud from URL: ${path}`));
                 } else {
                     let pointcloud = new PointCloudOctree(geometry);
-                    resolve({type: "pointcloud_loaded", pointcloud: pointcloud});
+                    resolve({ type: "pointcloud_loaded", pointcloud: pointcloud });
                 }
             });
         } else if (path.indexOf(".vpc") > 0) {
@@ -132,7 +132,7 @@ PotreeConfig.loadPointCloud = (path, name, callback) => {
                     console.error(new Error(`failed to load point cloud from URL: ${path}`));
                 } else {
                     let pointcloud = new PointCloudArena4D(geometry);
-                    resolve({type: "pointcloud_loaded", pointcloud: pointcloud});
+                    resolve({ type: "pointcloud_loaded", pointcloud: pointcloud });
                 }
             });
         } else {

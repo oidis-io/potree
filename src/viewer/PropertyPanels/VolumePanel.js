@@ -133,7 +133,7 @@ export class VolumePanel extends MeasurePanel {
 
             this.viewer.postMessage(
                 `Copied value to clipboard: <br>'${msg}'`,
-                {duration: 3000});
+                { duration: 3000 });
         });
 
         this.elCopyScale = this.elContent.find("img[name=copyScale]");
@@ -144,7 +144,7 @@ export class VolumePanel extends MeasurePanel {
 
             this.viewer.postMessage(
                 `Copied value to clipboard: <br>'${msg}'`,
-                {duration: 3000});
+                { duration: 3000 });
         });
 
         this.elRemove = this.elContent.find("img[name=remove]");
@@ -284,7 +284,7 @@ export class VolumePanel extends MeasurePanel {
             });
 
             let handleFiltering = (jsResponse) => {
-                let {progress, estimate} = jsResponse;
+                let { progress, estimate } = jsResponse;
 
                 let progressFract = progress["processed points"] / estimate.points;
                 let progressPercents = parseInt(progressFract * 100);

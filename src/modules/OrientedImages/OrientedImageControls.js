@@ -178,7 +178,7 @@ export class OrientedImageControls extends EventDispatcher {
         this.shear = newShear;
         this.viewer.setFOV(newFov);
 
-        const {originalCam, shearCam} = this;
+        const { originalCam, shearCam } = this;
 
         originalCam.fov = newFov;
         originalCam.updateMatrixWorld();

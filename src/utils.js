@@ -70,7 +70,7 @@ export class Utils {
         let material;
 
         if (color !== undefined) {
-            material = new THREE.MeshBasicMaterial({color: color});
+            material = new THREE.MeshBasicMaterial({ color: color });
         } else {
             material = new THREE.MeshNormalMaterial();
         }
@@ -83,7 +83,7 @@ export class Utils {
     }
 
     static debugLine(parent, start, end, color) {
-        let material = new THREE.LineBasicMaterial({color: color});
+        let material = new THREE.LineBasicMaterial({ color: color });
         let geometry = new THREE.Geometry();
 
         const p1 = new THREE.Vector3(0, 0, 0);
@@ -109,7 +109,7 @@ export class Utils {
     }
 
     static debugCircle(parent, center, radius, normal, color) {
-        let material = new THREE.LineBasicMaterial({color: color});
+        let material = new THREE.LineBasicMaterial({ color: color });
 
         let geometry = new THREE.Geometry();
 
@@ -162,14 +162,14 @@ export class Utils {
         let center = box.getCenter(new THREE.Vector3());
 
         let centroids = [
-            {position: [box.min.x, center.y, center.z], color: 0xFF0000},
-            {position: [box.max.x, center.y, center.z], color: 0x880000},
+            { position: [box.min.x, center.y, center.z], color: 0xFF0000 },
+            { position: [box.max.x, center.y, center.z], color: 0x880000 },
 
-            {position: [center.x, box.min.y, center.z], color: 0x00FF00},
-            {position: [center.x, box.max.y, center.z], color: 0x008800},
+            { position: [center.x, box.min.y, center.z], color: 0x00FF00 },
+            { position: [center.x, box.max.y, center.z], color: 0x008800 },
 
-            {position: [center.x, center.y, box.min.z], color: 0x0000FF},
-            {position: [center.x, center.y, box.max.z], color: 0x000088},
+            { position: [center.x, center.y, box.min.z], color: 0x0000FF },
+            { position: [center.x, center.y, box.max.z], color: 0x000088 },
         ];
 
         for (let vertex of vertices) {
@@ -247,7 +247,7 @@ export class Utils {
      * code from http://stackoverflow.com/questions/10343913/how-to-create-a-web-worker-from-a-string
      */
     static createWorker(code) {
-        let blob = new Blob([code], {type: "application/javascript"});
+        let blob = new Blob([code], { type: "application/javascript" });
         let worker = new Worker(URL.createObjectURL(blob));
 
         return worker;
@@ -338,7 +338,7 @@ export class Utils {
         parent.children.push(camera);
         camera.parent = parent;
 
-        return {camera, scene, parent};
+        return { camera, scene, parent };
     }
 
     static createGrid(width, length, spacing, color) {

@@ -500,7 +500,7 @@ export class ProfileWindow extends EventDispatcher {
 
             const string = DXFProfileExporter.toString(points, true);
 
-            const blob = new Blob([string], {type: "text/string"});
+            const blob = new Blob([string], { type: "text/string" });
             $("#potree_download_profile_dxf2D_link").attr("href", URL.createObjectURL(blob));
         });
 
@@ -509,7 +509,7 @@ export class ProfileWindow extends EventDispatcher {
 
             const string = DXFProfileExporter.toString(points);
 
-            const blob = new Blob([string], {type: "text/string"});
+            const blob = new Blob([string], { type: "text/string" });
             $("#potree_download_profile_dxf3D_link").attr("href", URL.createObjectURL(blob));
         });
 
@@ -518,7 +518,7 @@ export class ProfileWindow extends EventDispatcher {
 
             let string = CSVExporter.toString(points);
 
-            let blob = new Blob([string], {type: "text/string"});
+            let blob = new Blob([string], { type: "text/string" });
             $("#potree_download_profile_ortho_link").attr("href", URL.createObjectURL(blob));
         });
 
@@ -527,7 +527,7 @@ export class ProfileWindow extends EventDispatcher {
 
             let buffer = LASExporter.toLAS(points);
 
-            let blob = new Blob([buffer], {type: "application/octet-binary"});
+            let blob = new Blob([buffer], { type: "application/octet-binary" });
             $("#potree_download_profile_link").attr("href", URL.createObjectURL(blob));
         });
     }
@@ -625,7 +625,7 @@ export class ProfileWindow extends EventDispatcher {
     }
 
     initTHREE() {
-        this.renderer = new THREE.WebGLRenderer({alpha: true, premultipliedAlpha: false});
+        this.renderer = new THREE.WebGLRenderer({ alpha: true, premultipliedAlpha: false });
         this.renderer.setClearColor(0x000000, 0);
         this.renderer.setSize(10, 10);
         this.renderer.autoClear = false;
@@ -763,7 +763,7 @@ export class ProfileWindow extends EventDispatcher {
     reset() {
         this.lastReset = new Date().getTime();
 
-        this.dispatchEvent({type: "on_reset_once"});
+        this.dispatchEvent({ type: "on_reset_once" });
         this.removeEventListeners("on_reset_once");
 
         this.autoFit = true;
@@ -861,8 +861,8 @@ export class ProfileWindow extends EventDispatcher {
         let width = this.renderArea[0].clientWidth;
         let height = this.renderArea[0].clientHeight;
 
-        let {renderer, pRenderer, camera, profileScene, scene} = this;
-        let {scaleX, pickSphere} = this;
+        let { renderer, pRenderer, camera, profileScene, scene } = this;
+        let { scaleX, pickSphere } = this;
 
         renderer.setSize(width, height);
 

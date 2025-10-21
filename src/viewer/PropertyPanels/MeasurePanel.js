@@ -60,7 +60,7 @@ export class MeasurePanel {
 
                 this.viewer.postMessage(
                     `Copied value to clipboard: <br>'${msg}'`,
-                    {duration: 3000});
+                    { duration: 3000 });
             });
 
             table.append(row);

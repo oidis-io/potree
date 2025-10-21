@@ -13,111 +13,111 @@ import * as THREE from "../../libs/three.js/build/three.module.js";
 
 export class NavigationCube extends THREE.Object3D {
     views = {
-        FRONT: {yaw: 0, pitch: 0},
-        BACK: {yaw: 180, pitch: 0},
-        LEFT: {yaw: -90, pitch: 0},
-        RIGHT: {yaw: 90, pitch: 0},
-        TOP: {yaw: 0, pitch: -90},
-        BOTTOM: {yaw: 0, pitch: 90},
+        FRONT: { yaw: 0, pitch: 0 },
+        BACK: { yaw: 180, pitch: 0 },
+        LEFT: { yaw: -90, pitch: 0 },
+        RIGHT: { yaw: 90, pitch: 0 },
+        TOP: { yaw: 0, pitch: -90 },
+        BOTTOM: { yaw: 0, pitch: 90 },
 
-        TOP_FRONT: {yaw: 0, pitch: -45},
-        TOP_BACK: {yaw: 180, pitch: -45},
-        TOP_LEFT: {yaw: -90, pitch: -45},
-        TOP_RIGHT: {yaw: 90, pitch: -45},
-        BOTTOM_FRONT: {yaw: 0, pitch: 45},
-        BOTTOM_BACK: {yaw: 180, pitch: 45},
-        BOTTOM_LEFT: {yaw: -90, pitch: 45},
-        BOTTOM_RIGHT: {yaw: 90, pitch: 45},
-        FRONT_LEFT: {yaw: -45, pitch: 0},
-        FRONT_RIGHT: {yaw: 45, pitch: 0},
-        BACK_LEFT: {yaw: -135, pitch: 0},
-        BACK_RIGHT: {yaw: 135, pitch: 0},
+        TOP_FRONT: { yaw: 0, pitch: -45 },
+        TOP_BACK: { yaw: 180, pitch: -45 },
+        TOP_LEFT: { yaw: -90, pitch: -45 },
+        TOP_RIGHT: { yaw: 90, pitch: -45 },
+        BOTTOM_FRONT: { yaw: 0, pitch: 45 },
+        BOTTOM_BACK: { yaw: 180, pitch: 45 },
+        BOTTOM_LEFT: { yaw: -90, pitch: 45 },
+        BOTTOM_RIGHT: { yaw: 90, pitch: 45 },
+        FRONT_LEFT: { yaw: -45, pitch: 0 },
+        FRONT_RIGHT: { yaw: 45, pitch: 0 },
+        BACK_LEFT: { yaw: -135, pitch: 0 },
+        BACK_RIGHT: { yaw: 135, pitch: 0 },
 
-        TOP_FRONT_LEFT: {yaw: -45, pitch: -45},
-        TOP_FRONT_RIGHT: {yaw: 45, pitch: -45},
-        TOP_BACK_LEFT: {yaw: -135, pitch: -45},
-        TOP_BACK_RIGHT: {yaw: 135, pitch: -45},
-        BOTTOM_FRONT_LEFT: {yaw: -45, pitch: 45},
-        BOTTOM_FRONT_RIGHT: {yaw: 45, pitch: 45},
-        BOTTOM_BACK_LEFT: {yaw: -135, pitch: 45},
-        BOTTOM_BACK_RIGHT: {yaw: 135, pitch: 45},
+        TOP_FRONT_LEFT: { yaw: -45, pitch: -45 },
+        TOP_FRONT_RIGHT: { yaw: 45, pitch: -45 },
+        TOP_BACK_LEFT: { yaw: -135, pitch: -45 },
+        TOP_BACK_RIGHT: { yaw: 135, pitch: -45 },
+        BOTTOM_FRONT_LEFT: { yaw: -45, pitch: 45 },
+        BOTTOM_FRONT_RIGHT: { yaw: 45, pitch: 45 },
+        BOTTOM_BACK_LEFT: { yaw: -135, pitch: 45 },
+        BOTTOM_BACK_RIGHT: { yaw: 135, pitch: 45 },
     };
 
     cubeMap = {
         corners: {
             FRONT: {
-                0: {links: [{side: "LEFT", id: 2}, {side: "BOTTOM", id: 0}], name: "BOTTOM_FRONT_LEFT"},
-                1: {links: [{side: "LEFT", id: 0}, {side: "TOP", id: 0}], name: "TOP_FRONT_LEFT"},
-                2: {links: [{side: "RIGHT", id: 2}, {side: "BOTTOM", id: 2}], name: "BOTTOM_FRONT_RIGHT"},
-                3: {links: [{side: "RIGHT", id: 0}, {side: "TOP", id: 2}], name: "TOP_FRONT_RIGHT"}
+                0: { links: [{ side: "LEFT", id: 2 }, { side: "BOTTOM", id: 0 }], name: "BOTTOM_FRONT_LEFT" },
+                1: { links: [{ side: "LEFT", id: 0 }, { side: "TOP", id: 0 }], name: "TOP_FRONT_LEFT" },
+                2: { links: [{ side: "RIGHT", id: 2 }, { side: "BOTTOM", id: 2 }], name: "BOTTOM_FRONT_RIGHT" },
+                3: { links: [{ side: "RIGHT", id: 0 }, { side: "TOP", id: 2 }], name: "TOP_FRONT_RIGHT" }
             },
             BACK: {
-                0: {links: [{side: "LEFT", id: 1}, {side: "TOP", id: 1}], name: "TOP_BACK_LEFT"},
-                1: {links: [{side: "LEFT", id: 3}, {side: "BOTTOM", id: 1}], name: "BOTTOM_BACK_LEFT"},
-                2: {links: [{side: "RIGHT", id: 1}, {side: "TOP", id: 3}], name: "TOP_BACK_RIGHT"},
-                3: {links: [{side: "RIGHT", id: 3}, {side: "BOTTOM", id: 3}], name: "BOTTOM_BACK_RIGHT"}
+                0: { links: [{ side: "LEFT", id: 1 }, { side: "TOP", id: 1 }], name: "TOP_BACK_LEFT" },
+                1: { links: [{ side: "LEFT", id: 3 }, { side: "BOTTOM", id: 1 }], name: "BOTTOM_BACK_LEFT" },
+                2: { links: [{ side: "RIGHT", id: 1 }, { side: "TOP", id: 3 }], name: "TOP_BACK_RIGHT" },
+                3: { links: [{ side: "RIGHT", id: 3 }, { side: "BOTTOM", id: 3 }], name: "BOTTOM_BACK_RIGHT" }
             },
             LEFT: {
-                0: {links: [{side: "FRONT", id: 1}, {side: "TOP", id: 0}], name: "TOP_FRONT_LEFT"},
-                1: {links: [{side: "BACK", id: 0}, {side: "TOP", id: 1}], name: "TOP_BACK_LEFT"},
-                2: {links: [{side: "FRONT", id: 0}, {side: "BOTTOM", id: 0}], name: "BOTTOM_FRONT_LEFT"},
-                3: {links: [{side: "BACK", id: 1}, {side: "BOTTOM", id: 1}], name: "BOTTOM_BACK_LEFT"}
+                0: { links: [{ side: "FRONT", id: 1 }, { side: "TOP", id: 0 }], name: "TOP_FRONT_LEFT" },
+                1: { links: [{ side: "BACK", id: 0 }, { side: "TOP", id: 1 }], name: "TOP_BACK_LEFT" },
+                2: { links: [{ side: "FRONT", id: 0 }, { side: "BOTTOM", id: 0 }], name: "BOTTOM_FRONT_LEFT" },
+                3: { links: [{ side: "BACK", id: 1 }, { side: "BOTTOM", id: 1 }], name: "BOTTOM_BACK_LEFT" }
             },
             RIGHT: {
-                0: {links: [{side: "FRONT", id: 3}, {side: "TOP", id: 2}], name: "TOP_FRONT_RIGHT"},
-                1: {links: [{side: "BACK", id: 2}, {side: "TOP", id: 3}], name: "TOP_BACK_RIGHT"},
-                2: {links: [{side: "FRONT", id: 2}, {side: "BOTTOM", id: 2}], name: "BOTTOM_FRONT_RIGHT"},
-                3: {links: [{side: "BACK", id: 3}, {side: "BOTTOM", id: 3}], name: "BOTTOM_BACK_RIGHT"}
+                0: { links: [{ side: "FRONT", id: 3 }, { side: "TOP", id: 2 }], name: "TOP_FRONT_RIGHT" },
+                1: { links: [{ side: "BACK", id: 2 }, { side: "TOP", id: 3 }], name: "TOP_BACK_RIGHT" },
+                2: { links: [{ side: "FRONT", id: 2 }, { side: "BOTTOM", id: 2 }], name: "BOTTOM_FRONT_RIGHT" },
+                3: { links: [{ side: "BACK", id: 3 }, { side: "BOTTOM", id: 3 }], name: "BOTTOM_BACK_RIGHT" }
             },
             TOP: {
-                0: {links: [{side: "FRONT", id: 1}, {side: "LEFT", id: 0}], name: "TOP_FRONT_LEFT"},
-                1: {links: [{side: "BACK", id: 0}, {side: "LEFT", id: 1}], name: "TOP_BACK_LEFT"},
-                2: {links: [{side: "FRONT", id: 3}, {side: "RIGHT", id: 0}], name: "TOP_FRONT_RIGHT"},
-                3: {links: [{side: "BACK", id: 2}, {side: "RIGHT", id: 1}], name: "TOP_BACK_RIGHT"}
+                0: { links: [{ side: "FRONT", id: 1 }, { side: "LEFT", id: 0 }], name: "TOP_FRONT_LEFT" },
+                1: { links: [{ side: "BACK", id: 0 }, { side: "LEFT", id: 1 }], name: "TOP_BACK_LEFT" },
+                2: { links: [{ side: "FRONT", id: 3 }, { side: "RIGHT", id: 0 }], name: "TOP_FRONT_RIGHT" },
+                3: { links: [{ side: "BACK", id: 2 }, { side: "RIGHT", id: 1 }], name: "TOP_BACK_RIGHT" }
             },
             BOTTOM: {
-                0: {links: [{side: "FRONT", id: 0}, {side: "LEFT", id: 2}], name: "BOTTOM_FRONT_LEFT"},
-                1: {links: [{side: "BACK", id: 1}, {side: "LEFT", id: 3}], name: "BOTTOM_BACK_LEFT"},
-                2: {links: [{side: "FRONT", id: 2}, {side: "RIGHT", id: 2}], name: "BOTTOM_FRONT_RIGHT"},
-                3: {links: [{side: "BACK", id: 3}, {side: "RIGHT", id: 3}], name: "BOTTOM_BACK_RIGHT"}
+                0: { links: [{ side: "FRONT", id: 0 }, { side: "LEFT", id: 2 }], name: "BOTTOM_FRONT_LEFT" },
+                1: { links: [{ side: "BACK", id: 1 }, { side: "LEFT", id: 3 }], name: "BOTTOM_BACK_LEFT" },
+                2: { links: [{ side: "FRONT", id: 2 }, { side: "RIGHT", id: 2 }], name: "BOTTOM_FRONT_RIGHT" },
+                3: { links: [{ side: "BACK", id: 3 }, { side: "RIGHT", id: 3 }], name: "BOTTOM_BACK_RIGHT" }
             }
         },
         edges: {
             FRONT: {
-                0: {links: [{side: "TOP", id: 1}], name: "TOP_FRONT"},
-                1: {links: [{side: "BOTTOM", id: 1}], name: "BOTTOM_FRONT"},
-                2: {links: [{side: "LEFT", id: 1}], name: "FRONT_LEFT"},
-                3: {links: [{side: "RIGHT", id: 1}], name: "FRONT_RIGHT"}
+                0: { links: [{ side: "TOP", id: 1 }], name: "TOP_FRONT" },
+                1: { links: [{ side: "BOTTOM", id: 1 }], name: "BOTTOM_FRONT" },
+                2: { links: [{ side: "LEFT", id: 1 }], name: "FRONT_LEFT" },
+                3: { links: [{ side: "RIGHT", id: 1 }], name: "FRONT_RIGHT" }
             },
             BACK: {
-                0: {links: [{side: "BOTTOM", id: 0}], name: "BOTTOM_BACK"},
-                1: {links: [{side: "TOP", id: 0}], name: "TOP_BACK"},
-                2: {links: [{side: "LEFT", id: 0}], name: "BACK_LEFT"},
-                3: {links: [{side: "RIGHT", id: 0}], name: "BACK_RIGHT"}
+                0: { links: [{ side: "BOTTOM", id: 0 }], name: "BOTTOM_BACK" },
+                1: { links: [{ side: "TOP", id: 0 }], name: "TOP_BACK" },
+                2: { links: [{ side: "LEFT", id: 0 }], name: "BACK_LEFT" },
+                3: { links: [{ side: "RIGHT", id: 0 }], name: "BACK_RIGHT" }
             },
             LEFT: {
-                0: {links: [{side: "BACK", id: 2}], name: "BACK_LEFT"},
-                1: {links: [{side: "FRONT", id: 2}], name: "FRONT_LEFT"},
-                2: {links: [{side: "TOP", id: 2}], name: "TOP_LEFT"},
-                3: {links: [{side: "BOTTOM", id: 2}], name: "BOTTOM_LEFT"}
+                0: { links: [{ side: "BACK", id: 2 }], name: "BACK_LEFT" },
+                1: { links: [{ side: "FRONT", id: 2 }], name: "FRONT_LEFT" },
+                2: { links: [{ side: "TOP", id: 2 }], name: "TOP_LEFT" },
+                3: { links: [{ side: "BOTTOM", id: 2 }], name: "BOTTOM_LEFT" }
             },
             RIGHT: {
-                0: {links: [{side: "BACK", id: 3}], name: "BACK_RIGHT"},
-                1: {links: [{side: "FRONT", id: 3}], name: "FRONT_RIGHT"},
-                2: {links: [{side: "TOP", id: 3}], name: "TOP_RIGHT"},
-                3: {links: [{side: "BOTTOM", id: 3}], name: "BOTTOM_RIGHT"}
+                0: { links: [{ side: "BACK", id: 3 }], name: "BACK_RIGHT" },
+                1: { links: [{ side: "FRONT", id: 3 }], name: "FRONT_RIGHT" },
+                2: { links: [{ side: "TOP", id: 3 }], name: "TOP_RIGHT" },
+                3: { links: [{ side: "BOTTOM", id: 3 }], name: "BOTTOM_RIGHT" }
             },
             TOP: {
-                0: {links: [{side: "BACK", id: 1}], name: "TOP_BACK"},
-                1: {links: [{side: "FRONT", id: 0}], name: "TOP_FRONT"},
-                2: {links: [{side: "LEFT", id: 2}], name: "TOP_LEFT"},
-                3: {links: [{side: "RIGHT", id: 2}], name: "TOP_RIGHT"}
+                0: { links: [{ side: "BACK", id: 1 }], name: "TOP_BACK" },
+                1: { links: [{ side: "FRONT", id: 0 }], name: "TOP_FRONT" },
+                2: { links: [{ side: "LEFT", id: 2 }], name: "TOP_LEFT" },
+                3: { links: [{ side: "RIGHT", id: 2 }], name: "TOP_RIGHT" }
             },
             BOTTOM: {
-                0: {links: [{side: "BACK", id: 0}], name: "BOTTOM_BACK"},
-                1: {links: [{side: "FRONT", id: 1}], name: "BOTTOM_FRONT"},
-                2: {links: [{side: "LEFT", id: 3}], name: "BOTTOM_LEFT"},
-                3: {links: [{side: "RIGHT", id: 3}], name: "BOTTOM_RIGHT"}
+                0: { links: [{ side: "BACK", id: 0 }], name: "BOTTOM_BACK" },
+                1: { links: [{ side: "FRONT", id: 1 }], name: "BOTTOM_FRONT" },
+                2: { links: [{ side: "LEFT", id: 3 }], name: "BOTTOM_LEFT" },
+                3: { links: [{ side: "RIGHT", id: 3 }], name: "BOTTOM_RIGHT" }
             }
         }
     };
@@ -265,37 +265,37 @@ export class NavigationCube extends THREE.Object3D {
         this.corners.forEach((pos, i) => {
             const mesh = new THREE.Mesh(
                 new THREE.PlaneGeometry(cornerSize, cornerSize),
-                new THREE.MeshBasicMaterial({color: colorCorner, side: THREE.DoubleSide})
+                new THREE.MeshBasicMaterial({ color: colorCorner, side: THREE.DoubleSide })
             );
             mesh.position.set(pos[0], pos[1], 0);
-            mesh.userData = {type: "corner", id: i, side: name};
+            mesh.userData = { type: "corner", id: i, side: name };
             group.add(mesh);
         });
         const edges = [
-            {pos: [0, 0.5 - cornerSize / 2], size: [edgeSize, cornerSize]},
-            {pos: [0, -0.5 + cornerSize / 2], size: [edgeSize, cornerSize]},
-            {pos: [-0.5 + cornerSize / 2, 0], size: [cornerSize, edgeSize]},
-            {pos: [0.5 - cornerSize / 2, 0], size: [cornerSize, edgeSize]}
+            { pos: [0, 0.5 - cornerSize / 2], size: [edgeSize, cornerSize] },
+            { pos: [0, -0.5 + cornerSize / 2], size: [edgeSize, cornerSize] },
+            { pos: [-0.5 + cornerSize / 2, 0], size: [cornerSize, edgeSize] },
+            { pos: [0.5 - cornerSize / 2, 0], size: [cornerSize, edgeSize] }
         ];
         edges.forEach((e, i) => {
             const mesh = new THREE.Mesh(
                 new THREE.PlaneGeometry(e.size[0], e.size[1]),
-                new THREE.MeshBasicMaterial({color: colorEdge, side: THREE.DoubleSide})
+                new THREE.MeshBasicMaterial({ color: colorEdge, side: THREE.DoubleSide })
             );
             mesh.position.set(e.pos[0], e.pos[1], 0);
-            mesh.userData = {type: "edge", id: i, side: name};
+            mesh.userData = { type: "edge", id: i, side: name };
             group.add(mesh);
         });
 
         const faceMesh = new THREE.Mesh(
             new THREE.PlaneGeometry(edgeSize, edgeSize),
-            new THREE.MeshBasicMaterial({color: colorFace, side: THREE.DoubleSide})
+            new THREE.MeshBasicMaterial({ color: colorFace, side: THREE.DoubleSide })
         );
-        faceMesh.userData = {type: "face", side: name};
+        faceMesh.userData = { type: "face", side: name };
         group.add(faceMesh);
 
         const textMesh = this.createTextLabel(name, 4 * this.width, this.options.color);
-        textMesh.userData = {type: "label", parent: faceMesh};
+        textMesh.userData = { type: "label", parent: faceMesh };
         textMesh.scale.set(edgeSize, edgeSize, 1);
         textMesh.position.z = 0.001;
         textMesh.raycast = () => {
@@ -378,7 +378,7 @@ export class NavigationCube extends THREE.Object3D {
                         meshes = this.edgeMeshes;
                     }
 
-                    const {side, id} = hit.userData;
+                    const { side, id } = hit.userData;
                     const linked = map[side][id].links || [];
                     const group = [hit];
 
@@ -437,7 +437,7 @@ export class NavigationCube extends THREE.Object3D {
 
         const closest = intersects.reduce((prev, curr) => prev.distance < curr.distance ? prev : curr);
         const mesh = closest.object;
-        const {type, side, id} = mesh.userData;
+        const { type, side, id } = mesh.userData;
 
         const cubeMap = this.cubeMap;
 

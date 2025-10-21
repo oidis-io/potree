@@ -10,21 +10,19 @@
  * ********************************************************************************************************* */
 
 const path = require("path");
+const fs = require("fs");
+const exec = require("child_process").exec;
 const gulp = require("gulp");
 const del = require("del");
-const exec = require("child_process").exec;
-
-const fs = require("fs");
 const fsp = fs.promises;
 const concat = require("gulp-concat");
 const merge = require("merge-stream");
 const connect = require("gulp-connect");
-const {watch} = gulp;
-
-const {createExamplesPage} = require("./src/tools/create_potree_page.js");
-const {createGithubPage} = require("./src/tools/create_github_page.js");
-const {createIconsPage} = require("./src/tools/create_icons_page.js");
+const { watch } = gulp;
 const archiver = require("archiver");
+const { createExamplesPage } = require("./src/tools/create_potree_page.js");
+const { createGithubPage } = require("./src/tools/create_github_page.js");
+const { createIconsPage } = require("./src/tools/create_icons_page.js");
 
 let paths = {
     laslaz: [
@@ -98,11 +96,11 @@ gulp.task("clean", async () => {
 gulp.task("archive", async () => {
     const pkg = JSON.parse(fs.readFileSync("package.json", "utf-8"));
     const outDir = path.dirname("build");
-    fs.mkdirSync(outDir, {recursive: true});
+    fs.mkdirSync(outDir, { recursive: true });
 
     const baseName = `Potree-${pkg.version.replace(/\./gm, "-")}`;
     const output = fs.createWriteStream(`build/${baseName}.zip`);
-    const archive = archiver("zip", {zlib: {level: 9}});
+    const archive = archiver("zip", { zlib: { level: 9 } });
 
     output.on("close", () => {
         console.log("archive " + output.path + " constructed");
@@ -125,7 +123,7 @@ gulp.task("archive", async () => {
                 archive.directory(asset, `${baseName}/${asset}`, null);
             } else {
                 const name = path.basename(asset);
-                archive.file(asset, {name: `${baseName}/${name}`});
+                archive.file(asset, { name: `${baseName}/${name}` });
             }
         }
     }
@@ -161,7 +159,7 @@ gulp.task("workers", function () {
             .pipe(gulp.dest("build/potree/workers"));
     });
 
-    const wasmStream = gulp.src("./libs/copc/laz-perf.wasm", {encoding: false})
+    const wasmStream = gulp.src("./libs/copc/laz-perf.wasm", { encoding: false })
         .pipe(gulp.dest("./build/potree/workers"));
 
     return merge(...workerStreams, wasmStream);
@@ -200,7 +198,7 @@ gulp.task("shaders", async () => {
     if (!fs.existsSync("build/shaders")) {
         fs.mkdirSync("build/shaders");
     }
-    fs.writeFileSync(targetPath, content, {flag: "w"});
+    fs.writeFileSync(targetPath, content, { flag: "w" });
 });
 
 gulp.task("pack", async () => {

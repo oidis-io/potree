@@ -153,7 +153,7 @@ export class MeasuringTool extends EventDispatcher {
         };
 
         for (let measurement of viewer.scene.measurements) {
-            this.onAdd({measurement: measurement});
+            this.onAdd({ measurement: measurement });
         }
 
         viewer.addEventListener("update", this.update.bind(this));

@@ -236,7 +236,7 @@ export class Sidebar {
             PotreeConfig.resourcePath + "/icons/sphere_distances.svg",
             "[title]tt.volume_measurement",
             () => {
-                let volume = this.volumeTool.startInsertion({type: SphereVolume});
+                let volume = this.volumeTool.startInsertion({ type: SphereVolume });
 
                 let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
                 let jsonNode = measurementsRoot.children.find(child => child.data.uuid === volume.uuid);
@@ -284,7 +284,7 @@ export class Sidebar {
 
         { // SHOW / HIDE Measurements
             let elShow = $("#measurement_options_show");
-            elShow.selectgroup({title: "Show/Hide labels"});
+            elShow.selectgroup({ title: "Show/Hide labels" });
 
             elShow.find("input").click((e) => {
                 const show = e.target.value === "SHOW";
@@ -323,7 +323,7 @@ export class Sidebar {
                 if (measurements.length > 0) {
                     let geoJson = GeoJSONExporter.toString(measurements);
 
-                    let url = window.URL.createObjectURL(new Blob([geoJson], {type: "data:application/octet-stream"}));
+                    let url = window.URL.createObjectURL(new Blob([geoJson], { type: "data:application/octet-stream" }));
                     elDownloadJSON.attr("href", url);
                 } else {
                     this.viewer.postError("no measurements to export");
@@ -339,7 +339,7 @@ export class Sidebar {
                 if (measurements.length > 0) {
                     let dxf = DXFExporter.toString(measurements);
 
-                    let url = window.URL.createObjectURL(new Blob([dxf], {type: "data:application/octet-stream"}));
+                    let url = window.URL.createObjectURL(new Blob([dxf], { type: "data:application/octet-stream" }));
                     elDownloadDXF.attr("href", url);
                 } else {
                     this.viewer.postError("no measurements to export");
@@ -352,7 +352,7 @@ export class Sidebar {
                 let data = saveProject(this.viewer);
                 let dataString = JSON5.stringify(data, null, "\t");
 
-                let url = window.URL.createObjectURL(new Blob([dataString], {type: "data:application/octet-stream"}));
+                let url = window.URL.createObjectURL(new Blob([dataString], { type: "data:application/octet-stream" }));
                 elDownloadPotree.attr("href", url);
             });
         }
@@ -400,12 +400,12 @@ export class Sidebar {
             return nodeID;
         };
 
-        let pcID = tree.jstree("create_node", "#", {"text": "<b>Point Clouds</b>", "id": "pointclouds"}, "last", false, false);
-        let measurementID = tree.jstree("create_node", "#", {"text": "<b>Measurements</b>", "id": "measurements"}, "last", false, false);
-        let annotationsID = tree.jstree("create_node", "#", {"text": "<b>Annotations</b>", "id": "annotations"}, "last", false, false);
-        let otherID = tree.jstree("create_node", "#", {"text": "<b>Other</b>", "id": "other"}, "last", false, false);
-        let vectorsID = tree.jstree("create_node", "#", {"text": "<b>Vectors</b>", "id": "vectors"}, "last", false, false);
-        let imagesID = tree.jstree("create_node", "#", {"text": "<b> Images</b>", "id": "images"}, "last", false, false);
+        let pcID = tree.jstree("create_node", "#", { "text": "<b>Point Clouds</b>", "id": "pointclouds" }, "last", false, false);
+        let measurementID = tree.jstree("create_node", "#", { "text": "<b>Measurements</b>", "id": "measurements" }, "last", false, false);
+        let annotationsID = tree.jstree("create_node", "#", { "text": "<b>Annotations</b>", "id": "annotations" }, "last", false, false);
+        let otherID = tree.jstree("create_node", "#", { "text": "<b>Other</b>", "id": "other" }, "last", false, false);
+        let vectorsID = tree.jstree("create_node", "#", { "text": "<b>Vectors</b>", "id": "vectors" }, "last", false, false);
+        let imagesID = tree.jstree("create_node", "#", { "text": "<b> Images</b>", "id": "images" }, "last", false, false);
 
         tree.jstree("check_node", pcID);
         tree.jstree("check_node", measurementID);
@@ -708,35 +708,35 @@ export class Sidebar {
 
         const scene = this.viewer.scene;
         for (let pointcloud of scene.pointclouds) {
-            onPointCloudAdded({pointcloud: pointcloud});
+            onPointCloudAdded({ pointcloud: pointcloud });
         }
 
         for (let measurement of scene.measurements) {
-            onMeasurementAdded({measurement: measurement});
+            onMeasurementAdded({ measurement: measurement });
         }
 
         for (let volume of [...scene.volumes, ...scene.polygonClipVolumes]) {
-            onVolumeAdded({volume: volume});
+            onVolumeAdded({ volume: volume });
         }
 
         for (let animation of scene.cameraAnimations) {
-            onCameraAnimationAdded({animation: animation});
+            onCameraAnimationAdded({ animation: animation });
         }
 
         for (let images of scene.orientedImages) {
-            onOrientedImagesAdded({images: images});
+            onOrientedImagesAdded({ images: images });
         }
 
         for (let images of scene.images360) {
-            onImages360Added({images: images});
+            onImages360Added({ images: images });
         }
 
         for (const geopackage of scene.geopackages) {
-            onGeopackageAdded({geopackage: geopackage});
+            onGeopackageAdded({ geopackage: geopackage });
         }
 
         for (let profile of scene.profiles) {
-            onProfileAdded({profile: profile});
+            onProfileAdded({ profile: profile });
         }
 
         {
@@ -773,7 +773,7 @@ export class Sidebar {
 
         {
             let elClipTask = $("#cliptask_options");
-            elClipTask.selectgroup({title: "Clip Task"});
+            elClipTask.selectgroup({ title: "Clip Task" });
 
             elClipTask.find("input").click((e) => {
                 this.viewer.setClipTask(ClipTask[e.target.value]);
@@ -786,7 +786,7 @@ export class Sidebar {
 
         {
             let elClipMethod = $("#clipmethod_options");
-            elClipMethod.selectgroup({title: "Clip Method"});
+            elClipMethod.selectgroup({ title: "Clip Method" });
 
             elClipMethod.find("input").click((e) => {
                 this.viewer.setClipMethod(ClipMethod[e.target.value]);
@@ -804,7 +804,7 @@ export class Sidebar {
             PotreeConfig.resourcePath + "/icons/clip_volume.svg",
             "[title]tt.clip_volume",
             () => {
-                let item = this.volumeTool.startInsertion({clip: true});
+                let item = this.volumeTool.startInsertion({ clip: true });
 
                 let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
                 let jsonNode = measurementsRoot.children.find(child => child.data.uuid === item.uuid);
@@ -818,7 +818,7 @@ export class Sidebar {
             PotreeConfig.resourcePath + "/icons/clip-polygon.svg",
             "[title]tt.clip_polygon",
             () => {
-                let item = this.viewer.clippingTool.startInsertion({type: "polygon"});
+                let item = this.viewer.clippingTool.startInsertion({ type: "polygon" });
 
                 let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
                 let jsonNode = measurementsRoot.children.find(child => child.data.uuid === item.uuid);
@@ -836,7 +836,7 @@ export class Sidebar {
                 () => {
                     if (!(this.viewer.scene.getActiveCamera() instanceof THREE.OrthographicCamera)) {
                         this.viewer.postMessage(`Switch to Orthographic Camera Mode before using the Screen-Box-Select tool.`,
-                            {duration: 2000});
+                            { duration: 2000 });
                         return;
                     }
 
@@ -888,7 +888,7 @@ export class Sidebar {
                 let [from, to] = this.viewer.filterReturnNumberRange;
 
                 lblReturnNumber[0].innerHTML = `${from} to ${to}`;
-                sldReturnNumber.slider({values: [from, to]});
+                sldReturnNumber.slider({ values: [from, to] });
             };
 
             this.viewer.addEventListener("filter_return_number_range_changed", onReturnNumberChanged);
@@ -913,7 +913,7 @@ export class Sidebar {
                 let [from, to] = this.viewer.filterNumberOfReturnsRange;
 
                 lblNumberOfReturns[0].innerHTML = `${from} to ${to}`;
-                sldNumberOfReturns.slider({values: [from, to]});
+                sldNumberOfReturns.slider({ values: [from, to] });
             };
 
             this.viewer.addEventListener("filter_number_of_returns_range_changed", onNumberOfReturnsChanged);
@@ -1252,12 +1252,12 @@ export class Sidebar {
 
         this.viewer.addEventListener("point_budget_changed", (event) => {
             $("#lblPointBudget")[0].innerHTML = Utils.addCommas(this.viewer.getPointBudget());
-            sldPointBudget.slider({value: this.viewer.getPointBudget()});
+            sldPointBudget.slider({ value: this.viewer.getPointBudget() });
         });
 
         this.viewer.addEventListener("fov_changed", (event) => {
             $("#lblFOV")[0].innerHTML = parseInt(this.viewer.getFOV());
-            $("#sldFOV").slider({value: this.viewer.getFOV()});
+            $("#sldFOV").slider({ value: this.viewer.getFOV() });
         });
 
         this.viewer.addEventListener("use_edl_changed", (event) => {
@@ -1266,12 +1266,12 @@ export class Sidebar {
 
         this.viewer.addEventListener("edl_radius_changed", (event) => {
             $("#lblEDLRadius")[0].innerHTML = this.viewer.getEDLRadius().toFixed(1);
-            $("#sldEDLRadius").slider({value: this.viewer.getEDLRadius()});
+            $("#sldEDLRadius").slider({ value: this.viewer.getEDLRadius() });
         });
 
         this.viewer.addEventListener("edl_strength_changed", (event) => {
             $("#lblEDLStrength")[0].innerHTML = this.viewer.getEDLStrength().toFixed(1);
-            $("#sldEDLStrength").slider({value: this.viewer.getEDLStrength()});
+            $("#sldEDLStrength").slider({ value: this.viewer.getEDLStrength() });
         });
 
         this.viewer.addEventListener("background_changed", (event) => {
@@ -1432,7 +1432,7 @@ export class Sidebar {
             </selectgroup>
         `);
         elNavigation.append(elCameraProjection);
-        elCameraProjection.selectgroup({title: "Camera Projection"});
+        elCameraProjection.selectgroup({ title: "Camera Projection" });
         elCameraProjection.find("input").click((e) => {
             this.viewer.setCameraMode(CameraMode[e.target.value]);
         });
@@ -1462,7 +1462,7 @@ export class Sidebar {
 
         this.viewer.addEventListener("move_speed_changed", (event) => {
             lblMoveSpeed.html(this.viewer.getMoveSpeed().toFixed(1));
-            sldMoveSpeed.slider({value: toExpSpeed(this.viewer.getMoveSpeed())});
+            sldMoveSpeed.slider({ value: toExpSpeed(this.viewer.getMoveSpeed()) });
         });
 
         lblMoveSpeed.html(this.viewer.getMoveSpeed().toFixed(1));
@@ -1482,14 +1482,14 @@ export class Sidebar {
 
             this.viewer.addEventListener("minnodesize_changed", (event) => {
                 $("#lblMinNodeSize").html(parseInt(this.viewer.getMinNodeSize()));
-                $("#sldMinNodeSize").slider({value: this.viewer.getMinNodeSize()});
+                $("#sldMinNodeSize").slider({ value: this.viewer.getMinNodeSize() });
             });
             $("#lblMinNodeSize").html(parseInt(this.viewer.getMinNodeSize()));
         }
 
         {
             let elSplatQuality = $("#splat_quality_options");
-            elSplatQuality.selectgroup({title: "Splat Quality"});
+            elSplatQuality.selectgroup({ title: "Splat Quality" });
 
             elSplatQuality.find("input").click((e) => {
                 if (e.target.value === "standard") {

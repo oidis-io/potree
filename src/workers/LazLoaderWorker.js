@@ -72,9 +72,9 @@ function handleEvent(msg) {
 
                 instance.readOffset = 0;
 
-                postMessage({type: "open", status: 1});
+                postMessage({ type: "open", status: 1 });
             } catch (e) {
-                postMessage({type: "open", status: 0, details: e});
+                postMessage({ type: "open", status: 0, details: e });
             }
             break;
 
@@ -86,7 +86,7 @@ function handleEvent(msg) {
             let header = parseLASHeader(instance.arraybuffer);
             header.pointsFormatId &= 0x3f;
             instance.header = header;
-            postMessage({type: "header", status: 1, header: header});
+            postMessage({ type: "header", status: 1, header: header });
             break;
 
         case "read":
@@ -136,7 +136,7 @@ function handleEvent(msg) {
                 instance.delete();
                 instance = null;
             }
-            postMessage({type: "close", status: 1});
+            postMessage({ type: "close", status: 1 });
             break;
     }
 }
@@ -145,6 +145,6 @@ onmessage = function (event) {
     try {
         handleEvent(event.data);
     } catch (e) {
-        postMessage({type: event.data.type, status: 0, details: e});
+        postMessage({ type: event.data.type, status: 0, details: e });
     }
 };

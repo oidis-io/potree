@@ -61,7 +61,7 @@ export class CameraPanel {
 
             this.viewer.postMessage(
                 `Copied value to clipboard: <br>'${msg}'`,
-                {duration: 3000});
+                { duration: 3000 });
         });
 
         this.elCopyTarget = this.elContent.find("img[name=copyTarget]");
@@ -72,7 +72,7 @@ export class CameraPanel {
 
             this.viewer.postMessage(
                 `Copied value to clipboard: <br>'${msg}'`,
-                {duration: 3000});
+                { duration: 3000 });
         });
 
         this.propertiesPanel.addVolatileListener(viewer, "camera_changed", this._update);

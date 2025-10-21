@@ -20,8 +20,8 @@ async function readUsingDataView(event) {
     performance.mark("laslaz-start");
 
     // TODO: Handle extra-bytes.
-    const {isFullFile, compressed, header, eb, pointCount, nodemin} = event.data;
-    const {pointDataRecordFormat, pointDataRecordLength} = header;
+    const { isFullFile, compressed, header, eb, pointCount, nodemin } = event.data;
+    const { pointDataRecordFormat, pointDataRecordLength } = header;
 
     // Note that for the chunk version, we use the point count passed in the
     // event rather than the point count from the header, since the header has
@@ -31,7 +31,7 @@ async function readUsingDataView(event) {
         ? await Copc.Las.PointData.decompressFile(u)
         : await Copc.Las.PointData.decompressChunk(
             u,
-            {pointDataRecordFormat, pointDataRecordLength, pointCount},
+            { pointDataRecordFormat, pointDataRecordLength, pointCount },
         );
 
     const view = Copc.Las.View.create(buffer, header, eb);
@@ -77,7 +77,7 @@ async function readUsingDataView(event) {
         returnNumber: view.getter("ReturnNumber"),
         numberOfReturns: view.getter("NumberOfReturns"),
         pointSourceId: view.getter("PointSourceId"),
-        ...(view.dimensions.GpsTime && {gpsTime: view.getter("GpsTime")}),
+        ...(view.dimensions.GpsTime && { gpsTime: view.getter("GpsTime") }),
         ...(view.dimensions.Red && {
             red: view.getter("Red"),
             green: view.getter("Green"),
@@ -96,7 +96,7 @@ async function readUsingDataView(event) {
         "pointSourceId",
         "gpsTime",
         "color",
-    ].reduce((map, name) => ({...map, [name]: [Infinity, -Infinity]}), {});
+    ].reduce((map, name) => ({ ...map, [name]: [Infinity, -Infinity] }), {});
 
     function update(range, value) {
         range[0] = Math.min(range[0], value);

@@ -107,7 +107,7 @@ export class ClippingTool extends EventDispatcher {
 
         let polyClipVol = new PolygonClipVolume(this.viewer.scene.getActiveCamera().clone());
 
-        this.dispatchEvent({"type": "start_inserting_clipping_volume"});
+        this.dispatchEvent({ "type": "start_inserting_clipping_volume" });
 
         this.viewer.scene.addPolygonClipVolume(polyClipVol);
         this.sceneMarker.add(polyClipVol);

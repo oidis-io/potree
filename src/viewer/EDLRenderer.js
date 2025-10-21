@@ -75,7 +75,7 @@ export class EDLRenderer {
             size = this.viewer.renderer.getSize(new THREE.Vector2());
         }
 
-        let {width, height} = size;
+        let { width, height } = size;
 
         width = 2 * width;
         height = 2 * height;
@@ -117,7 +117,7 @@ export class EDLRenderer {
 
     clearTargets() {
         const viewer = this.viewer;
-        const {renderer} = viewer;
+        const { renderer } = viewer;
 
         const oldTarget = renderer.getRenderTarget();
 
@@ -134,7 +134,7 @@ export class EDLRenderer {
         this.initEDL();
         const viewer = this.viewer;
 
-        const {renderer, background} = viewer;
+        const { renderer, background } = viewer;
 
         if (background === "skybox") {
             renderer.setClearColor(0x000000, 0);
@@ -154,7 +154,7 @@ export class EDLRenderer {
     }
 
     renderShadowMap(visiblePointClouds, camera, lights) {
-        const {viewer} = this;
+        const { viewer } = this;
 
         const doShadows = lights.length > 0 && !(lights[0].disableShadowUpdates);
         if (doShadows) {
@@ -190,9 +190,9 @@ export class EDLRenderer {
 
         const viewer = this.viewer;
         let camera = params.camera ? params.camera : viewer.scene.getActiveCamera();
-        const {width, height} = this.viewer.renderer.getSize(new THREE.Vector2());
+        const { width, height } = this.viewer.renderer.getSize(new THREE.Vector2());
 
-        viewer.dispatchEvent({type: "render.pass.begin", viewer: viewer});
+        viewer.dispatchEvent({ type: "render.pass.begin", viewer: viewer });
 
         this.resize(width, height);
 
@@ -265,7 +265,7 @@ export class EDLRenderer {
             }
         }
 
-        viewer.dispatchEvent({type: "render.pass.scene", viewer: viewer, renderTarget: this.rtRegular});
+        viewer.dispatchEvent({ type: "render.pass.scene", viewer: viewer, renderTarget: this.rtRegular });
         viewer.renderer.setRenderTarget(null);
         viewer.renderer.render(viewer.scene.scene, camera);
 
@@ -296,18 +296,18 @@ export class EDLRenderer {
             }
         }
 
-        viewer.dispatchEvent({type: "render.pass.scene", viewer: viewer});
+        viewer.dispatchEvent({ type: "render.pass.scene", viewer: viewer });
 
         viewer.renderer.clearDepth();
 
         viewer.transformationTool.update();
 
-        viewer.dispatchEvent({type: "render.pass.perspective_overlay", viewer: viewer});
+        viewer.dispatchEvent({ type: "render.pass.perspective_overlay", viewer: viewer });
 
         viewer.renderer.render(viewer.controls.sceneControls, camera);
         viewer.renderer.render(viewer.clippingTool.sceneVolume, camera);
         viewer.renderer.render(viewer.transformationTool.scene, camera);
 
-        viewer.dispatchEvent({type: "render.pass.end", viewer: viewer});
+        viewer.dispatchEvent({ type: "render.pass.end", viewer: viewer });
     }
 }

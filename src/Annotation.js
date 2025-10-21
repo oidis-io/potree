@@ -80,7 +80,7 @@ export class Annotation extends EventDispatcher {
             if (this.hasView()) {
                 this.moveHere(this.scene.getActiveCamera());
             }
-            this.dispatchEvent({type: "click", target: this});
+            this.dispatchEvent({ type: "click", target: this });
         };
 
         this.elTitle.click(this.clickTitle);
@@ -103,7 +103,7 @@ export class Annotation extends EventDispatcher {
         for (let action of actions) {
             let elButton = $(`<img src="${action.icon}" class="annotation-action-icon">`);
             this.elTitlebar.append(elButton);
-            elButton.click(() => action.onclick({annotation: this}));
+            elButton.click(() => action.onclick({ annotation: this }));
         }
 
         this.elDescriptionClose.hover(
@@ -547,10 +547,10 @@ export class Annotation extends EventDispatcher {
             }
 
             { // animate radius
-                let t = {x: 0};
+                let t = { x: 0 };
 
                 let tween = new TWEEN.Tween(t)
-                    .to({x: 1}, animationDuration)
+                    .to({ x: 1 }, animationDuration)
                     .onUpdate(function () {
                         view.radius = this.x * endRadius + (1 - this.x) * startRadius;
                     });

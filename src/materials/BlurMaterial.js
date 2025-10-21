@@ -18,11 +18,11 @@ export class BlurMaterial extends THREE.ShaderMaterial {
         super();
 
         let uniforms = {
-            near: {type: "f", value: 0},
-            far: {type: "f", value: 0},
-            screenWidth: {type: "f", value: 0},
-            screenHeight: {type: "f", value: 0},
-            map: {type: "t", value: null}
+            near: { type: "f", value: 0 },
+            far: { type: "f", value: 0 },
+            screenWidth: { type: "f", value: 0 },
+            screenHeight: { type: "f", value: 0 },
+            map: { type: "t", value: null }
         };
 
         this.setValues({

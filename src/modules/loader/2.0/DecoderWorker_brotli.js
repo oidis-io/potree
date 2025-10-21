@@ -61,18 +61,18 @@ function dealign24b(mortoncode) {
 let mask_b0 = new Uint8Array([0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3]);
 
 onmessage = function (event) {
-    let {pointAttributes, scale, name, min, max, size, offset, numPoints} = event.data;
+    let { pointAttributes, scale, name, min, max, size, offset, numPoints } = event.data;
 
     let tStart = performance.now();
 
     let buffer;
     if (numPoints === 0) {
-        buffer = {buffer: new ArrayBuffer(0)};
+        buffer = { buffer: new ArrayBuffer(0) };
     } else {
         try {
             buffer = BrotliDecode(new Int8Array(event.data.buffer));
         } catch (e) {
-            buffer = {buffer: new ArrayBuffer(numPoints * (pointAttributes.byteSize + 12))};
+            buffer = { buffer: new ArrayBuffer(numPoints * (pointAttributes.byteSize + 12)) };
             console.error(`problem with node ${name}: `, e);
         }
     }
@@ -153,7 +153,7 @@ onmessage = function (event) {
                 positions[3 * j + 2] = z;
             }
 
-            attributeBuffers[pointAttribute.name] = {buffer: buff, attribute: pointAttribute};
+            attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
         } else if (["RGBA", "rgba"].includes(pointAttribute.name)) {
             let buff = new ArrayBuffer(numPoints * 4);
             let colors = new Uint8Array(buff);
@@ -177,7 +177,7 @@ onmessage = function (event) {
                 colors[4 * j + 2] = b > 255 ? b / 256 : b;
             }
 
-            attributeBuffers[pointAttribute.name] = {buffer: buff, attribute: pointAttribute};
+            attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
         } else {
             let buff = new ArrayBuffer(numPoints * 4);
             let f32 = new Float32Array(buff);
@@ -233,14 +233,14 @@ onmessage = function (event) {
             indices[i] = i;
         }
 
-        attributeBuffers["INDICES"] = {buffer: buff, attribute: PointAttribute.INDICES};
+        attributeBuffers["INDICES"] = { buffer: buff, attribute: PointAttribute.INDICES };
     }
 
     {
         let vectors = pointAttributes.vectors;
 
         for (let vector of vectors) {
-            let {name, attributes} = vector;
+            let { name, attributes } = vector;
             let numVectorElements = attributes.length;
             let buffer = new ArrayBuffer(numVectorElements * numPoints * 4);
             let f32 = new Float32Array(buffer);
@@ -248,7 +248,7 @@ onmessage = function (event) {
             let iElement = 0;
             for (let sourceName of attributes) {
                 let sourceBuffer = attributeBuffers[sourceName];
-                let {offset, scale} = sourceBuffer;
+                let { offset, scale } = sourceBuffer;
                 let view = new DataView(sourceBuffer.buffer);
 
                 const getter = view.getFloat32.bind(view);

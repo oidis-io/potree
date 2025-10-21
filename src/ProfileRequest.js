@@ -76,7 +76,7 @@ export class ProfileRequest {
     }
 
     initialize() {
-        this.priorityQueue.push({node: this.pointcloud.pcoGeometry.root, weight: Infinity});
+        this.priorityQueue.push({ node: this.pointcloud.pcoGeometry.root, weight: Infinity });
     }
 
     // traverse the node and add intersecting descendants to queue
@@ -93,7 +93,7 @@ export class ProfileRequest {
             let node = stack.pop();
             let weight = node.boundingSphere.radius;
 
-            this.priorityQueue.push({node: node, weight: weight});
+            this.priorityQueue.push({ node: node, weight: weight });
 
             if (node.level < this.maxDepth) {
                 for (let i = 0; i < 8; i++) {
@@ -159,7 +159,7 @@ export class ProfileRequest {
             }
             if (this.temporaryResult.size() > 100) {
                 this.pointsServed += this.temporaryResult.size();
-                this.callback.onProgress({request: this, points: this.temporaryResult});
+                this.callback.onProgress({ request: this, points: this.temporaryResult });
                 this.temporaryResult = new ProfileData(this.profile);
             }
         }
@@ -169,11 +169,11 @@ export class ProfileRequest {
 
             if (this.temporaryResult.size() > 0) {
                 this.pointsServed += this.temporaryResult.size();
-                this.callback.onProgress({request: this, points: this.temporaryResult});
+                this.callback.onProgress({ request: this, points: this.temporaryResult });
                 this.temporaryResult = new ProfileData(this.profile);
             }
 
-            this.callback.onFinish({request: this});
+            this.callback.onFinish({ request: this });
 
             let index = this.pointcloud.profileRequests.indexOf(this);
             if (index >= 0) {

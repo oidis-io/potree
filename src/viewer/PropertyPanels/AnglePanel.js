@@ -9,7 +9,7 @@
  *
  * ********************************************************************************************************* */
 
-import {MeasurePanel} from "./MeasurePanel.js";
+import { MeasurePanel } from "./MeasurePanel.js";
 import PotreeConfig from "../../PotreeConfig.js";
 
 export class AnglePanel extends MeasurePanel {

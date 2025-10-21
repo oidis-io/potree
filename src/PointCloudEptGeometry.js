@@ -106,7 +106,7 @@ class BaseGeometry {
 }
 
 export class PointCloudCopcGeometry extends BaseGeometry {
-    static parse({header, info, wkt}) {
+    static parse({ header, info, wkt }) {
         return {
             cube: info.cube,
             boundsConforming: [...header.min, ...header.max],
@@ -121,13 +121,13 @@ export class PointCloudCopcGeometry extends BaseGeometry {
         this.type = "copc";
         this.getter = getter;
         this.copc = copc;
-        this.pages = {"0-0-0-0": copc.info.rootHierarchyPage};
+        this.pages = { "0-0-0-0": copc.info.rootHierarchyPage };
 
         this.loader = new CopcLaszipLoader();
     }
 
     async loadHierarchyPage(key) {
-        const {Copc, Key} = window.Copc;
+        const { Copc, Key } = window.Copc;
         const page = this.pages[Key.toString(key)];
         return Copc.loadHierarchyPage(this.getter, page);
     }
@@ -135,20 +135,20 @@ export class PointCloudCopcGeometry extends BaseGeometry {
 
 export class PointCloudEptGeometry extends BaseGeometry {
     static parse(ept) {
-        const {bounds: cube, boundsConforming, span, srs: filesrs} = ept;
+        const { bounds: cube, boundsConforming, span, srs: filesrs } = ept;
 
         const spacing = (cube[3] - cube[0]) / span;
 
         let srs;
         if (filesrs) {
-            const {authority, horizontal, wkt} = filesrs;
+            const { authority, horizontal, wkt } = filesrs;
             if (authority && horizontal) {
                 srs = U.maybeSrs(`${authority}:${horizontal}`);
             }
             if (!srs && wkt) srs = U.maybeSrs(wkt);
         }
 
-        return {cube, boundsConforming, spacing, srs};
+        return { cube, boundsConforming, spacing, srs };
     }
 
     constructor(base, ept) {
@@ -173,7 +173,7 @@ export class PointCloudEptGeometry extends BaseGeometry {
     }
 
     async loadHierarchyPage(key) {
-        const {Ept, Key} = window.Copc;
+        const { Ept, Key } = window.Copc;
 
         const filename = `${this.base}/ept-hierarchy/${Key.toString(key)}.json`;
         const response = await Fetcher.download(filename);
@@ -186,7 +186,7 @@ export class PointCloudCopcGeometryNode extends PointCloudTreeNode {
     constructor(owner, key, bounds) {
         super();
 
-        const {Key} = Copc;
+        const { Key } = Copc;
 
         this.owner = owner;
         this.key = key || Key.create(0, 0, 0, 0);
@@ -274,18 +274,18 @@ export class PointCloudCopcGeometryNode extends PointCloudTreeNode {
     }
 
     async loadHierarchy() {
-        const {Bounds, Key} = window.Copc;
+        const { Bounds, Key } = window.Copc;
         const ourkeyname = Key.toString(this.key);
 
         let nodemap = {};
         nodemap[ourkeyname] = this;
         this.hasChildren = false;
 
-        const {nodes, pages} = await this.owner.loadHierarchyPage(this.key);
+        const { nodes, pages } = await this.owner.loadHierarchyPage(this.key);
 
         // Since we want to traverse top-down, and 10 comes lexicographically
         // before 9 (for example), do a deep sort.
-        const keys = Object.keys({...nodes, ...pages})
+        const keys = Object.keys({ ...nodes, ...pages })
             .map(Key.create)
             .sort(Key.compare);
 

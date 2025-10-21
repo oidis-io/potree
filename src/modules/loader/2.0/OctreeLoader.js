@@ -36,7 +36,7 @@ export class NodeLoader {
                 await this.loadHierarchy(node);
             }
 
-            let {byteOffset, byteSize} = node;
+            let { byteOffset, byteSize } = node;
 
             let urlOctree = `${this.url}/../octree.bin`;
 
@@ -217,7 +217,7 @@ export class NodeLoader {
     }
 
     async loadHierarchy(node) {
-        let {hierarchyByteOffset, hierarchyByteSize} = node;
+        let { hierarchyByteOffset, hierarchyByteSize } = node;
         let hierarchyPath = `${this.url}/../hierarchy.bin`;
 
         let first = hierarchyByteOffset;
@@ -286,7 +286,7 @@ export class OctreeLoader {
         };
 
         for (const jsonAttribute of jsonAttributes) {
-            let {name, description, size, numElements, elementSize, min, max} = jsonAttribute;
+            let { name, description, size, numElements, elementSize, min, max } = jsonAttribute;
 
             let type = typenameTypeattributeMap[jsonAttribute.type];
 

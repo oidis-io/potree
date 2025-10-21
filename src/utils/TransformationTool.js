@@ -43,30 +43,30 @@ export class TransformationTool {
 
         this.activeHandle = null;
         this.scaleHandles = {
-            "scale.x+": {name: "scale.x+", node: new THREE.Object3D(), color: red, alignment: [+1, +0, +0]},
-            "scale.x-": {name: "scale.x-", node: new THREE.Object3D(), color: red, alignment: [-1, +0, +0]},
-            "scale.y+": {name: "scale.y+", node: new THREE.Object3D(), color: green, alignment: [+0, +1, +0]},
-            "scale.y-": {name: "scale.y-", node: new THREE.Object3D(), color: green, alignment: [+0, -1, +0]},
-            "scale.z+": {name: "scale.z+", node: new THREE.Object3D(), color: blue, alignment: [+0, +0, +1]},
-            "scale.z-": {name: "scale.z-", node: new THREE.Object3D(), color: blue, alignment: [+0, +0, -1]},
+            "scale.x+": { name: "scale.x+", node: new THREE.Object3D(), color: red, alignment: [+1, +0, +0] },
+            "scale.x-": { name: "scale.x-", node: new THREE.Object3D(), color: red, alignment: [-1, +0, +0] },
+            "scale.y+": { name: "scale.y+", node: new THREE.Object3D(), color: green, alignment: [+0, +1, +0] },
+            "scale.y-": { name: "scale.y-", node: new THREE.Object3D(), color: green, alignment: [+0, -1, +0] },
+            "scale.z+": { name: "scale.z+", node: new THREE.Object3D(), color: blue, alignment: [+0, +0, +1] },
+            "scale.z-": { name: "scale.z-", node: new THREE.Object3D(), color: blue, alignment: [+0, +0, -1] },
         };
         this.focusHandles = {
-            "focus.x+": {name: "focus.x+", node: new THREE.Object3D(), color: red, alignment: [+1, +0, +0]},
-            "focus.x-": {name: "focus.x-", node: new THREE.Object3D(), color: red, alignment: [-1, +0, +0]},
-            "focus.y+": {name: "focus.y+", node: new THREE.Object3D(), color: green, alignment: [+0, +1, +0]},
-            "focus.y-": {name: "focus.y-", node: new THREE.Object3D(), color: green, alignment: [+0, -1, +0]},
-            "focus.z+": {name: "focus.z+", node: new THREE.Object3D(), color: blue, alignment: [+0, +0, +1]},
-            "focus.z-": {name: "focus.z-", node: new THREE.Object3D(), color: blue, alignment: [+0, +0, -1]},
+            "focus.x+": { name: "focus.x+", node: new THREE.Object3D(), color: red, alignment: [+1, +0, +0] },
+            "focus.x-": { name: "focus.x-", node: new THREE.Object3D(), color: red, alignment: [-1, +0, +0] },
+            "focus.y+": { name: "focus.y+", node: new THREE.Object3D(), color: green, alignment: [+0, +1, +0] },
+            "focus.y-": { name: "focus.y-", node: new THREE.Object3D(), color: green, alignment: [+0, -1, +0] },
+            "focus.z+": { name: "focus.z+", node: new THREE.Object3D(), color: blue, alignment: [+0, +0, +1] },
+            "focus.z-": { name: "focus.z-", node: new THREE.Object3D(), color: blue, alignment: [+0, +0, -1] },
         };
         this.translationHandles = {
-            "translation.x": {name: "translation.x", node: new THREE.Object3D(), color: red, alignment: [1, 0, 0]},
-            "translation.y": {name: "translation.y", node: new THREE.Object3D(), color: green, alignment: [0, 1, 0]},
-            "translation.z": {name: "translation.z", node: new THREE.Object3D(), color: blue, alignment: [0, 0, 1]},
+            "translation.x": { name: "translation.x", node: new THREE.Object3D(), color: red, alignment: [1, 0, 0] },
+            "translation.y": { name: "translation.y", node: new THREE.Object3D(), color: green, alignment: [0, 1, 0] },
+            "translation.z": { name: "translation.z", node: new THREE.Object3D(), color: blue, alignment: [0, 0, 1] },
         };
         this.rotationHandles = {
-            "rotation.x": {name: "rotation.x", node: new THREE.Object3D(), color: red, alignment: [1, 0, 0]},
-            "rotation.y": {name: "rotation.y", node: new THREE.Object3D(), color: green, alignment: [0, 1, 0]},
-            "rotation.z": {name: "rotation.z", node: new THREE.Object3D(), color: blue, alignment: [0, 0, 1]},
+            "rotation.x": { name: "rotation.x", node: new THREE.Object3D(), color: red, alignment: [1, 0, 0] },
+            "rotation.y": { name: "rotation.y", node: new THREE.Object3D(), color: green, alignment: [0, 1, 0] },
+            "rotation.z": { name: "rotation.z", node: new THREE.Object3D(), color: blue, alignment: [0, 0, 1] },
         };
         this.handles = Object.assign({}, this.scaleHandles, this.focusHandles, this.translationHandles, this.rotationHandles);
         this.pickVolumes = [];
@@ -106,7 +106,7 @@ export class TransformationTool {
             boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, -0.5));
             boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, -0.5));
         }
-        this.frame = new THREE.LineSegments(boxFrameGeometry, new THREE.LineBasicMaterial({color: 0xffff00}));
+        this.frame = new THREE.LineSegments(boxFrameGeometry, new THREE.LineBasicMaterial({ color: 0xffff00 }));
         this.scene.add(this.frame);
     }
 
@@ -157,8 +157,8 @@ export class TransformationTool {
             this.pickVolumes.push(pickSphere);
 
             node.setOpacity = (target) => {
-                let opacity = {x: material.opacity};
-                let t = new TWEEN.Tween(opacity).to({x: target}, 100);
+                let opacity = { x: material.opacity };
+                let t = new TWEEN.Tween(opacity).to({ x: target }, 100);
                 t.onUpdate(() => {
                     sphere.visible = opacity.x > 0;
                     pickSphere.visible = opacity.x > 0;
@@ -248,8 +248,8 @@ export class TransformationTool {
             this.pickVolumes.push(pickSphere);
 
             node.setOpacity = (target) => {
-                let opacity = {x: material.opacity};
-                let t = new TWEEN.Tween(opacity).to({x: target}, 100);
+                let opacity = { x: material.opacity };
+                let t = new TWEEN.Tween(opacity).to({ x: target }, 100);
                 t.onUpdate(() => {
                     pickSphere.visible = opacity.x > 0;
                     box.visible = opacity.x > 0;
@@ -344,8 +344,8 @@ export class TransformationTool {
             this.pickVolumes.push(pickVolume);
 
             node.setOpacity = (target) => {
-                let opacity = {x: material.opacity};
-                let t = new TWEEN.Tween(opacity).to({x: target}, 100);
+                let opacity = { x: material.opacity };
+                let t = new TWEEN.Tween(opacity).to({ x: target }, 100);
                 t.onUpdate(() => {
                     box.visible = opacity.x > 0;
                     pickVolume.visible = opacity.x > 0;
@@ -416,8 +416,8 @@ export class TransformationTool {
             this.pickVolumes.push(pickVolume);
 
             node.setOpacity = (target) => {
-                let opacity = {x: material.opacity};
-                let t = new TWEEN.Tween(opacity).to({x: target}, 100);
+                let opacity = { x: material.opacity };
+                let t = new TWEEN.Tween(opacity).to({ x: target }, 100);
                 t.onUpdate(() => {
                     box.visible = opacity.x > 0;
                     pickVolume.visible = opacity.x > 0;

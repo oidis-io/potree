@@ -48,9 +48,9 @@ function createMaterial() {
     `;
     const material = new THREE.ShaderMaterial({
         uniforms: {
-            tColor: {value: new THREE.Texture()},
-            uNear: {value: 0.0},
-            uOpacity: {value: 1.0},
+            tColor: { value: new THREE.Texture() },
+            uNear: { value: 0.0 },
+            uOpacity: { value: 1.0 },
         },
         vertexShader: vertexShader,
         fragmentShader: fragmentShader,
@@ -84,7 +84,7 @@ export class OrientedImage {
         this.fov = 1.0;
 
         const material = createMaterial();
-        const lineMaterial = new THREE.LineBasicMaterial({color: 0x00ff00});
+        const lineMaterial = new THREE.LineBasicMaterial({ color: 0x00ff00 });
         this.mesh = new THREE.Mesh(planeGeometry, material);
         this.line = new THREE.Line(lineGeometry, lineMaterial);
         this.texture = null;
@@ -110,7 +110,7 @@ export class OrientedImage {
     }
 
     updateTransform() {
-        let {mesh, line, fov} = this;
+        let { mesh, line, fov } = this;
 
         mesh.updateMatrixWorld();
         const dir = mesh.getWorldDirection();
@@ -238,13 +238,13 @@ export class OrientedImageLoader {
         const tEnd = performance.now();
         console.log(tEnd - tStart);
 
-        const {width, height} = cameraParams;
+        const { width, height } = cameraParams;
         const orientedImages = [];
         const sceneNode = new THREE.Object3D();
         sceneNode.name = "oriented_images";
 
         for (const params of imageParams) {
-            const {x, y, z, omega, phi, kappa} = params;
+            const { x, y, z, omega, phi, kappa } = params;
 
             let orientedImage = new OrientedImage(params.id);
             let position = [x, y, z];
@@ -392,7 +392,7 @@ export class OrientedImageLoader {
         viewer.addEventListener("update", () => {
             for (const image of orientedImages) {
                 const world = image.mesh.matrixWorld;
-                const {width, height} = image;
+                const { width, height } = image;
                 const aspect = width / height;
 
                 const camera = viewer.scene.getActiveCamera();

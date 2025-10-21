@@ -384,7 +384,7 @@ export class PointCloudArena4DGeometry extends EventDispatcher {
             this.levels = levels;
             // console.log(this.root);
 
-            this.dispatchEvent({type: "hierarchy_loaded"});
+            this.dispatchEvent({ type: "hierarchy_loaded" });
         };
 
         xhr.send(null);

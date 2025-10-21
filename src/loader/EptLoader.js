@@ -34,7 +34,7 @@ export class EptLoader {
 
 export class CopcLoader {
     static async load(file, callback) {
-        const {Copc, Getter} = window.Copc;
+        const { Copc, Getter } = window.Copc;
 
         const url = file;
         const getter = Getter.http(url);

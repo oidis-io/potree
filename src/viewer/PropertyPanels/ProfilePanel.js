@@ -230,7 +230,7 @@ export class ProfilePanel extends MeasurePanel {
             });
 
             let handleFiltering = (jsResponse) => {
-                let {progress, estimate} = jsResponse;
+                let { progress, estimate } = jsResponse;
 
                 let progressFract = progress["processed points"] / estimate.points;
                 let progressPercents = parseInt(progressFract * 100);

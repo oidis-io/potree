@@ -70,7 +70,7 @@ export class GeoControls extends EventDispatcher {
 
         let lastPosition = new THREE.Vector3();
 
-        let STATE = {NONE: -1, ROTATE: 0, SPEEDCHANGE: 1, PAN: 2};
+        let STATE = { NONE: -1, ROTATE: 0, SPEEDCHANGE: 1, PAN: 2 };
 
         let state = STATE.NONE;
 
@@ -79,9 +79,9 @@ export class GeoControls extends EventDispatcher {
 
         // events
 
-        let changeEvent = {type: "change"};
-        let startEvent = {type: "start"};
-        let endEvent = {type: "end"};
+        let changeEvent = { type: "change" };
+        let startEvent = { type: "start" };
+        let endEvent = { type: "end" };
 
         this.domElement.addEventListener("contextmenu", (event) => {
             event.preventDefault();

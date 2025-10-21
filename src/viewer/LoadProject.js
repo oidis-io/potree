@@ -69,7 +69,7 @@ function loadPointCloud(viewer, data) {
         }
 
         PotreeConfig.loadPointCloud(data.url, data.name, (e) => {
-            const {pointcloud} = e;
+            const { pointcloud } = e;
 
             pointcloud.position.set(...data.position);
             pointcloud.rotation.set(...data.rotation);
@@ -161,7 +161,7 @@ function loadCameraAnimation(viewer, data) {
 }
 
 function loadOrientedImages(viewer, images) {
-    const {cameraParamsPath, imageParamsPath} = images;
+    const { cameraParamsPath, imageParamsPath } = images;
 
     const duplicate = viewer.scene.orientedImages.find(i => i.imageParamsPath === imageParamsPath);
     if (duplicate) {
@@ -271,7 +271,7 @@ function loadAnnotations(viewer, data) {
 }
 
 function loadProfile(viewer, data) {
-    const {name, points} = data;
+    const { name, points } = data;
 
     const duplicate = viewer.scene.profiles.find(profile => profile.uuid === data.uuid);
     if (duplicate) {

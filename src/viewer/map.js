@@ -111,7 +111,7 @@ export class MapView {
         }
 
         this.elMap = $("#potree_map");
-        this.elMap.draggable({handle: $("#potree_map_header")});
+        this.elMap.draggable({ handle: $("#potree_map_header") });
         this.elMap.resizable();
 
         this.elTooltip = $(`<div style="position: relative; z-index: 100"></div>`);
@@ -218,7 +218,7 @@ export class MapView {
                 mousePositionControl
             ]),
             layers: [
-                new ol.layer.Tile({source: new ol.source.OSM()}),
+                new ol.layer.Tile({ source: new ol.source.OSM() }),
                 this.toolLayer,
                 this.annotationsLayer,
                 this.sourcesLayer,
@@ -349,11 +349,11 @@ export class MapView {
         }
 
         this.viewer.scene.annotations.traverseDescendants(annotation => {
-            this.onAnnotationAdded({annotation: annotation});
+            this.onAnnotationAdded({ annotation: annotation });
         });
 
         for (let images of this.viewer.scene.images360) {
-            this.on360ImagesAdded({images: images});
+            this.on360ImagesAdded({ images: images });
         }
     }
 

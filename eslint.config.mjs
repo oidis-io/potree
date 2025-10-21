@@ -8,10 +8,10 @@
  *
  * ********************************************************************************************************* */
 
-import globals from "globals";
 import pluginJs from "@eslint/js";
-import unusedImports from "eslint-plugin-unused-imports";
 import importPlugin from "eslint-plugin-import";
+import unusedImports from "eslint-plugin-unused-imports";
+import globals from "globals";
 
 export default [
     {
@@ -35,15 +35,15 @@ export default [
         },
         rules: {
             semi: ["error", "always"],
-            "semi-spacing": ["error", {"before": false, "after": true}],
+            "semi-spacing": ["error", { "before": false, "after": true }],
             "semi-style": ["error", "last"],
             "no-extra-semi": "error",
-            "no-multiple-empty-lines": ["error", {"max": 1, "maxEOF": 0}],
+            "no-multiple-empty-lines": ["error", { "max": 1, "maxEOF": 0 }],
             "eol-last": ["error", "always"],
             "padded-blocks": ["error", "never"],
-            "keyword-spacing": ["error", {"before": true, "after": true}],
+            "keyword-spacing": ["error", { "before": true, "after": true }],
             "space-before-blocks": ["error", "always"],
-            "indent": ["error", 4, {"SwitchCase": 1}],
+            "indent": ["error", 4, { "SwitchCase": 1 }],
             "no-tabs": "error",
             "spaced-comment": ["error", "always", {
                 "line": {
@@ -55,10 +55,14 @@ export default [
                     "exceptions": ["*"]
                 }
             }],
-            "quotes": ["error", "double", {"allowTemplateLiterals": true}],
+            "quotes": ["error", "double", { "allowTemplateLiterals": true }],
+            "object-curly-spacing": ["error", "always"],
             "import/extensions": ["error", "always", {
                 "js": "always",
                 "mjs": "always"
+            }],
+            "import/order": ["error", {
+                "groups": ["builtin", "external", "internal", ["parent", "sibling", "index"], "object"]
             }],
 
             "no-unused-vars": [
@@ -80,14 +84,7 @@ export default [
             "no-constant-binary-expression": "off",
             "getter-return": "off",
             "no-global-assign": "off",
-            "no-redeclare": "off",
-            // "sort-imports": ["error", {
-            //     "ignoreCase": false,
-            //     "ignoreDeclarationSort": false,
-            //     "ignoreMemberSort": false,
-            //     "memberSyntaxSortOrder": ["none", "all", "multiple", "single"],
-            //     "allowSeparatedGroups": false
-            // }]
+            "no-redeclare": "off" // TODO(mkelnar) turned of because of global variables used randomly over sources - refactoring needed
         }
     }
 ];

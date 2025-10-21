@@ -68,7 +68,7 @@ export class AnnotationPanel {
 
             this.viewer.postMessage(
                 `Copied value to clipboard: <br>'${msg}'`,
-                {duration: 3000});
+                { duration: 3000 });
         });
 
         this.elTitle = this.elContent.find("#annotation_title").html(annotation.title);
@@ -88,7 +88,7 @@ export class AnnotationPanel {
     }
 
     update() {
-        const {annotation, elContent, elTitle, elDescription} = this;
+        const { annotation, elContent, elTitle, elDescription } = this;
 
         let pos = annotation.position.toArray().map(c => Utils.addCommas(c.toFixed(3)));
         elContent.find("#annotation_position_x").html(pos[0]);

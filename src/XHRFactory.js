@@ -15,7 +15,7 @@ const XHRFactory = {
     config: {
         withCredentials: false,
         customHeaders: [
-            {header: null, value: null}
+            { header: null, value: null }
         ]
     },
 
@@ -26,7 +26,7 @@ const XHRFactory = {
         if (globHeaders) {
             this.config.customHeaders = [];
             for (const key of Object.keys(globHeaders)) {
-                this.config.customHeaders.push({header: key, value: globHeaders[key]});
+                this.config.customHeaders.push({ header: key, value: globHeaders[key] });
             }
         }
 

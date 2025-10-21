@@ -84,7 +84,7 @@ export function updateVisibilityStructures(pointclouds, camera, renderer) {
         camObjPositions.push(camObjPos);
 
         if (pointcloud.visible && pointcloud.root !== null) {
-            priorityQueue.push({pointcloud: i, node: pointcloud.root, weight: Number.MAX_VALUE});
+            priorityQueue.push({ pointcloud: i, node: pointcloud.root, weight: Number.MAX_VALUE });
         }
 
         if (pointcloud.root.isTreeNode()) {
@@ -140,7 +140,7 @@ export function updateVisibility(pointclouds, camera, renderer) {
         pointcloud.updateMatrixWorld();
 
         if (!pointcloudTransformVersion.has(pointcloud)) {
-            pointcloudTransformVersion.set(pointcloud, {number: 0, transform: pointcloud.matrixWorld.clone()});
+            pointcloudTransformVersion.set(pointcloud, { number: 0, transform: pointcloud.matrixWorld.clone() });
         } else {
             let version = pointcloudTransformVersion.get(pointcloud);
 
@@ -332,7 +332,7 @@ export function updateVisibility(pointclouds, camera, renderer) {
                 weight = diagonal;
             }
 
-            priorityQueue.push({pointcloud: element.pointcloud, node: child, parent: node, weight: weight});
+            priorityQueue.push({ pointcloud: element.pointcloud, node: child, parent: node, weight: weight });
         }
     }
 
