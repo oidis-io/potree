@@ -60,6 +60,7 @@ class U {
             proj4(srs);
             return srs;
         } catch (e) {
+            // dummy
         }
     }
 }

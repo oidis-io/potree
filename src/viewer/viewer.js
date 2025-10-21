@@ -163,7 +163,7 @@ export class Viewer extends EventDispatcher {
             this.initThree();
 
             if (args.noDragAndDrop) {
-
+                // dummy
             } else {
                 this.initDragAndDrop();
             }

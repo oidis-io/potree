@@ -482,7 +482,7 @@ export class PointCloudArena4D extends PointCloudTree {
 
                     point[attributeName] = position;
                 } else if (attributeName === "indices") {
-
+                    // dummy
                 } else {
                     // if (values.itemSize === 1) {
                     // point[attribute.name] = values.array[hit.pIndex];

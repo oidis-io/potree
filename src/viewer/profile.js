@@ -1085,12 +1085,12 @@ export class ProfileWindowController {
                 },
                 "onFinish": (event) => {
                     if (!this.enabled) {
-
+                        // dummy
                     }
                 },
                 "onCancel": () => {
                     if (!this.enabled) {
-
+                        // dummy
                     }
                 }
             });

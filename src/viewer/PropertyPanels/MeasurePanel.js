@@ -76,7 +76,7 @@ export class MeasurePanel {
 
         for (let attributeName of Object.keys(point)) {
             if (attributeName === "position") {
-
+                // dummy
             } else if (attributeName === "rgba") {
                 let color = point.rgba;
                 let text = color.join(", ");

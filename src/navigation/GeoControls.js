@@ -307,7 +307,7 @@ export class GeoControls extends EventDispatcher {
         }
 
         if (proposeTransformEvent.objections > 0) {
-
+            // dummy
         } else {
             object.position.copy(this.object.position);
         }

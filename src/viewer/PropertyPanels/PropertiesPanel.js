@@ -532,11 +532,11 @@ export class PropertiesPanel {
                 } else if (selectedValue === "gps-time") {
                     blockGps.css("display", "block");
                 } else if (selectedValue === "number of returns") {
-
+                    // dummy
                 } else if (selectedValue === "return number") {
-
+                    // dummy
                 } else if (["source id", "point source id"].includes(selectedValue)) {
-
+                    // dummy
                 } else {
                     blockExtra.css("display", "block");
                 }

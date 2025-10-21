@@ -33,34 +33,40 @@ export default [
         },
         rules: {
             semi: ["error", "always"],
-            "semi-spacing": ["error", { "before": false, "after": true }],
+            "semi-spacing": ["error", {"before": false, "after": true}],
             "semi-style": ["error", "last"],
             "no-extra-semi": "error",
-            "no-multiple-empty-lines": ["error", { "max": 1, "maxEOF": 0 }],
+            "no-multiple-empty-lines": ["error", {"max": 1, "maxEOF": 0}],
             "eol-last": ["error", "always"],
             "padded-blocks": ["error", "never"],
-            "keyword-spacing": ["error", { "before": true, "after": true }],
+            "keyword-spacing": ["error", {"before": true, "after": true}],
             "space-before-blocks": ["error", "always"],
-            "indent": ["error", 4, { "SwitchCase": 1 }],
+            "indent": ["error", 4, {"SwitchCase": 1}],
             "no-tabs": "error",
             "spaced-comment": ["error", "always", {
                 "line": {
                     "markers": ["//"],
-                    "exceptions": ["-","+"]
+                    "exceptions": ["-", "+"]
                 },
                 "block": {
                     "markers": ["!"],
                     "exceptions": ["*"]
                 }
             }],
-            "quotes": ["error", "double", { "allowTemplateLiterals": true }],
+            "quotes": ["error", "double", {"allowTemplateLiterals": true}],
 
-            "no-unused-imports": "off",
-            "no-unused-vars": "off",
+            "no-unused-vars": [
+                "off",
+                {
+                    "vars": "all",
+                    "varsIgnorePattern": "^_",
+                    "args": "after-used",
+                    "argsIgnorePattern": "^_"
+                }
+            ],
             "unused-imports/no-unused-imports": "error",
-            "unused-imports/no-unused-vars": "off",
             "no-undef": "off",
-            "no-empty": "off",
+            "no-empty": "error",
             "no-prototype-builtins": "off",
             "no-case-declarations": "off",
             "no-debugger": "off",
@@ -69,15 +75,6 @@ export default [
             "getter-return": "off",
             "no-global-assign": "off",
             "no-redeclare": "off"
-            // "unused-imports/no-unused-vars": [
-            //     "warn",
-            //     {
-            //         "vars": "all",
-            //         "varsIgnorePattern": "^_",
-            //         "args": "after-used",
-            //         "argsIgnorePattern": "^_",
-            //     }
-            // ],
             // "sort-imports": ["error", {
             //     "ignoreCase": false,
             //     "ignoreDeclarationSort": false,
