@@ -1058,7 +1058,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
     }
 
     static generateMatcapTexture(matcap) {
-        var url = new URL(PotreeConfig.resourcePath + "/textures/matcap/" + matcap).href;
+        let url = new URL(PotreeConfig.resourcePath + "/textures/matcap/" + matcap).href;
         let texture = new THREE.TextureLoader().load(url);
         texture.magFilter = texture.minFilter = THREE.LinearFilter;
         texture.needsUpdate = true;

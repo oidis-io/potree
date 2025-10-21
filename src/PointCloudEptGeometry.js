@@ -28,7 +28,7 @@ class U {
     }
 
     static findDim(schema, name) {
-        var dim = schema.find((dim) => dim.name == name);
+        let dim = schema.find((dim) => dim.name == name);
         if (!dim) throw new Error("Failed to find " + name + " in schema");
         return dim;
     }
@@ -38,12 +38,12 @@ class U {
     }
 
     static toPotreeName([d, x, y, z]) {
-        var name = "r";
+        let name = "r";
 
-        for (var i = 0; i < d; ++i) {
-            var shift = d - i - 1;
-            var mask = 1 << shift;
-            var step = 0;
+        for (let i = 0; i < d; ++i) {
+            let shift = d - i - 1;
+            let mask = 1 << shift;
+            let step = 0;
 
             if (x & mask) step += 4;
             if (y & mask) step += 2;

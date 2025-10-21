@@ -308,7 +308,7 @@ export class Images360Loader {
             mesh.image360 = image360;
 
             { // orientation
-                var { course, pitch, roll } = image360;
+                let { course, pitch, roll } = image360;
                 mesh.rotation.set(
                     THREE.Math.degToRad(+roll + 90),
                     THREE.Math.degToRad(-pitch),

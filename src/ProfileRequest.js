@@ -136,10 +136,10 @@ export class ProfileRequest {
                 exports.lru.touch(node);
                 this.highestLevelServed = Math.max(node.getLevel(), this.highestLevelServed);
 
-                var geom = node.pcoGeometry;
-                var hierarchyStepSize = geom ? geom.hierarchyStepSize : 1;
+                let geom = node.pcoGeometry;
+                let hierarchyStepSize = geom ? geom.hierarchyStepSize : 1;
 
-                var doTraverse = node.getLevel() === 0 ||
+                let doTraverse = node.getLevel() === 0 ||
                     (node.level % hierarchyStepSize === 0 && node.hasChildren);
 
                 if (doTraverse) {

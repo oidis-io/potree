@@ -11,7 +11,7 @@
 
 import { Enum } from "../Enum.js";
 
-var GeoTIFF = (function (exports) {
+let GeoTIFF = (function (exports) {
     "use strict";
 
     const Endianness = new Enum({
