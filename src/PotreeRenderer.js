@@ -12,6 +12,7 @@
 import * as THREE from "../libs/three.js/build/three.module.js";
 import { PointCloudTree } from "./PointCloudTree.js";
 import { PointSizeType, ClipTask, ElevationGradientRepeat } from "./defines.js";
+import PotreeConfig from "./PotreeConfig";
 
 // Copied from three.js: WebGLRenderer.js
 function paramThreeToGL(_gl, p) {
@@ -660,7 +661,7 @@ export class Renderer {
     }
 
     renderNodes(octree, nodes, visibilityTextureData, camera, target, shader, params) {
-        if (exports.measureTimings) performance.mark("renderNodes-start");
+        if (PotreeConfig.measureTimings) performance.mark("renderNodes-start");
 
         let gl = this.gl;
 
@@ -678,8 +679,8 @@ export class Renderer {
 
         let i = 0;
         for (let node of nodes) {
-            if (exports.debug.allowedNodes !== undefined) {
-                if (!exports.debug.allowedNodes.includes(node.name)) {
+            if (PotreeConfig.debug.allowedNodes !== undefined) {
+                if (!PotreeConfig.debug.allowedNodes.includes(node.name)) {
                     continue;
                 }
             }
@@ -934,7 +935,7 @@ export class Renderer {
 
         gl.bindVertexArray(null);
 
-        if (exports.measureTimings) {
+        if (PotreeConfig.measureTimings) {
             performance.mark("renderNodes-end");
             performance.measure("render.renderNodes", "renderNodes-start", "renderNodes-end");
         }

@@ -13,6 +13,7 @@ import * as THREE from "../libs/three.js/build/three.module.js";
 import { PointCloudTreeNode } from "./PointCloudTree.js";
 import { XHRFactory } from "./XHRFactory.js";
 import { Utils } from "./utils.js";
+import PotreeConfig from "./PotreeConfig.js";
 
 export class PointCloudOctreeGeometry {
     constructor() {
@@ -124,13 +125,13 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode {
     }
 
     load() {
-        if (this.loading === true || this.loaded === true || Potree.numNodesLoading >= Potree.maxNodesLoading) {
+        if (this.loading === true || this.loaded === true || PotreeConfig.numNodesLoading >= PotreeConfig.maxNodesLoading) {
             return;
         }
 
         this.loading = true;
 
-        Potree.numNodesLoading++;
+        PotreeConfig.numNodesLoading++;
 
         if (this.pcoGeometry.loader.version.equalOrHigher("1.5")) {
             if ((this.level % this.pcoGeometry.hierarchyStepSize) === 0 && this.hasChildren) {
@@ -234,7 +235,7 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode {
                         callback(node, hbuffer);
                     } else {
                         console.log("Failed to load file! HTTP status: " + xhr.status + ", file: " + hurl);
-                        Potree.numNodesLoading--;
+                        PotreeConfig.numNodesLoading--;
                     }
                 }
             };

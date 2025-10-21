@@ -10,6 +10,7 @@
  * ********************************************************************************************************* */
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
+import { SphereVolume } from "../utils/Volume.js";
 
 export class PotreeRenderer {
     constructor(viewer) {
@@ -83,7 +84,7 @@ export class PotreeRenderer {
         }
 
         viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, null, {
-            clipSpheres: viewer.scene.volumes.filter(v => (v instanceof Potree.SphereVolume)),
+            clipSpheres: viewer.scene.volumes.filter(v => (v instanceof SphereVolume)),
         });
 
         renderer.render(viewer.scene.scene, camera);
@@ -91,7 +92,7 @@ export class PotreeRenderer {
         viewer.dispatchEvent({type: "render.pass.scene", viewer: viewer});
 
         viewer.clippingTool.update();
-        renderer.render(viewer.clippingTool.sceneMarker, viewer.scene.cameraScreenSpace); // viewer.scene.cameraScreenSpace);
+        renderer.render(viewer.clippingTool.sceneMarker, viewer.scene.cameraScreenSpace);
         renderer.render(viewer.clippingTool.sceneVolume, camera);
 
         renderer.render(viewer.controls.sceneControls, camera);

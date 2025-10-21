@@ -10,6 +10,7 @@
  * ********************************************************************************************************* */
 
 import { Utils } from "../../utils.js";
+import PotreeConfig from "../../PotreeConfig.js";
 
 export class MeasurePanel {
     constructor(viewer, measurement, propertiesPanel) {
@@ -34,7 +35,7 @@ export class MeasurePanel {
             </table>
         `);
 
-        let copyIconPath = Potree.resourcePath + "/icons/copy.svg";
+        let copyIconPath = PotreeConfig.resourcePath + "/icons/copy.svg";
 
         for (let point of points) {
             let x = Utils.addCommas(point.x.toFixed(3));

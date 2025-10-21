@@ -15,6 +15,7 @@ import { Utils } from "../utils.js";
 import { Line2 } from "../../libs/three.js/lines/Line2.js";
 import { LineGeometry } from "../../libs/three.js/lines/LineGeometry.js";
 import { LineMaterial } from "../../libs/three.js/lines/LineMaterial.js";
+import PotreeConfig from "../PotreeConfig.js";
 
 function createHeightLine() {
     let lineGeometry = new LineGeometry();
@@ -764,7 +765,7 @@ export class Measure extends THREE.Object3D {
                 const AC = C.clone().sub(A);
                 const N = AC.clone().cross(AB).normalize();
 
-                const center = Potree.Utils.computeCircleCenter(A, B, C);
+                const center = PotreeConfig.Utils.computeCircleCenter(A, B, C);
                 const radius = center.distanceTo(A);
 
                 const scale = radius / 20;

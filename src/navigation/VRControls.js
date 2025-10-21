@@ -15,6 +15,9 @@ import { XRControllerModelFactory } from "../../libs/three.js/webxr/XRController
 import { Line2 } from "../../libs/three.js/lines/Line2.js";
 import { LineGeometry } from "../../libs/three.js/lines/LineGeometry.js";
 import { LineMaterial } from "../../libs/three.js/lines/LineMaterial.js";
+import { TextSprite } from "../TextSprite";
+import { Utils } from "../utils";
+import PotreeConfig from "../PotreeConfig";
 
 let fakeCam = new THREE.PerspectiveCamera();
 
@@ -79,7 +82,7 @@ class FlyMode {
 
     start(vrControls) {
         if (!this.dbgLabel) {
-            this.dbgLabel = new Potree.TextSprite("abc");
+            this.dbgLabel = new TextSprite("abc");
             this.dbgLabel.name = "debug label";
             vrControls.viewer.sceneVR.add(this.dbgLabel);
             this.dbgLabel.visible = false;
@@ -125,9 +128,9 @@ class FlyMode {
 
         vrControls.viewer.scene.view.setView(scenePos, sceneTarget);
 
-        if (Potree.debug.message) {
+        if (PotreeConfig.debug.message) {
             this.dbgLabel.visible = true;
-            this.dbgLabel.setText(Potree.debug.message);
+            this.dbgLabel.setText(PotreeConfig.debug.message);
             this.dbgLabel.scale.set(0.1, 0.1, 0.1);
             this.dbgLabel.position.copy(primary.position);
         }
@@ -174,14 +177,14 @@ class RotScaleMode {
 
     start(vrControls) {
         if (!this.line) {
-            this.line = Potree.Utils.debugLine(
+            this.line = Utils.debugLine(
                 vrControls.viewer.sceneVR,
                 new THREE.Vector3(0, 0, 0),
                 new THREE.Vector3(0, 0, 0),
                 0xffff00,
             );
 
-            this.dbgLabel = new Potree.TextSprite("abc");
+            this.dbgLabel = new TextSprite("abc");
             this.dbgLabel.scale.set(0.1, 0.1, 0.1);
             vrControls.viewer.sceneVR.add(this.dbgLabel);
         }
@@ -413,7 +416,7 @@ export class VRControls extends EventDispatcher {
         let matValue = new THREE.MeshNormalMaterial();
 
         let node = new THREE.Object3D("slider");
-        let nLabel = new Potree.TextSprite(`${label}: 0`);
+        let nLabel = new TextSprite(`${label}: 0`);
         let nMax = new THREE.Mesh(sg, matHandle);
         let nMin = new THREE.Mesh(sg, matHandle);
         let nValue = new THREE.Mesh(sg, matValue);
@@ -443,7 +446,7 @@ export class VRControls extends EventDispatcher {
     }
 
     createInfo() {
-        let texture = new THREE.TextureLoader().load(`${Potree.resourcePath}/images/vr_controller_help.jpg`);
+        let texture = new THREE.TextureLoader().load(`${PotreeConfig.resourcePath}/images/vr_controller_help.jpg`);
         let plane = new THREE.PlaneBufferGeometry(1, 1, 1, 1);
         let infoMaterial = new THREE.MeshBasicMaterial({map: texture});
         let infoNode = new THREE.Mesh(plane, infoMaterial);

@@ -13,6 +13,10 @@ import { PointCloudTreeNode } from "./PointCloudTree.js";
 import { PointAttributes, PointAttribute, PointAttributeTypes } from "./loader/PointAttributes.js";
 import * as THREE from "../libs/three.js/build/three.module.js";
 import { Fetcher } from "./utils/Fetcher";
+import PotreeConfig from "./PotreeConfig.js";
+import { CopcLaszipLoader, EptLaszipLoader } from "./loader/ept/LaszipLoader.js";
+import { EptBinaryLoader } from "./loader/ept/BinaryLoader.js";
+import { EptZstandardLoader } from "./loader/ept/ZstandardLoader.js";
 
 class U {
     static toVector3(v, offset) {
@@ -74,9 +78,9 @@ class BaseGeometry {
         this.boundingSphere = U.sphereFrom(this.boundingBox);
         this.tightBoundingSphere = U.sphereFrom(this.tightBoundingBox);
         this.offset = U.toVector3([0, 0, 0]);
-        this.version = new Potree.Version("1.7");
+        this.version = new PotreeConfig.Version("1.7");
 
-        this.loader = new Potree.CopcLaszipLoader();
+        this.loader = new PotreeConfig.CopcLaszipLoader();
 
         this.spacing = spacing;
         this.projection = srs || null;
@@ -118,7 +122,7 @@ export class PointCloudCopcGeometry extends BaseGeometry {
         this.copc = copc;
         this.pages = {"0-0-0-0": copc.info.rootHierarchyPage};
 
-        this.loader = new Potree.CopcLaszipLoader();
+        this.loader = new CopcLaszipLoader();
     }
 
     async loadHierarchyPage(key) {
@@ -156,11 +160,11 @@ export class PointCloudEptGeometry extends BaseGeometry {
         this.loader = (() => {
             switch (ept.dataType) {
                 case "laszip":
-                    return new Potree.EptLaszipLoader();
+                    return new EptLaszipLoader();
                 case "binary":
-                    return new Potree.EptBinaryLoader();
+                    return new EptBinaryLoader();
                 case "zstandard":
-                    return new Potree.EptZstandardLoader();
+                    return new EptZstandardLoader();
                 default:
                     throw new Error("Invalid data type: " + ept.dataType);
             }
@@ -255,10 +259,10 @@ export class PointCloudCopcGeometryNode extends PointCloudTreeNode {
 
     async load() {
         if (this.loaded || this.loading) return;
-        if (Potree.numNodesLoading >= Potree.maxNodesLoading) return;
+        if (PotreeConfig.numNodesLoading >= PotreeConfig.maxNodesLoading) return;
 
         this.loading = true;
-        ++Potree.numNodesLoading;
+        ++PotreeConfig.numNodesLoading;
 
         if (!this.nodeinfo) await this.loadHierarchy();
         this.loadPoints();
@@ -300,7 +304,7 @@ export class PointCloudCopcGeometryNode extends PointCloudTreeNode {
             parentNode.hasChildren = true;
 
             const bounds = Bounds.step(parentNode.bounds, step);
-            const node = new Potree.PointCloudCopcGeometryNode(
+            const node = new PointCloudCopcGeometryNode(
                 this.owner,
                 key,
                 bounds);
@@ -331,7 +335,7 @@ export class PointCloudCopcGeometryNode extends PointCloudTreeNode {
         this.mean = mean;
         this.loaded = true;
         this.loading = false;
-        --Potree.numNodesLoading;
+        --PotreeConfig.numNodesLoading;
     }
 
     dispose() {

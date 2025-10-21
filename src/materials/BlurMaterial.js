@@ -13,7 +13,7 @@
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
 
-Potree.BlurMaterial = class BlurMaterial extends THREE.ShaderMaterial {
+export class BlurMaterial extends THREE.ShaderMaterial {
     constructor(parameters = {}) {
         super();
 
@@ -27,8 +27,8 @@ Potree.BlurMaterial = class BlurMaterial extends THREE.ShaderMaterial {
 
         this.setValues({
             uniforms: uniforms,
-            vertexShader: Potree.Shaders["blur.vs"],
-            fragmentShader: Potree.Shaders["blur.fs"]
+            vertexShader: Shaders["blur.vs"],
+            fragmentShader: Shaders["blur.fs"]
         });
     }
-};
+}

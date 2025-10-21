@@ -12,6 +12,8 @@
 import * as THREE from "../libs/three.js/build/three.module.js";
 import { ClipTask, ClipMethod } from "./defines.js";
 import { Box3Helper } from "./utils/Box3Helper.js";
+import PotreeConfig from "./PotreeConfig";
+import PotreeRefs from "./PotreeRefs.js";
 
 export function updatePointClouds(pointclouds, camera, renderer) {
     for (let pointcloud of pointclouds) {
@@ -36,7 +38,7 @@ export function updatePointClouds(pointclouds, camera, renderer) {
         pointcloud.updateVisibleBounds();
     }
 
-    exports.lru.freeMemory();
+    PotreeRefs.lru.freeMemory();
 
     return result;
 }
@@ -126,10 +128,10 @@ export function updateVisibility(pointclouds, camera, renderer) {
 
     // check if pointcloud has been transformed
     // some code will only be executed if changes have been detected
-    if (!Potree._pointcloudTransformVersion) {
-        Potree._pointcloudTransformVersion = new Map();
+    if (!PotreeConfig._pointcloudTransformVersion) {
+        PotreeConfig._pointcloudTransformVersion = new Map();
     }
-    let pointcloudTransformVersion = Potree._pointcloudTransformVersion;
+    let pointcloudTransformVersion = PotreeConfig._pointcloudTransformVersion;
     for (let pointcloud of pointclouds) {
         if (!pointcloud.visible) {
             continue;
@@ -168,7 +170,7 @@ export function updateVisibility(pointclouds, camera, renderer) {
         let maxLevel = pointcloud.maxLevel || Infinity;
         let level = node.getLevel();
         let visible = insideFrustum;
-        visible = visible && !(numVisiblePoints + node.getNumPoints() > Potree.pointBudget);
+        visible = visible && !(numVisiblePoints + node.getNumPoints() > PotreeConfig.pointBudget);
         visible = visible && !(numVisiblePointsInPointclouds.get(pointcloud) + node.getNumPoints() > pointcloud.pointBudget);
         visible = visible && level < maxLevel;
         visible = visible || node.getLevel() <= 2;
@@ -232,7 +234,7 @@ export function updateVisibility(pointclouds, camera, renderer) {
             lowestSpacing = Math.min(lowestSpacing, node.geometryNode.spacing);
         }
 
-        if (numVisiblePoints + node.getNumPoints() > Potree.pointBudget) {
+        if (numVisiblePoints + node.getNumPoints() > PotreeConfig.pointBudget) {
             break;
         }
 
@@ -258,7 +260,7 @@ export function updateVisibility(pointclouds, camera, renderer) {
         }
 
         if (node.isTreeNode()) {
-            exports.lru.touch(node.geometryNode);
+            PotreeRefs.lru.touch(node.geometryNode);
             node.sceneNode.visible = true;
             node.sceneNode.material = pointcloud.material;
 
@@ -336,15 +338,16 @@ export function updateVisibility(pointclouds, camera, renderer) {
 
     {
         let maxDEMLevel = 4;
+        // TODO(mkelnar) refactor DEM
         let candidates = pointclouds
-            .filter(p => (p.generateDEM && p.dem instanceof Potree.DEM));
+            .filter(p => (p.generateDEM && p.dem instanceof DEM));
         for (let pointcloud of candidates) {
             let updatingNodes = pointcloud.visibleNodes.filter(n => n.getLevel() <= maxDEMLevel);
             pointcloud.dem.update(updatingNodes);
         }
     }
 
-    for (let i = 0; i < Math.min(Potree.maxNodesLoading, unloadedGeometry.length); i++) {
+    for (let i = 0; i < Math.min(PotreeConfig.maxNodesLoading, unloadedGeometry.length); i++) {
         unloadedGeometry[i].load();
     }
 

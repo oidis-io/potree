@@ -15,6 +15,10 @@ import { Measure } from "../utils/Measure.js";
 import { CameraAnimation } from "../modules/CameraAnimation/CameraAnimation.js";
 import { Utils } from "../utils.js";
 import { PointSizeType } from "../defines.js";
+import PotreeConfig from "../PotreeConfig.js";
+import { OrientedImageLoader } from "../modules/OrientedImages/OrientedImages.js";
+import { GeoPackageLoader } from "../loader/GeoPackageLoader.js";
+import { Profile } from "../utils/Profile.js";
 
 function loadPointCloud(viewer, data) {
     let loadMaterial = (target) => {
@@ -64,7 +68,7 @@ function loadPointCloud(viewer, data) {
             return;
         }
 
-        Potree.loadPointCloud(data.url, data.name, (e) => {
+        PotreeConfig.loadPointCloud(data.url, data.name, (e) => {
             const {pointcloud} = e;
 
             pointcloud.position.set(...data.position);
@@ -164,7 +168,7 @@ function loadOrientedImages(viewer, images) {
         return;
     }
 
-    Potree.OrientedImageLoader.load(cameraParamsPath, imageParamsPath, viewer).then(images => {
+    OrientedImageLoader.load(cameraParamsPath, imageParamsPath, viewer).then(images => {
         viewer.scene.addOrientedImages(images);
     });
 }
@@ -186,7 +190,7 @@ function loadGeopackage(viewer, geopackage) {
         transform: transform,
     };
 
-    Potree.GeoPackageLoader.loadUrl(path, params).then(data => {
+    GeoPackageLoader.loadUrl(path, params).then(data => {
         viewer.scene.addGeopackage(data);
     });
 }
@@ -274,7 +278,7 @@ function loadProfile(viewer, data) {
         return;
     }
 
-    let profile = new Potree.Profile();
+    let profile = new Profile();
     profile.name = name;
     profile.uuid = data.uuid;
 

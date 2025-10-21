@@ -161,7 +161,7 @@ gulp.task("workers", function () {
             .pipe(gulp.dest("build/potree/workers"));
     });
 
-    const wasmStream = gulp.src("./libs/copc/laz-perf.wasm", { encoding: false })
+    const wasmStream = gulp.src("./libs/copc/laz-perf.wasm", {encoding: false})
         .pipe(gulp.dest("./build/potree/workers"));
 
     return merge(...workerStreams, wasmStream);

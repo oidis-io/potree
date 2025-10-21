@@ -1,6 +1,5 @@
 /*! ******************************************************************************************************** *
  *
- * Copyright 2011-2020 Markus Schütz
  * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
@@ -9,15 +8,12 @@
  *
  * ********************************************************************************************************* */
 
-import { EptBinaryLoader } from "./BinaryLoader.js";
-import PotreeConfig from "../../PotreeConfig.js";
+import { LRU } from "./LRU.js";
+import { WorkerPool } from "./WorkerPool.js";
 
-export class EptZstandardLoader extends EptBinaryLoader {
-    extension() {
-        return ".zst";
-    }
+const PotreeSingleton = {
+    workerPool: new WorkerPool(),
+    lru: new LRU()
+};
 
-    workerPath() {
-        return PotreeConfig.scriptPath + "/workers/EptZstandardDecoderWorker.js";
-    }
-}
+export default PotreeSingleton;

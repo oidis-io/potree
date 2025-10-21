@@ -9,6 +9,8 @@
  *
  * ********************************************************************************************************* */
 
+import PotreeConfig from "./PotreeConfig.js";
+
 class LRUItem {
     constructor(node) {
         this.previous = null;
@@ -18,7 +20,6 @@ class LRUItem {
 }
 
 /**
- *
  * @class A doubly-linked-list of the least recently used elements.
  */
 class LRU {
@@ -140,7 +141,7 @@ class LRU {
             return;
         }
 
-        while (this.numPoints > Potree.pointLoadLimit) {
+        while (this.numPoints > PotreeConfig.pointLoadLimit) {
             let element = this.first;
             let node = element.node;
             this.disposeDescendants(node);

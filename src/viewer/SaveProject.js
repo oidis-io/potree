@@ -9,6 +9,8 @@
  *
  * ********************************************************************************************************* */
 
+import { PointSizeType } from "../defines.js";
+
 function createPointcloudData(pointcloud) {
     let material = pointcloud.material;
 
@@ -34,7 +36,7 @@ function createPointcloudData(pointcloud) {
         });
     }
 
-    let pointSizeTypeName = Object.entries(Potree.PointSizeType).find(e => e[1] === material.pointSizeType)[0];
+    let pointSizeTypeName = Object.entries(PointSizeType).find(e => e[1] === material.pointSizeType)[0];
 
     let jsonMaterial = {
         activeAttributeName: material.activeAttributeName,

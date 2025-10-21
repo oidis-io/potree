@@ -14,6 +14,9 @@ import { PointCloudTree, PointCloudTreeNode } from "./PointCloudTree.js";
 import { PointCloudOctreeGeometryNode } from "./PointCloudOctreeGeometry.js";
 import { Utils } from "./utils.js";
 import { PointCloudMaterial } from "./materials/PointCloudMaterial.js";
+import PotreeConfig from "./PotreeConfig.js";
+import { ProfileRequest } from "./ProfileRequest.js";
+import { ClipTask, PointShape } from "./defines.js";
 
 export class PointCloudOctreeNode extends PointCloudTreeNode {
     constructor() {
@@ -306,7 +309,7 @@ export class PointCloudOctree extends PointCloudTree {
     }
 
     computeVisibilityTextureData(nodes, camera) {
-        if (Potree.measureTimings) performance.mark("computeVisibilityTextureData-start");
+        if (PotreeConfig.measureTimings) performance.mark("computeVisibilityTextureData-start");
 
         let data = new Uint8Array(nodes.length * 4);
         let visibleNodeTextureOffsets = new Map();
@@ -363,7 +366,7 @@ export class PointCloudOctree extends PointCloudTree {
             }
         }
 
-        if (Potree.measureTimings) {
+        if (PotreeConfig.measureTimings) {
             performance.mark("computeVisibilityTextureData-end");
             performance.measure("render.computeVisibilityTextureData", "computeVisibilityTextureData-start", "computeVisibilityTextureData-end");
         }
@@ -526,7 +529,7 @@ export class PointCloudOctree extends PointCloudTree {
      */
     getPointsInProfile(profile, maxDepth, callback) {
         if (callback) {
-            let request = new Potree.ProfileRequest(this, profile, maxDepth, callback);
+            let request = new ProfileRequest(this, profile, maxDepth, callback);
             this.profileRequests.push(request);
 
             return request;
@@ -607,17 +610,9 @@ export class PointCloudOctree extends PointCloudTree {
 
     /**
      * returns points inside the given profile bounds.
-     *
-     * start:
-     * end:
-     * width:
-     * depth:        search points up to the given octree depth
-     * callback:    if specified, points are loaded before searching
-     *
-     *
      */
     getProfile(start, end, width, depth, callback) {
-        let request = new Potree.ProfileRequest(start, end, width, depth, callback);
+        let request = new ProfileRequest(start, end, width, depth, callback);
         this.profileRequests.push(request);
     }
 
@@ -734,7 +729,7 @@ export class PointCloudOctree extends PointCloudTree {
         if (!this.pickState) {
             let scene = new THREE.Scene();
 
-            let material = new Potree.PointCloudMaterial();
+            let material = new PointCloudMaterial();
             material.activeAttributeName = "indices";
 
             let renderTarget = new THREE.WebGLRenderTarget(
@@ -759,7 +754,7 @@ export class PointCloudOctree extends PointCloudTree {
         { // update pick material
             pickMaterial.pointSizeType = pointSizeType;
             // pickMaterial.shape = this.material.shape;
-            pickMaterial.shape = Potree.PointShape.PARABOLOID;
+            pickMaterial.shape = PointShape.PARABOLOID;
 
             pickMaterial.uniforms.uFilterReturnNumberRange.value = this.material.uniforms.uFilterReturnNumberRange.value;
             pickMaterial.uniforms.uFilterNumberOfReturnsRange.value = this.material.uniforms.uFilterNumberOfReturnsRange.value;
@@ -777,8 +772,8 @@ export class PointCloudOctree extends PointCloudTree {
             if (params.pickClipped) {
                 pickMaterial.clipBoxes = this.material.clipBoxes;
                 pickMaterial.uniforms.clipBoxes = this.material.uniforms.clipBoxes;
-                if (this.material.clipTask === Potree.ClipTask.HIGHLIGHT) {
-                    pickMaterial.clipTask = Potree.ClipTask.NONE;
+                if (this.material.clipTask === ClipTask.HIGHLIGHT) {
+                    pickMaterial.clipTask = ClipTask.NONE;
                 } else {
                     pickMaterial.clipTask = this.material.clipTask;
                 }

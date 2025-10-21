@@ -11,8 +11,11 @@
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
 import { EventDispatcher } from "../EventDispatcher.js";
+import { PointAttribute } from "../loader/PointAttributes.js";
+import { XHRFactory } from "../XHRFactory.js";
+import PotreeConfig from "../PotreeConfig.js";
 
-Potree.PointCloudArena4DGeometryNode = class PointCloudArena4DGeometryNode {
+export class PointCloudArena4DGeometryNode {
     constructor() {
         this.left = null;
         this.right = null;
@@ -73,16 +76,16 @@ Potree.PointCloudArena4DGeometryNode = class PointCloudArena4DGeometryNode {
             return;
         }
 
-        if (Potree.numNodesLoading >= Potree.maxNodesLoading) {
+        if (PotreeConfig.numNodesLoading >= PotreeConfig.maxNodesLoading) {
             return;
         }
 
         this.loading = true;
 
-        Potree.numNodesLoading++;
+        PotreeConfig.numNodesLoading++;
 
         let url = this.pcoGeometry.url + "?node=" + this.number;
-        let xhr = Potree.XHRFactory.createXMLHttpRequest();
+        let xhr = XHRFactory.createXMLHttpRequest();
         xhr.open("GET", url, true);
         xhr.responseType = "arraybuffer";
 
@@ -102,10 +105,10 @@ Potree.PointCloudArena4DGeometryNode = class PointCloudArena4DGeometryNode {
             let targetView = new DataView(data);
 
             let attributes = [
-                Potree.PointAttribute.POSITION_CARTESIAN,
-                Potree.PointAttribute.RGBA_PACKED,
-                Potree.PointAttribute.INTENSITY,
-                Potree.PointAttribute.CLASSIFICATION,
+                PointAttribute.POSITION_CARTESIAN,
+                PointAttribute.RGBA_PACKED,
+                PointAttribute.INTENSITY,
+                PointAttribute.CLASSIFICATION,
             ];
 
             let position = new Float32Array(numPoints * 3);
@@ -163,7 +166,7 @@ Potree.PointCloudArena4DGeometryNode = class PointCloudArena4DGeometryNode {
             node.numPoints = numPoints;
             node.loaded = true;
             node.loading = false;
-            Potree.numNodesLoading--;
+            PotreeConfig.numNodesLoading--;
         };
 
         xhr.send(null);
@@ -187,9 +190,9 @@ Potree.PointCloudArena4DGeometryNode = class PointCloudArena4DGeometryNode {
     getNumPoints() {
         return this.numPoints;
     }
-};
+}
 
-Potree.PointCloudArena4DGeometry = class PointCloudArena4DGeometry extends EventDispatcher {
+export class PointCloudArena4DGeometry extends EventDispatcher {
     constructor() {
         super();
 
@@ -203,14 +206,14 @@ Potree.PointCloudArena4DGeometry = class PointCloudArena4DGeometry extends Event
         this.root = null;
         this.levels = 0;
         this._spacing = null;
-        this.pointAttributes = new Potree.PointAttributes([
+        this.pointAttributes = new PointAttributes([
             "POSITION_CARTESIAN",
             "COLOR_PACKED"
         ]);
     }
 
     static load(url, callback) {
-        let xhr = Potree.XHRFactory.createXMLHttpRequest();
+        let xhr = XHRFactory.createXMLHttpRequest();
         xhr.open("GET", url + "?info", true);
 
         xhr.onreadystatechange = function () {
@@ -218,7 +221,7 @@ Potree.PointCloudArena4DGeometry = class PointCloudArena4DGeometry extends Event
                 if (xhr.readyState === 4 && xhr.status === 200) {
                     let response = JSON.parse(xhr.responseText);
 
-                    let geometry = new Potree.PointCloudArena4DGeometry();
+                    let geometry = new PointCloudArena4DGeometry();
                     geometry.url = url;
                     geometry.name = response.Name;
                     geometry.provider = response.Provider;
@@ -260,7 +263,7 @@ Potree.PointCloudArena4DGeometry = class PointCloudArena4DGeometry extends Event
 
     loadHierarchy() {
         let url = this.url + "?tree";
-        let xhr = Potree.XHRFactory.createXMLHttpRequest();
+        let xhr = XHRFactory.createXMLHttpRequest();
         xhr.open("GET", url, true);
         xhr.responseType = "arraybuffer";
 
@@ -298,7 +301,7 @@ Potree.PointCloudArena4DGeometry = class PointCloudArena4DGeometry extends Event
                     split = "Z";
                 }
 
-                let node = new Potree.PointCloudArena4DGeometryNode();
+                let node = new PointCloudArena4DGeometryNode();
                 node.hasLeft = hasLeft;
                 node.hasRight = hasRight;
                 node.split = split;
@@ -400,4 +403,4 @@ Potree.PointCloudArena4DGeometry = class PointCloudArena4DGeometry extends Event
     set spacing(value) {
         this._spacing = value;
     }
-};
+}

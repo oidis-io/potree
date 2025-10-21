@@ -13,6 +13,8 @@ import * as THREE from "../../../../libs/three.js/build/three.module.js";
 import { PointAttribute, PointAttributes, PointAttributeTypes } from "../../../loader/PointAttributes.js";
 import { OctreeGeometry, OctreeGeometryNode } from "./OctreeGeometry.js";
 import { Fetcher } from "../../../utils/Fetcher";
+import PotreeConfig from "../../../PotreeConfig.js";
+import PotreeRefs from "../../../PotreeRefs.js";
 
 // let loadedNodes = new Set();
 
@@ -27,7 +29,7 @@ export class NodeLoader {
         }
 
         node.loading = true;
-        Potree.numNodesLoading++;
+        PotreeConfig.numNodesLoading++;
 
         try {
             if (node.nodeType === 2) {
@@ -59,18 +61,18 @@ export class NodeLoader {
 
             let workerPath;
             if (this.metadata.encoding === "BROTLI") {
-                workerPath = Potree.scriptPath + "/workers/2.0/DecoderWorker_brotli.js";
+                workerPath = PotreeConfig.scriptPath + "/workers/2.0/DecoderWorker_brotli.js";
             } else {
-                workerPath = Potree.scriptPath + "/workers/2.0/DecoderWorker.js";
+                workerPath = PotreeConfig.scriptPath + "/workers/2.0/DecoderWorker.js";
             }
 
-            let worker = Potree.workerPool.getWorker(workerPath);
+            let worker = PotreeRefs.workerPool.getWorker(workerPath);
 
             worker.onmessage = function (e) {
                 let data = e.data;
                 let buffers = data.attributeBuffers;
 
-                Potree.workerPool.returnWorker(workerPath, worker);
+                PotreeRefs.workerPool.returnWorker(workerPath, worker);
 
                 let geometry = new THREE.BufferGeometry();
 
@@ -102,13 +104,12 @@ export class NodeLoader {
                         geometry.setAttribute(property, bufferAttribute);
                     }
                 }
-                // indices ??
 
                 node.density = data.density;
                 node.geometry = geometry;
                 node.loaded = true;
                 node.loading = false;
-                Potree.numNodesLoading--;
+                PotreeConfig.numNodesLoading--;
             };
 
             let pointAttributes = node.octreeGeometry.pointAttributes;
@@ -138,7 +139,7 @@ export class NodeLoader {
         } catch (e) {
             node.loaded = false;
             node.loading = false;
-            Potree.numNodesLoading--;
+            PotreeConfig.numNodesLoading--;
 
             console.log(`failed to load ${node.name}`);
             console.log(e);

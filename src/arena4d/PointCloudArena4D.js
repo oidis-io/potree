@@ -14,6 +14,7 @@ import { PointCloudTree, PointCloudTreeNode } from "../PointCloudTree.js";
 import { PointCloudMaterial } from "../materials/PointCloudMaterial.js";
 import { PointSizeType, ClipTask, TreeType } from "../defines.js";
 import { Utils } from "../utils.js";
+import PotreeConfig from "../PotreeConfig";
 
 export class PointCloudArena4DNode extends PointCloudTreeNode {
     constructor() {
@@ -513,7 +514,7 @@ export class PointCloudArena4D extends PointCloudTree {
     }
 
     computeVisibilityTextureData(nodes) {
-        if (exports.measureTimings) performance.mark("computeVisibilityTextureData-start");
+        if (PotreeConfig.measureTimings) performance.mark("computeVisibilityTextureData-start");
 
         let data = new Uint8Array(nodes.length * 3);
         let visibleNodeTextureOffsets = new Map();
@@ -570,7 +571,7 @@ export class PointCloudArena4D extends PointCloudTree {
             data[i * 3 + 2] = b3;
         }
 
-        if (exports.measureTimings) {
+        if (PotreeConfig.measureTimings) {
             performance.mark("computeVisibilityTextureData-end");
             performance.measure("render.computeVisibilityTextureData", "computeVisibilityTextureData-start", "computeVisibilityTextureData-end");
         }
@@ -583,7 +584,7 @@ export class PointCloudArena4D extends PointCloudTree {
 
     get progress() {
         if (this.pcoGeometry.root) {
-            return exports.numNodesLoading > 0 ? 0 : 1;
+            return PotreeConfig.numNodesLoading > 0 ? 0 : 1;
         } else {
             return 0;
         }

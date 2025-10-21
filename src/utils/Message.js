@@ -9,11 +9,13 @@
  *
  * ********************************************************************************************************* */
 
+import PotreeConfig from "../PotreeConfig";
+
 export class Message {
     constructor(content) {
         this.content = content;
 
-        let closeIcon = `${exports.resourcePath}/icons/close.svg`;
+        let closeIcon = `${PotreeConfig.resourcePath}/icons/close.svg`;
 
         this.element = $(`
             <div class="potree_message">

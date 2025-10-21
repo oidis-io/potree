@@ -10,12 +10,14 @@
  * ********************************************************************************************************* */
 
 import { MeasurePanel } from "./MeasurePanel.js";
+import PotreeConfig from "../../PotreeConfig.js";
+import { Utils } from "../../utils.js";
 
 export class CirclePanel extends MeasurePanel {
     constructor(viewer, measurement, propertiesPanel) {
         super(viewer, measurement, propertiesPanel);
 
-        let removeIconPath = Potree.resourcePath + "/icons/remove.svg";
+        let removeIconPath = PotreeConfig.resourcePath + "/icons/remove.svg";
         this.elContent = $(`
             <div class="measurement_content selectable">
                 <span class="coordinates_table_container"></span>
@@ -60,12 +62,12 @@ export class CirclePanel extends MeasurePanel {
         const B = this.measurement.points[1].position;
         const C = this.measurement.points[2].position;
 
-        const center = Potree.Utils.computeCircleCenter(A, B, C);
+        const center = Utils.computeCircleCenter(A, B, C);
         const radius = center.distanceTo(A);
         const circumference = 2 * Math.PI * radius;
 
         const format = (number) => {
-            return Potree.Utils.addCommas(number.toFixed(3));
+            return Utils.addCommas(number.toFixed(3));
         };
 
         const txtCenter = `${format(center.x)} ${format(center.y)} ${format(center.z)}`;

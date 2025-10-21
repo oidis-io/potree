@@ -12,6 +12,7 @@
 import * as THREE from "../../../libs/three.js/build/three.module.js";
 import { EventDispatcher } from "../../EventDispatcher.js";
 import { Fetcher } from "../../utils/Fetcher";
+import { Utils } from "../../utils.js";
 
 let sg = new THREE.SphereGeometry(1, 8, 8);
 let sgHigh = new THREE.SphereGeometry(1, 128, 128);
@@ -217,7 +218,7 @@ export class Images360 extends EventDispatcher {
         let camera = viewer.scene.getActiveCamera();
         let domElement = viewer.renderer.domElement;
 
-        let ray = Potree.Utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);
+        let ray = Utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);
 
         raycaster.ray.copy(ray);
         let intersections = raycaster.intersectObjects(this.node.children);

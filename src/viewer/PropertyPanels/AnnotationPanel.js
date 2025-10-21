@@ -10,6 +10,7 @@
  * ********************************************************************************************************* */
 
 import { Utils } from "../../utils.js";
+import PotreeConfig from "../../PotreeConfig.js";
 
 export class AnnotationPanel {
     constructor(viewer, propertiesPanel, annotation) {
@@ -21,7 +22,7 @@ export class AnnotationPanel {
             this.update();
         };
 
-        let copyIconPath = `${Potree.resourcePath}/icons/copy.svg`;
+        let copyIconPath = `${PotreeConfig.resourcePath}/icons/copy.svg`;
         this.elContent = $(`
         <div class="propertypanel_content">
             <table>
