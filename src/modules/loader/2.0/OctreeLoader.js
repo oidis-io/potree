@@ -10,9 +10,9 @@
  * ********************************************************************************************************* */
 
 import * as THREE from "../../../../libs/three.js/build/three.module.js";
-import { PointAttribute, PointAttributes, PointAttributeTypes } from "../../../loader/PointAttributes.js";
+import { PointAttribute, PointAttributeTypes, PointAttributes } from "../../../loader/PointAttributes.js";
 import { OctreeGeometry, OctreeGeometryNode } from "./OctreeGeometry.js";
-import { Fetcher } from "../../../utils/Fetcher";
+import { Fetcher } from "../../../utils/Fetcher.js";
 import PotreeConfig from "../../../PotreeConfig.js";
 import PotreeRefs from "../../../PotreeRefs.js";
 

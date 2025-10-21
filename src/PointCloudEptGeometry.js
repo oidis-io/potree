@@ -10,9 +10,9 @@
  * ********************************************************************************************************* */
 
 import { PointCloudTreeNode } from "./PointCloudTree.js";
-import { PointAttributes, PointAttribute, PointAttributeTypes } from "./loader/PointAttributes.js";
+import { PointAttribute, PointAttributeTypes, PointAttributes } from "./loader/PointAttributes.js";
 import * as THREE from "../libs/three.js/build/three.module.js";
-import { Fetcher } from "./utils/Fetcher";
+import { Fetcher } from "./utils/Fetcher.js";
 import PotreeConfig from "./PotreeConfig.js";
 import { CopcLaszipLoader, EptLaszipLoader } from "./loader/ept/LaszipLoader.js";
 import { EptBinaryLoader } from "./loader/ept/BinaryLoader.js";

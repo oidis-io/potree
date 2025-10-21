@@ -11,8 +11,8 @@
 
 import * as THREE from "../libs/three.js/build/three.module.js";
 import { PointCloudTree } from "./PointCloudTree.js";
-import { PointSizeType, ClipTask, ElevationGradientRepeat } from "./defines.js";
-import PotreeConfig from "./PotreeConfig";
+import { ClipTask, ElevationGradientRepeat, PointSizeType } from "./defines.js";
+import PotreeConfig from "./PotreeConfig.js";
 
 // Copied from three.js: WebGLRenderer.js
 function paramThreeToGL(_gl, p) {

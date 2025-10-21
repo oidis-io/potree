@@ -11,7 +11,7 @@
 
 import * as THREE from "../../../libs/three.js/build/three.module.js";
 import { MeasurePanel } from "./MeasurePanel.js";
-import { Fetcher } from "../../utils/Fetcher";
+import { Fetcher } from "../../utils/Fetcher.js";
 import PotreeConfig from "../../PotreeConfig.js";
 
 export class ProfilePanel extends MeasurePanel {

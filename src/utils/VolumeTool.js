@@ -10,7 +10,7 @@
  * ********************************************************************************************************* */
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
-import { Volume, BoxVolume } from "./Volume.js";
+import { BoxVolume, Volume } from "./Volume.js";
 import { Utils } from "../utils.js";
 import { EventDispatcher } from "../EventDispatcher.js";
 

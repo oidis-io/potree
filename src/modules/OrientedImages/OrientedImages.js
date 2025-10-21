@@ -12,7 +12,7 @@
 import * as THREE from "../../../libs/three.js/build/three.module.js";
 import { OrientedImageControls } from "./OrientedImageControls.js";
 import { EventDispatcher } from "../../EventDispatcher.js";
-import { Fetcher } from "../../utils/Fetcher";
+import { Fetcher } from "../../utils/Fetcher.js";
 import { PolygonClipVolume } from "../../utils/PolygonClipVolume.js";
 import PotreeConfig from "../../PotreeConfig.js";
 

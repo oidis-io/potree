@@ -14,7 +14,7 @@ import { Line2 } from "../../libs/three.js/lines/Line2.js";
 import { LineGeometry } from "../../libs/three.js/lines/LineGeometry.js";
 import { LineMaterial } from "../../libs/three.js/lines/LineMaterial.js";
 import { Utils } from "../utils.js";
-import { Fetcher } from "../utils/Fetcher";
+import { Fetcher } from "../utils/Fetcher.js";
 import PotreeConfig from "../PotreeConfig.js";
 
 const defaultColors = {

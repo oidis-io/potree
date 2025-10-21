@@ -21,9 +21,9 @@ const merge = require("merge-stream");
 const connect = require("gulp-connect");
 const {watch} = gulp;
 
-const {createExamplesPage} = require("./src/tools/create_potree_page");
-const {createGithubPage} = require("./src/tools/create_github_page");
-const {createIconsPage} = require("./src/tools/create_icons_page");
+const {createExamplesPage} = require("./src/tools/create_potree_page.js");
+const {createGithubPage} = require("./src/tools/create_github_page.js");
+const {createIconsPage} = require("./src/tools/create_icons_page.js");
 const archiver = require("archiver");
 
 let paths = {

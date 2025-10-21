@@ -12,9 +12,9 @@
 import * as THREE from "../../libs/three.js/build/three.module.js";
 import { PointCloudTree, PointCloudTreeNode } from "../PointCloudTree.js";
 import { PointCloudMaterial } from "../materials/PointCloudMaterial.js";
-import { PointSizeType, ClipTask, TreeType } from "../defines.js";
+import { ClipTask, PointSizeType, TreeType } from "../defines.js";
 import { Utils } from "../utils.js";
-import PotreeConfig from "../PotreeConfig";
+import PotreeConfig from "../PotreeConfig.js";
 
 export class PointCloudArena4DNode extends PointCloudTreeNode {
     constructor() {

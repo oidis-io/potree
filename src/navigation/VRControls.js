@@ -15,9 +15,9 @@ import { XRControllerModelFactory } from "../../libs/three.js/webxr/XRController
 import { Line2 } from "../../libs/three.js/lines/Line2.js";
 import { LineGeometry } from "../../libs/three.js/lines/LineGeometry.js";
 import { LineMaterial } from "../../libs/three.js/lines/LineMaterial.js";
-import { TextSprite } from "../TextSprite";
-import { Utils } from "../utils";
-import PotreeConfig from "../PotreeConfig";
+import { TextSprite } from "../TextSprite.js";
+import { Utils } from "../utils.js";
+import PotreeConfig from "../PotreeConfig.js";
 
 let fakeCam = new THREE.PerspectiveCamera();
 

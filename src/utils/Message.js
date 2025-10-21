@@ -9,7 +9,7 @@
  *
  * ********************************************************************************************************* */
 
-import PotreeConfig from "../PotreeConfig";
+import PotreeConfig from "../PotreeConfig.js";
 
 export class Message {
     constructor(content) {

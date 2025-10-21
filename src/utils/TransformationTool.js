@@ -11,7 +11,7 @@
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
 import { Utils } from "../utils.js";
-import PotreeConfig from "../PotreeConfig";
+import PotreeConfig from "../PotreeConfig.js";
 
 export class TransformationTool {
     constructor(viewer) {

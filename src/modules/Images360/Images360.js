@@ -11,7 +11,7 @@
 
 import * as THREE from "../../../libs/three.js/build/three.module.js";
 import { EventDispatcher } from "../../EventDispatcher.js";
-import { Fetcher } from "../../utils/Fetcher";
+import { Fetcher } from "../../utils/Fetcher.js";
 import { Utils } from "../../utils.js";
 
 let sg = new THREE.SphereGeometry(1, 8, 8);

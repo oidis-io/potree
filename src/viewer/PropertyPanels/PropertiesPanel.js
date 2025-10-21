@@ -17,7 +17,7 @@ import { Measure } from "../../utils/Measure.js";
 import { Profile } from "../../utils/Profile.js";
 import { Volume } from "../../utils/Volume.js";
 import { CameraAnimation } from "../../modules/CameraAnimation/CameraAnimation.js";
-import { PointSizeType, PointShape, ElevationGradientRepeat } from "../../defines.js";
+import { ElevationGradientRepeat, PointShape, PointSizeType } from "../../defines.js";
 import { Gradients } from "../../materials/Gradients.js";
 
 import { DistancePanel } from "./DistancePanel.js";

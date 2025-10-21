@@ -10,7 +10,7 @@
  * ********************************************************************************************************* */
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
-import { ClipTask, ClipMethod, CameraMode, LengthUnits, ElevationGradientRepeat } from "../defines.js";
+import { CameraMode, ClipMethod, ClipTask, ElevationGradientRepeat, LengthUnits } from "../defines.js";
 import { Renderer } from "../PotreeRenderer.js";
 import { PotreeRenderer } from "./PotreeRenderer.js";
 import { EDLRenderer } from "./EDLRenderer.js";
@@ -44,11 +44,11 @@ import { ClassificationScheme } from "../materials/ClassificationScheme.js";
 import { VRButton } from "../../libs/three.js/extra/VRButton.js";
 
 import JSON5 from "../../libs/json5-2.1.3/json5.mjs";
-import { Fetcher } from "../utils/Fetcher";
-import PotreeConfig from "../PotreeConfig";
+import { Fetcher } from "../utils/Fetcher.js";
+import PotreeConfig from "../PotreeConfig.js";
 import {loadProject} from "./LoadProject.js";
-import { GeoPackageLoader } from "../loader/GeoPackageLoader";
-import { updatePointClouds } from "../Potree_update_visibility";  // TODO(mkelnar) refactor
+import { GeoPackageLoader } from "../loader/GeoPackageLoader.js";
+import { updatePointClouds } from "../Potree_update_visibility.js";  // TODO(mkelnar) refactor
 
 export class Viewer extends EventDispatcher {
     constructor(domElement, args = {}) {

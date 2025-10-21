@@ -9,7 +9,7 @@
  *
  * ********************************************************************************************************* */
 
-import { Fetcher } from "../utils/Fetcher";
+import { Fetcher } from "../utils/Fetcher.js";
 import { PointCloudCopcGeometry, PointCloudCopcGeometryNode, PointCloudEptGeometry } from "../PointCloudEptGeometry.js";
 
 /**

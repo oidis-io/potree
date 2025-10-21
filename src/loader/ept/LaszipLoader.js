@@ -10,7 +10,7 @@
  * ********************************************************************************************************* */
 
 import * as THREE from "../../../libs/three.js/build/three.module.js";
-import { Fetcher } from "../../utils/Fetcher";
+import { Fetcher } from "../../utils/Fetcher.js";
 import PotreeConfig from "../../PotreeConfig.js";
 import PotreeRefs from "../../PotreeRefs.js";
 

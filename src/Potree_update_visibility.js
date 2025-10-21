@@ -10,9 +10,9 @@
  * ********************************************************************************************************* */
 
 import * as THREE from "../libs/three.js/build/three.module.js";
-import { ClipTask, ClipMethod } from "./defines.js";
+import { ClipMethod, ClipTask } from "./defines.js";
 import { Box3Helper } from "./utils/Box3Helper.js";
-import PotreeConfig from "./PotreeConfig";
+import PotreeConfig from "./PotreeConfig.js";
 import PotreeRefs from "./PotreeRefs.js";
 
 export function updatePointClouds(pointclouds, camera, renderer) {

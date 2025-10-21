@@ -20,7 +20,7 @@ import { PointCloudTree } from "../PointCloudTree.js";
 import { Renderer } from "../PotreeRenderer.js";
 import { PointCloudMaterial } from "../materials/PointCloudMaterial.js";
 import { PointSizeType } from "../defines.js";
-import PotreeConfig from "../PotreeConfig";
+import PotreeConfig from "../PotreeConfig.js";
 
 function copyMaterial(source, target) {
     for (let name of Object.keys(target.uniforms)) {

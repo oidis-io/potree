@@ -14,7 +14,7 @@ import { Utils } from "../../utils.js";
 import { BoxVolume, SphereVolume } from "../../utils/Volume.js";
 
 import { MeasurePanel } from "./MeasurePanel.js";
-import { Fetcher } from "../../utils/Fetcher";
+import { Fetcher } from "../../utils/Fetcher.js";
 import PotreeConfig from "../../PotreeConfig.js";
 
 export class VolumePanel extends MeasurePanel {

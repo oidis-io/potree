@@ -13,7 +13,7 @@ import * as THREE from "../libs/three.js/build/three.module.js";
 import { Action } from "./Actions.js";
 import { Utils } from "./utils.js";
 import { EventDispatcher } from "./EventDispatcher.js";
-import PotreeConfig from "./PotreeConfig";
+import PotreeConfig from "./PotreeConfig.js";
 
 export class Annotation extends EventDispatcher {
     constructor(args = {}) {

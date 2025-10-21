@@ -11,6 +11,7 @@
 import globals from "globals";
 import pluginJs from "@eslint/js";
 import unusedImports from "eslint-plugin-unused-imports";
+import importPlugin from "eslint-plugin-import";
 
 export default [
     {
@@ -24,7 +25,8 @@ export default [
     pluginJs.configs.recommended,
     {
         plugins: {
-            "unused-imports": unusedImports
+            "unused-imports": unusedImports,
+            "import": importPlugin
         },
         languageOptions: {
             globals: {
@@ -54,6 +56,10 @@ export default [
                 }
             }],
             "quotes": ["error", "double", {"allowTemplateLiterals": true}],
+            "import/extensions": ["error", "always", {
+                "js": "always",
+                "mjs": "always"
+            }],
 
             "no-unused-vars": [
                 "off",
@@ -74,7 +80,7 @@ export default [
             "no-constant-binary-expression": "off",
             "getter-return": "off",
             "no-global-assign": "off",
-            "no-redeclare": "off"
+            "no-redeclare": "off",
             // "sort-imports": ["error", {
             //     "ignoreCase": false,
             //     "ignoreDeclarationSort": false,
