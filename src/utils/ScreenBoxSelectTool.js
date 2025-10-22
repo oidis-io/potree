@@ -96,8 +96,6 @@ export class ScreenBoxSelectTool extends EventDispatcher {
             let screenCentroid = new THREE.Vector2().addVectors(e.drag.end, e.drag.start).multiplyScalar(0.5);
             let ray = Utils.mouseToRay(screenCentroid, camera, size.width, size.height);
 
-            let line = new THREE.Line3(ray.origin, new THREE.Vector3().addVectors(ray.origin, ray.direction));
-
             this.removeEventListener("drag", drag);
             this.removeEventListener("drop", drop);
 

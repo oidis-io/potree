@@ -15,7 +15,6 @@ import { Utils } from "../utils.js";
 import { Line2 } from "../../libs/three.js/lines/Line2.js";
 import { LineGeometry } from "../../libs/three.js/lines/LineGeometry.js";
 import { LineMaterial } from "../../libs/three.js/lines/LineMaterial.js";
-import PotreeConfig from "../PotreeConfig.js";
 
 function createHeightLine() {
     let lineGeometry = new LineGeometry();
@@ -182,9 +181,7 @@ function createLine() {
 
     material.depthTest = false;
 
-    const line = new Line2(geometry, material);
-
-    return line;
+    return new Line2(geometry, material);
 }
 
 function createCircle() {
@@ -339,14 +336,13 @@ export class Measure extends THREE.Object3D {
     }
 
     createSphereMaterial() {
-        let sphereMaterial = new THREE.MeshLambertMaterial({
-            color: this.color,
-            depthTest: false,
-            depthWrite: false
-        }
+        return new THREE.MeshLambertMaterial(
+            {
+                color: this.color,
+                depthTest: false,
+                depthWrite: false
+            }
         );
-
-        return sphereMaterial;
     }
 
     addMarker(point) {
@@ -765,7 +761,7 @@ export class Measure extends THREE.Object3D {
                 const AC = C.clone().sub(A);
                 const N = AC.clone().cross(AB).normalize();
 
-                const center = PotreeConfig.Utils.computeCircleCenter(A, B, C);
+                const center = Utils.computeCircleCenter(A, B, C);
                 const radius = center.distanceTo(A);
 
                 const scale = radius / 20;

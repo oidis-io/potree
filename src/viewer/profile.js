@@ -544,11 +544,6 @@ export class ProfileWindow extends EventDispatcher {
             new THREE.Vector2(mileage - radius, elevation - radius),
             new THREE.Vector2(mileage + radius, elevation + radius));
 
-        let numTested = 0;
-        let numSkipped = 0;
-        let numTestedPoints = 0;
-        let numSkippedPoints = 0;
-
         for (let [pointcloud, entry] of this.pointclouds) {
             for (let points of entry.points) {
                 let collisionBox = new THREE.Box2(
@@ -559,13 +554,8 @@ export class ProfileWindow extends EventDispatcher {
                 let intersects = collisionBox.intersectsBox(pointBox);
 
                 if (!intersects) {
-                    numSkipped++;
-                    numSkippedPoints += points.numPoints;
                     continue;
                 }
-
-                numTested++;
-                numTestedPoints += points.numPoints;
 
                 for (let i = 0; i < points.numPoints; i++) {
                     let m = points.data.mileage[i] - mileage;
@@ -754,7 +744,7 @@ export class ProfileWindow extends EventDispatcher {
         this.render();
 
         let numPoints = 0;
-        for (let [key, value] of this.pointclouds.entries()) {
+        for (let [value] of this.pointclouds.entries()) {
             numPoints += value.points.reduce((a, i) => a + i.numPoints, 0);
         }
         $(`#profile_num_points`).html(Utils.addCommas(numPoints));
@@ -769,7 +759,7 @@ export class ProfileWindow extends EventDispatcher {
         this.autoFit = true;
         this.projectedBox = new THREE.Box3();
 
-        for (let [key, entry] of this.pointclouds) {
+        for (let [entry] of this.pointclouds) {
             entry.dispose();
         }
 

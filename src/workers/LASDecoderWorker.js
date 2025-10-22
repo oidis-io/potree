@@ -9,7 +9,7 @@
  *
  * ********************************************************************************************************* */
 
-function readUsingTempArrays(event) {
+function ReadUsingTempArrays(event) {
     performance.mark("laslaz-start");
 
     let buffer = event.data.buffer;
@@ -176,7 +176,7 @@ function readUsingTempArrays(event) {
     postMessage(message, transferables);
 }
 
-function readUsingDataView(event) {
+function ReadUsingDataView(event) {
     performance.mark("laslaz-start");
 
     let buffer = event.data.buffer;
@@ -331,4 +331,4 @@ function readUsingDataView(event) {
     postMessage(message, transferables);
 }
 
-onmessage = readUsingDataView;
+onmessage = ReadUsingDataView;

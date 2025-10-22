@@ -119,7 +119,6 @@ class FlyMode {
 
         let vrPos = camVR.getWorldPosition(new THREE.Vector3());
         let vrDir = camVR.getWorldDirection(new THREE.Vector3());
-        let vrTarget = vrPos.clone().add(vrDir.multiplyScalar(scale));
 
         let scenePos = toScene(vrPos, vrControls.node);
         let sceneDir = toScene(vrPos.clone().add(vrDir), vrControls.node).sub(scenePos);
@@ -251,7 +250,6 @@ class RotScaleMode {
 
             let vrPos = camVR.getWorldPosition(new THREE.Vector3());
             let vrDir = camVR.getWorldDirection(new THREE.Vector3());
-            let vrTarget = vrPos.clone().add(vrDir.multiplyScalar(scale));
 
             let scenePos = toScene(vrPos, this.startState);
             let sceneDir = toScene(vrPos.clone().add(vrDir), this.startState).sub(scenePos);
@@ -555,7 +553,6 @@ export class VRControls extends EventDispatcher {
     }
 
     getCamera() {
-        let reference = this.viewer.scene.getActiveCamera();
         let camera = new THREE.PerspectiveCamera();
         let scale = this.viewer.getMoveSpeed();
         camera.near = 0.1;

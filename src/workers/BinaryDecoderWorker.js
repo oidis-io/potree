@@ -37,9 +37,6 @@ onmessage = function (event) {
     let version = new Version(event.data.version);
     let nodeOffset = event.data.offset;
     let scale = event.data.scale;
-    let spacing = event.data.spacing;
-    let hasChildren = event.data.hasChildren;
-    let name = event.data.name;
 
     let tightBoxMin = [Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY];
     let tightBoxMax = [Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY];

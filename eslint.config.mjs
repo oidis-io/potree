@@ -67,12 +67,15 @@ export default [
             }],
 
             "no-unused-vars": [
-                "off",
+                "error",
                 {
                     "vars": "all",
-                    "varsIgnorePattern": "^_",
-                    "args": "after-used",
-                    "argsIgnorePattern": "^_"
+                    "varsIgnorePattern": "^_|^[A-Z]",
+                    "args": "none",
+                    "ignoreRestSiblings": false,
+                    "ignoreUsingDeclarations": false,
+                    "reportUsedIgnorePattern": false,
+                    "caughtErrors": "none"
                 }
             ],
             "unused-imports/no-unused-imports": "error",

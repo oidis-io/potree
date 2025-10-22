@@ -118,8 +118,6 @@ export class ProfileRequest {
     }
 
     * updateGenerator() {
-        let start = performance.now();
-
         let maxNodesPerUpdate = 1;
         let intersectedNodes = [];
 
@@ -289,7 +287,6 @@ export class ProfileRequest {
                 let acceptedPositions = null;
                 for (let result of this.getAccepted(numPoints, node, matrix, segment, segmentDir, points, totalMileage)) {
                     if (!result) {
-                        let duration = performance.now() - checkpoint;
                         yield false;
                         checkpoint = performance.now();
                     } else {

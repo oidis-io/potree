@@ -201,8 +201,6 @@ export class OrientedImageControls extends EventDispatcher {
         proj.multiply(mShear);
         shearCam.projectionMatrixInverse.copy(proj).invert();
 
-        let total = shearCam.projectionMatrix.elements.reduce((a, i) => a + i, 0);
-
         this.fovDelta *= attenuation;
     }
 }

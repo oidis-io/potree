@@ -45,7 +45,6 @@ export class DXFProfileExporter {
         const pData = points.data;
         const pMileage = pData.mileage;
         const pCoords = pData.position;
-        const pColor = pData.rgba;
 
         for (let pIx = 0; pIx < points.numPoints; pIx++) {
             const poMileage = pMileage[pIx];

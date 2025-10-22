@@ -311,7 +311,6 @@ export class PointCloudArena4D extends PointCloudTree {
         let getVal = (a, b) => a !== undefined ? a : b;
 
         let pickWindowSize = getVal(params.pickWindowSize, 17);
-        let pickOutsideClipRegion = getVal(params.pickOutsideClipRegion, false);
 
         let size = renderer.getSize(new THREE.Vector2());
 
@@ -425,7 +424,6 @@ export class PointCloudArena4D extends PointCloudTree {
         let ibuffer = new Uint32Array(buffer.buffer);
 
         // find closest hit inside pixelWindow boundaries
-        let min = Number.MAX_VALUE;
         let hits = [];
         for (let u = 0; u < pickWindowSize; u++) {
             for (let v = 0; v < pickWindowSize; v++) {

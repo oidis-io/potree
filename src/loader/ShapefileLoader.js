@@ -51,8 +51,6 @@ export class ShapefileLoader {
     featureToSceneNode(feature, matLine) {
         let geometry = feature.geometry;
 
-        let color = new THREE.Color(1, 1, 1);
-
         let transform = this.transform;
         if (transform === null) {
             transform = { forward: (v) => v };

@@ -232,7 +232,6 @@ export class SphereVolume extends Volume {
             let steps = 64;
             let uSegments = 8;
             let vSegments = 5;
-            let r = 1;
 
             for (let uSegment = 0; uSegment < uSegments; uSegment++) {
                 let alpha = (uSegment / uSegments) * Math.PI * 2;

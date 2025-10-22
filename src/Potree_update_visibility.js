@@ -27,8 +27,6 @@ export function updatePointClouds(pointclouds, camera, renderer) {
                 break;
             }
         }
-
-        let duration = performance.now() - start;
     }
 
     let result = updateVisibility(pointclouds, camera, renderer);
@@ -104,7 +102,6 @@ export function updateVisibilityStructures(pointclouds, camera, renderer) {
 }
 
 export function updateVisibility(pointclouds, camera, renderer) {
-    let numVisibleNodes = 0;
     let numVisiblePoints = 0;
 
     let numVisiblePointsInPointclouds = new Map(pointclouds.map(pc => [pc, 0]));
@@ -123,7 +120,6 @@ export function updateVisibility(pointclouds, camera, renderer) {
 
     let loadedToGPUThisFrame = 0;
 
-    let domWidth = renderer.domElement.clientWidth;
     let domHeight = renderer.domElement.clientHeight;
 
     // check if pointcloud has been transformed
@@ -180,9 +176,8 @@ export function updateVisibility(pointclouds, camera, renderer) {
             let numIntersecting = 0;
             let numIntersectionVolumes = 0;
 
-            for (let clipBox of clipBoxes) {
+            for (let _clipBox of clipBoxes) {
                 let pcWorldInverse = pointcloud.matrixWorld.clone().invert();
-                let toPCObject = pcWorldInverse.multiply(clipBox.box.matrixWorld);
 
                 let px = new THREE.Vector3(+0.5, 0, 0).applyMatrix4(pcWorldInverse);
                 let nx = new THREE.Vector3(-0.5, 0, 0).applyMatrix4(pcWorldInverse);
@@ -326,7 +321,6 @@ export function updateVisibility(pointclouds, camera, renderer) {
             } else {
                 // TODO ortho visibility
                 let bb = child.getBoundingBox();
-                let distance = child.getBoundingSphere().center.distanceTo(camObjPos);
                 let diagonal = bb.max.clone().sub(bb.min).length();
 
                 weight = diagonal;

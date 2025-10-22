@@ -149,7 +149,6 @@ export class NodeLoader {
 
     parseHierarchy(node, buffer) {
         let view = new DataView(buffer);
-        let tStart = performance.now();
 
         let bytesPerNode = 22;
         let numNodes = buffer.byteLength / bytesPerNode;
@@ -286,7 +285,7 @@ export class OctreeLoader {
         };
 
         for (const jsonAttribute of jsonAttributes) {
-            let { name, description, size, numElements, elementSize, min, max } = jsonAttribute;
+            let { name, numElements, min, max } = jsonAttribute;
 
             let type = typenameTypeattributeMap[jsonAttribute.type];
 

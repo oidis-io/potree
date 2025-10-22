@@ -200,7 +200,6 @@ export class Viewer extends EventDispatcher {
             {
                 let near = 2.5;
                 let far = 10.0;
-                let fov = 90;
 
                 this.shadowTestCam = new THREE.PerspectiveCamera(90, 1, near, far);
                 this.shadowTestCam.position.set(3.50, -2.80, 8.561);
@@ -1111,7 +1110,6 @@ export class Viewer extends EventDispatcher {
             this.onGUILoaded(callback);
         }
 
-        let viewer = this;
         let sidebarContainer = $("#potree_sidebar_container");
         sidebarContainer.load(new URL(PotreeConfig.scriptPath + "/sidebar.html").href, () => {
             sidebarContainer.css("width", "300px");
@@ -1351,8 +1349,6 @@ export class Viewer extends EventDispatcher {
         this.scene.cameraP.updateMatrixWorld();
         this.scene.cameraO.updateMatrixWorld();
 
-        let distances = [];
-
         let renderAreaSize = this.renderer.getSize(new THREE.Vector2());
 
         let viewer = this;
@@ -1521,7 +1517,6 @@ export class Viewer extends EventDispatcher {
 
         if (!this.freeze) {
             let result = updatePointClouds(scene.pointclouds, camera, this.renderer);
-            const tStart = performance.now();
             const campos = camera.position;
             let closestImage = Infinity;
             for (const images of this.scene.orientedImages) {
@@ -1531,7 +1526,6 @@ export class Viewer extends EventDispatcher {
                     closestImage = Math.min(closestImage, distance);
                 }
             }
-            const tEnd = performance.now();
 
             if (result.lowestSpacing !== Infinity) {
                 let near = result.lowestSpacing * 10.0;
@@ -1863,7 +1857,6 @@ export class Viewer extends EventDispatcher {
             const height = this.scaleFactor * this.renderArea.clientHeight;
 
             this.renderer.setSize(width, height);
-            const pixelRatio = this.renderer.getPixelRatio();
             const aspect = width / height;
 
             const scene = this.scene;
@@ -1962,7 +1955,7 @@ export class Viewer extends EventDispatcher {
                     names.add(groupname);
                 }
 
-                for (let [name, group] of groups) {
+                for (let [group] of groups) {
                     group.mean = group.sum / group.n;
                     group.measures.sort((a, b) => a.duration - b.duration);
 

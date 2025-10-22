@@ -205,7 +205,7 @@ function createSettingsData(viewer) {
     };
 }
 
-function createSceneContentData(viewer) {
+function CreateSceneContentData(viewer) {
     const data = [];
 
     const potreeObjects = [];

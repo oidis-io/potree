@@ -327,8 +327,6 @@ export class PointCloudOctree extends PointCloudTree {
         };
         nodes.sort(sort);
 
-        let worldDir = new THREE.Vector3();
-
         let nodeMap = new Map();
         let offsetsToChild = new Array(nodes.length).fill(Infinity);
 
@@ -710,7 +708,6 @@ export class PointCloudOctree extends PointCloudTree {
         let getVal = (a, b) => a !== undefined ? a : b;
 
         let pickWindowSize = getVal(params.pickWindowSize, 65);
-        let pickOutsideClipRegion = getVal(params.pickOutsideClipRegion, false);
 
         let size = renderer.getSize(new THREE.Vector2());
 
@@ -833,8 +830,6 @@ export class PointCloudOctree extends PointCloudTree {
         let pixels = buffer;
         let ibuffer = new Uint32Array(buffer.buffer);
 
-        // find closest hit inside pixelWindow boundaries
-        let min = Number.MAX_VALUE;
         let hits = [];
         for (let u = 0; u < pickWindowSize; u++) {
             for (let v = 0; v < pickWindowSize; v++) {

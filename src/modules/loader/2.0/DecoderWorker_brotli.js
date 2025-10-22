@@ -58,12 +58,8 @@ function dealign24b(mortoncode) {
     return x;
 }
 
-let mask_b0 = new Uint8Array([0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3]);
-
 onmessage = function (event) {
-    let { pointAttributes, scale, name, min, max, size, offset, numPoints } = event.data;
-
-    let tStart = performance.now();
+    let { pointAttributes, scale, name, min, size, offset, numPoints } = event.data;
 
     let buffer;
     if (numPoints === 0) {
@@ -80,12 +76,6 @@ onmessage = function (event) {
     let view = new DataView(buffer.buffer);
 
     let attributeBuffers = {};
-    let attributeOffset = 0;
-
-    let bytesPerPoint = 0;
-    for (let pointAttribute of pointAttributes.attributes) {
-        bytesPerPoint += pointAttribute.byteSize;
-    }
 
     let gridSize = 32;
     let grid = new Uint32Array(gridSize ** 3);
@@ -270,9 +260,6 @@ onmessage = function (event) {
             };
         }
     }
-
-    let duration = performance.now() - tStart;
-    let pointsPerMs = numPoints / duration;
 
     let message = {
         buffer: buffer,

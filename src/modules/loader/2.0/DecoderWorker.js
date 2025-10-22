@@ -27,9 +27,7 @@ const typedArrayMapping = {
 Potree = {};
 
 onmessage = function (event) {
-    let { buffer, pointAttributes, scale, name, min, max, size, offset, numPoints } = event.data;
-
-    let tStart = performance.now();
+    let { buffer, pointAttributes, scale, min, size, offset, numPoints } = event.data;
 
     let view = new DataView(buffer);
 

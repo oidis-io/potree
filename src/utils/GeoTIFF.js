@@ -99,9 +99,6 @@ let GeoTIFF = (function (exports) {
         }
 
         static read(data) {
-            let endiannessTag = String.fromCharCode(...Array.from(data.slice(0, 2)));
-            let endianness = Endianness.fromValue(endiannessTag);
-
             let tiffCheckTag = data.readUInt8(2);
 
             if (tiffCheckTag !== 42) {
@@ -175,7 +172,6 @@ let GeoTIFF = (function (exports) {
 
             let width = ifdForTag(Tag.IMAGE_WIDTH, ifds).value;
             let height = ifdForTag(Tag.IMAGE_HEIGHT, ifds).value;
-            let compression = ifdForTag(Tag.COMPRESSION, ifds).value;
             let rowsPerStrip = ifdForTag(Tag.ROWS_PER_STRIP, ifds).value;
             let ifdStripOffsets = ifdForTag(Tag.STRIP_OFFSETS, ifds);
             let ifdStripByteCounts = ifdForTag(Tag.STRIP_BYTE_COUNTS, ifds);
@@ -290,8 +286,6 @@ let GeoTIFF = (function (exports) {
             for (let ifd of ifds) {
                 let entryBuffer = new ArrayBuffer(12);
                 let entryView = new DataView(entryBuffer);
-
-                let valueBytes = ifd.type.bytes * ifd.count;
 
                 entryView.setUint16(0, ifd.tag.value, true);
                 entryView.setUint16(2, ifd.type.value, true);

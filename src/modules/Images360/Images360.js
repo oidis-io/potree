@@ -183,12 +183,6 @@ export class Images360 extends EventDispatcher {
         this.sphere.material.needsUpdate = true;
         this.sphere.visible = false;
 
-        let pos = viewer.scene.view.position;
-        let target = viewer.scene.view.getPivot();
-        let dir = target.clone().sub(pos).normalize();
-        let move = dir.multiplyScalar(10);
-        let newCamPos = target.clone().sub(move);
-
         viewer.orbitControls.doubleClockZoomEnabled = true;
         viewer.setControls(previousView.controls);
 
@@ -233,8 +227,6 @@ export class Images360 extends EventDispatcher {
     }
 
     update() {
-        let { viewer } = this;
-
         if (currentlyHovered) {
             currentlyHovered.material = sm;
             currentlyHovered = null;

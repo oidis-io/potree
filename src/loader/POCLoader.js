@@ -77,7 +77,6 @@ function parseAttributes(cloudjs) {
             const name = replaceOldNames(jsAttribute.name);
             const type = typeConversion[jsAttribute.type];
             const numElements = jsAttribute.elements;
-            const description = jsAttribute.description;
 
             const attribute = new PointAttribute(name, type, numElements);
 

@@ -151,7 +151,7 @@ export class CameraAnimationPanel {
 
             addNewKeyframeItem(index);
 
-            for (const cp of animation.controlPoints) {
+            for (const _cp of animation.controlPoints) {
                 addKeyframeItem(index);
                 index++;
                 addNewKeyframeItem(index);

@@ -798,7 +798,6 @@ export class Renderer {
 
             if (!geometry) console.log("Missing geometry", node);
             if (geometry.attributes["gps-time"]) {
-                const bufferAttribute = geometry.attributes["gps-time"];
                 const attGPS = octree.getAttribute("gps-time");
 
                 let initialRange = attGPS.initialRange;
@@ -861,7 +860,6 @@ export class Renderer {
                 const attributeLocation = attributeLocations["aExtra"].location;
 
                 for (const attributeName in geometry.attributes) {
-                    const bufferAttribute = geometry.attributes[attributeName];
                     const vbo = webglBuffer.vbos.get(attributeName);
 
                     gl.bindBuffer(gl.ARRAY_BUFFER, vbo.handle);

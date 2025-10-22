@@ -125,7 +125,6 @@ export class ClippingTool extends EventDispatcher {
                     let newPoint = svg[0].createSVGPoint();
                     newPoint.x = e.offsetX;
                     newPoint.y = e.offsetY;
-                    let polyline = target.points.appendItem(newPoint);
                 });
 
                 if (polyClipVol.markers.length > this.maxPolygonVertices) {

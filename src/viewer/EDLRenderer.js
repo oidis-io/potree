@@ -201,7 +201,7 @@ export class EDLRenderer {
         if (this.screenshot) {
             let oldBudget = PotreeConfig.pointBudget;
             PotreeConfig.pointBudget = Math.max(10 * 1000 * 1000, 2 * oldBudget);
-            let result = PotreeConfig.updatePointClouds(
+            PotreeConfig.updatePointClouds(
                 viewer.scene.pointclouds,
                 camera,
                 viewer.renderer);

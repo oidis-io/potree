@@ -117,7 +117,7 @@ export class GeoPackageLoader {
                 node.name = table;
                 geo.node.add(node);
 
-                for (const [index, feature] of Object.entries(geoJson)) {
+                for (const [feature] of Object.entries(geoJson)) {
                     const featureNode = GeoPackageLoader.featureToSceneNode(feature, matLine, dao.projection, transform);
                     node.add(featureNode);
                 }
@@ -131,8 +131,6 @@ export class GeoPackageLoader {
 
     static featureToSceneNode(feature, matLine, geopackageProjection, transform) {
         let geometry = feature.geometry;
-
-        let color = new THREE.Color(1, 1, 1);
 
         if (feature.geometry.type === "Point") {
             let sg = new THREE.SphereGeometry(1, 18, 18);

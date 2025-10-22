@@ -624,7 +624,6 @@ export class Utils {
         let closestNode = null;
         let closestIndex = Infinity;
         let closestDistance = Infinity;
-        let closestValue = 0;
 
         for (const node of nodes) {
             const isOkay = node.geometryNode != null
@@ -647,9 +646,7 @@ export class Utils {
                 if (distance < closestDistance) {
                     closestIndex = i;
                     closestDistance = distance;
-                    closestValue = value;
                     closestNode = node;
-                    // console.log("found a closer one: " + value);
                 }
             }
         }

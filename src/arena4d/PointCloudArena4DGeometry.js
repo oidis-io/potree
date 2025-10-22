@@ -11,7 +11,6 @@
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
 import { EventDispatcher } from "../EventDispatcher.js";
-import { PointAttribute } from "../loader/PointAttributes.js";
 import { XHRFactory } from "../XHRFactory.js";
 import PotreeConfig from "../PotreeConfig.js";
 
@@ -99,17 +98,6 @@ export class PointCloudArena4DGeometryNode {
             let buffer = xhr.response;
             let sourceView = new DataView(buffer);
             let numPoints = buffer.byteLength / 17;
-            let bytesPerPoint = 28;
-
-            let data = new ArrayBuffer(numPoints * bytesPerPoint);
-            let targetView = new DataView(data);
-
-            let attributes = [
-                PointAttribute.POSITION_CARTESIAN,
-                PointAttribute.RGBA_PACKED,
-                PointAttribute.INTENSITY,
-                PointAttribute.CLASSIFICATION,
-            ];
 
             let position = new Float32Array(numPoints * 3);
             let color = new Uint8Array(numPoints * 4);
