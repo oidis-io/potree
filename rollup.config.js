@@ -9,6 +9,8 @@
  *
  * ********************************************************************************************************* */
 
+import commonjs from "@rollup/plugin-commonjs";
+
 export default [
     {
         input: "src/Potree.js",
@@ -18,7 +20,14 @@ export default [
             format: "umd",
             name: "Potree",
             sourcemap: true
-        }
+        },
+        plugins: [
+            commonjs()
+        ],
+        external: [
+            "libs/*",
+            "pointclouds/*"
+        ]
     },
     {
         input: "src/workers/BinaryDecoderWorker.js",
@@ -27,7 +36,11 @@ export default [
             format: "es",
             name: "Potree",
             sourcemap: false
-        }
+        },
+        external: [
+            "libs/*",
+            "pointclouds/*"
+        ]
     },
     {
         input: "src/modules/loader/2.0/DecoderWorker.js",
@@ -36,14 +49,23 @@ export default [
             format: "es",
             name: "Potree",
             sourcemap: false
-        }
-    }, {
+        },
+        external: [
+            "libs/*",
+            "pointclouds/*"
+        ]
+    },
+    {
         input: "src/modules/loader/2.0/DecoderWorker_brotli.js",
         output: {
             file: "build/potree/workers/2.0/DecoderWorker_brotli.js",
             format: "es",
             name: "Potree",
             sourcemap: false
-        }
+        },
+        external: [
+            "libs/*",
+            "pointclouds/*"
+        ]
     }
 ];

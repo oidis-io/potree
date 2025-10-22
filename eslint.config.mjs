@@ -91,7 +91,11 @@ export default [
         languageOptions: {
             globals: {
                 "$": "readonly",
-                jQuery: "readonly"
+                jQuery: "readonly",
+                proj4: "readonly",
+                ol: "readonly",
+                d3: "readonly",
+                i18n: "readonly"
             }
         },
         rules: jsRules

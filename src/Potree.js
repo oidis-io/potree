@@ -9,6 +9,8 @@
  *
  * ********************************************************************************************************* */
 
+import PotreeConfig from "./PotreeConfig.js";
+
 import { LRU } from "./LRU.js";
 import { PointCloudOctree } from "./PointCloudOctree.js";
 import * as TextSprite from "./TextSprite.js";
@@ -26,11 +28,11 @@ import "./extensions/Ray.js";
 import { OctreeLoader } from "./modules/loader/2.0/OctreeLoader.js";
 import { POCLoader } from "./loader/POCLoader.js";
 import { CopcLoader, EptLoader } from "./loader/EptLoader.js";
-import PotreeConfig from "./PotreeConfig.js";
 import { PointShape, PointSizeType } from "./defines.js";
 import PotreeRefs from "./PotreeRefs.js";
 import { PointCloudArena4DGeometry } from "./arena4d/PointCloudArena4DGeometry.js";
 import { PointCloudArena4D } from "./arena4d/PointCloudArena4D.js";
+import { Fetcher } from "./utils/Fetcher.js";
 
 const Potree = {
     OrbitControls,
@@ -51,16 +53,37 @@ const Potree = {
     CopcLoader,
     TextSprite,
     Viewer,
+    Fetcher,
     pointBudget: PotreeConfig.pointBudget,
     framenumber: PotreeConfig.framenumber,
     numNodesLoading: PotreeConfig.numNodesLoading,
     maxNodesLoading: PotreeConfig.maxNodesLoading,
-    debug: {},
-    scriptPath: PotreeConfig.scriptPath
+    debug: {}
 };
 
 console.log("Potree " + PotreeConfig.version.major + "." + PotreeConfig.version.minor + PotreeConfig.version.suffix);
-Potree.resourcePath = PotreeConfig.resourcePath;
+
+Object.defineProperty(Potree, "scriptPath", {
+    get() {
+        return PotreeConfig.scriptPath;
+    },
+    set(newPath) {
+        PotreeConfig.scriptPath = newPath;
+    },
+    configurable: true,
+    enumerable: true
+});
+
+Object.defineProperty(Potree, "resourcePath", {
+    get() {
+        return PotreeConfig.resourcePath;
+    },
+    set(newPath) {
+        PotreeConfig.resourcePath = newPath;
+    },
+    configurable: true,
+    enumerable: true
+});
 
 PotreeConfig.loadPointCloud = (path, name, callback) => {
     let loaded = function (e) {
@@ -152,7 +175,6 @@ PotreeConfig.loadPointCloud = (path, name, callback) => {
 
 // TODO(mkelnar) for plasio/laz and other not refactored refs
 Potree.workerPool = PotreeRefs.workerPool;
-Potree.scriptPath = PotreeConfig.scriptPath;
 Potree.loadPointCloud = PotreeConfig.loadPointCloud;
 
 (function ($) {

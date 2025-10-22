@@ -8,6 +8,11 @@
  *
  * ********************************************************************************************************* */
 
+import { Version } from "./Version.js";
+
+let _scriptPath = "";
+let _resourcePath = "";
+
 const PotreeConfig = {
     version: {
         major: 2025,
@@ -21,30 +26,51 @@ const PotreeConfig = {
     numNodesLoading: 0,
     maxNodesLoading: 4,
     pointLoadLimit: 0,
-    resourcePath: "",
-    scriptPath: (() => {
-        let path = "";
-        if (document.currentScript && document.currentScript.src) {
-            path = new URL(document.currentScript.src + "/..").href;
-            if (path.slice(-1) === "/") {
-                path = path.slice(0, -1);
-            }
-        } else if (import.meta) {
-            path = new URL(import.meta.url + "/..").href;
-            if (path.slice(-1) === "/") {
-                path = path.slice(0, -1);
-            }
-        } else {
-            console.error("Potree was unable to find its script path using document.currentScript. Is Potree included with a script tag? Does your browser support this function?");
-        }
-        return path;
-    })(),
     // TODO(mkelnar) create loader class for this method
     loadPointCloud: function (path, name, callback) {
         throw new Error(`Not implemented loadPointCloud`);
-    }
+    },
+    Version
 };
 
-PotreeConfig.resourcePath = PotreeConfig.scriptPath + "/resources";
+Object.defineProperty(PotreeConfig, "scriptPath", {
+    get() {
+        return _scriptPath;
+    },
+    set(newPath) {
+        _scriptPath = newPath.replace(/\/$/, "");
+    },
+    configurable: true,
+    enumerable: true
+});
+
+Object.defineProperty(PotreeConfig, "resourcePath", {
+    get() {
+        return _resourcePath;
+    },
+    set(newPath) {
+        _resourcePath = newPath.replace(/\/$/, "");
+    },
+    configurable: true,
+    enumerable: true
+});
+
+let path = "";
+if (document.currentScript && document.currentScript.src) {
+    path = new URL(document.currentScript.src + "/..").href;
+    if (path.slice(-1) === "/") {
+        path = path.slice(0, -1);
+    }
+} else if (import.meta) {
+    path = new URL(import.meta.url + "/..").href;
+    if (path.slice(-1) === "/") {
+        path = path.slice(0, -1);
+    }
+} else {
+    console.error("Potree was unable to find its script path using document.currentScript. Is Potree included with a script tag? Does your browser support this function?");
+}
+
+PotreeConfig.scriptPath = path;
+PotreeConfig.resourcePath = path + "/resources";
 
 export default PotreeConfig;
