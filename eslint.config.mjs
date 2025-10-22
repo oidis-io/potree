@@ -37,6 +37,12 @@ export default [
             semi: ["error", "always"],
             "semi-spacing": ["error", { "before": false, "after": true }],
             "semi-style": ["error", "last"],
+            "camelcase": ["error", {
+                "properties": "always",
+                "ignoreImports": true,
+                "ignoreGlobals": true,
+                "ignoreDestructuring": true
+            }],
             "no-var": "error",
             "no-extra-semi": "error",
             "no-multiple-empty-lines": ["error", { "max": 1, "maxEOF": 0 }],

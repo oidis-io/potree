@@ -127,8 +127,8 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 
             intensityRange: { type: "fv", value: [Infinity, -Infinity] },
 
-            intensity_gbc: { type: "fv", value: [1, 0, 0] },
-            uRGB_gbc: { type: "fv", value: [1, 0, 0] },
+            intensityGBC: { type: "fv", value: [1, 0, 0] },
+            uRGBxGBC: { type: "fv", value: [1, 0, 0] },
             wRGB: { type: "f", value: 1 },
             wIntensity: { type: "f", value: 0 },
             wElevation: { type: "f", value: 0 },
@@ -765,12 +765,12 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
     }
 
     get intensityGamma() {
-        return this.uniforms.intensity_gbc.value[0];
+        return this.uniforms.intensityGBC.value[0];
     }
 
     set intensityGamma(value) {
-        if (this.uniforms.intensity_gbc.value[0] !== value) {
-            this.uniforms.intensity_gbc.value[0] = value;
+        if (this.uniforms.intensityGBC.value[0] !== value) {
+            this.uniforms.intensityGBC.value[0] = value;
             this.dispatchEvent({
                 type: "material_property_changed",
                 target: this
@@ -779,12 +779,12 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
     }
 
     get intensityContrast() {
-        return this.uniforms.intensity_gbc.value[2];
+        return this.uniforms.intensityGBC.value[2];
     }
 
     set intensityContrast(value) {
-        if (this.uniforms.intensity_gbc.value[2] !== value) {
-            this.uniforms.intensity_gbc.value[2] = value;
+        if (this.uniforms.intensityGBC.value[2] !== value) {
+            this.uniforms.intensityGBC.value[2] = value;
             this.dispatchEvent({
                 type: "material_property_changed",
                 target: this
@@ -793,12 +793,12 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
     }
 
     get intensityBrightness() {
-        return this.uniforms.intensity_gbc.value[1];
+        return this.uniforms.intensityGBC.value[1];
     }
 
     set intensityBrightness(value) {
-        if (this.uniforms.intensity_gbc.value[1] !== value) {
-            this.uniforms.intensity_gbc.value[1] = value;
+        if (this.uniforms.intensityGBC.value[1] !== value) {
+            this.uniforms.intensityGBC.value[1] = value;
             this.dispatchEvent({
                 type: "material_property_changed",
                 target: this
@@ -807,12 +807,12 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
     }
 
     get rgbGamma() {
-        return this.uniforms.uRGB_gbc.value[0];
+        return this.uniforms.uRGBxGBC.value[0];
     }
 
     set rgbGamma(value) {
-        if (this.uniforms.uRGB_gbc.value[0] !== value) {
-            this.uniforms.uRGB_gbc.value[0] = value;
+        if (this.uniforms.uRGBxGBC.value[0] !== value) {
+            this.uniforms.uRGBxGBC.value[0] = value;
             this.dispatchEvent({
                 type: "material_property_changed",
                 target: this
@@ -821,12 +821,12 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
     }
 
     get rgbContrast() {
-        return this.uniforms.uRGB_gbc.value[2];
+        return this.uniforms.uRGBxGBC.value[2];
     }
 
     set rgbContrast(value) {
-        if (this.uniforms.uRGB_gbc.value[2] !== value) {
-            this.uniforms.uRGB_gbc.value[2] = value;
+        if (this.uniforms.uRGBxGBC.value[2] !== value) {
+            this.uniforms.uRGBxGBC.value[2] = value;
             this.dispatchEvent({
                 type: "material_property_changed",
                 target: this
@@ -835,12 +835,12 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
     }
 
     get rgbBrightness() {
-        return this.uniforms.uRGB_gbc.value[1];
+        return this.uniforms.uRGBxGBC.value[1];
     }
 
     set rgbBrightness(value) {
-        if (this.uniforms.uRGB_gbc.value[1] !== value) {
-            this.uniforms.uRGB_gbc.value[1] = value;
+        if (this.uniforms.uRGBxGBC.value[1] !== value) {
+            this.uniforms.uRGBxGBC.value[1] = value;
             this.dispatchEvent({
                 type: "material_property_changed",
                 target: this

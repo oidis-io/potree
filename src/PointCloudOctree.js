@@ -139,9 +139,9 @@ export class PointCloudOctree extends PointCloudTree {
                 let min = attribute.range[0].constructor.name === "Array" ? attribute.range[0] : [attribute.range[0]];
                 let max = attribute.range[1].constructor.name === "Array" ? attribute.range[1] : [attribute.range[1]];
 
-                let range_min = new THREE.Vector3(...min);
-                let range_max = new THREE.Vector3(...max);
-                let range = range_min.distanceTo(range_max);
+                let rangeMin = new THREE.Vector3(...min);
+                let rangeMax = new THREE.Vector3(...max);
+                let range = rangeMin.distanceTo(rangeMax);
 
                 if (range === 0) {
                     continue;

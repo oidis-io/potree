@@ -199,20 +199,20 @@ class RotScaleMode {
     }
 
     update(vrControls, delta) {
-        let start_c1 = vrControls.cPrimary.start.position.clone();
-        let start_c2 = vrControls.cSecondary.start.position.clone();
-        let start_center = start_c1.clone().add(start_c2).multiplyScalar(0.5);
-        let start_c1_c2 = start_c2.clone().sub(start_c1);
-        let end_c1 = vrControls.cPrimary.position.clone();
-        let end_c2 = vrControls.cSecondary.position.clone();
-        let end_center = end_c1.clone().add(end_c2).multiplyScalar(0.5);
-        let end_c1_c2 = end_c2.clone().sub(end_c1);
+        let startC1 = vrControls.cPrimary.start.position.clone();
+        let startC2 = vrControls.cSecondary.start.position.clone();
+        let startCenter = startC1.clone().add(startC2).multiplyScalar(0.5);
+        let startC1C2 = startC2.clone().sub(startC1);
+        let endC1 = vrControls.cPrimary.position.clone();
+        let endC2 = vrControls.cSecondary.position.clone();
+        let endCenter = endC1.clone().add(endC2).multiplyScalar(0.5);
+        let endC1C2 = endC2.clone().sub(endC1);
 
-        let d1 = start_c1_c2.length();
-        let d2 = end_c1_c2.length();
+        let d1 = startC1C2.length();
+        let d2 = endC1C2.length();
 
-        let angleStart = new THREE.Vector2(start_c1_c2.x, start_c1_c2.z).angle();
-        let angleEnd = new THREE.Vector2(end_c1_c2.x, end_c1_c2.z).angle();
+        let angleStart = new THREE.Vector2(startC1C2.x, startC1C2.z).angle();
+        let angleEnd = new THREE.Vector2(endC1C2.x, endC1C2.z).angle();
         let angleDiff = angleEnd - angleStart;
 
         let scale = d2 / d1;
@@ -221,8 +221,8 @@ class RotScaleMode {
         node.updateMatrix();
         node.matrixAutoUpdate = false;
 
-        let mToOrigin = new THREE.Matrix4().makeTranslation(...toScene(start_center, this.startState).multiplyScalar(-1).toArray());
-        let mToStart = new THREE.Matrix4().makeTranslation(...toScene(start_center, this.startState).toArray());
+        let mToOrigin = new THREE.Matrix4().makeTranslation(...toScene(startCenter, this.startState).multiplyScalar(-1).toArray());
+        let mToStart = new THREE.Matrix4().makeTranslation(...toScene(startCenter, this.startState).toArray());
         let mRotate = new THREE.Matrix4().makeRotationZ(angleDiff);
         let mScale = new THREE.Matrix4().makeScale(1 / scale, 1 / scale, 1 / scale);
 
@@ -231,8 +231,8 @@ class RotScaleMode {
         node.applyMatrix4(mScale);
         node.applyMatrix4(mToStart);
 
-        let oldScenePos = toScene(start_center, this.startState);
-        let newScenePos = toScene(end_center, node);
+        let oldScenePos = toScene(startCenter, this.startState);
+        let newScenePos = toScene(endCenter, node);
         let toNew = oldScenePos.clone().sub(newScenePos);
         let mToNew = new THREE.Matrix4().makeTranslation(...toNew.toArray());
         node.applyMatrix4(mToNew);
@@ -261,11 +261,11 @@ class RotScaleMode {
         }
 
         { // update "GUI"
-            this.line.set(end_c1, end_c2);
+            this.line.set(endC1, endC2);
 
             let scale = vrControls.node.scale.x;
             this.dbgLabel.visible = true;
-            this.dbgLabel.position.copy(end_center);
+            this.dbgLabel.position.copy(endCenter);
             this.dbgLabel.setText(`scale: 1 : ${scale.toFixed(2)}`);
             this.dbgLabel.scale.set(0.05, 0.05, 0.05);
         }
@@ -400,10 +400,10 @@ export class VRControls extends EventDispatcher {
             this.cSecondary = controller;
         }
 
-        this.mode_fly = new FlyMode();
-        this.mode_translate = new TranslationMode();
-        this.mode_rotScale = new RotScaleMode();
-        this.setMode(this.mode_fly);
+        this.modeFly = new FlyMode();
+        this.modeTranslate = new TranslationMode();
+        this.modeRotScale = new RotScaleMode();
+        this.setMode(this.modeFly);
     }
 
     createSlider(label, min, max) {
@@ -507,11 +507,11 @@ export class VRControls extends EventDispatcher {
         this.triggered.add(controller);
 
         if (this.triggered.size === 0) {
-            this.setMode(this.mode_fly);
+            this.setMode(this.modeFly);
         } else if (this.triggered.size === 1) {
-            this.setMode(this.mode_translate);
+            this.setMode(this.modeTranslate);
         } else if (this.triggered.size === 2) {
-            this.setMode(this.mode_rotScale);
+            this.setMode(this.modeRotScale);
         }
     }
 
@@ -519,11 +519,11 @@ export class VRControls extends EventDispatcher {
         this.triggered.delete(controller);
 
         if (this.triggered.size === 0) {
-            this.setMode(this.mode_fly);
+            this.setMode(this.modeFly);
         } else if (this.triggered.size === 1) {
-            this.setMode(this.mode_translate);
+            this.setMode(this.modeTranslate);
         } else if (this.triggered.size === 2) {
-            this.setMode(this.mode_rotScale);
+            this.setMode(this.modeRotScale);
         }
     }
 

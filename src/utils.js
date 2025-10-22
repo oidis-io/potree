@@ -248,9 +248,7 @@ export class Utils {
      */
     static createWorker(code) {
         let blob = new Blob([code], { type: "application/javascript" });
-        let worker = new Worker(URL.createObjectURL(blob));
-
-        return worker;
+        return new Worker(URL.createObjectURL(blob));
     }
 
     static moveTo(scene, endPosition, endTarget) {
@@ -494,9 +492,7 @@ export class Utils {
         imageData.data.set(pixels);
         context.putImageData(imageData, 0, 0);
 
-        let dataURL = canvas.toDataURL();
-
-        return dataURL;
+        return canvas.toDataURL();
     }
 
     static pixelsArrayToCanvas(pixels, width, height) {
@@ -546,9 +542,7 @@ export class Utils {
         vector.unproject(camera);
         let direction = new THREE.Vector3().subVectors(vector, origin).normalize();
 
-        let ray = new THREE.Ray(origin, direction);
-
-        return ray;
+        return new THREE.Ray(origin, direction);
     }
 
     static projectedRadius(radius, camera, distance, screenWidth, screenHeight) {
@@ -653,7 +647,7 @@ export class Utils {
 
         const geometry = closestNode.geometryNode.geometry;
         const position = new THREE.Vector3(
-            geometry.attributes.position.array[3 * closestIndex + 0],
+            geometry.attributes.position.array[3 * closestIndex],
             geometry.attributes.position.array[3 * closestIndex + 1],
             geometry.attributes.position.array[3 * closestIndex + 2],
         );
@@ -672,7 +666,6 @@ export class Utils {
     }
 
     /**
-     *
      * 0: no intersection
      * 1: intersection
      * 2: fully inside
@@ -844,21 +837,16 @@ export class Utils {
         const P = [P0, P1, P2, P3];
 
         const d = (m, n, o, p) => {
-            let result =
-                (P[m].x - P[n].x) * (P[o].x - P[p].x)
+            return (P[m].x - P[n].x) * (P[o].x - P[p].x)
                 + (P[m].y - P[n].y) * (P[o].y - P[p].y)
                 + (P[m].z - P[n].z) * (P[o].z - P[p].z);
-
-            return result;
         };
 
         const mua = (d(0, 2, 3, 2) * d(3, 2, 1, 0) - d(0, 2, 1, 0) * d(3, 2, 3, 2))
-        /** -----------------------------------------------------------------**/ /
-            (d(1, 0, 1, 0) * d(3, 2, 3, 2) - d(3, 2, 1, 0) * d(3, 2, 1, 0));
+            / (d(1, 0, 1, 0) * d(3, 2, 3, 2) - d(3, 2, 1, 0) * d(3, 2, 1, 0));
 
         const mub = (d(0, 2, 3, 2) + mua * d(3, 2, 1, 0))
-        /** --------------------------------------**/ /
-            d(3, 2, 3, 2);
+            / d(3, 2, 3, 2);
 
         const P01 = P1.clone().sub(P0);
         const P23 = P3.clone().sub(P2);
@@ -866,9 +854,7 @@ export class Utils {
         const Pa = P0.clone().add(P01.multiplyScalar(mua));
         const Pb = P2.clone().add(P23.multiplyScalar(mub));
 
-        const center = Pa.clone().add(Pb).multiplyScalar(0.5);
-
-        return center;
+        return Pa.clone().add(Pb).multiplyScalar(0.5);
     }
 
     static computeCircleCenter(A, B, C) {
@@ -877,21 +863,19 @@ export class Utils {
 
         const N = AC.clone().cross(AB).normalize();
 
-        const ab_dir = AB.clone().cross(N).normalize();
-        const ac_dir = AC.clone().cross(N).normalize();
+        const abDir = AB.clone().cross(N).normalize();
+        const acDir = AC.clone().cross(N).normalize();
 
-        const ab_origin = A.clone().add(B).multiplyScalar(0.5);
-        const ac_origin = A.clone().add(C).multiplyScalar(0.5);
+        const abOrigin = A.clone().add(B).multiplyScalar(0.5);
+        const acOrigin = A.clone().add(C).multiplyScalar(0.5);
 
-        const P0 = ab_origin;
-        const P1 = ab_origin.clone().add(ab_dir);
+        const P0 = abOrigin;
+        const P1 = abOrigin.clone().add(abDir);
 
-        const P2 = ac_origin;
-        const P3 = ac_origin.clone().add(ac_dir);
+        const P2 = acOrigin;
+        const P3 = acOrigin.clone().add(acDir);
 
-        const center = Utils.lineToLineIntersection(P0, P1, P2, P3);
-
-        return center;
+        return Utils.lineToLineIntersection(P0, P1, P2, P3);
     }
 
     static getNorthVec(p1, distance, projection) {
@@ -913,9 +897,7 @@ export class Utils {
         } else {
             // if there is no projection, assume [0, 1, 0] as north direction
 
-            const vec = new THREE.Vector3(0, 1, 0).multiplyScalar(distance);
-
-            return vec;
+            return new THREE.Vector3(0, 1, 0).multiplyScalar(distance);
         }
     }
 

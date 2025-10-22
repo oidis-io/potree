@@ -73,8 +73,8 @@ function paramThreeToGL(_gl, p) {
     if (p === THREE.OneMinusDstColorFactor) return _gl.ONE_MINUS_DST_COLOR;
     if (p === THREE.SrcAlphaSaturateFactor) return _gl.SRC_ALPHA_SATURATE;
 
-    if (p === THREE.RGB_S3TC_DXT1_Format || p === RGBA_S3TC_DXT1_Format ||
-        p === THREE.RGBA_S3TC_DXT3_Format || p === RGBA_S3TC_DXT5_Format) {
+    if (p === THREE.RGB_S3TC_DXT1_Format || p === THREE.RGBA_S3TC_DXT1_Format ||
+        p === THREE.RGBA_S3TC_DXT3_Format || p === THREE.RGBA_S3TC_DXT5_Format) {
         extension = extensions.get("WEBGL_compressed_texture_s3tc");
 
         if (extension !== null) {
