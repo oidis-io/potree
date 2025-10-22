@@ -159,12 +159,10 @@ class LRU {
             current.dispose();
             this.remove(current);
 
-            for (let key in current.children) {
-                if (current.children.hasOwnProperty(key)) {
-                    let child = current.children[key];
-                    if (child.loaded) {
-                        stack.push(current.children[key]);
-                    }
+            for (const key of Object.keys(current.children)) {
+                const child = current.children[key];
+                if (child.loaded) {
+                    stack.push(child);
                 }
             }
         }

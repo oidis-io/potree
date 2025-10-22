@@ -73,10 +73,6 @@ export class OctreeGeometryNode {
         return children;
     }
 
-    getBoundingBox() {
-        return this.boundingBox;
-    }
-
     load() {
         if (PotreeConfig.numNodesLoading >= PotreeConfig.maxNodesLoading) {
             return;

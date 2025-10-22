@@ -99,8 +99,6 @@ function ReadUsingTempArrays(event) {
         // NUMBER OF RETURNS, stored in 00111000
         numberOfReturns[i] = (sourceUint8[i * pointSize + 14] & 0b111000) >> 3;
 
-        debugger;
-
         let classification = sourceUint8[i * sourcePointSize + 15];
         classifications[i] = classification;
 
@@ -170,8 +168,6 @@ function ReadUsingTempArrays(event) {
         message.numberOfReturns,
         message.pointSourceID,
         message.indices];
-
-    debugger;
 
     postMessage(message, transferables);
 }

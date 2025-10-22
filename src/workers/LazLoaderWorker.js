@@ -59,7 +59,7 @@ function parseLASHeader(arraybuffer) {
 
 function handleEvent(msg) {
     switch (msg.type) {
-        case "open":
+        case "open": {
             try {
                 instance = new Module.LASZip();
                 let abInt = new Uint8Array(msg.arraybuffer);
@@ -77,8 +77,8 @@ function handleEvent(msg) {
                 postMessage({ type: "open", status: 0, details: e });
             }
             break;
-
-        case "header":
+        }
+        case "header": {
             if (!instance) {
                 throw new Error("You need to open the file before trying to read header");
             }
@@ -88,13 +88,12 @@ function handleEvent(msg) {
             instance.header = header;
             postMessage({ type: "header", status: 1, header: header });
             break;
-
-        case "read":
+        }
+        case "read": {
             if (!instance) {
                 throw new Error("You need to open the file before trying to read stuff");
             }
 
-            // msg.start
             let count = msg.count;
             let skip = msg.skip;
             let o = instance;
@@ -130,14 +129,15 @@ function handleEvent(msg) {
             });
 
             break;
-
-        case "close":
+        }
+        case "close": {
             if (instance !== null) {
                 instance.delete();
                 instance = null;
             }
             postMessage({ type: "close", status: 1 });
             break;
+        }
     }
 }
 
