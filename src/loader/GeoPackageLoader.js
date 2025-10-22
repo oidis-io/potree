@@ -117,7 +117,7 @@ export class GeoPackageLoader {
                 node.name = table;
                 geo.node.add(node);
 
-                for (const [feature] of Object.entries(geoJson)) {
+                for (const [_index, feature] of Object.entries(geoJson)) {
                     const featureNode = GeoPackageLoader.featureToSceneNode(feature, matLine, dao.projection, transform);
                     node.add(featureNode);
                 }

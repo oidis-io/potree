@@ -744,7 +744,7 @@ export class ProfileWindow extends EventDispatcher {
         this.render();
 
         let numPoints = 0;
-        for (let [value] of this.pointclouds.entries()) {
+        for (let [_key, value] of this.pointclouds.entries()) {
             numPoints += value.points.reduce((a, i) => a + i.numPoints, 0);
         }
         $(`#profile_num_points`).html(Utils.addCommas(numPoints));
@@ -759,7 +759,7 @@ export class ProfileWindow extends EventDispatcher {
         this.autoFit = true;
         this.projectedBox = new THREE.Box3();
 
-        for (let [entry] of this.pointclouds) {
+        for (let [_key, entry] of this.pointclouds) {
             entry.dispose();
         }
 

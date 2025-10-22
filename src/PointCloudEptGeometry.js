@@ -76,7 +76,7 @@ class BaseGeometry {
         this.offset = U.toVector3([0, 0, 0]);
         this.version = new PotreeConfig.Version("1.7");
 
-        this.loader = new PotreeConfig.CopcLaszipLoader();
+        this.loader = new CopcLaszipLoader();
 
         this.spacing = spacing;
         this.projection = srs || null;

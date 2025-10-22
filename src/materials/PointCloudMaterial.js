@@ -269,7 +269,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
             defines.push("#define weighted_splats");
         }
 
-        for (let [value] of this.defines) {
+        for (let [_key, value] of this.defines) {
             defines.push(value);
         }
 

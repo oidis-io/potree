@@ -98,8 +98,8 @@ uniform float uGpsOffset;
 
 uniform vec2 uNormalizedGpsBufferRange;
 
-uniform vec3 uIntensity_gbc;
-uniform vec3 uRGB_gbc;
+uniform vec3 uIntensityGBC;
+uniform vec3 uRGBxGBC;
 uniform vec3 uExtra_gbc;
 
 uniform float uTransition;
@@ -397,9 +397,9 @@ float getContrastFactor(float contrast){
 vec3 getRGB(){
     vec3 rgb = color;
 
-    rgb = pow(rgb, vec3(uRGB_gbc.x));
-    rgb = rgb + uRGB_gbc.y;
-    rgb = (rgb - 0.5) * getContrastFactor(uRGB_gbc.z) + 0.5;
+    rgb = pow(rgb, vec3(uRGBxGBC.x));
+    rgb = rgb + uRGBxGBC.y;
+    rgb = (rgb - 0.5) * getContrastFactor(uRGBxGBC.z) + 0.5;
     rgb = clamp(rgb, 0.0, 1.0);
 
     return rgb;
@@ -407,9 +407,9 @@ vec3 getRGB(){
 
 float getIntensity(){
     float w = (intensity - intensityRange.x) / (intensityRange.y - intensityRange.x);
-    w = pow(w, uIntensity_gbc.x);
-    w = w + uIntensity_gbc.y;
-    w = (w - 0.5) * getContrastFactor(uIntensity_gbc.z) + 0.5;
+    w = pow(w, uIntensityGBC.x);
+    w = w + uIntensityGBC.y;
+    w = (w - 0.5) * getContrastFactor(uIntensityGBC.z) + 0.5;
     w = clamp(w, 0.0, 1.0);
 
     return w;

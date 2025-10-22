@@ -1181,13 +1181,13 @@ export class Renderer {
             shader.setUniform2f("elevationRange", material.elevationRange);
             shader.setUniform2f("intensityRange", material.intensityRange);
 
-            shader.setUniform3f("uIntensity_gbc", [
+            shader.setUniform3f("uIntensityGBC", [
                 material.intensityGamma,
                 material.intensityBrightness,
                 material.intensityContrast
             ]);
 
-            shader.setUniform3f("uRGB_gbc", [
+            shader.setUniform3f("uRGBxGBC", [
                 material.rgbGamma,
                 material.rgbBrightness,
                 material.rgbContrast

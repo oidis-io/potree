@@ -426,7 +426,7 @@ export class CameraAnimation extends EventDispatcher {
             if (this.selectedElement) {
                 evt.preventDefault();
 
-                const rect = viewer.renderer.domElement.getBoundingClientRect();
+                const rect = this.viewer.renderer.domElement.getBoundingClientRect();
 
                 const x = evt.clientX - rect.x;
                 const y = evt.clientY - rect.y;
