@@ -20,16 +20,12 @@ export class CameraAnimationPanel {
         this.elContent = $(`
             <div class="propertypanel_content">
                 <span id="animation_keyframes"></span>
-
                 <span>
-
                     <span style="display:flex">
                         <span style="display:flex; align-items: center; padding-right: 10px">Duration: </span>
                         <input name="spnDuration" value="5.0" style="flex-grow: 1; width:100%">
                     </span>
-
                     <span>Time: </span><span id="lblTime"></span> <div id="sldTime"></div>
-
                     <input name="play" type="button" value="play"/>
                 </span>
             </div>

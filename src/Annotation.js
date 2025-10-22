@@ -10,6 +10,7 @@
  * ********************************************************************************************************* */
 
 import * as THREE from "../libs/three.js/build/three.module.js";
+import TWEEN from "../libs/tween/tween.min.js";
 import { Action } from "./Actions.js";
 import { Utils } from "./utils.js";
 import { EventDispatcher } from "./EventDispatcher.js";

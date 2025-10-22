@@ -19,12 +19,10 @@
  * @author alteredq / http://alteredqualia.com/
  * @author WestLangley / http://github.com/WestLangley
  * @author erich666 / http://erichaines.com
- *
- *
- *
  */
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
+import TWEEN from "../../libs/tween/tween.min.js";
 import { MOUSE } from "../defines.js";
 import { Utils } from "../utils.js";
 import { EventDispatcher } from "../EventDispatcher.js";

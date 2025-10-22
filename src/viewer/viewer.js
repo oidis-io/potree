@@ -10,6 +10,7 @@
  * ********************************************************************************************************* */
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
+import TWEEN from "../../libs/tween/tween.min.js";
 import { CameraMode, ClipMethod, ClipTask, ElevationGradientRepeat, LengthUnits } from "../defines.js";
 import { Renderer } from "../PotreeRenderer.js";
 import { PotreeRenderer } from "./PotreeRenderer.js";

@@ -10,6 +10,7 @@
  * ********************************************************************************************************* */
 
 import * as THREE from "../libs/three.js/build/three.module.js";
+import TWEEN from "../libs/tween/tween.min.js";
 import { XHRFactory } from "./XHRFactory.js";
 import { Volume } from "./utils/Volume.js";
 import { Profile } from "./utils/Profile.js";

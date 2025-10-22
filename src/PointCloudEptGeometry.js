@@ -9,6 +9,7 @@
  *
  * ********************************************************************************************************* */
 
+import * as THREE from "../libs/three.js/build/three.module.js";
 import { PointCloudTreeNode } from "./PointCloudTree.js";
 import { PointAttribute, PointAttributeTypes, PointAttributes } from "./loader/PointAttributes.js";
 import { Fetcher } from "./utils/Fetcher.js";
