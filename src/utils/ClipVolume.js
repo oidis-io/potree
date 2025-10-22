@@ -230,7 +230,7 @@ export class ClipVolume extends THREE.Object3D {
             }
         }
 
-        this.dispatchEvent({ "type": "clip_volume_changed", "viewer": viewer, "volume": this });
+        this.dispatchEvent({ "type": "clip_volume_changed", "viewer": this.viewer, "volume": this });
     }
 
     rotate(args) {
@@ -256,7 +256,7 @@ export class ClipVolume extends THREE.Object3D {
                 rotaxis = new THREE.Vector4(0, 0, 1, 0);
             }
             this.updateMatrixWorld();
-            let invM = newthis.matrixWorld.clone().invert();
+            let invM = this.matrixWorld.clone().invert();
             rotaxis = rotaxis.applyMatrix4(invM).normalize();
             rotaxis = new THREE.Vector3(rotaxis.x, rotaxis.y, rotaxis.z);
             this.rotateOnAxis(rotaxis, dir * this.clipRotOffset * Math.PI / 180);
@@ -264,7 +264,7 @@ export class ClipVolume extends THREE.Object3D {
 
         this.updateLocalSystem();
 
-        this.dispatchEvent({ "type": "clip_volume_changed", "viewer": viewer, "volume": this });
+        this.dispatchEvent({ "type": "clip_volume_changed", "viewer": this.viewer, "volume": this });
     }
 
     update() {

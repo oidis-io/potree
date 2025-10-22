@@ -311,7 +311,7 @@ export class GeoControls extends EventDispatcher {
         this.object.position.copy(this.position0);
     }
 
-    onMouseDown() {
+    onMouseDown(event) {
         if (this.enabled === false) return;
         event.preventDefault();
 

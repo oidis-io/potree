@@ -30,6 +30,7 @@ import PotreeConfig from "./PotreeConfig.js";
 import { PointShape, PointSizeType } from "./defines.js";
 import PotreeRefs from "./PotreeRefs.js";
 import { PointCloudArena4DGeometry } from "./arena4d/PointCloudArena4DGeometry.js";
+import { PointCloudArena4D } from "./arena4d/PointCloudArena4D.js";
 
 const Potree = {
     OrbitControls,

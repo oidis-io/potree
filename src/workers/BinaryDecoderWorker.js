@@ -176,7 +176,7 @@ onmessage = function (event) {
             let f32 = new Float32Array(buff);
 
             let TypedArray = typedArrayMapping[pointAttribute.type.name];
-            preciseBuffer = new TypedArray(numPoints);
+            const preciseBuffer = new TypedArray(numPoints);
 
             let [min, max] = [Infinity, -Infinity];
             let [offset, scale] = [0, 1];

@@ -50,14 +50,14 @@ function computeMove(vrControls, controller) {
     y = Math.sign(y) * (2 * y) ** 2;
 
     let maxSize = 0;
-    for (let pc of viewer.scene.pointclouds) {
+    for (let pc of this.viewer.scene.pointclouds) {
         let size = pc.boundingBox.min.distanceTo(pc.boundingBox.max);
         maxSize = Math.max(maxSize, size);
     }
     let multiplicator = Math.pow(maxSize, 0.5) / 2;
 
     let scale = vrControls.node.scale.x;
-    let moveSpeed = viewer.getMoveSpeed();
+    let moveSpeed = this.viewer.getMoveSpeed();
     let amount = multiplicator * y * (moveSpeed ** 0.5) / scale;
 
     let rotation = new THREE.Quaternion().setFromEuler(controller.rotation);

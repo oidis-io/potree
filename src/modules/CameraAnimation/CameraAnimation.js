@@ -490,8 +490,8 @@ export class CameraAnimation extends EventDispatcher {
 
             const frame = this.at(t);
 
-            viewer.scene.view.position.copy(frame.position);
-            viewer.scene.view.lookAt(frame.target);
+            this.viewer.scene.view.position.copy(frame.position);
+            this.viewer.scene.view.lookAt(frame.target);
 
             if (t > 1) {
                 this.setVisible(originalyVisible);

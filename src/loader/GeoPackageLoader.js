@@ -80,7 +80,7 @@ export class GeoPackageLoader {
             }
 
             const wasmPath = `${PotreeConfig.scriptPath}/lazylibs/sql.js/sql-wasm.wasm`;
-            const SQL = await initSqlJs({ locateFile: filename => wasmPath });
+            await initSqlJs({ locateFile: filename => wasmPath });
 
             const u8 = new Uint8Array(buffer);
 

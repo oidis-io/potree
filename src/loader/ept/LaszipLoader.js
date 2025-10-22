@@ -23,7 +23,7 @@ export class EptLaszipLoader {
         const url = `${node.owner.base}/ept-data/${Key.toString(node.key)}.laz`;
         const response = await Fetcher.download(url);
         const buffer = await response.arrayBuffer();
-        this.parse(node, buffer);
+        await this.parse(node, buffer);
     }
 
     async parse(node, compressed) {

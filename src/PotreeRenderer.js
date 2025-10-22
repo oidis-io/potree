@@ -112,7 +112,7 @@ function paramThreeToGL(_gl, p) {
         }
     }
 
-    if (p === UnsignedInt248Type) {
+    if (p === THREE.UnsignedInt248Type) {
         extension = extensions.get("WEBGL_depth_texture");
 
         if (extension !== null) return extension.UNSIGNED_INT_24_8_WEBGL;

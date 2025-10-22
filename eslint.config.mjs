@@ -91,12 +91,13 @@ export default [
         languageOptions: {
             globals: {
                 "$": "readonly",
+                jQuery: "readonly"
             }
         },
         rules: jsRules
     },
     {
-        files: ["gulpfile.js", "rollup.*.js"],
+        files: ["gulpfile.js", "rollup.*.js", "src/tools/*.js"],
         languageOptions: {
             globals: globals.node
         },

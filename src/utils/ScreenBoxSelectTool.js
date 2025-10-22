@@ -137,14 +137,14 @@ export class ScreenBoxSelectTool extends EventDispatcher {
                     pointSizeType: PointSizeType.FIXED,
                     pointSize: 1
                 };
-                let pointsNear = pointcloud.pick(viewer, volCam, ray, pickerSettings);
+                let pointsNear = pointcloud.pick(this.viewer, volCam, ray, pickerSettings);
 
                 volCam.rotateX(Math.PI);
                 volCam.updateMatrix();
                 volCam.updateMatrixWorld();
                 volCam.updateProjectionMatrix();
                 volCam.matrixWorldInverse.copy(volCam.matrixWorld).invert();
-                let pointsFar = pointcloud.pick(viewer, volCam, rayInverse, pickerSettings);
+                let pointsFar = pointcloud.pick(this.viewer, volCam, rayInverse, pickerSettings);
 
                 allPointsNear.push(...pointsNear);
                 allPointsFar.push(...pointsFar);
@@ -171,7 +171,7 @@ export class ScreenBoxSelectTool extends EventDispatcher {
         this.addEventListener("drag", drag);
         this.addEventListener("drop", drop);
 
-        viewer.inputHandler.addInputListener(this);
+        this.viewer.inputHandler.addInputListener(this);
 
         return volume;
     }

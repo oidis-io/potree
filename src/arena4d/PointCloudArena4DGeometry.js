@@ -13,6 +13,7 @@ import * as THREE from "../../libs/three.js/build/three.module.js";
 import { EventDispatcher } from "../EventDispatcher.js";
 import { XHRFactory } from "../XHRFactory.js";
 import PotreeConfig from "../PotreeConfig.js";
+import { PointAttributes } from "../loader/PointAttributes.js";
 
 export class PointCloudArena4DGeometryNode {
     constructor() {

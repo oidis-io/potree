@@ -13,7 +13,10 @@ import { WorkerPool } from "./WorkerPool.js";
 
 const PotreeSingleton = {
     workerPool: new WorkerPool(),
-    lru: new LRU()
+    lru: new LRU(),
+    resolveQueries: () => {
+        // TODO(mkelnar) no code found?
+    }
 };
 
 export default PotreeSingleton;

@@ -203,7 +203,7 @@ export class ProfilePanel extends MeasurePanel {
 
         let handle = null;
         {
-            let url = `${viewer.server}/create_regions_filter?pointclouds=[${pointcloudsArg}]&regions=[${regionsArg}]`;
+            let url = `${this.viewer.server}/create_regions_filter?pointclouds=[${pointcloudsArg}]&regions=[${regionsArg}]`;
 
             info("estimating results ...");
 
@@ -219,7 +219,7 @@ export class ProfilePanel extends MeasurePanel {
         }
 
         {
-            let url = `${viewer.server}/check_regions_filter?handle=${handle}`;
+            let url = `${this.viewer.server}/check_regions_filter?handle=${handle}`;
 
             let sleep = (function (duration) {
                 return new Promise((res, rej) => {
@@ -243,12 +243,12 @@ export class ProfilePanel extends MeasurePanel {
                 message += "<ul>";
 
                 for (let i = 0; i < jsResponse.pointclouds.length; i++) {
-                    let url = `${viewer.server}/download_regions_filter_result?handle=${handle}&index=${i}`;
+                    let url = `${this.viewer.server}/download_regions_filter_result?handle=${handle}&index=${i}`;
 
                     message += `<li><a href="${url}">result_${i}.las</a> </li>\n`;
                 }
 
-                let reportURL = `${viewer.server}/download_regions_filter_report?handle=${handle}`;
+                let reportURL = `${this.viewer.server}/download_regions_filter_report?handle=${handle}`;
                 message += `<li> <a href="${reportURL}">report.json</a> </li>\n`;
                 message += "</ul>";
 

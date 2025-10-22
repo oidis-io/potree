@@ -9,7 +9,8 @@
  *
  * ********************************************************************************************************* */
 
-// importScripts('/libs/ept/ParseBuffer.js');
+import { parseEpt } from "../../libs/ept/ParseBuffer.js";
+
 onmessage = function (event) {
     parseEpt(event);
 };

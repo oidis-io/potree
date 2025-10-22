@@ -118,7 +118,7 @@ export class Images360 extends EventDispatcher {
         previousView = {
             controls: this.viewer.controls,
             position: this.viewer.scene.view.position.clone(),
-            target: viewer.scene.view.getPivot(),
+            target: this.viewer.scene.view.getPivot(),
         };
 
         this.viewer.setControls(this.viewer.orbitControls);
@@ -151,11 +151,11 @@ export class Images360 extends EventDispatcher {
         this.sphere.position.set(...image360.position);
 
         let target = new THREE.Vector3(...image360.position);
-        let dir = target.clone().sub(viewer.scene.view.position).normalize();
+        let dir = target.clone().sub(this.viewer.scene.view.position).normalize();
         let move = dir.multiplyScalar(0.000001);
         let newCamPos = target.clone().sub(move);
 
-        viewer.scene.view.setView(
+        this.viewer.scene.view.setView(
             newCamPos,
             target,
             500
@@ -183,10 +183,10 @@ export class Images360 extends EventDispatcher {
         this.sphere.material.needsUpdate = true;
         this.sphere.visible = false;
 
-        viewer.orbitControls.doubleClockZoomEnabled = true;
-        viewer.setControls(previousView.controls);
+        this.viewer.orbitControls.doubleClockZoomEnabled = true;
+        this.viewer.setControls(previousView.controls);
 
-        viewer.scene.view.setView(
+        this.viewer.scene.view.setView(
             previousView.position,
             previousView.target,
             500
@@ -208,9 +208,9 @@ export class Images360 extends EventDispatcher {
     }
 
     handleHovering() {
-        let mouse = viewer.inputHandler.mouse;
-        let camera = viewer.scene.getActiveCamera();
-        let domElement = viewer.renderer.domElement;
+        let mouse = this.viewer.inputHandler.mouse;
+        let camera = this.viewer.scene.getActiveCamera();
+        let domElement = this.viewer.renderer.domElement;
 
         let ray = Utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);
 

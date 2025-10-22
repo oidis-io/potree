@@ -49,6 +49,7 @@ import PotreeConfig from "../PotreeConfig.js";
 import { loadProject } from "./LoadProject.js";
 import { GeoPackageLoader } from "../loader/GeoPackageLoader.js";
 import { updatePointClouds } from "../Potree_update_visibility.js";  // TODO(mkelnar) refactor
+import PotreeRefs from "../PotreeRefs.js";
 
 export class Viewer extends EventDispatcher {
     constructor(domElement, args = {}) {
@@ -787,7 +788,7 @@ export class Viewer extends EventDispatcher {
     }
 
     moveToGpsTimeVicinity(time) {
-        const result = Utils.findClosestGpsTime(time, viewer);
+        const result = Utils.findClosestGpsTime(time, this.viewer);
 
         const box = result.node.pointcloud.deepestNodeAt(result.position).getBoundingBox();
         const diameter = box.min.distanceTo(box.max);
@@ -918,7 +919,7 @@ export class Viewer extends EventDispatcher {
         this.scene.cameraMode = mode;
 
         for (let pointcloud of this.scene.pointclouds) {
-            pointcloud.material.useOrthographicCamera = mode == CameraMode.ORTHOGRAPHIC;
+            pointcloud.material.useOrthographicCamera = mode === CameraMode.ORTHOGRAPHIC;
         }
     }
 
@@ -939,12 +940,12 @@ export class Viewer extends EventDispatcher {
         const json = JSON5.parse(text);
 
         if (json.type === "Potree") {
-            await loadProject(viewer, json);
+            await loadProject(this.viewer, json);
         }
     }
 
     saveProject() {
-        return saveProject(this);
+        return SaveProject.saveProject(this);
     }
 
     loadSettingsFromURL() {
@@ -1249,14 +1250,14 @@ export class Viewer extends EventDispatcher {
                         const json = JSON5.parse(text);
 
                         if (json.type === "Potree") {
-                            loadProject(viewer, json);
+                            await loadProject(this.viewer, json);
                         }
                     } catch (e) {
                         console.error("failed to parse the dropped file as JSON");
                         console.error(e);
                     }
                 } else if (isGeoPackage) {
-                    const hasPointcloud = viewer.scene.pointclouds.length > 0;
+                    const hasPointcloud = this.viewer.scene.pointclouds.length > 0;
 
                     if (!hasPointcloud) {
                         let msg = "At least one point cloud is needed that specifies the ";
@@ -1275,7 +1276,7 @@ export class Viewer extends EventDispatcher {
                         };
 
                         const geo = await GeoPackageLoader.loadBuffer(buffer, params);
-                        viewer.scene.addGeopackage(geo);
+                        this.viewer.scene.addGeopackage(geo);
                     }
                 }
             }
@@ -1715,13 +1716,13 @@ export class Viewer extends EventDispatcher {
         let makeCam = this.vrControls.getCamera.bind(this.vrControls);
 
         { // clear framebuffer
-            if (viewer.background === "skybox") {
+            if (this.viewer.background === "skybox") {
                 renderer.setClearColor(0xff0000, 1);
-            } else if (viewer.background === "gradient") {
+            } else if (this.viewer.background === "gradient") {
                 renderer.setClearColor(0x112233, 1);
-            } else if (viewer.background === "black") {
+            } else if (this.viewer.background === "black") {
                 renderer.setClearColor(0x000000, 1);
-            } else if (viewer.background === "white") {
+            } else if (this.viewer.background === "white") {
                 renderer.setClearColor(0xFFFFFF, 1);
             } else {
                 renderer.setClearColor(0x000000, 0);
@@ -1773,8 +1774,8 @@ export class Viewer extends EventDispatcher {
             cam.position.z -= 0.8 * cam.scale.x;
             cam.parent = null;
             // cam.near = 0.05;
-            cam.near = viewer.scene.getActiveCamera().near;
-            cam.far = viewer.scene.getActiveCamera().far;
+            cam.near = this.viewer.scene.getActiveCamera().near;
+            cam.far = this.viewer.scene.getActiveCamera().far;
             cam.updateMatrix();
             cam.updateMatrixWorld();
 
@@ -1938,7 +1939,7 @@ export class Viewer extends EventDispatcher {
                 }
 
                 // TODO(mkelnar) find method
-                let glQueries = resolveQueries(this.renderer.getContext());
+                let glQueries = PotreeRefs.resolveQueries(this.renderer.getContext());
                 for (let [key, value] of glQueries) {
                     let group = {
                         measures: value.map(v => {

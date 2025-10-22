@@ -11,7 +11,6 @@
 
 import { PointCloudTreeNode } from "./PointCloudTree.js";
 import { PointAttribute, PointAttributeTypes, PointAttributes } from "./loader/PointAttributes.js";
-import * as THREE from "../libs/three.js/build/three.module.js";
 import { Fetcher } from "./utils/Fetcher.js";
 import PotreeConfig from "./PotreeConfig.js";
 import { CopcLaszipLoader, EptLaszipLoader } from "./loader/ept/LaszipLoader.js";
@@ -66,12 +65,7 @@ class U {
 }
 
 class BaseGeometry {
-    constructor({
-        cube,
-        boundsConforming,
-        spacing,
-        srs,
-    }) {
+    constructor({ cube, boundsConforming, spacing, srs }) {
         this.cube = cube;
 
         this.boundingBox = U.toBox3(cube);
