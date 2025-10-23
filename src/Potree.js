@@ -178,7 +178,9 @@ Potree.workerPool = PotreeRefs.workerPool;
 Potree.loadPointCloud = PotreeConfig.loadPointCloud;
 
 (function ($) {
-    if (!$) return;
+    if (!$) {
+        return;
+    }
     $.fn.extend({
         selectgroup: function (args = {}) {
             // Original implementation preserved

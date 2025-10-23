@@ -267,7 +267,9 @@ export class PointCloudArena4D extends PointCloudTree {
     updateMatrixWorld(force) {
         // node.matrixWorld.multiplyMatrices( node.parent.matrixWorld, node.matrix );
 
-        if (this.matrixAutoUpdate === true) this.updateMatrix();
+        if (this.matrixAutoUpdate === true) {
+            this.updateMatrix();
+        }
 
         if (this.matrixWorldNeedsUpdate === true || force === true) {
             if (this.parent === undefined) {
@@ -512,7 +514,9 @@ export class PointCloudArena4D extends PointCloudTree {
     }
 
     computeVisibilityTextureData(nodes) {
-        if (PotreeConfig.measureTimings) performance.mark("computeVisibilityTextureData-start");
+        if (PotreeConfig.measureTimings) {
+            performance.mark("computeVisibilityTextureData-start");
+        }
 
         let data = new Uint8Array(nodes.length * 3);
         let visibleNodeTextureOffsets = new Map();
@@ -526,9 +530,15 @@ export class PointCloudArena4D extends PointCloudTree {
             let lb = b.geometryNode.level;
             let na = a.geometryNode.number;
             let nb = b.geometryNode.number;
-            if (la !== lb) return la - lb;
-            if (na < nb) return -1;
-            if (na > nb) return 1;
+            if (la !== lb) {
+                return la - lb;
+            }
+            if (na < nb) {
+                return -1;
+            }
+            if (na > nb) {
+                return 1;
+            }
             return 0;
         };
         nodes.sort(sort);

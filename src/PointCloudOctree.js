@@ -309,7 +309,9 @@ export class PointCloudOctree extends PointCloudTree {
     }
 
     computeVisibilityTextureData(nodes, camera) {
-        if (PotreeConfig.measureTimings) performance.mark("computeVisibilityTextureData-start");
+        if (PotreeConfig.measureTimings) {
+            performance.mark("computeVisibilityTextureData-start");
+        }
 
         let data = new Uint8Array(nodes.length * 4);
         let visibleNodeTextureOffsets = new Map();
@@ -320,9 +322,15 @@ export class PointCloudOctree extends PointCloudTree {
         let sort = function (a, b) {
             let na = a.geometryNode.name;
             let nb = b.geometryNode.name;
-            if (na.length !== nb.length) return na.length - nb.length;
-            if (na < nb) return -1;
-            if (na > nb) return 1;
+            if (na.length !== nb.length) {
+                return na.length - nb.length;
+            }
+            if (na < nb) {
+                return -1;
+            }
+            if (na > nb) {
+                return 1;
+            }
             return 0;
         };
         nodes.sort(sort);
@@ -442,7 +450,9 @@ export class PointCloudOctree extends PointCloudTree {
     }
 
     updateMatrixWorld(force) {
-        if (this.matrixAutoUpdate === true) this.updateMatrix();
+        if (this.matrixAutoUpdate === true) {
+            this.updateMatrix();
+        }
 
         if (this.matrixWorldNeedsUpdate === true || force === true) {
             if (!this.parent) {

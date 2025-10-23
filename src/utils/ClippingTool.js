@@ -72,7 +72,9 @@ export class ClippingTool extends EventDispatcher {
     startInsertion(args = {}) {
         let type = args.type || null;
 
-        if (!type) return null;
+        if (!type) {
+            return null;
+        }
 
         let domElement = this.viewer.renderer.domElement;
         let canvasSize = this.viewer.renderer.getSize(new THREE.Vector2());

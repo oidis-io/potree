@@ -23,6 +23,8 @@ const jsRules = {
         "ignoreGlobals": true,
         "ignoreDestructuring": true
     }],
+    curly: ["error", "all"],
+    "brace-style": ["error", "1tbs", { allowSingleLine: false }],
     "no-var": "error",
     "no-extra-semi": "error",
     "no-multiple-empty-lines": ["error", { "max": 1, "maxEOF": 0 }],

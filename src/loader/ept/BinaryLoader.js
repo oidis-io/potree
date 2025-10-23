@@ -24,7 +24,9 @@ export class EptBinaryLoader {
     }
 
     load(node) {
-        if (node.loaded) return;
+        if (node.loaded) {
+            return;
+        }
 
         let url = node.url() + this.extension();
 

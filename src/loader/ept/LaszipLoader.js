@@ -16,7 +16,9 @@ import PotreeRefs from "../../PotreeRefs.js";
 
 export class EptLaszipLoader {
     async load(node) {
-        if (node.loaded) return;
+        if (node.loaded) {
+            return;
+        }
 
         const { Key } = window.Copc;
 
@@ -38,7 +40,9 @@ export class EptLaszipLoader {
             const vlrs = await Las.Vlr.walk(get, header);
             let eb = [];
             const ebVlr = Las.Vlr.find(vlrs, "LASF_Spec", 4);
-            if (ebVlr) eb = Las.ExtraBytes.parse(await Las.Vlr.fetch(get, ebVlr));
+            if (ebVlr) {
+                eb = Las.ExtraBytes.parse(await Las.Vlr.fetch(get, ebVlr));
+            }
 
             const message = {
                 isFullFile: true,
@@ -57,7 +61,9 @@ export class EptLaszipLoader {
 
 export class CopcLaszipLoader {
     async load(node) {
-        if (node.loaded) return;
+        if (node.loaded) {
+            return;
+        }
 
         // There are utilities to do all of this in one async call via copc.js,
         // however we must split things out a bit to accommodate the expensive
@@ -70,7 +76,9 @@ export class CopcLaszipLoader {
         // Note that COPC explicitly allows nodes to exist with no data.  They
         // may have children, but there is no point cloud data.  Make sure we
         // don't try to fetch a slice of point data in this case.
-        if (!pointCount) return this.parse(node, new ArrayBuffer());
+        if (!pointCount) {
+            return this.parse(node, new ArrayBuffer());
+        }
         const compressed = await node.owner.getter(
             pointDataOffset,
             pointDataOffset + pointDataLength);

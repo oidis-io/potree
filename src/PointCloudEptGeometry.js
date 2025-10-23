@@ -29,7 +29,9 @@ class U {
 
     static findDim(schema, name) {
         let dim = schema.find((dim) => dim.name == name);
-        if (!dim) throw new Error("Failed to find " + name + " in schema");
+        if (!dim) {
+            throw new Error("Failed to find " + name + " in schema");
+        }
         return dim;
     }
 
@@ -45,9 +47,15 @@ class U {
             let mask = 1 << shift;
             let step = 0;
 
-            if (x & mask) step += 4;
-            if (y & mask) step += 2;
-            if (z & mask) step += 1;
+            if (x & mask) {
+                step += 4;
+            }
+            if (y & mask) {
+                step += 2;
+            }
+            if (z & mask) {
+                step += 1;
+            }
 
             name += step;
         }
@@ -140,7 +148,9 @@ export class PointCloudEptGeometry extends BaseGeometry {
             if (authority && horizontal) {
                 srs = U.maybeSrs(`${authority}:${horizontal}`);
             }
-            if (!srs && wkt) srs = U.maybeSrs(wkt);
+            if (!srs && wkt) {
+                srs = U.maybeSrs(wkt);
+            }
         }
 
         return { cube, boundsConforming, spacing, srs };
@@ -254,13 +264,19 @@ export class PointCloudCopcGeometryNode extends PointCloudTreeNode {
     }
 
     async load() {
-        if (this.loaded || this.loading) return;
-        if (PotreeConfig.numNodesLoading >= PotreeConfig.maxNodesLoading) return;
+        if (this.loaded || this.loading) {
+            return;
+        }
+        if (PotreeConfig.numNodesLoading >= PotreeConfig.maxNodesLoading) {
+            return;
+        }
 
         this.loading = true;
         ++PotreeConfig.numNodesLoading;
 
-        if (!this.nodeinfo) await this.loadHierarchy();
+        if (!this.nodeinfo) {
+            await this.loadHierarchy();
+        }
         this.loadPoints();
     }
 
@@ -296,7 +312,9 @@ export class PointCloudCopcGeometryNode extends PointCloudTreeNode {
 
             let parentName = Key.toString(Key.up(key));
             let parentNode = nodemap[parentName];
-            if (!parentNode) return;
+            if (!parentNode) {
+                return;
+            }
             parentNode.hasChildren = true;
 
             const bounds = Bounds.step(parentNode.bounds, step);
@@ -309,7 +327,9 @@ export class PointCloudCopcGeometryNode extends PointCloudTreeNode {
 
             // For data nodes, add their point data offset/point counts.
             const nodeinfo = nodes[keyname];
-            if (nodeinfo) node.nodeinfo = nodeinfo;
+            if (nodeinfo) {
+                node.nodeinfo = nodeinfo;
+            }
 
             // And for leaf nodes whose data is in a different hierarchy page,
             // store the info for the hierarchy page in our page map.  This is

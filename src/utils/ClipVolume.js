@@ -208,7 +208,9 @@ export class ClipVolume extends THREE.Object3D {
         let axis = args.axis || null;
         let dir = args.dir || null;
 
-        if (!cs || !axis || !dir) return;
+        if (!cs || !axis || !dir) {
+            return;
+        }
 
         if (axis === "x") {
             if (cs === "local") {
@@ -238,7 +240,9 @@ export class ClipVolume extends THREE.Object3D {
         let axis = args.axis || null;
         let dir = args.dir || null;
 
-        if (!cs || !axis || !dir) return;
+        if (!cs || !axis || !dir) {
+            return;
+        }
 
         if (cs === "local") {
             if (axis === "x") {

@@ -775,12 +775,16 @@ export class Viewer extends EventDispatcher {
             .onUpdate(() => {
                 view.yaw = obj.yaw;
                 view.pitch = obj.pitch;
-                if (view._updateCamera) view._updateCamera();
+                if (view._updateCamera) {
+                    view._updateCamera();
+                }
             })
             .onComplete(() => {
                 view.yaw = endYaw;
                 view.pitch = endPitch;
-                if (view._updateCamera) view._updateCamera();
+                if (view._updateCamera) {
+                    view._updateCamera();
+                }
                 this.dispatchEvent({ type: "focusing_finished", target: this });
             })
             .start();
@@ -843,7 +847,9 @@ export class Viewer extends EventDispatcher {
     }
 
     setView(view) {
-        if (!view) return;
+        if (!view) {
+            return;
+        }
 
         switch (view) {
             case "F":
@@ -1459,7 +1465,9 @@ export class Viewer extends EventDispatcher {
     }
 
     update(delta, timestamp) {
-        if (PotreeConfig.measureTimings) performance.mark("update-start");
+        if (PotreeConfig.measureTimings) {
+            performance.mark("update-start");
+        }
 
         this.dispatchEvent({
             type: "update_start",
@@ -1885,7 +1893,9 @@ export class Viewer extends EventDispatcher {
     }
 
     render() {
-        if (PotreeConfig.measureTimings) performance.mark("render-start");
+        if (PotreeConfig.measureTimings) {
+            performance.mark("render-start");
+        }
 
         try {
             const vrActive = this.renderer.xr.isPresenting;
