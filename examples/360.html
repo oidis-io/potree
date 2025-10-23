@@ -1,6 +1,7 @@
 <!--
 
  Copyright 2011-2020 Markus Schütz
+ Copyright 2025 Oidis
 
  SPDX-License-Identifier: BSD-2-Clause
  The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -36,50 +37,49 @@
 	<script src="../../libs/jstree/jstree.js"></script>
 	<script src="../../build/potree/potree.js"></script>
 	<script src="../../libs/plasio/js/laslaz.js"></script>
-	
-	
+
 	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
 		<div id="potree_render_area" style="background-image: url('../../build/potree/resources/images/background.jpg');">
-		
+
 		</div>
 		<div id="potree_sidebar_container"> </div>
 	</div>
-	
+
 	<script type="module">
 
 	import * as THREE from "../libs/three.js/build/three.module.js";
-	
+
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
-		
-		viewer.setEDLEnabled(true);
-		viewer.setFOV(60);
-		viewer.setPointBudget(2_000_000);
-		viewer.loadSettingsFromURL();
-		viewer.setDescription(`Mobile LIDAR with 360 degree image overlays. 
+
+    window.viewer.setEDLEnabled(true);
+    window.viewer.setFOV(60);
+    window.viewer.setPointBudget(2_000_000);
+    window.viewer.loadSettingsFromURL();
+    window.viewer.setDescription(`Mobile LIDAR with 360 degree image overlays.
 		Click on a sphere to enter 360 view. Click "unfocus" to leave 360 view. <br>
 		Point cloud courtesy of <a href="http://www.helimap.com/">Helimap System SA</a>. Images were downsized for this online demo; Original size is 8000x400.`);
-		
-		viewer.loadGUI(() => {
-			viewer.setLanguage('en');
+
+    window.viewer.loadGUI(() => {
+        window.viewer.setLanguage('en');
 			$("#menu_appearance").next().show();
-			viewer.toggleSidebar();
+        window.viewer.toggleSidebar();
 		});
-		
+
 		// Load and add point cloud to scene
 		Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/helimap/360/MLS_drive1/cloud.js", "MLS", e => {
-			let scene = viewer.scene;
+			let scene = window.viewer.scene;
 			let pointcloud = e.pointcloud;
-			
+
 			let material = pointcloud.material;
 			material.size = 0.5;
 			material.minSize = 2.0;
 			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 			material.shape = Potree.PointShape.SQUARE;
 			material.activeAttributeName = "rgba";
-			
+
 			scene.addPointCloud(pointcloud);
 
-			viewer.scene.view.setView(
+            window.viewer.scene.view.setView(
 				[2652381.103, 1249049.447, 411.636],
 				[2652364.407, 1249077.205, 399.696],
 			);
@@ -90,7 +90,7 @@
 		async function run(){
 
 			proj4.defs("WGS84", "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs");
-			proj4.defs("pointcloud", viewer.getProjection());
+			proj4.defs("pointcloud", window.viewer.getProjection());
 			let transform = proj4("WGS84", "pointcloud");
 
 			let params = {
@@ -99,17 +99,12 @@
 
 			// this file contains coordinates, orientation and filenames of the images:
 			// http://5.9.65.151/mschuetz/potree/resources/pointclouds/helimap/360/Drive2_selection/coordinates.txt
-			Potree.Images360Loader.load("http://5.9.65.151/mschuetz/potree/resources/pointclouds/helimap/360/Drive2_selection", viewer, params).then( images => {
-				viewer.scene.add360Images(images);
+			Potree.Images360Loader.load("http://5.9.65.151/mschuetz/potree/resources/pointclouds/helimap/360/Drive2_selection", window.viewer, params).then( images => {
+                window.viewer.scene.add360Images(images);
 			});
 
-			viewer.mapView.showSources(false);
+            window.viewer.mapView.showSources(false);
 		}
-
-
-		
 	</script>
-	
-	
   </body>
 </html>

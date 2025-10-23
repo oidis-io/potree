@@ -33,6 +33,16 @@ import PotreeRefs from "./PotreeRefs.js";
 import { PointCloudArena4DGeometry } from "./arena4d/PointCloudArena4DGeometry.js";
 import { PointCloudArena4D } from "./arena4d/PointCloudArena4D.js";
 import { Fetcher } from "./utils/Fetcher.js";
+import { Profile } from "./utils/Profile.js";
+import { Measure } from "./utils/Measure.js";
+import { Annotation } from "./Annotation.js";
+import { BoxVolume, Volume } from "./utils/Volume.js";
+import { Scene } from "./viewer/Scene.js";
+import { Images360Loader } from "./modules/Images360/Images360.js";
+import { AnimationPath } from "./AnimationPath.js";
+import { CameraAnimation } from "./modules/CameraAnimation/CameraAnimation.js";
+import { SpotLightHelper } from "./utils/SpotLightHelper.js";
+import { ShapefileLoader } from "./loader/ShapefileLoader.js";
 
 const Potree = {
     OrbitControls,
@@ -54,6 +64,17 @@ const Potree = {
     TextSprite,
     Viewer,
     Fetcher,
+    Profile,
+    Measure,
+    Annotation,
+    BoxVolume,
+    Scene,
+    Images360Loader,
+    AnimationPath,
+    CameraAnimation,
+    SpotLightHelper,
+    ShapefileLoader,
+    Volume,
     pointBudget: PotreeConfig.pointBudget,
     framenumber: PotreeConfig.framenumber,
     numNodesLoading: PotreeConfig.numNodesLoading,

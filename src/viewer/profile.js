@@ -34,8 +34,6 @@ function copyMaterial(source, target) {
 
     target.activeAttributeName = source.activeAttributeName;
     target.ranges = source.ranges;
-
-    // target.updateShaderSource();
 }
 
 class Batch {
@@ -65,9 +63,7 @@ class ProfileFakeOctree extends PointCloudTree {
         this.points = [];
         this.visibleNodes = [];
 
-        // this.material = this.trueOctree.material;
         this.material = new PointCloudMaterial();
-        // this.material.copy(this.trueOctree.material);
         copyMaterial(this.trueOctree.material, this.material);
         this.material.pointSizeType = PointSizeType.FIXED;
 
@@ -127,7 +123,7 @@ class ProfileFakeOctree extends PointCloudTree {
             }
 
             truePos.set(
-                data.data.position[3 * i + 0] + this.trueOctree.position.x,
+                data.data.position[3 * i] + this.trueOctree.position.x,
                 data.data.position[3 * i + 1] + this.trueOctree.position.y,
                 data.data.position[3 * i + 2] + this.trueOctree.position.z,
             );
@@ -154,7 +150,7 @@ class ProfileFakeOctree extends PointCloudTree {
             {
                 let position = geometry.attributes.position;
 
-                position.array[3 * index + 0] = x;
+                position.array[3 * index] = x;
                 position.array[3 * index + 1] = y;
                 position.array[3 * index + 2] = z;
             }
@@ -241,7 +237,6 @@ export class ProfileWindow extends EventDispatcher {
         this.projectedBox = new THREE.Box3();
         this.pointclouds = new Map();
         this.numPoints = 0;
-        this.lastAddPointsTimestamp = undefined;
 
         this.mouse = new THREE.Vector2(0, 0);
         this.scale = new THREE.Vector3(1, 1, 1);
@@ -415,8 +410,6 @@ export class ProfileWindow extends EventDispatcher {
                     }
                     html += "</table>";
                     info.html(html);
-
-                    this.selectedPoint = point;
                 } else {
                     this.viewer.scene.scene.add(this.viewerPickSphere);
 
@@ -479,7 +472,7 @@ export class ProfileWindow extends EventDispatcher {
                     let truePointPosition = new Float64Array(originPos);
                     for (let i = 0; i < pointSet.numPoints; i++) {
                         if (truePosition === true) {
-                            truePointPosition[3 * i + 0] += pointcloud.position.x;
+                            truePointPosition[3 * i] += pointcloud.position.x;
                             truePointPosition[3 * i + 1] += pointcloud.position.y;
                         }
 
@@ -735,11 +728,7 @@ export class ProfileWindow extends EventDispatcher {
             let center = this.projectedBox.getCenter(new THREE.Vector3());
             this.scale.set(scale, scale, 1);
             this.camera.position.copy(center);
-
-            // console.log("camera: ", this.camera.position.toArray().join(", "));
         }
-
-        // console.log(entry);
 
         this.render();
 
@@ -1032,7 +1021,6 @@ export class ProfileWindowController {
     cancel() {
         for (let request of this.requests) {
             request.cancel();
-            // request.finishLevelThenCancel();
         }
 
         this.requests = [];
