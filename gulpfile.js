@@ -132,8 +132,21 @@ gulp.task("archive", async () => {
 
 gulp.task("webserver", gulp.series(async function () {
     connect.server({
+        root: ".",
         port: 1234,
         https: false,
+        middleware: function() {
+            return [
+                function(req, res, next) {
+                    if (req.url === "/") {
+                        res.writeHead(302, { "Location": "/examples/" });
+                        res.end();
+                    } else {
+                        next();
+                    }
+                }
+            ];
+        }
     });
 }));
 
