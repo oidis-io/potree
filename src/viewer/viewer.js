@@ -21,7 +21,7 @@ import { ClippingTool } from "../utils/ClippingTool.js";
 import { TransformationTool } from "../utils/TransformationTool.js";
 import { Utils } from "../utils.js";
 import { MapView } from "./map.js";
-import { ProfileWindow, ProfileWindowController } from "./profile.js";
+import { ProfileControl, ProfileControlController, ProfileWindow, ProfileWindowController } from "./profile.js";
 import { BoxVolume } from "../utils/Volume.js";
 import { Features } from "../Features.js";
 import { Message } from "../utils/Message.js";
@@ -57,6 +57,10 @@ export class Viewer extends EventDispatcher {
         super();
 
         this.renderArea = domElement;
+        this.profileRenderArea = null;
+        if (args.profileRenderArea) {
+            this.profileRenderArea = args.profileRenderArea;
+        }
         this.guiLoaded = false;
         this.guiLoadTasks = [];
 
@@ -1195,8 +1199,13 @@ export class Viewer extends EventDispatcher {
 
                 let elProfile = $("<div>").load(new URL(PotreeConfig.scriptPath + "/profile.html").href, () => {
                     $(document.body).append(elProfile.children());
-                    this.profileWindow = new ProfileWindow(this);
-                    this.profileWindowController = new ProfileWindowController(this);
+                    if (this.profileRenderArea) {
+                        this.profileControl = new ProfileControl(this, this.profileRenderArea);
+                        this.profileControlController = new ProfileControlController(this);
+                    } else {
+                        this.profileWindow = new ProfileWindow(this);
+                        this.profileWindowController = new ProfileWindowController(this);
+                    }
 
                     $("#profile_window").draggable({
                         handle: $("#profile_titlebar"),
