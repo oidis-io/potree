@@ -16,7 +16,7 @@ import { XHRFactory } from "../XHRFactory.js";
 import { LasLazLoader } from "./LasLazLoader.js";
 import { BinaryLoader } from "./BinaryLoader.js";
 import { Utils } from "../utils.js";
-import { PointAttribute, PointAttributes, PointAttributeTypes } from "./PointAttributes.js";
+import { PointAttribute, PointAttributeTypes, PointAttributes } from "./PointAttributes.js";
 
 function parseAttributes(cloudjs) {
     let version = new Version(cloudjs.version);
@@ -77,7 +77,6 @@ function parseAttributes(cloudjs) {
             const name = replaceOldNames(jsAttribute.name);
             const type = typeConversion[jsAttribute.type];
             const numElements = jsAttribute.elements;
-            const description = jsAttribute.description;
 
             const attribute = new PointAttribute(name, type, numElements);
 

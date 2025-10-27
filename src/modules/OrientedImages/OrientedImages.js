@@ -12,7 +12,9 @@
 import * as THREE from "../../../libs/three.js/build/three.module.js";
 import { OrientedImageControls } from "./OrientedImageControls.js";
 import { EventDispatcher } from "../../EventDispatcher.js";
-import { Fetcher } from "../../utils/Fetcher";
+import { Fetcher } from "../../utils/Fetcher.js";
+import { PolygonClipVolume } from "../../utils/PolygonClipVolume.js";
+import PotreeConfig from "../../PotreeConfig.js";
 
 // https://support.pix4d.com/hc/en-us/articles/205675256-How-are-yaw-pitch-roll-defined
 // https://support.pix4d.com/hc/en-us/articles/202558969-How-are-omega-phi-kappa-defined
@@ -46,9 +48,9 @@ function createMaterial() {
     `;
     const material = new THREE.ShaderMaterial({
         uniforms: {
-            tColor: {value: new THREE.Texture()},
-            uNear: {value: 0.0},
-            uOpacity: {value: 1.0},
+            tColor: { value: new THREE.Texture() },
+            uNear: { value: 0.0 },
+            uOpacity: { value: 1.0 },
         },
         vertexShader: vertexShader,
         fragmentShader: fragmentShader,
@@ -82,7 +84,7 @@ export class OrientedImage {
         this.fov = 1.0;
 
         const material = createMaterial();
-        const lineMaterial = new THREE.LineBasicMaterial({color: 0x00ff00});
+        const lineMaterial = new THREE.LineBasicMaterial({ color: 0x00ff00 });
         this.mesh = new THREE.Mesh(planeGeometry, material);
         this.line = new THREE.Line(lineGeometry, lineMaterial);
         this.texture = null;
@@ -108,7 +110,7 @@ export class OrientedImage {
     }
 
     updateTransform() {
-        let {mesh, line, fov} = this;
+        let { mesh, line, fov } = this;
 
         mesh.updateMatrixWorld();
         const dir = mesh.getWorldDirection();
@@ -236,13 +238,13 @@ export class OrientedImageLoader {
         const tEnd = performance.now();
         console.log(tEnd - tStart);
 
-        const {width, height} = cameraParams;
+        const { width, height } = cameraParams;
         const orientedImages = [];
         const sceneNode = new THREE.Object3D();
         sceneNode.name = "oriented_images";
 
         for (const params of imageParams) {
-            const {x, y, z, omega, phi, kappa} = params;
+            const { x, y, z, omega, phi, kappa } = params;
 
             let orientedImage = new OrientedImage(params.id);
             let position = [x, y, z];
@@ -260,7 +262,6 @@ export class OrientedImageLoader {
         let clipVolume = null;
 
         const onMouseMove = (evt) => {
-            const tStart = performance.now();
             if (hoveredElement) {
                 hoveredElement.line.material.color.setRGB(0, 1, 0);
             }
@@ -292,7 +293,6 @@ export class OrientedImageLoader {
                 hoveredElement = null;
             }
 
-            let shouldRemoveClipVolume = clipVolume !== null && hoveredElement === null;
             let shouldAddClipVolume = clipVolume === null && hoveredElement !== null;
 
             if (clipVolume !== null && (hoveredElement === null || selectionChanged)) {
@@ -316,13 +316,9 @@ export class OrientedImageLoader {
                     const alpha = THREE.Math.degToRad(fov / 2);
                     const d = 0.5 / Math.tan(alpha);
                     const newCamPos = pos.clone().add(dir.clone().multiplyScalar(d));
-                    const newCamDir = pos.clone().sub(newCamPos);
-                    const newCamTarget = new THREE.Vector3().addVectors(
-                        newCamPos,
-                        newCamDir.clone().multiplyScalar(viewer.getMoveSpeed()));
                     camera.position.copy(newCamPos);
                 }
-                let volume = new Potree.PolygonClipVolume(camera);
+                let volume = new PolygonClipVolume(camera);
                 let m0 = new THREE.Mesh();
                 let m1 = new THREE.Mesh();
                 let m2 = new THREE.Mesh();
@@ -353,7 +349,7 @@ export class OrientedImageLoader {
             if (image.texture === null) {
                 const target = image;
 
-                const tmpImagePath = `${Potree.resourcePath}/images/loading.jpg`;
+                const tmpImagePath = `${PotreeConfig.resourcePath}/images/loading.jpg`;
                 new THREE.TextureLoader().load(tmpImagePath,
                     (texture) => {
                         if (target.texture === null) {
@@ -389,8 +385,7 @@ export class OrientedImageLoader {
 
         viewer.addEventListener("update", () => {
             for (const image of orientedImages) {
-                const world = image.mesh.matrixWorld;
-                const {width, height} = image;
+                const { width, height } = image;
                 const aspect = width / height;
 
                 const camera = viewer.scene.getActiveCamera();
@@ -419,7 +414,7 @@ export class OrientedImageLoader {
         images.imageParams = imageParams;
         images.images = orientedImages;
 
-        Potree.debug.moveToImage = moveToImage;
+        PotreeConfig.debug.moveToImage = moveToImage;
 
         return images;
     }

@@ -12,14 +12,14 @@
 import * as THREE from "../../libs/three.js/build/three.module.js";
 import { GeoJSONExporter } from "../exporter/GeoJSONExporter.js";
 import { DXFExporter } from "../exporter/DXFExporter.js";
-import { Volume, SphereVolume } from "../utils/Volume.js";
+import { SphereVolume, Volume } from "../utils/Volume.js";
 import { PolygonClipVolume } from "../utils/PolygonClipVolume.js";
 import { PropertiesPanel } from "./PropertyPanels/PropertiesPanel.js";
 import { PointCloudTree } from "../PointCloudTree.js";
 import { Profile } from "../utils/Profile.js";
 import { Measure } from "../utils/Measure.js";
 import { Annotation } from "../Annotation.js";
-import { CameraMode, ClipTask, ClipMethod } from "../defines.js";
+import { CameraMode, ClipMethod, ClipTask } from "../defines.js";
 import { ScreenBoxSelectTool } from "../utils/ScreenBoxSelectTool.js";
 import { Utils } from "../utils.js";
 import { CameraAnimation } from "../modules/CameraAnimation/CameraAnimation.js";
@@ -28,6 +28,9 @@ import { OrientedImage } from "../modules/OrientedImages/OrientedImages.js";
 import { Images360 } from "../modules/Images360/Images360.js";
 
 import JSON5 from "../../libs/json5-2.1.3/json5.mjs";
+import PotreeConfig from "../PotreeConfig.js";
+import { Geopackage } from "../loader/GeoPackageLoader.js";
+import { saveProject } from "./SaveProject.js";
 
 export class Sidebar {
     constructor(viewer) {
@@ -63,13 +66,13 @@ export class Sidebar {
         this.initClippingTool();
         this.initSettings();
 
-        $("#potree_version_number").html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
+        $("#potree_version_number").html(PotreeConfig.version.major + "." + PotreeConfig.version.minor + PotreeConfig.version.suffix);
     }
 
     initToolbar() {
         let elToolbar = $("#tools");
         elToolbar.append(this.createToolIcon(
-            Potree.resourcePath + "/icons/angle.png",
+            PotreeConfig.resourcePath + "/icons/angle.png",
             "[title]tt.angle_measurement",
             () => {
                 $("#menu_measurements").next().slideDown();
@@ -90,7 +93,7 @@ export class Sidebar {
         ));
 
         elToolbar.append(this.createToolIcon(
-            Potree.resourcePath + "/icons/point.svg",
+            PotreeConfig.resourcePath + "/icons/point.svg",
             "[title]tt.point_measurement",
             () => {
                 $("#menu_measurements").next().slideDown();
@@ -112,7 +115,7 @@ export class Sidebar {
         ));
 
         elToolbar.append(this.createToolIcon(
-            Potree.resourcePath + "/icons/distance.svg",
+            PotreeConfig.resourcePath + "/icons/distance.svg",
             "[title]tt.distance_measurement",
             () => {
                 $("#menu_measurements").next().slideDown();
@@ -132,7 +135,7 @@ export class Sidebar {
 
         // HEIGHT
         elToolbar.append(this.createToolIcon(
-            Potree.resourcePath + "/icons/height.svg",
+            PotreeConfig.resourcePath + "/icons/height.svg",
             "[title]tt.height_measurement",
             () => {
                 $("#menu_measurements").next().slideDown();
@@ -153,7 +156,7 @@ export class Sidebar {
         ));
 
         elToolbar.append(this.createToolIcon(
-            Potree.resourcePath + "/icons/circle.svg",
+            PotreeConfig.resourcePath + "/icons/circle.svg",
             "[title]tt.circle_measurement",
             () => {
                 $("#menu_measurements").next().slideDown();
@@ -176,7 +179,7 @@ export class Sidebar {
         ));
 
         elToolbar.append(this.createToolIcon(
-            Potree.resourcePath + "/icons/azimuth.svg",
+            PotreeConfig.resourcePath + "/icons/azimuth.svg",
             "Azimuth",
             () => {
                 $("#menu_measurements").next().slideDown();
@@ -200,7 +203,7 @@ export class Sidebar {
         ));
 
         elToolbar.append(this.createToolIcon(
-            Potree.resourcePath + "/icons/area.svg",
+            PotreeConfig.resourcePath + "/icons/area.svg",
             "[title]tt.area_measurement",
             () => {
                 $("#menu_measurements").next().slideDown();
@@ -219,7 +222,7 @@ export class Sidebar {
         ));
 
         elToolbar.append(this.createToolIcon(
-            Potree.resourcePath + "/icons/volume.svg",
+            PotreeConfig.resourcePath + "/icons/volume.svg",
             "[title]tt.volume_measurement",
             () => {
                 let volume = this.volumeTool.startInsertion();
@@ -232,10 +235,10 @@ export class Sidebar {
         ));
 
         elToolbar.append(this.createToolIcon(
-            Potree.resourcePath + "/icons/sphere_distances.svg",
+            PotreeConfig.resourcePath + "/icons/sphere_distances.svg",
             "[title]tt.volume_measurement",
             () => {
-                let volume = this.volumeTool.startInsertion({type: SphereVolume});
+                let volume = this.volumeTool.startInsertion({ type: SphereVolume });
 
                 let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
                 let jsonNode = measurementsRoot.children.find(child => child.data.uuid === volume.uuid);
@@ -245,7 +248,7 @@ export class Sidebar {
         ));
 
         elToolbar.append(this.createToolIcon(
-            Potree.resourcePath + "/icons/profile.svg",
+            PotreeConfig.resourcePath + "/icons/profile.svg",
             "[title]tt.height_profile",
             () => {
                 $("#menu_measurements").next().slideDown();
@@ -259,7 +262,7 @@ export class Sidebar {
         ));
 
         elToolbar.append(this.createToolIcon(
-            Potree.resourcePath + "/icons/annotation.svg",
+            PotreeConfig.resourcePath + "/icons/annotation.svg",
             "[title]tt.annotation",
             () => {
                 $("#menu_measurements").next().slideDown();
@@ -274,7 +277,7 @@ export class Sidebar {
 
         // REMOVE ALL
         elToolbar.append(this.createToolIcon(
-            Potree.resourcePath + "/icons/reset_tools.svg",
+            PotreeConfig.resourcePath + "/icons/reset_tools.svg",
             "[title]tt.remove_all_measurement",
             () => {
                 this.viewer.scene.removeAllMeasurements();
@@ -283,7 +286,7 @@ export class Sidebar {
 
         { // SHOW / HIDE Measurements
             let elShow = $("#measurement_options_show");
-            elShow.selectgroup({title: "Show/Hide labels"});
+            elShow.selectgroup({ title: "Show/Hide labels" });
 
             elShow.find("input").click((e) => {
                 const show = e.target.value === "SHOW";
@@ -303,9 +306,9 @@ export class Sidebar {
         {
             let elExport = elScene.next().find("#scene_export");
 
-            let geoJSONIcon = `${Potree.resourcePath}/icons/file_geojson.svg`;
-            let dxfIcon = `${Potree.resourcePath}/icons/file_dxf.svg`;
-            let potreeIcon = `${Potree.resourcePath}/icons/file_potree.svg`;
+            let geoJSONIcon = `${PotreeConfig.resourcePath}/icons/file_geojson.svg`;
+            let dxfIcon = `${PotreeConfig.resourcePath}/icons/file_dxf.svg`;
+            let potreeIcon = `${PotreeConfig.resourcePath}/icons/file_potree.svg`;
 
             elExport.append(`
                 Export: <br>
@@ -322,7 +325,7 @@ export class Sidebar {
                 if (measurements.length > 0) {
                     let geoJson = GeoJSONExporter.toString(measurements);
 
-                    let url = window.URL.createObjectURL(new Blob([geoJson], {type: "data:application/octet-stream"}));
+                    let url = window.URL.createObjectURL(new Blob([geoJson], { type: "data:application/octet-stream" }));
                     elDownloadJSON.attr("href", url);
                 } else {
                     this.viewer.postError("no measurements to export");
@@ -338,7 +341,7 @@ export class Sidebar {
                 if (measurements.length > 0) {
                     let dxf = DXFExporter.toString(measurements);
 
-                    let url = window.URL.createObjectURL(new Blob([dxf], {type: "data:application/octet-stream"}));
+                    let url = window.URL.createObjectURL(new Blob([dxf], { type: "data:application/octet-stream" }));
                     elDownloadDXF.attr("href", url);
                 } else {
                     this.viewer.postError("no measurements to export");
@@ -348,10 +351,10 @@ export class Sidebar {
 
             let elDownloadPotree = elExport.find("img[name=potree_export_button]").parent();
             elDownloadPotree.click((event) => {
-                let data = Potree.saveProject(this.viewer);
+                let data = saveProject(this.viewer);
                 let dataString = JSON5.stringify(data, null, "\t");
 
-                let url = window.URL.createObjectURL(new Blob([dataString], {type: "data:application/octet-stream"}));
+                let url = window.URL.createObjectURL(new Blob([dataString], { type: "data:application/octet-stream" }));
                 elDownloadPotree.attr("href", url);
             });
         }
@@ -399,12 +402,12 @@ export class Sidebar {
             return nodeID;
         };
 
-        let pcID = tree.jstree("create_node", "#", {"text": "<b>Point Clouds</b>", "id": "pointclouds"}, "last", false, false);
-        let measurementID = tree.jstree("create_node", "#", {"text": "<b>Measurements</b>", "id": "measurements"}, "last", false, false);
-        let annotationsID = tree.jstree("create_node", "#", {"text": "<b>Annotations</b>", "id": "annotations"}, "last", false, false);
-        let otherID = tree.jstree("create_node", "#", {"text": "<b>Other</b>", "id": "other"}, "last", false, false);
-        let vectorsID = tree.jstree("create_node", "#", {"text": "<b>Vectors</b>", "id": "vectors"}, "last", false, false);
-        let imagesID = tree.jstree("create_node", "#", {"text": "<b> Images</b>", "id": "images"}, "last", false, false);
+        let pcID = tree.jstree("create_node", "#", { "text": "<b>Point Clouds</b>", "id": "pointclouds" }, "last", false, false);
+        let measurementID = tree.jstree("create_node", "#", { "text": "<b>Measurements</b>", "id": "measurements" }, "last", false, false);
+        let annotationsID = tree.jstree("create_node", "#", { "text": "<b>Annotations</b>", "id": "annotations" }, "last", false, false);
+        let otherID = tree.jstree("create_node", "#", { "text": "<b>Other</b>", "id": "other" }, "last", false, false);
+        let vectorsID = tree.jstree("create_node", "#", { "text": "<b>Vectors</b>", "id": "vectors" }, "last", false, false);
+        let imagesID = tree.jstree("create_node", "#", { "text": "<b> Images</b>", "id": "images" }, "last", false, false);
 
         tree.jstree("check_node", pcID);
         tree.jstree("check_node", measurementID);
@@ -538,7 +541,7 @@ export class Sidebar {
 
         let onPointCloudAdded = (e) => {
             let pointcloud = e.pointcloud;
-            let cloudIcon = `${Potree.resourcePath}/icons/cloud.svg`;
+            let cloudIcon = `${PotreeConfig.resourcePath}/icons/cloud.svg`;
             let node = createNode(pcID, pointcloud.name, cloudIcon, pointcloud);
 
             pointcloud.addEventListener("visibility_changed", () => {
@@ -579,7 +582,7 @@ export class Sidebar {
         let onAnnotationAdded = (e) => {
             let annotation = e.annotation;
 
-            let annotationIcon = `${Potree.resourcePath}/icons/annotation.svg`;
+            let annotationIcon = `${PotreeConfig.resourcePath}/icons/annotation.svg`;
             let parentID = this.annotationMapping.get(annotation.parent);
             let annotationID = createNode(parentID, annotation.title, annotationIcon, annotation);
             this.annotationMapping.set(annotation, annotationID);
@@ -595,14 +598,14 @@ export class Sidebar {
         let onCameraAnimationAdded = (e) => {
             const animation = e.animation;
 
-            const animationIcon = `${Potree.resourcePath}/icons/camera_animation.svg`;
+            const animationIcon = `${PotreeConfig.resourcePath}/icons/camera_animation.svg`;
             createNode(otherID, "animation", animationIcon, animation);
         };
 
         let onOrientedImagesAdded = (e) => {
             const images = e.images;
 
-            const imagesIcon = `${Potree.resourcePath}/icons/picture.svg`;
+            const imagesIcon = `${PotreeConfig.resourcePath}/icons/picture.svg`;
             const node = createNode(imagesID, "images", imagesIcon, images);
 
             images.addEventListener("visibility_changed", () => {
@@ -617,7 +620,7 @@ export class Sidebar {
         let onImages360Added = (e) => {
             const images = e.images;
 
-            const imagesIcon = `${Potree.resourcePath}/icons/picture.svg`;
+            const imagesIcon = `${PotreeConfig.resourcePath}/icons/picture.svg`;
             const node = createNode(imagesID, "360° images", imagesIcon, images);
 
             images.addEventListener("visibility_changed", () => {
@@ -632,7 +635,7 @@ export class Sidebar {
         const onGeopackageAdded = (e) => {
             const geopackage = e.geopackage;
 
-            const geopackageIcon = `${Potree.resourcePath}/icons/triangle.svg`;
+            const geopackageIcon = `${PotreeConfig.resourcePath}/icons/triangle.svg`;
             const tree = $(`#jstree_scene`);
             const parentNode = "vectors";
 
@@ -695,7 +698,7 @@ export class Sidebar {
         this.viewer.scene.addEventListener("profile_removed", onProfileRemoved);
 
         {
-            let annotationIcon = `${Potree.resourcePath}/icons/annotation.svg`;
+            let annotationIcon = `${PotreeConfig.resourcePath}/icons/annotation.svg`;
             this.annotationMapping = new Map();
             this.annotationMapping.set(this.viewer.scene.annotations, annotationsID);
             this.viewer.scene.annotations.traverseDescendants(annotation => {
@@ -707,35 +710,35 @@ export class Sidebar {
 
         const scene = this.viewer.scene;
         for (let pointcloud of scene.pointclouds) {
-            onPointCloudAdded({pointcloud: pointcloud});
+            onPointCloudAdded({ pointcloud: pointcloud });
         }
 
         for (let measurement of scene.measurements) {
-            onMeasurementAdded({measurement: measurement});
+            onMeasurementAdded({ measurement: measurement });
         }
 
         for (let volume of [...scene.volumes, ...scene.polygonClipVolumes]) {
-            onVolumeAdded({volume: volume});
+            onVolumeAdded({ volume: volume });
         }
 
         for (let animation of scene.cameraAnimations) {
-            onCameraAnimationAdded({animation: animation});
+            onCameraAnimationAdded({ animation: animation });
         }
 
         for (let images of scene.orientedImages) {
-            onOrientedImagesAdded({images: images});
+            onOrientedImagesAdded({ images: images });
         }
 
         for (let images of scene.images360) {
-            onImages360Added({images: images});
+            onImages360Added({ images: images });
         }
 
         for (const geopackage of scene.geopackages) {
-            onGeopackageAdded({geopackage: geopackage});
+            onGeopackageAdded({ geopackage: geopackage });
         }
 
         for (let profile of scene.profiles) {
-            onProfileAdded({profile: profile});
+            onProfileAdded({ profile: profile });
         }
 
         {
@@ -772,7 +775,7 @@ export class Sidebar {
 
         {
             let elClipTask = $("#cliptask_options");
-            elClipTask.selectgroup({title: "Clip Task"});
+            elClipTask.selectgroup({ title: "Clip Task" });
 
             elClipTask.find("input").click((e) => {
                 this.viewer.setClipTask(ClipTask[e.target.value]);
@@ -785,7 +788,7 @@ export class Sidebar {
 
         {
             let elClipMethod = $("#clipmethod_options");
-            elClipMethod.selectgroup({title: "Clip Method"});
+            elClipMethod.selectgroup({ title: "Clip Method" });
 
             elClipMethod.find("input").click((e) => {
                 this.viewer.setClipMethod(ClipMethod[e.target.value]);
@@ -800,10 +803,10 @@ export class Sidebar {
 
         // CLIP VOLUME
         clippingToolBar.append(this.createToolIcon(
-            Potree.resourcePath + "/icons/clip_volume.svg",
+            PotreeConfig.resourcePath + "/icons/clip_volume.svg",
             "[title]tt.clip_volume",
             () => {
-                let item = this.volumeTool.startInsertion({clip: true});
+                let item = this.volumeTool.startInsertion({ clip: true });
 
                 let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
                 let jsonNode = measurementsRoot.children.find(child => child.data.uuid === item.uuid);
@@ -814,10 +817,10 @@ export class Sidebar {
 
         // CLIP POLYGON
         clippingToolBar.append(this.createToolIcon(
-            Potree.resourcePath + "/icons/clip-polygon.svg",
+            PotreeConfig.resourcePath + "/icons/clip-polygon.svg",
             "[title]tt.clip_polygon",
             () => {
-                let item = this.viewer.clippingTool.startInsertion({type: "polygon"});
+                let item = this.viewer.clippingTool.startInsertion({ type: "polygon" });
 
                 let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
                 let jsonNode = measurementsRoot.children.find(child => child.data.uuid === item.uuid);
@@ -830,12 +833,12 @@ export class Sidebar {
             let boxSelectTool = new ScreenBoxSelectTool(this.viewer);
 
             clippingToolBar.append(this.createToolIcon(
-                Potree.resourcePath + "/icons/clip-screen.svg",
+                PotreeConfig.resourcePath + "/icons/clip-screen.svg",
                 "[title]tt.screen_clip_box",
                 () => {
                     if (!(this.viewer.scene.getActiveCamera() instanceof THREE.OrthographicCamera)) {
                         this.viewer.postMessage(`Switch to Orthographic Camera Mode before using the Screen-Box-Select tool.`,
-                            {duration: 2000});
+                            { duration: 2000 });
                         return;
                     }
 
@@ -851,7 +854,7 @@ export class Sidebar {
 
         { // REMOVE CLIPPING TOOLS
             clippingToolBar.append(this.createToolIcon(
-                Potree.resourcePath + "/icons/remove.svg",
+                PotreeConfig.resourcePath + "/icons/remove.svg",
                 "[title]tt.remove_all_clipping_volumes",
                 () => {
                     this.viewer.scene.removeAllClipVolumes();
@@ -887,7 +890,7 @@ export class Sidebar {
                 let [from, to] = this.viewer.filterReturnNumberRange;
 
                 lblReturnNumber[0].innerHTML = `${from} to ${to}`;
-                sldReturnNumber.slider({values: [from, to]});
+                sldReturnNumber.slider({ values: [from, to] });
             };
 
             this.viewer.addEventListener("filter_return_number_range_changed", onReturnNumberChanged);
@@ -912,7 +915,7 @@ export class Sidebar {
                 let [from, to] = this.viewer.filterNumberOfReturnsRange;
 
                 lblNumberOfReturns[0].innerHTML = `${from} to ${to}`;
-                sldNumberOfReturns.slider({values: [from, to]});
+                sldNumberOfReturns.slider({ values: [from, to] });
             };
 
             this.viewer.addEventListener("filter_number_of_returns_range_changed", onNumberOfReturnsChanged);
@@ -981,7 +984,7 @@ export class Sidebar {
 
             btnFindGpsTime.click(() => {
                 if (targetTime !== null) {
-                    viewer.moveToGpsTimeVicinity(targetTime);
+                    this.viewer.moveToGpsTimeVicinity(targetTime);
                 }
             });
         }
@@ -1251,12 +1254,12 @@ export class Sidebar {
 
         this.viewer.addEventListener("point_budget_changed", (event) => {
             $("#lblPointBudget")[0].innerHTML = Utils.addCommas(this.viewer.getPointBudget());
-            sldPointBudget.slider({value: this.viewer.getPointBudget()});
+            sldPointBudget.slider({ value: this.viewer.getPointBudget() });
         });
 
         this.viewer.addEventListener("fov_changed", (event) => {
             $("#lblFOV")[0].innerHTML = parseInt(this.viewer.getFOV());
-            $("#sldFOV").slider({value: this.viewer.getFOV()});
+            $("#sldFOV").slider({ value: this.viewer.getFOV() });
         });
 
         this.viewer.addEventListener("use_edl_changed", (event) => {
@@ -1265,12 +1268,12 @@ export class Sidebar {
 
         this.viewer.addEventListener("edl_radius_changed", (event) => {
             $("#lblEDLRadius")[0].innerHTML = this.viewer.getEDLRadius().toFixed(1);
-            $("#sldEDLRadius").slider({value: this.viewer.getEDLRadius()});
+            $("#sldEDLRadius").slider({ value: this.viewer.getEDLRadius() });
         });
 
         this.viewer.addEventListener("edl_strength_changed", (event) => {
             $("#lblEDLStrength")[0].innerHTML = this.viewer.getEDLStrength().toFixed(1);
-            $("#sldEDLStrength").slider({value: this.viewer.getEDLStrength()});
+            $("#sldEDLStrength").slider({ value: this.viewer.getEDLStrength() });
         });
 
         this.viewer.addEventListener("background_changed", (event) => {
@@ -1306,7 +1309,7 @@ export class Sidebar {
         let lblMoveSpeed = $("#lblMoveSpeed");
 
         elNavigation.append(this.createToolIcon(
-            Potree.resourcePath + "/icons/earth_controls_1.png",
+            PotreeConfig.resourcePath + "/icons/earth_controls_1.png",
             "[title]tt.earth_control",
             () => {
                 this.viewer.setControls(this.viewer.earthControls);
@@ -1314,7 +1317,7 @@ export class Sidebar {
         ));
 
         elNavigation.append(this.createToolIcon(
-            Potree.resourcePath + "/icons/fps_controls.svg",
+            PotreeConfig.resourcePath + "/icons/fps_controls.svg",
             "[title]tt.flight_control",
             () => {
                 this.viewer.setControls(this.viewer.fpControls);
@@ -1323,7 +1326,7 @@ export class Sidebar {
         ));
 
         elNavigation.append(this.createToolIcon(
-            Potree.resourcePath + "/icons/helicopter_controls.svg",
+            PotreeConfig.resourcePath + "/icons/helicopter_controls.svg",
             "[title]tt.heli_control",
             () => {
                 this.viewer.setControls(this.viewer.fpControls);
@@ -1332,7 +1335,7 @@ export class Sidebar {
         ));
 
         elNavigation.append(this.createToolIcon(
-            Potree.resourcePath + "/icons/orbit_controls.svg",
+            PotreeConfig.resourcePath + "/icons/orbit_controls.svg",
             "[title]tt.orbit_control",
             () => {
                 this.viewer.setControls(this.viewer.orbitControls);
@@ -1340,7 +1343,7 @@ export class Sidebar {
         ));
 
         elNavigation.append(this.createToolIcon(
-            Potree.resourcePath + "/icons/focus.svg",
+            PotreeConfig.resourcePath + "/icons/focus.svg",
             "[title]tt.focus_control",
             () => {
                 this.viewer.fitToScreen();
@@ -1348,7 +1351,7 @@ export class Sidebar {
         ));
 
         elNavigation.append(this.createToolIcon(
-            Potree.resourcePath + "/icons/navigation_cube.svg",
+            PotreeConfig.resourcePath + "/icons/navigation_cube.svg",
             "[title]tt.navigation_cube_control",
             () => {
                 this.viewer.toggleNavigationCube();
@@ -1356,7 +1359,7 @@ export class Sidebar {
         ));
 
         elNavigation.append(this.createToolIcon(
-            Potree.resourcePath + "/images/compas.svg",
+            PotreeConfig.resourcePath + "/images/compas.svg",
             "[title]tt.compass",
             () => {
                 const visible = !this.viewer.compass.isVisible();
@@ -1365,19 +1368,19 @@ export class Sidebar {
         ));
 
         elNavigation.append(this.createToolIcon(
-            Potree.resourcePath + "/icons/camera_animation.svg",
+            PotreeConfig.resourcePath + "/icons/camera_animation.svg",
             "[title]tt.camera_animation",
             () => {
                 const animation = CameraAnimation.defaultFromView(this.viewer);
 
-                viewer.scene.addCameraAnimation(animation);
+                this.viewer.scene.addCameraAnimation(animation);
             }
         ));
 
         elNavigation.append("<br>");
 
         elNavigation.append(this.createToolIcon(
-            Potree.resourcePath + "/icons/left.svg",
+            PotreeConfig.resourcePath + "/icons/left.svg",
             "[title]tt.left_view_control",
             () => {
                 this.viewer.setLeftView();
@@ -1385,7 +1388,7 @@ export class Sidebar {
         ));
 
         elNavigation.append(this.createToolIcon(
-            Potree.resourcePath + "/icons/right.svg",
+            PotreeConfig.resourcePath + "/icons/right.svg",
             "[title]tt.right_view_control",
             () => {
                 this.viewer.setRightView();
@@ -1393,7 +1396,7 @@ export class Sidebar {
         ));
 
         elNavigation.append(this.createToolIcon(
-            Potree.resourcePath + "/icons/front.svg",
+            PotreeConfig.resourcePath + "/icons/front.svg",
             "[title]tt.front_view_control",
             () => {
                 this.viewer.setFrontView();
@@ -1401,7 +1404,7 @@ export class Sidebar {
         ));
 
         elNavigation.append(this.createToolIcon(
-            Potree.resourcePath + "/icons/back.svg",
+            PotreeConfig.resourcePath + "/icons/back.svg",
             "[title]tt.back_view_control",
             () => {
                 this.viewer.setBackView();
@@ -1409,7 +1412,7 @@ export class Sidebar {
         ));
 
         elNavigation.append(this.createToolIcon(
-            Potree.resourcePath + "/icons/top.svg",
+            PotreeConfig.resourcePath + "/icons/top.svg",
             "[title]tt.top_view_control",
             () => {
                 this.viewer.setTopView();
@@ -1417,7 +1420,7 @@ export class Sidebar {
         ));
 
         elNavigation.append(this.createToolIcon(
-            Potree.resourcePath + "/icons/bottom.svg",
+            PotreeConfig.resourcePath + "/icons/bottom.svg",
             "[title]tt.bottom_view_control",
             () => {
                 this.viewer.setBottomView();
@@ -1431,7 +1434,7 @@ export class Sidebar {
             </selectgroup>
         `);
         elNavigation.append(elCameraProjection);
-        elCameraProjection.selectgroup({title: "Camera Projection"});
+        elCameraProjection.selectgroup({ title: "Camera Projection" });
         elCameraProjection.find("input").click((e) => {
             this.viewer.setCameraMode(CameraMode[e.target.value]);
         });
@@ -1461,7 +1464,7 @@ export class Sidebar {
 
         this.viewer.addEventListener("move_speed_changed", (event) => {
             lblMoveSpeed.html(this.viewer.getMoveSpeed().toFixed(1));
-            sldMoveSpeed.slider({value: toExpSpeed(this.viewer.getMoveSpeed())});
+            sldMoveSpeed.slider({ value: toExpSpeed(this.viewer.getMoveSpeed()) });
         });
 
         lblMoveSpeed.html(this.viewer.getMoveSpeed().toFixed(1));
@@ -1481,14 +1484,14 @@ export class Sidebar {
 
             this.viewer.addEventListener("minnodesize_changed", (event) => {
                 $("#lblMinNodeSize").html(parseInt(this.viewer.getMinNodeSize()));
-                $("#sldMinNodeSize").slider({value: this.viewer.getMinNodeSize()});
+                $("#sldMinNodeSize").slider({ value: this.viewer.getMinNodeSize() });
             });
             $("#lblMinNodeSize").html(parseInt(this.viewer.getMinNodeSize()));
         }
 
         {
             let elSplatQuality = $("#splat_quality_options");
-            elSplatQuality.selectgroup({title: "Splat Quality"});
+            elSplatQuality.selectgroup({ title: "Splat Quality" });
 
             elSplatQuality.find("input").click((e) => {
                 if (e.target.value === "standard") {

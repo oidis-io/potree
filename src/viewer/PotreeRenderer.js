@@ -10,6 +10,7 @@
  * ********************************************************************************************************* */
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
+import { SphereVolume } from "../utils/Volume.js";
 
 export class PotreeRenderer {
     constructor(viewer) {
@@ -33,7 +34,7 @@ export class PotreeRenderer {
     }
 
     clear() {
-        let {viewer, renderer} = this;
+        let { viewer, renderer } = this;
 
         // render skybox
         if (viewer.background === "skybox") {
@@ -52,15 +53,11 @@ export class PotreeRenderer {
     }
 
     render(params) {
-        let {viewer, renderer} = this;
+        let { viewer, renderer } = this;
 
         const camera = params.camera ? params.camera : viewer.scene.getActiveCamera();
 
-        viewer.dispatchEvent({type: "render.pass.begin", viewer: viewer});
-
-        const renderAreaSize = renderer.getSize(new THREE.Vector2());
-        const width = params.viewport ? params.viewport[2] : renderAreaSize.x;
-        const height = params.viewport ? params.viewport[3] : renderAreaSize.y;
+        viewer.dispatchEvent({ type: "render.pass.begin", viewer: viewer });
 
         // render skybox
         if (viewer.background === "skybox") {
@@ -78,20 +75,20 @@ export class PotreeRenderer {
         }
 
         for (let pointcloud of this.viewer.scene.pointclouds) {
-            const {material} = pointcloud;
+            const { material } = pointcloud;
             material.useEDL = false;
         }
 
         viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, null, {
-            clipSpheres: viewer.scene.volumes.filter(v => (v instanceof Potree.SphereVolume)),
+            clipSpheres: viewer.scene.volumes.filter(v => (v instanceof SphereVolume)),
         });
 
         renderer.render(viewer.scene.scene, camera);
 
-        viewer.dispatchEvent({type: "render.pass.scene", viewer: viewer});
+        viewer.dispatchEvent({ type: "render.pass.scene", viewer: viewer });
 
         viewer.clippingTool.update();
-        renderer.render(viewer.clippingTool.sceneMarker, viewer.scene.cameraScreenSpace); // viewer.scene.cameraScreenSpace);
+        renderer.render(viewer.clippingTool.sceneMarker, viewer.scene.cameraScreenSpace);
         renderer.render(viewer.clippingTool.sceneVolume, camera);
 
         renderer.render(viewer.controls.sceneControls, camera);
@@ -100,7 +97,7 @@ export class PotreeRenderer {
 
         viewer.transformationTool.update();
 
-        viewer.dispatchEvent({type: "render.pass.perspective_overlay", viewer: viewer});
-        viewer.dispatchEvent({type: "render.pass.end", viewer: viewer});
+        viewer.dispatchEvent({ type: "render.pass.perspective_overlay", viewer: viewer });
+        viewer.dispatchEvent({ type: "render.pass.end", viewer: viewer });
     }
 }

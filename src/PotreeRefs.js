@@ -1,6 +1,5 @@
 /*! ******************************************************************************************************** *
  *
- * Copyright 2011-2020 Markus Schütz
  * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
@@ -9,8 +8,15 @@
  *
  * ********************************************************************************************************* */
 
-import { parseEpt } from "../../libs/ept/ParseBuffer.js";
+import { LRU } from "./LRU.js";
+import { WorkerPool } from "./WorkerPool.js";
 
-onmessage = function (event) {
-    parseEpt(event);
+const PotreeSingleton = {
+    workerPool: new WorkerPool(),
+    lru: new LRU(),
+    resolveQueries: () => {
+        // TODO(mkelnar) no code found?
+    }
 };
+
+export default PotreeSingleton;

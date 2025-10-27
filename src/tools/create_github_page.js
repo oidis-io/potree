@@ -9,7 +9,6 @@
  *
  * ********************************************************************************************************* */
 
-const path = require("path");
 const fs = require("fs");
 const fsp = fs.promises;
 const JSON5 = require("json5");
@@ -83,8 +82,6 @@ async function createGithubPage() {
     const settings = JSON5.parse(content);
 
     const files = await fsp.readdir("./examples");
-
-    let unhandledCode = ``;
 
     let exampleCode = toCode(files, settings.examples);
     let vrCode = toCode(files, settings.VR);

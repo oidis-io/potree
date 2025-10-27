@@ -10,6 +10,7 @@
  * ********************************************************************************************************* */
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
+import TWEEN from "../../libs/tween/tween.min.js";
 
 export class View {
     constructor() {
@@ -150,8 +151,8 @@ export class View {
             this.position.copy(endPosition);
             this.lookAt(endTarget);
         } else {
-            let value = {x: 0};
-            let tween = new TWEEN.Tween(value).to({x: 1}, duration);
+            let value = { x: 0 };
+            let tween = new TWEEN.Tween(value).to({ x: 1 }, duration);
             tween.easing(easing);
 
             tween.onUpdate(() => {

@@ -10,7 +10,7 @@
  * ********************************************************************************************************* */
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
-import { Volume, BoxVolume } from "./Volume.js";
+import { BoxVolume, Volume } from "./Volume.js";
 import { Utils } from "../utils.js";
 import { EventDispatcher } from "../EventDispatcher.js";
 
@@ -41,7 +41,7 @@ export class VolumeTool extends EventDispatcher {
         };
 
         for (let volume of viewer.scene.volumes) {
-            this.onAdd({volume: volume});
+            this.onAdd({ volume: volume });
         }
 
         this.viewer.inputHandler.addEventListener("delete", e => {
@@ -98,7 +98,7 @@ export class VolumeTool extends EventDispatcher {
                 this.viewer.scene.getActiveCamera(),
                 this.viewer,
                 this.viewer.scene.pointclouds,
-                {pickClipped: false});
+                { pickClipped: false });
 
             if (I) {
                 volume.position.copy(I.location);

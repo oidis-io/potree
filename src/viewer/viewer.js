@@ -10,7 +10,8 @@
  * ********************************************************************************************************* */
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
-import { ClipTask, ClipMethod, CameraMode, LengthUnits, ElevationGradientRepeat } from "../defines.js";
+import TWEEN from "../../libs/tween/tween.min.js";
+import { CameraMode, ClipMethod, ClipTask, ElevationGradientRepeat, LengthUnits } from "../defines.js";
 import { Renderer } from "../PotreeRenderer.js";
 import { PotreeRenderer } from "./PotreeRenderer.js";
 import { EDLRenderer } from "./EDLRenderer.js";
@@ -20,7 +21,7 @@ import { ClippingTool } from "../utils/ClippingTool.js";
 import { TransformationTool } from "../utils/TransformationTool.js";
 import { Utils } from "../utils.js";
 import { MapView } from "./map.js";
-import { ProfileWindow, ProfileWindowController } from "./profile.js";
+import { ProfileControl, ProfileControlController, ProfileWindow, ProfileWindowController } from "./profile.js";
 import { BoxVolume } from "../utils/Volume.js";
 import { Features } from "../Features.js";
 import { Message } from "../utils/Message.js";
@@ -44,13 +45,22 @@ import { ClassificationScheme } from "../materials/ClassificationScheme.js";
 import { VRButton } from "../../libs/three.js/extra/VRButton.js";
 
 import JSON5 from "../../libs/json5-2.1.3/json5.mjs";
-import { Fetcher } from "../utils/Fetcher";
+import { Fetcher } from "../utils/Fetcher.js";
+import PotreeConfig from "../PotreeConfig.js";
+import { loadProject } from "./LoadProject.js";
+import { GeoPackageLoader } from "../loader/GeoPackageLoader.js";
+import { updatePointClouds } from "../Potree_update_visibility.js";  // TODO(mkelnar) refactor
+import PotreeRefs from "../PotreeRefs.js";
 
 export class Viewer extends EventDispatcher {
     constructor(domElement, args = {}) {
         super();
 
         this.renderArea = domElement;
+        this.profileRenderArea = null;
+        if (args.profileRenderArea) {
+            this.profileRenderArea = args.profileRenderArea;
+        }
         this.guiLoaded = false;
         this.guiLoadTasks = [];
 
@@ -159,7 +169,7 @@ export class Viewer extends EventDispatcher {
             this.initThree();
 
             if (args.noDragAndDrop) {
-
+                // dummy
             } else {
                 this.initDragAndDrop();
             }
@@ -196,7 +206,6 @@ export class Viewer extends EventDispatcher {
             {
                 let near = 2.5;
                 let far = 10.0;
-                let fov = 90;
 
                 this.shadowTestCam = new THREE.PerspectiveCamera(90, 1, near, far);
                 this.shadowTestCam.position.set(3.50, -2.80, 8.561);
@@ -396,7 +405,7 @@ export class Viewer extends EventDispatcher {
     setMinNodeSize(value) {
         if (this.minNodeSize !== value) {
             this.minNodeSize = value;
-            this.dispatchEvent({"type": "minnodesize_changed", "viewer": this});
+            this.dispatchEvent({ "type": "minnodesize_changed", "viewer": this });
         }
     }
 
@@ -410,11 +419,11 @@ export class Viewer extends EventDispatcher {
         }
 
         if (bg === "skybox") {
-            this.skybox = Utils.loadSkybox(new URL(Potree.resourcePath + "/textures/skybox2/").href);
+            this.skybox = Utils.loadSkybox(new URL(PotreeConfig.resourcePath + "/textures/skybox2/").href);
         }
 
         this.background = bg;
-        this.dispatchEvent({"type": "background_changed", "viewer": this});
+        this.dispatchEvent({ "type": "background_changed", "viewer": this });
     }
 
     setDescription(value) {
@@ -431,7 +440,7 @@ export class Viewer extends EventDispatcher {
     setShowBoundingBox(value) {
         if (this.showBoundingBox !== value) {
             this.showBoundingBox = value;
-            this.dispatchEvent({"type": "show_boundingbox_changed", "viewer": this});
+            this.dispatchEvent({ "type": "show_boundingbox_changed", "viewer": this });
         }
     }
 
@@ -442,7 +451,7 @@ export class Viewer extends EventDispatcher {
     setMoveSpeed(value) {
         if (this.moveSpeed !== value) {
             this.moveSpeed = value;
-            this.dispatchEvent({"type": "move_speed_changed", "viewer": this, "speed": value});
+            this.dispatchEvent({ "type": "move_speed_changed", "viewer": this, "speed": value });
         }
     }
 
@@ -453,7 +462,7 @@ export class Viewer extends EventDispatcher {
     setWeightClassification(w) {
         for (let i = 0; i < this.scene.pointclouds.length; i++) {
             this.scene.pointclouds[i].material.weightClassification = w;
-            this.dispatchEvent({"type": "attribute_weights_changed" + i, "viewer": this});
+            this.dispatchEvent({ "type": "attribute_weights_changed" + i, "viewer": this });
         }
     }
 
@@ -461,7 +470,7 @@ export class Viewer extends EventDispatcher {
         value = Boolean(value);
         if (this.freeze !== value) {
             this.freeze = value;
-            this.dispatchEvent({"type": "freeze_changed", "viewer": this});
+            this.dispatchEvent({ "type": "freeze_changed", "viewer": this });
         }
     }
 
@@ -511,20 +520,20 @@ export class Viewer extends EventDispatcher {
     }
 
     setPointBudget(value) {
-        if (Potree.pointBudget !== value) {
-            Potree.pointBudget = parseInt(value);
-            this.dispatchEvent({"type": "point_budget_changed", "viewer": this});
+        if (PotreeConfig.pointBudget !== value) {
+            PotreeConfig.pointBudget = parseInt(value);
+            this.dispatchEvent({ "type": "point_budget_changed", "viewer": this });
         }
     }
 
     getPointBudget() {
-        return Potree.pointBudget;
+        return PotreeConfig.pointBudget;
     }
 
     setShowAnnotations(value) {
         if (this.showAnnotations !== value) {
             this.showAnnotations = value;
-            this.dispatchEvent({"type": "show_annotations_changed", "viewer": this});
+            this.dispatchEvent({ "type": "show_annotations_changed", "viewer": this });
         }
     }
 
@@ -535,7 +544,7 @@ export class Viewer extends EventDispatcher {
     setDEMCollisionsEnabled(value) {
         if (this.useDEMCollisions !== value) {
             this.useDEMCollisions = value;
-            this.dispatchEvent({"type": "use_demcollisions_changed", "viewer": this});
+            this.dispatchEvent({ "type": "use_demcollisions_changed", "viewer": this });
         }
     }
 
@@ -548,7 +557,7 @@ export class Viewer extends EventDispatcher {
 
         if (this.useEDL !== value) {
             this.useEDL = value;
-            this.dispatchEvent({"type": "use_edl_changed", "viewer": this});
+            this.dispatchEvent({ "type": "use_edl_changed", "viewer": this });
         }
     }
 
@@ -559,7 +568,7 @@ export class Viewer extends EventDispatcher {
     setEDLRadius(value) {
         if (this.edlRadius !== value) {
             this.edlRadius = value;
-            this.dispatchEvent({"type": "edl_radius_changed", "viewer": this});
+            this.dispatchEvent({ "type": "edl_radius_changed", "viewer": this });
         }
     }
 
@@ -570,7 +579,7 @@ export class Viewer extends EventDispatcher {
     setEDLStrength(value) {
         if (this.edlStrength !== value) {
             this.edlStrength = value;
-            this.dispatchEvent({"type": "edl_strength_changed", "viewer": this});
+            this.dispatchEvent({ "type": "edl_strength_changed", "viewer": this });
         }
     }
 
@@ -581,7 +590,7 @@ export class Viewer extends EventDispatcher {
     setEDLOpacity(value) {
         if (this.edlOpacity !== value) {
             this.edlOpacity = value;
-            this.dispatchEvent({"type": "edl_opacity_changed", "viewer": this});
+            this.dispatchEvent({ "type": "edl_opacity_changed", "viewer": this });
         }
     }
 
@@ -592,7 +601,7 @@ export class Viewer extends EventDispatcher {
     setFOV(value) {
         if (this.fov !== value) {
             this.fov = value;
-            this.dispatchEvent({"type": "fov_changed", "viewer": this});
+            this.dispatchEvent({ "type": "fov_changed", "viewer": this });
         }
     }
 
@@ -615,16 +624,16 @@ export class Viewer extends EventDispatcher {
     setClassifications(classifications) {
         this.classifications = classifications;
 
-        this.dispatchEvent({"type": "classifications_changed", "viewer": this});
+        this.dispatchEvent({ "type": "classifications_changed", "viewer": this });
     }
 
     setClassificationVisibility(key, value) {
         if (!this.classifications[key]) {
-            this.classifications[key] = {visible: value, name: "no name"};
-            this.dispatchEvent({"type": "classification_visibility_changed", "viewer": this});
+            this.classifications[key] = { visible: value, name: "no name" };
+            this.dispatchEvent({ "type": "classification_visibility_changed", "viewer": this });
         } else if (this.classifications[key].visible !== value) {
             this.classifications[key].visible = value;
-            this.dispatchEvent({"type": "classification_visibility_changed", "viewer": this});
+            this.dispatchEvent({ "type": "classification_visibility_changed", "viewer": this });
         }
     }
 
@@ -653,28 +662,28 @@ export class Viewer extends EventDispatcher {
         }
 
         if (somethingChanged) {
-            this.dispatchEvent({"type": "classification_visibility_changed", "viewer": this});
+            this.dispatchEvent({ "type": "classification_visibility_changed", "viewer": this });
         }
     }
 
     setFilterReturnNumberRange(from, to) {
         this.filterReturnNumberRange = [from, to];
-        this.dispatchEvent({"type": "filter_return_number_range_changed", "viewer": this});
+        this.dispatchEvent({ "type": "filter_return_number_range_changed", "viewer": this });
     }
 
     setFilterNumberOfReturnsRange(from, to) {
         this.filterNumberOfReturnsRange = [from, to];
-        this.dispatchEvent({"type": "filter_number_of_returns_range_changed", "viewer": this});
+        this.dispatchEvent({ "type": "filter_number_of_returns_range_changed", "viewer": this });
     }
 
     setFilterGPSTimeRange(from, to) {
         this.filterGPSTimeRange = [from, to];
-        this.dispatchEvent({"type": "filter_gps_time_range_changed", "viewer": this});
+        this.dispatchEvent({ "type": "filter_gps_time_range_changed", "viewer": this });
     }
 
     setFilterPointSourceIDRange(from, to) {
         this.filterPointSourceIDRange = [from, to];
-        this.dispatchEvent({"type": "filter_point_source_id_range_changed", "viewer": this});
+        this.dispatchEvent({ "type": "filter_point_source_id_range_changed", "viewer": this });
     }
 
     setLengthUnit(value) {
@@ -693,7 +702,7 @@ export class Viewer extends EventDispatcher {
                 break;
         }
 
-        this.dispatchEvent({"type": "length_unit_changed", "viewer": this, value: value});
+        this.dispatchEvent({ "type": "length_unit_changed", "viewer": this, value: value });
     }
 
     setLengthUnitAndDisplayUnit(lengthUnitValue, lengthUnitDisplayValue) {
@@ -721,7 +730,7 @@ export class Viewer extends EventDispatcher {
                 break;
         }
 
-        this.dispatchEvent({"type": "length_unit_changed", "viewer": this, value: lengthUnitValue});
+        this.dispatchEvent({ "type": "length_unit_changed", "viewer": this, value: lengthUnitValue });
     }
 
     zoomTo(node, factor, animationDuration = 0) {
@@ -754,7 +763,7 @@ export class Viewer extends EventDispatcher {
         view.radius = endPosition.distanceTo(endTarget);
 
         if (animationDuration <= 0) {
-            this.dispatchEvent({type: "focusing_finished", target: this});
+            this.dispatchEvent({ type: "focusing_finished", target: this });
             return;
         }
 
@@ -763,28 +772,32 @@ export class Viewer extends EventDispatcher {
         const endYaw = camera.rotation.z;
         const endPitch = camera.rotation.x - Math.PI / 2;
 
-        const obj = {yaw: startYaw, pitch: startPitch};
+        const obj = { yaw: startYaw, pitch: startPitch };
         new TWEEN.Tween(obj)
-            .to({yaw: endYaw, pitch: endPitch}, animationDuration)
+            .to({ yaw: endYaw, pitch: endPitch }, animationDuration)
             .easing(TWEEN.Easing.Quartic.Out)
             .onUpdate(() => {
                 view.yaw = obj.yaw;
                 view.pitch = obj.pitch;
-                if (view._updateCamera) view._updateCamera();
+                if (view._updateCamera) {
+                    view._updateCamera();
+                }
             })
             .onComplete(() => {
                 view.yaw = endYaw;
                 view.pitch = endPitch;
-                if (view._updateCamera) view._updateCamera();
-                this.dispatchEvent({type: "focusing_finished", target: this});
+                if (view._updateCamera) {
+                    view._updateCamera();
+                }
+                this.dispatchEvent({ type: "focusing_finished", target: this });
             })
             .start();
 
-        this.dispatchEvent({type: "focusing_started", target: this});
+        this.dispatchEvent({ type: "focusing_started", target: this });
     }
 
     moveToGpsTimeVicinity(time) {
-        const result = Potree.Utils.findClosestGpsTime(time, viewer);
+        const result = Utils.findClosestGpsTime(time, this.viewer);
 
         const box = result.node.pointcloud.deepestNodeAt(result.position).getBoundingBox();
         const diameter = box.min.distanceTo(box.max);
@@ -838,7 +851,9 @@ export class Viewer extends EventDispatcher {
     }
 
     setView(view) {
-        if (!view) return;
+        if (!view) {
+            return;
+        }
 
         switch (view) {
             case "F":
@@ -915,7 +930,7 @@ export class Viewer extends EventDispatcher {
         this.scene.cameraMode = mode;
 
         for (let pointcloud of this.scene.pointclouds) {
-            pointcloud.material.useOrthographicCamera = mode == CameraMode.ORTHOGRAPHIC;
+            pointcloud.material.useOrthographicCamera = mode === CameraMode.ORTHOGRAPHIC;
         }
     }
 
@@ -936,12 +951,12 @@ export class Viewer extends EventDispatcher {
         const json = JSON5.parse(text);
 
         if (json.type === "Potree") {
-            Potree.loadProject(viewer, json);
+            await loadProject(this.viewer, json);
         }
     }
 
     saveProject() {
-        return Potree.saveProject(this);
+        return SaveProject.saveProject(this);
     }
 
     loadSettingsFromURL() {
@@ -1107,19 +1122,18 @@ export class Viewer extends EventDispatcher {
             this.onGUILoaded(callback);
         }
 
-        let viewer = this;
         let sidebarContainer = $("#potree_sidebar_container");
-        sidebarContainer.load(new URL(Potree.scriptPath + "/sidebar.html").href, () => {
+        sidebarContainer.load(new URL(PotreeConfig.scriptPath + "/sidebar.html").href, () => {
             sidebarContainer.css("width", "300px");
             sidebarContainer.css("height", "100%");
 
             let imgMenuToggle = document.createElement("img");
-            imgMenuToggle.src = new URL(Potree.resourcePath + "/icons/menu_button.svg").href;
+            imgMenuToggle.src = new URL(PotreeConfig.resourcePath + "/icons/menu_button.svg").href;
             imgMenuToggle.onclick = this.toggleSidebar;
             imgMenuToggle.classList.add("potree_menu_toggle");
 
             let imgMapToggle = document.createElement("img");
-            imgMapToggle.src = new URL(Potree.resourcePath + "/icons/map_icon.png").href;
+            imgMapToggle.src = new URL(PotreeConfig.resourcePath + "/icons/map_icon.png").href;
             imgMapToggle.style.display = "none";
             imgMapToggle.onclick = e => {
                 this.toggleMap();
@@ -1156,11 +1170,11 @@ export class Viewer extends EventDispatcher {
                 elButtons.append(element);
 
                 vrButton.onStart(() => {
-                    this.dispatchEvent({type: "vr_start"});
+                    this.dispatchEvent({ type: "vr_start" });
                 });
 
                 vrButton.onEnd(() => {
-                    this.dispatchEvent({type: "vr_end"});
+                    this.dispatchEvent({ type: "vr_end" });
                 });
             });
 
@@ -1169,7 +1183,7 @@ export class Viewer extends EventDispatcher {
 
             i18n.init({
                 lng: "en",
-                resGetPath: Potree.resourcePath + "/lang/__lng__/__ns__.json",
+                resGetPath: PotreeConfig.resourcePath + "/lang/__lng__/__ns__.json",
                 preload: ["en", "fr", "de", "jp", "se", "es", "zh", "it", "ca"],
                 getAsync: true,
                 debug: false
@@ -1183,10 +1197,15 @@ export class Viewer extends EventDispatcher {
 
                 this.sidebar = sidebar;
 
-                let elProfile = $("<div>").load(new URL(Potree.scriptPath + "/profile.html").href, () => {
+                let elProfile = $("<div>").load(new URL(PotreeConfig.scriptPath + "/profile.html").href, () => {
                     $(document.body).append(elProfile.children());
-                    this.profileWindow = new ProfileWindow(this);
-                    this.profileWindowController = new ProfileWindowController(this);
+                    if (this.profileRenderArea) {
+                        this.profileControl = new ProfileControl(this, this.profileRenderArea);
+                        this.profileControlController = new ProfileControlController(this);
+                    } else {
+                        this.profileWindow = new ProfileWindow(this);
+                        this.profileWindowController = new ProfileWindowController(this);
+                    }
 
                     $("#profile_window").draggable({
                         handle: $("#profile_titlebar"),
@@ -1247,14 +1266,14 @@ export class Viewer extends EventDispatcher {
                         const json = JSON5.parse(text);
 
                         if (json.type === "Potree") {
-                            Potree.loadProject(viewer, json);
+                            await loadProject(this.viewer, json);
                         }
                     } catch (e) {
                         console.error("failed to parse the dropped file as JSON");
                         console.error(e);
                     }
                 } else if (isGeoPackage) {
-                    const hasPointcloud = viewer.scene.pointclouds.length > 0;
+                    const hasPointcloud = this.viewer.scene.pointclouds.length > 0;
 
                     if (!hasPointcloud) {
                         let msg = "At least one point cloud is needed that specifies the ";
@@ -1272,8 +1291,8 @@ export class Viewer extends EventDispatcher {
                             source: file.name,
                         };
 
-                        const geo = await Potree.GeoPackageLoader.loadBuffer(buffer, params);
-                        viewer.scene.addGeopackage(geo);
+                        const geo = await GeoPackageLoader.loadBuffer(buffer, params);
+                        this.viewer.scene.addGeopackage(geo);
                     }
                 }
             }
@@ -1346,8 +1365,6 @@ export class Viewer extends EventDispatcher {
         this.scene.annotations.updateBounds();
         this.scene.cameraP.updateMatrixWorld();
         this.scene.cameraO.updateMatrixWorld();
-
-        let distances = [];
 
         let renderAreaSize = this.renderer.getSize(new THREE.Vector2());
 
@@ -1457,7 +1474,9 @@ export class Viewer extends EventDispatcher {
     }
 
     update(delta, timestamp) {
-        if (Potree.measureTimings) performance.mark("update-start");
+        if (PotreeConfig.measureTimings) {
+            performance.mark("update-start");
+        }
 
         this.dispatchEvent({
             type: "update_start",
@@ -1469,7 +1488,7 @@ export class Viewer extends EventDispatcher {
         const camera = scene.getActiveCamera();
         const visiblePointClouds = this.scene.pointclouds.filter(pc => pc.visible);
 
-        Potree.pointLoadLimit = Potree.pointBudget * 2;
+        PotreeConfig.pointLoadLimit = PotreeConfig.pointBudget * 2;
 
         const lTarget = camera.position.clone().add(camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(1000));
         this.scene.directionalLight.position.copy(camera.position);
@@ -1516,66 +1535,7 @@ export class Viewer extends EventDispatcher {
         }
 
         if (!this.freeze) {
-            let result = Potree.updatePointClouds(scene.pointclouds, camera, this.renderer);
-
-            // DEBUG - ONLY DISPLAY NODES THAT INTERSECT MOUSE
-            // if(false){
-
-            // let renderer = viewer.renderer;
-            // let mouse = viewer.inputHandler.mouse;
-
-            // let nmouse = {
-            //  x: (mouse.x / renderer.domElement.clientWidth) * 2 - 1,
-            //  y: -(mouse.y / renderer.domElement.clientHeight) * 2 + 1
-            // };
-
-            // let pickParams = {};
-
-            // //if(params.pickClipped){
-            // // pickParams.pickClipped = params.pickClipped;
-            // //}
-
-            // pickParams.x = mouse.x;
-            // pickParams.y = renderer.domElement.clientHeight - mouse.y;
-
-            // let raycaster = new THREE.Raycaster();
-            // raycaster.setFromCamera(nmouse, camera);
-            // let ray = raycaster.ray;
-
-            // for(let pointcloud of scene.pointclouds){
-            //  let nodes = pointcloud.nodesOnRay(pointcloud.visibleNodes, ray);
-            //  pointcloud.visibleNodes = nodes;
-
-            // }
-            // }
-
-            // const tStart = performance.now();
-            // const worldPos = new THREE.Vector3();
-            // const camPos = viewer.scene.getActiveCamera().getWorldPosition(new THREE.Vector3());
-            // let lowestDistance = Infinity;
-            // let numNodes = 0;
-
-            // viewer.scene.scene.traverse(node => {
-            //  node.getWorldPosition(worldPos);
-
-            //  const distance = worldPos.distanceTo(camPos);
-
-            //  lowestDistance = Math.min(lowestDistance, distance);
-
-            //  numNodes++;
-
-            //  if(Number.isNaN(distance)){
-            //   console.error(":(");
-            //  }
-            // });
-            // const duration = (performance.now() - tStart).toFixed(2);
-
-            // Potree.debug.computeNearDuration = duration;
-            // Potree.debug.numNodes = numNodes;
-
-            // console.log(lowestDistance.toString(2), duration);
-
-            const tStart = performance.now();
+            let result = updatePointClouds(scene.pointclouds, camera, this.renderer);
             const campos = camera.position;
             let closestImage = Infinity;
             for (const images of this.scene.orientedImages) {
@@ -1585,7 +1545,6 @@ export class Viewer extends EventDispatcher {
                     closestImage = Math.min(closestImage, distance);
                 }
             }
-            const tEnd = performance.now();
 
             if (result.lowestSpacing !== Infinity) {
                 let near = result.lowestSpacing * 10.0;
@@ -1686,7 +1645,7 @@ export class Viewer extends EventDispatcher {
                 let boxInverse = box.matrixWorld.clone().invert();
                 let boxPosition = box.getWorldPosition(new THREE.Vector3());
 
-                return {box: box, inverse: boxInverse, position: boxPosition};
+                return { box: box, inverse: boxInverse, position: boxPosition };
             });
 
             let clipPolygons = this.scene.polygonClipVolumes.filter(vol => vol.initialized);
@@ -1727,7 +1686,7 @@ export class Viewer extends EventDispatcher {
             timestamp: timestamp
         });
 
-        if (Potree.measureTimings) {
+        if (PotreeConfig.measureTimings) {
             performance.mark("update-end");
             performance.measure("update", "update-start", "update-end");
         }
@@ -1775,13 +1734,13 @@ export class Viewer extends EventDispatcher {
         let makeCam = this.vrControls.getCamera.bind(this.vrControls);
 
         { // clear framebuffer
-            if (viewer.background === "skybox") {
+            if (this.viewer.background === "skybox") {
                 renderer.setClearColor(0xff0000, 1);
-            } else if (viewer.background === "gradient") {
+            } else if (this.viewer.background === "gradient") {
                 renderer.setClearColor(0x112233, 1);
-            } else if (viewer.background === "black") {
+            } else if (this.viewer.background === "black") {
                 renderer.setClearColor(0x000000, 1);
-            } else if (viewer.background === "white") {
+            } else if (this.viewer.background === "white") {
                 renderer.setClearColor(0xFFFFFF, 1);
             } else {
                 renderer.setClearColor(0x000000, 0);
@@ -1792,7 +1751,7 @@ export class Viewer extends EventDispatcher {
 
         // render background
         if (this.background === "skybox") {
-            let {skybox} = this;
+            let { skybox } = this;
 
             let cam = makeCam();
             skybox.camera.rotation.copy(cam.rotation);
@@ -1833,8 +1792,8 @@ export class Viewer extends EventDispatcher {
             cam.position.z -= 0.8 * cam.scale.x;
             cam.parent = null;
             // cam.near = 0.05;
-            cam.near = viewer.scene.getActiveCamera().near;
-            cam.far = viewer.scene.getActiveCamera().far;
+            cam.near = this.viewer.scene.getActiveCamera().near;
+            cam.far = this.viewer.scene.getActiveCamera().far;
             cam.updateMatrix();
             cam.updateMatrixWorld();
 
@@ -1886,7 +1845,7 @@ export class Viewer extends EventDispatcher {
             }
 
             for (let pointcloud of this.scene.pointclouds) {
-                const {material} = pointcloud;
+                const { material } = pointcloud;
                 material.useEDL = false;
             }
 
@@ -1917,7 +1876,6 @@ export class Viewer extends EventDispatcher {
             const height = this.scaleFactor * this.renderArea.clientHeight;
 
             this.renderer.setSize(width, height);
-            const pixelRatio = this.renderer.getPixelRatio();
             const aspect = width / height;
 
             const scene = this.scene;
@@ -1944,7 +1902,9 @@ export class Viewer extends EventDispatcher {
     }
 
     render() {
-        if (Potree.measureTimings) performance.mark("render-start");
+        if (PotreeConfig.measureTimings) {
+            performance.mark("render-start");
+        }
 
         try {
             const vrActive = this.renderer.xr.isPresenting;
@@ -1958,14 +1918,14 @@ export class Viewer extends EventDispatcher {
             this.onCrash(e);
         }
 
-        if (Potree.measureTimings) {
+        if (PotreeConfig.measureTimings) {
             performance.mark("render-end");
             performance.measure("render", "render-start", "render-end");
         }
     }
 
     resolveTimings(timestamp) {
-        if (Potree.measureTimings) {
+        if (PotreeConfig.measureTimings) {
             if (!this.toggle) {
                 this.toggle = timestamp;
             }
@@ -1998,11 +1958,12 @@ export class Viewer extends EventDispatcher {
                     group.max = Math.max(group.max, measure.duration);
                 }
 
-                let glQueries = Potree.resolveQueries(this.renderer.getContext());
+                // TODO(mkelnar) find method
+                let glQueries = PotreeRefs.resolveQueries(this.renderer.getContext());
                 for (let [key, value] of glQueries) {
                     let group = {
                         measures: value.map(v => {
-                            return {duration: v};
+                            return { duration: v };
                         }),
                         sum: value.reduce((a, i) => a + i, 0),
                         n: value.length,
@@ -2015,7 +1976,7 @@ export class Viewer extends EventDispatcher {
                     names.add(groupname);
                 }
 
-                for (let [name, group] of groups) {
+                for (let [group] of groups) {
                     group.mean = group.sum / group.n;
                     group.measures.sort((a, b) => a.duration - b.duration);
 
@@ -2068,21 +2029,21 @@ export class Viewer extends EventDispatcher {
             this.stats.begin();
         }
 
-        if (Potree.measureTimings) {
+        if (PotreeConfig.measureTimings) {
             performance.mark("loop-start");
         }
 
         this.update(this.clock.getDelta(), timestamp);
         this.render();
 
-        if (Potree.measureTimings) {
+        if (PotreeConfig.measureTimings) {
             performance.mark("loop-end");
             performance.measure("loop", "loop-start", "loop-end");
         }
 
         this.resolveTimings(timestamp);
 
-        Potree.framenumber++;
+        PotreeConfig.framenumber++;
 
         if (this.stats) {
             this.stats.end();

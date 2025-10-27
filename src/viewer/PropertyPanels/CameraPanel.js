@@ -10,6 +10,7 @@
  * ********************************************************************************************************* */
 
 import { Utils } from "../../utils.js";
+import PotreeConfig from "../../PotreeConfig.js";
 
 export class CameraPanel {
     constructor(viewer, propertiesPanel) {
@@ -20,7 +21,7 @@ export class CameraPanel {
             this.update();
         };
 
-        let copyIconPath = Potree.resourcePath + "/icons/copy.svg";
+        let copyIconPath = PotreeConfig.resourcePath + "/icons/copy.svg";
         this.elContent = $(`
         <div class="propertypanel_content">
             <table>
@@ -60,7 +61,7 @@ export class CameraPanel {
 
             this.viewer.postMessage(
                 `Copied value to clipboard: <br>'${msg}'`,
-                {duration: 3000});
+                { duration: 3000 });
         });
 
         this.elCopyTarget = this.elContent.find("img[name=copyTarget]");
@@ -71,7 +72,7 @@ export class CameraPanel {
 
             this.viewer.postMessage(
                 `Copied value to clipboard: <br>'${msg}'`,
-                {duration: 3000});
+                { duration: 3000 });
         });
 
         this.propertiesPanel.addVolatileListener(viewer, "camera_changed", this._update);

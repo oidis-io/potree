@@ -14,7 +14,8 @@ import { Utils } from "../utils.js";
 import { Gradients } from "./Gradients.js";
 import { Shaders } from "../../build/shaders/shaders.js";
 import { ClassificationScheme } from "./ClassificationScheme.js";
-import { PointSizeType, PointShape, TreeType, ElevationGradientRepeat } from "../defines.js";
+import { ElevationGradientRepeat, PointShape, PointSizeType, TreeType } from "../defines.js";
+import PotreeConfig from "../PotreeConfig.js";
 
 //
 // how to calculate the radius of a projected sphere in screen space
@@ -52,7 +53,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
         this._gradient = Gradients.SPECTRAL;
         this.gradientTexture = PointCloudMaterial.generateGradientTexture(this._gradient);
         this._matcap = "matcap.jpg";
-        this.matcapTexture = Potree.PointCloudMaterial.generateMatcapTexture(this._matcap);
+        this.matcapTexture = PointCloudMaterial.generateMatcapTexture(this._matcap);
         this.lights = false;
         this.fog = false;
         this._treeType = treeType;
@@ -77,80 +78,80 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
         }
 
         this.attributes = {
-            position: {type: "fv", value: []},
-            color: {type: "fv", value: []},
-            normal: {type: "fv", value: []},
-            intensity: {type: "f", value: []},
-            classification: {type: "f", value: []},
-            returnNumber: {type: "f", value: []},
-            numberOfReturns: {type: "f", value: []},
-            pointSourceID: {type: "f", value: []},
-            indices: {type: "fv", value: []}
+            position: { type: "fv", value: [] },
+            color: { type: "fv", value: [] },
+            normal: { type: "fv", value: [] },
+            intensity: { type: "f", value: [] },
+            classification: { type: "f", value: [] },
+            returnNumber: { type: "f", value: [] },
+            numberOfReturns: { type: "f", value: [] },
+            pointSourceID: { type: "f", value: [] },
+            indices: { type: "fv", value: [] }
         };
 
         this.uniforms = {
-            level: {type: "f", value: 0.0},
-            vnStart: {type: "f", value: 0.0},
-            spacing: {type: "f", value: 1.0},
-            blendHardness: {type: "f", value: 2.0},
-            blendDepthSupplement: {type: "f", value: 0.0},
-            fov: {type: "f", value: 1.0},
-            screenWidth: {type: "f", value: 1.0},
-            screenHeight: {type: "f", value: 1.0},
-            near: {type: "f", value: 0.1},
-            far: {type: "f", value: 1.0},
-            uColor: {type: "c", value: new THREE.Color(0xffffff)},
-            uOpacity: {type: "f", value: 1.0},
-            size: {type: "f", value: pointSize},
-            minSize: {type: "f", value: minSize},
-            maxSize: {type: "f", value: maxSize},
-            octreeSize: {type: "f", value: 0},
-            bbSize: {type: "fv", value: [0, 0, 0]},
-            elevationRange: {type: "2fv", value: [0, 0]},
+            level: { type: "f", value: 0.0 },
+            vnStart: { type: "f", value: 0.0 },
+            spacing: { type: "f", value: 1.0 },
+            blendHardness: { type: "f", value: 2.0 },
+            blendDepthSupplement: { type: "f", value: 0.0 },
+            fov: { type: "f", value: 1.0 },
+            screenWidth: { type: "f", value: 1.0 },
+            screenHeight: { type: "f", value: 1.0 },
+            near: { type: "f", value: 0.1 },
+            far: { type: "f", value: 1.0 },
+            uColor: { type: "c", value: new THREE.Color(0xffffff) },
+            uOpacity: { type: "f", value: 1.0 },
+            size: { type: "f", value: pointSize },
+            minSize: { type: "f", value: minSize },
+            maxSize: { type: "f", value: maxSize },
+            octreeSize: { type: "f", value: 0 },
+            bbSize: { type: "fv", value: [0, 0, 0] },
+            elevationRange: { type: "2fv", value: [0, 0] },
 
-            clipBoxCount: {type: "f", value: 0},
-            clipPolygonCount: {type: "i", value: 0},
-            clipBoxes: {type: "Matrix4fv", value: []},
-            clipPolygons: {type: "3fv", value: []},
-            clipPolygonVCount: {type: "iv", value: []},
-            clipPolygonVP: {type: "Matrix4fv", value: []},
+            clipBoxCount: { type: "f", value: 0 },
+            clipPolygonCount: { type: "i", value: 0 },
+            clipBoxes: { type: "Matrix4fv", value: [] },
+            clipPolygons: { type: "3fv", value: [] },
+            clipPolygonVCount: { type: "iv", value: [] },
+            clipPolygonVP: { type: "Matrix4fv", value: [] },
 
-            visibleNodes: {type: "t", value: this.visibleNodesTexture},
-            pcIndex: {type: "f", value: 0},
-            gradient: {type: "t", value: this.gradientTexture},
-            classificationLUT: {type: "t", value: this.classificationTexture},
-            uHQDepthMap: {type: "t", value: null},
-            toModel: {type: "Matrix4f", value: []},
-            diffuse: {type: "fv", value: [1, 1, 1]},
-            transition: {type: "f", value: 0.5},
+            visibleNodes: { type: "t", value: this.visibleNodesTexture },
+            pcIndex: { type: "f", value: 0 },
+            gradient: { type: "t", value: this.gradientTexture },
+            classificationLUT: { type: "t", value: this.classificationTexture },
+            uHQDepthMap: { type: "t", value: null },
+            toModel: { type: "Matrix4f", value: [] },
+            diffuse: { type: "fv", value: [1, 1, 1] },
+            transition: { type: "f", value: 0.5 },
 
-            intensityRange: {type: "fv", value: [Infinity, -Infinity]},
+            intensityRange: { type: "fv", value: [Infinity, -Infinity] },
 
-            intensity_gbc: {type: "fv", value: [1, 0, 0]},
-            uRGB_gbc: {type: "fv", value: [1, 0, 0]},
-            wRGB: {type: "f", value: 1},
-            wIntensity: {type: "f", value: 0},
-            wElevation: {type: "f", value: 0},
-            wClassification: {type: "f", value: 0},
-            wReturnNumber: {type: "f", value: 0},
-            wSourceID: {type: "f", value: 0},
-            useOrthographicCamera: {type: "b", value: false},
-            elevationGradientRepat: {type: "i", value: ElevationGradientRepeat.CLAMP},
-            clipTask: {type: "i", value: 1},
-            clipMethod: {type: "i", value: 1},
-            uShadowColor: {type: "3fv", value: [0, 0, 0]},
+            intensityGBC: { type: "fv", value: [1, 0, 0] },
+            uRGBxGBC: { type: "fv", value: [1, 0, 0] },
+            wRGB: { type: "f", value: 1 },
+            wIntensity: { type: "f", value: 0 },
+            wElevation: { type: "f", value: 0 },
+            wClassification: { type: "f", value: 0 },
+            wReturnNumber: { type: "f", value: 0 },
+            wSourceID: { type: "f", value: 0 },
+            useOrthographicCamera: { type: "b", value: false },
+            elevationGradientRepat: { type: "i", value: ElevationGradientRepeat.CLAMP },
+            clipTask: { type: "i", value: 1 },
+            clipMethod: { type: "i", value: 1 },
+            uShadowColor: { type: "3fv", value: [0, 0, 0] },
 
-            uExtraScale: {type: "f", value: 1},
-            uExtraOffset: {type: "f", value: 0},
-            uExtraRange: {type: "2fv", value: [0, 1]},
-            uExtraGammaBrightContr: {type: "3fv", value: [1, 0, 0]},
+            uExtraScale: { type: "f", value: 1 },
+            uExtraOffset: { type: "f", value: 0 },
+            uExtraRange: { type: "2fv", value: [0, 1] },
+            uExtraGammaBrightContr: { type: "3fv", value: [1, 0, 0] },
 
-            uFilterReturnNumberRange: {type: "fv", value: [0, 7]},
-            uFilterNumberOfReturnsRange: {type: "fv", value: [0, 7]},
-            uFilterGPSTimeClipRange: {type: "fv", value: [0, 7]},
-            uFilterPointSourceIDClipRange: {type: "fv", value: [0, 65535]},
-            matcapTextureUniform: {type: "t", value: this.matcapTexture},
-            backfaceCulling: {type: "b", value: false},
+            uFilterReturnNumberRange: { type: "fv", value: [0, 7] },
+            uFilterNumberOfReturnsRange: { type: "fv", value: [0, 7] },
+            uFilterGPSTimeClipRange: { type: "fv", value: [0, 7] },
+            uFilterPointSourceIDClipRange: { type: "fv", value: [0, 65535] },
+            matcapTextureUniform: { type: "t", value: this.matcapTexture },
+            backfaceCulling: { type: "b", value: false },
         };
 
         this.classification = ClassificationScheme.DEFAULT;
@@ -268,7 +269,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
             defines.push("#define weighted_splats");
         }
 
-        for (let [key, value] of this.defines) {
+        for (let [_key, value] of this.defines) {
             defines.push(value);
         }
 
@@ -337,7 +338,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
     set matcap(value) {
         if (this._matcap !== value) {
             this._matcap = value;
-            this.matcapTexture = Potree.PointCloudMaterial.generateMatcapTexture(this._matcap);
+            this.matcapTexture = PointCloudMaterial.generateMatcapTexture(this._matcap);
             this.uniforms.matcapTextureUniform.value = this.matcapTexture;
         }
     }
@@ -359,7 +360,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
     set backfaceCulling(value) {
         if (this.uniforms.backfaceCulling.value !== value) {
             this.uniforms.backfaceCulling.value = value;
-            this.dispatchEvent({type: "backface_changed", target: this});
+            this.dispatchEvent({ type: "backface_changed", target: this });
         }
     }
 
@@ -630,7 +631,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
         if (this._shape !== value) {
             this._shape = value;
             this.updateShaderSource();
-            this.dispatchEvent({type: "point_shape_changed", target: this});
+            this.dispatchEvent({ type: "point_shape_changed", target: this });
             this.dispatchEvent({
                 type: "material_property_changed",
                 target: this
@@ -764,12 +765,12 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
     }
 
     get intensityGamma() {
-        return this.uniforms.intensity_gbc.value[0];
+        return this.uniforms.intensityGBC.value[0];
     }
 
     set intensityGamma(value) {
-        if (this.uniforms.intensity_gbc.value[0] !== value) {
-            this.uniforms.intensity_gbc.value[0] = value;
+        if (this.uniforms.intensityGBC.value[0] !== value) {
+            this.uniforms.intensityGBC.value[0] = value;
             this.dispatchEvent({
                 type: "material_property_changed",
                 target: this
@@ -778,12 +779,12 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
     }
 
     get intensityContrast() {
-        return this.uniforms.intensity_gbc.value[2];
+        return this.uniforms.intensityGBC.value[2];
     }
 
     set intensityContrast(value) {
-        if (this.uniforms.intensity_gbc.value[2] !== value) {
-            this.uniforms.intensity_gbc.value[2] = value;
+        if (this.uniforms.intensityGBC.value[2] !== value) {
+            this.uniforms.intensityGBC.value[2] = value;
             this.dispatchEvent({
                 type: "material_property_changed",
                 target: this
@@ -792,12 +793,12 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
     }
 
     get intensityBrightness() {
-        return this.uniforms.intensity_gbc.value[1];
+        return this.uniforms.intensityGBC.value[1];
     }
 
     set intensityBrightness(value) {
-        if (this.uniforms.intensity_gbc.value[1] !== value) {
-            this.uniforms.intensity_gbc.value[1] = value;
+        if (this.uniforms.intensityGBC.value[1] !== value) {
+            this.uniforms.intensityGBC.value[1] = value;
             this.dispatchEvent({
                 type: "material_property_changed",
                 target: this
@@ -806,12 +807,12 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
     }
 
     get rgbGamma() {
-        return this.uniforms.uRGB_gbc.value[0];
+        return this.uniforms.uRGBxGBC.value[0];
     }
 
     set rgbGamma(value) {
-        if (this.uniforms.uRGB_gbc.value[0] !== value) {
-            this.uniforms.uRGB_gbc.value[0] = value;
+        if (this.uniforms.uRGBxGBC.value[0] !== value) {
+            this.uniforms.uRGBxGBC.value[0] = value;
             this.dispatchEvent({
                 type: "material_property_changed",
                 target: this
@@ -820,12 +821,12 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
     }
 
     get rgbContrast() {
-        return this.uniforms.uRGB_gbc.value[2];
+        return this.uniforms.uRGBxGBC.value[2];
     }
 
     set rgbContrast(value) {
-        if (this.uniforms.uRGB_gbc.value[2] !== value) {
-            this.uniforms.uRGB_gbc.value[2] = value;
+        if (this.uniforms.uRGBxGBC.value[2] !== value) {
+            this.uniforms.uRGBxGBC.value[2] = value;
             this.dispatchEvent({
                 type: "material_property_changed",
                 target: this
@@ -834,12 +835,12 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
     }
 
     get rgbBrightness() {
-        return this.uniforms.uRGB_gbc.value[1];
+        return this.uniforms.uRGBxGBC.value[1];
     }
 
     set rgbBrightness(value) {
-        if (this.uniforms.uRGB_gbc.value[1] !== value) {
-            this.uniforms.uRGB_gbc.value[1] = value;
+        if (this.uniforms.uRGBxGBC.value[1] !== value) {
+            this.uniforms.uRGBxGBC.value[1] = value;
             this.dispatchEvent({
                 type: "material_property_changed",
                 target: this
@@ -1057,7 +1058,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
     }
 
     static generateMatcapTexture(matcap) {
-        var url = new URL(Potree.resourcePath + "/textures/matcap/" + matcap).href;
+        let url = new URL(PotreeConfig.resourcePath + "/textures/matcap/" + matcap).href;
         let texture = new THREE.TextureLoader().load(url);
         texture.magFilter = texture.minFilter = THREE.LinearFilter;
         texture.needsUpdate = true;

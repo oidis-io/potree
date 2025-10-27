@@ -10,6 +10,7 @@
  * ********************************************************************************************************* */
 
 import { Utils } from "../../utils.js";
+import PotreeConfig from "../../PotreeConfig.js";
 
 export class MeasurePanel {
     constructor(viewer, measurement, propertiesPanel) {
@@ -34,7 +35,7 @@ export class MeasurePanel {
             </table>
         `);
 
-        let copyIconPath = Potree.resourcePath + "/icons/copy.svg";
+        let copyIconPath = PotreeConfig.resourcePath + "/icons/copy.svg";
 
         for (let point of points) {
             let x = Utils.addCommas(point.x.toFixed(3));
@@ -59,7 +60,7 @@ export class MeasurePanel {
 
                 this.viewer.postMessage(
                     `Copied value to clipboard: <br>'${msg}'`,
-                    {duration: 3000});
+                    { duration: 3000 });
             });
 
             table.append(row);
@@ -75,7 +76,7 @@ export class MeasurePanel {
 
         for (let attributeName of Object.keys(point)) {
             if (attributeName === "position") {
-
+                // dummy
             } else if (attributeName === "rgba") {
                 let color = point.rgba;
                 let text = color.join(", ");

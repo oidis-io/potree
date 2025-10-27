@@ -9,6 +9,7 @@
  * ********************************************************************************************************* */
 
 import terser from "@rollup/plugin-terser";
+import commonjs from "@rollup/plugin-commonjs";
 
 const year = new Date().getFullYear();
 const banner = `/*! ******************************************************************************************************** *
@@ -40,7 +41,12 @@ export default [
             sourcemap: true
         },
         plugins: [
+            commonjs(),
             terser(terserOptions)
+        ],
+        external: [
+            "libs/*",
+            "pointclouds/*"
         ]
     },
     {
@@ -53,6 +59,10 @@ export default [
         },
         plugins: [
             terser(terserOptions)
+        ],
+        external: [
+            "libs/*",
+            "pointclouds/*"
         ]
     },
     {
@@ -65,6 +75,10 @@ export default [
         },
         plugins: [
             terser(terserOptions)
+        ],
+        external: [
+            "libs/*",
+            "pointclouds/*"
         ]
     },
     {
@@ -77,6 +91,10 @@ export default [
         },
         plugins: [
             terser(terserOptions)
+        ],
+        external: [
+            "libs/*",
+            "pointclouds/*"
         ]
     }
 ];

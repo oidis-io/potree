@@ -91,9 +91,9 @@ export class ClipVolume extends THREE.Object3D {
         this.boundingBox = this.box.geometry.boundingBox;
         this.add(this.box);
 
-        this.frame = new THREE.LineSegments(boxFrameGeometry, new THREE.LineBasicMaterial({color: 0x000000}));
+        this.frame = new THREE.LineSegments(boxFrameGeometry, new THREE.LineBasicMaterial({ color: 0x000000 }));
         this.add(this.frame);
-        this.planeFrame = new THREE.LineSegments(planeFrameGeometry, new THREE.LineBasicMaterial({color: 0xff0000}));
+        this.planeFrame = new THREE.LineSegments(planeFrameGeometry, new THREE.LineBasicMaterial({ color: 0xff0000 }));
         this.add(this.planeFrame);
 
         // set default thickness
@@ -161,15 +161,15 @@ export class ClipVolume extends THREE.Object3D {
                 this.arrowZ.visible = false;
             });
             this.addEventListener("select", e => {
-                let scene_header = $("#" + this.name + " .scene_header");
-                if (!scene_header.next().is(":visible")) {
-                    scene_header.click();
+                let sceneHeader = $("#" + this.name + " .scene_header");
+                if (!sceneHeader.next().is(":visible")) {
+                    sceneHeader.click();
                 }
             });
             this.addEventListener("deselect", e => {
-                let scene_header = $("#" + this.name + " .scene_header");
-                if (scene_header.next().is(":visible")) {
-                    scene_header.click();
+                let sceneHeader = $("#" + this.name + " .scene_header");
+                if (sceneHeader.next().is(":visible")) {
+                    sceneHeader.click();
                 }
             });
         }
@@ -208,7 +208,9 @@ export class ClipVolume extends THREE.Object3D {
         let axis = args.axis || null;
         let dir = args.dir || null;
 
-        if (!cs || !axis || !dir) return;
+        if (!cs || !axis || !dir) {
+            return;
+        }
 
         if (axis === "x") {
             if (cs === "local") {
@@ -230,7 +232,7 @@ export class ClipVolume extends THREE.Object3D {
             }
         }
 
-        this.dispatchEvent({"type": "clip_volume_changed", "viewer": viewer, "volume": this});
+        this.dispatchEvent({ "type": "clip_volume_changed", "viewer": this.viewer, "volume": this });
     }
 
     rotate(args) {
@@ -238,7 +240,9 @@ export class ClipVolume extends THREE.Object3D {
         let axis = args.axis || null;
         let dir = args.dir || null;
 
-        if (!cs || !axis || !dir) return;
+        if (!cs || !axis || !dir) {
+            return;
+        }
 
         if (cs === "local") {
             if (axis === "x") {
@@ -256,7 +260,7 @@ export class ClipVolume extends THREE.Object3D {
                 rotaxis = new THREE.Vector4(0, 0, 1, 0);
             }
             this.updateMatrixWorld();
-            let invM = newthis.matrixWorld.clone().invert();
+            let invM = this.matrixWorld.clone().invert();
             rotaxis = rotaxis.applyMatrix4(invM).normalize();
             rotaxis = new THREE.Vector3(rotaxis.x, rotaxis.y, rotaxis.z);
             this.rotateOnAxis(rotaxis, dir * this.clipRotOffset * Math.PI / 180);
@@ -264,7 +268,7 @@ export class ClipVolume extends THREE.Object3D {
 
         this.updateLocalSystem();
 
-        this.dispatchEvent({"type": "clip_volume_changed", "viewer": viewer, "volume": this});
+        this.dispatchEvent({ "type": "clip_volume_changed", "viewer": this.viewer, "volume": this });
     }
 
     update() {

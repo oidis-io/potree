@@ -12,8 +12,9 @@
 import * as THREE from "../../libs/three.js/build/three.module.js";
 import { PointCloudTree, PointCloudTreeNode } from "../PointCloudTree.js";
 import { PointCloudMaterial } from "../materials/PointCloudMaterial.js";
-import { PointSizeType, ClipTask, TreeType } from "../defines.js";
+import { ClipTask, PointSizeType, TreeType } from "../defines.js";
 import { Utils } from "../utils.js";
+import PotreeConfig from "../PotreeConfig.js";
 
 export class PointCloudArena4DNode extends PointCloudTreeNode {
     constructor() {
@@ -122,7 +123,7 @@ export class PointCloudArena4D extends PointCloudTree {
         this.pcoGeometry = geometry;
         this.boundingBox = this.pcoGeometry.boundingBox;
         this.boundingSphere = this.pcoGeometry.boundingSphere;
-        this.material = new PointCloudMaterial({vertexColors: THREE.VertexColors, size: 0.05, treeType: TreeType.KDTREE});
+        this.material = new PointCloudMaterial({ vertexColors: THREE.VertexColors, size: 0.05, treeType: TreeType.KDTREE });
         this.material.sizeType = PointSizeType.ATTENUATED;
         this.material.size = 0.05;
         this.profileRequests = [];
@@ -141,7 +142,7 @@ export class PointCloudArena4D extends PointCloudTree {
     setName(name) {
         if (this.name !== name) {
             this.name = name;
-            this.dispatchEvent({type: "name_changed", name: name, pointcloud: this});
+            this.dispatchEvent({ type: "name_changed", name: name, pointcloud: this });
         }
     }
 
@@ -266,7 +267,9 @@ export class PointCloudArena4D extends PointCloudTree {
     updateMatrixWorld(force) {
         // node.matrixWorld.multiplyMatrices( node.parent.matrixWorld, node.matrix );
 
-        if (this.matrixAutoUpdate === true) this.updateMatrix();
+        if (this.matrixAutoUpdate === true) {
+            this.updateMatrix();
+        }
 
         if (this.matrixWorldNeedsUpdate === true || force === true) {
             if (this.parent === undefined) {
@@ -310,7 +313,6 @@ export class PointCloudArena4D extends PointCloudTree {
         let getVal = (a, b) => a !== undefined ? a : b;
 
         let pickWindowSize = getVal(params.pickWindowSize, 17);
-        let pickOutsideClipRegion = getVal(params.pickOutsideClipRegion, false);
 
         let size = renderer.getSize(new THREE.Vector2());
 
@@ -424,7 +426,6 @@ export class PointCloudArena4D extends PointCloudTree {
         let ibuffer = new Uint32Array(buffer.buffer);
 
         // find closest hit inside pixelWindow boundaries
-        let min = Number.MAX_VALUE;
         let hits = [];
         for (let u = 0; u < pickWindowSize; u++) {
             for (let v = 0; v < pickWindowSize; v++) {
@@ -481,7 +482,7 @@ export class PointCloudArena4D extends PointCloudTree {
 
                     point[attributeName] = position;
                 } else if (attributeName === "indices") {
-
+                    // dummy
                 } else {
                     // if (values.itemSize === 1) {
                     // point[attribute.name] = values.array[hit.pIndex];
@@ -513,7 +514,9 @@ export class PointCloudArena4D extends PointCloudTree {
     }
 
     computeVisibilityTextureData(nodes) {
-        if (exports.measureTimings) performance.mark("computeVisibilityTextureData-start");
+        if (PotreeConfig.measureTimings) {
+            performance.mark("computeVisibilityTextureData-start");
+        }
 
         let data = new Uint8Array(nodes.length * 3);
         let visibleNodeTextureOffsets = new Map();
@@ -527,9 +530,15 @@ export class PointCloudArena4D extends PointCloudTree {
             let lb = b.geometryNode.level;
             let na = a.geometryNode.number;
             let nb = b.geometryNode.number;
-            if (la !== lb) return la - lb;
-            if (na < nb) return -1;
-            if (na > nb) return 1;
+            if (la !== lb) {
+                return la - lb;
+            }
+            if (na < nb) {
+                return -1;
+            }
+            if (na > nb) {
+                return 1;
+            }
             return 0;
         };
         nodes.sort(sort);
@@ -570,7 +579,7 @@ export class PointCloudArena4D extends PointCloudTree {
             data[i * 3 + 2] = b3;
         }
 
-        if (exports.measureTimings) {
+        if (PotreeConfig.measureTimings) {
             performance.mark("computeVisibilityTextureData-end");
             performance.measure("render.computeVisibilityTextureData", "computeVisibilityTextureData-start", "computeVisibilityTextureData-end");
         }
@@ -583,7 +592,7 @@ export class PointCloudArena4D extends PointCloudTree {
 
     get progress() {
         if (this.pcoGeometry.root) {
-            return exports.numNodesLoading > 0 ? 0 : 1;
+            return PotreeConfig.numNodesLoading > 0 ? 0 : 1;
         } else {
             return 0;
         }

@@ -19,12 +19,10 @@
  * @author alteredq / http://alteredqualia.com/
  * @author WestLangley / http://github.com/WestLangley
  * @author erich666 / http://erichaines.com
- *
- *
- *
  */
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
+import TWEEN from "../../libs/tween/tween.min.js";
 import { MOUSE } from "../defines.js";
 import { Utils } from "../utils.js";
 import { EventDispatcher } from "../EventDispatcher.js";
@@ -59,7 +57,7 @@ export class OrbitControls extends EventDispatcher {
             if (e.drag.startHandled === undefined) {
                 e.drag.startHandled = true;
 
-                this.dispatchEvent({type: "start"});
+                this.dispatchEvent({ type: "start" });
             }
 
             let ndrag = {
@@ -81,7 +79,7 @@ export class OrbitControls extends EventDispatcher {
         };
 
         let drop = e => {
-            this.dispatchEvent({type: "end"});
+            this.dispatchEvent({ type: "end" });
         };
 
         let scroll = (e) => {
@@ -178,7 +176,7 @@ export class OrbitControls extends EventDispatcher {
             camera,
             this.viewer,
             this.scene.pointclouds,
-            {pickClipped: true});
+            { pickClipped: true });
 
         if (I === null) {
             return;
@@ -204,8 +202,8 @@ export class OrbitControls extends EventDispatcher {
         let easing = TWEEN.Easing.Quartic.Out;
 
         { // animate
-            let value = {x: 0};
-            let tween = new TWEEN.Tween(value).to({x: 1}, animationDuration);
+            let value = { x: 0 };
+            let tween = new TWEEN.Tween(value).to({ x: 1 }, animationDuration);
             tween.easing(easing);
             this.tweens.push(tween);
 

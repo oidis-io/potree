@@ -242,7 +242,7 @@ export class Scene extends EventDispatcher {
     }
 
     removeCameraAnimation(animation) {
-        let index = this.cameraAnimations.indexOf(volume);
+        let index = this.cameraAnimations.indexOf(animation);
         if (index > -1) {
             this.cameraAnimations.splice(index, 1);
 

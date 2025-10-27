@@ -23,7 +23,9 @@ import * as THREE from "../../libs/three.js/build/three.module.js";
 
 export class Box3Helper extends THREE.LineSegments {
     constructor(box, color) {
-        if (color === undefined) color = 0xffff00;
+        if (color === undefined) {
+            color = 0xffff00;
+        }
 
         let indices = new Uint16Array([0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7]);
         let positions = new Float32Array([
@@ -41,7 +43,7 @@ export class Box3Helper extends THREE.LineSegments {
         geometry.setIndex(new THREE.BufferAttribute(indices, 1));
         geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
 
-        let material = new THREE.LineBasicMaterial({color: color});
+        let material = new THREE.LineBasicMaterial({ color: color });
 
         super(geometry, material);
     }

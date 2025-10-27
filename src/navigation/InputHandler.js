@@ -88,7 +88,9 @@ export class InputHandler extends EventDispatcher {
     }
 
     onTouchStart(e) {
-        if (this.logMessages) console.log(this.constructor.name + ": onTouchStart");
+        if (this.logMessages) {
+            console.log(this.constructor.name + ": onTouchStart");
+        }
 
         e.preventDefault();
 
@@ -111,7 +113,9 @@ export class InputHandler extends EventDispatcher {
     }
 
     onTouchEnd(e) {
-        if (this.logMessages) console.log(this.constructor.name + ": onTouchEnd");
+        if (this.logMessages) {
+            console.log(this.constructor.name + ": onTouchEnd");
+        }
 
         e.preventDefault();
 
@@ -135,7 +139,9 @@ export class InputHandler extends EventDispatcher {
     }
 
     onTouchMove(e) {
-        if (this.logMessages) console.log(this.constructor.name + ": onTouchMove");
+        if (this.logMessages) {
+            console.log(this.constructor.name + ": onTouchMove");
+        }
 
         e.preventDefault();
 
@@ -153,7 +159,9 @@ export class InputHandler extends EventDispatcher {
 
                 this.drag.end.set(x, y);
 
-                if (this.logMessages) console.log(this.constructor.name + ": drag: ");
+                if (this.logMessages) {
+                    console.log(this.constructor.name + ": drag: ");
+                }
                 for (let inputListener of this.getSortedListeners()) {
                     inputListener.dispatchEvent({
                         type: "drag",
@@ -174,7 +182,9 @@ export class InputHandler extends EventDispatcher {
     }
 
     onKeyDown(e) {
-        if (this.logMessages) console.log(this.constructor.name + ": onKeyDown");
+        if (this.logMessages) {
+            console.log(this.constructor.name + ": onKeyDown");
+        }
 
         // DELETE
         if (e.keyCode === KeyCodes.DELETE && this.selection.length > 0) {
@@ -196,7 +206,9 @@ export class InputHandler extends EventDispatcher {
     }
 
     onKeyUp(e) {
-        if (this.logMessages) console.log(this.constructor.name + ": onKeyUp");
+        if (this.logMessages) {
+            console.log(this.constructor.name + ": onKeyUp");
+        }
 
         delete this.pressedKeys[e.keyCode];
 
@@ -204,7 +216,9 @@ export class InputHandler extends EventDispatcher {
     }
 
     onDoubleClick(e) {
-        if (this.logMessages) console.log(this.constructor.name + ": onDoubleClick");
+        if (this.logMessages) {
+            console.log(this.constructor.name + ": onDoubleClick");
+        }
 
         let consumed = false;
         for (let hovered of this.hoveredElements) {
@@ -233,13 +247,17 @@ export class InputHandler extends EventDispatcher {
     }
 
     onMouseClick(e) {
-        if (this.logMessages) console.log(this.constructor.name + ": onMouseClick");
+        if (this.logMessages) {
+            console.log(this.constructor.name + ": onMouseClick");
+        }
 
         e.preventDefault();
     }
 
     onMouseDown(e) {
-        if (this.logMessages) console.log(this.constructor.name + ": onMouseDown");
+        if (this.logMessages) {
+            console.log(this.constructor.name + ": onMouseDown");
+        }
 
         e.preventDefault();
 
@@ -278,7 +296,7 @@ export class InputHandler extends EventDispatcher {
                     el.object._listeners["drag"].length > 0));
 
             if (target) {
-                this.startDragging(target.object, {location: target.point});
+                this.startDragging(target.object, { location: target.point });
             } else {
                 this.startDragging(null);
             }
@@ -290,7 +308,9 @@ export class InputHandler extends EventDispatcher {
     }
 
     onMouseUp(e) {
-        if (this.logMessages) console.log(this.constructor.name + ": onMouseUp");
+        if (this.logMessages) {
+            console.log(this.constructor.name + ": onMouseUp");
+        }
 
         e.preventDefault();
 
@@ -328,7 +348,9 @@ export class InputHandler extends EventDispatcher {
 
         if (this.drag) {
             if (this.drag.object) {
-                if (this.logMessages) console.log(`${this.constructor.name}: drop ${this.drag.object.name}`);
+                if (this.logMessages) {
+                    console.log(`${this.constructor.name}: drop ${this.drag.object.name}`);
+                }
                 this.drag.object.dispatchEvent({
                     type: "drop",
                     drag: this.drag,
@@ -348,7 +370,9 @@ export class InputHandler extends EventDispatcher {
             // check for a click
             let clicked = this.hoveredElements.map(h => h.object).find(v => v === this.drag.object) !== undefined;
             if (clicked) {
-                if (this.logMessages) console.log(`${this.constructor.name}: click ${this.drag.object.name}`);
+                if (this.logMessages) {
+                    console.log(`${this.constructor.name}: click ${this.drag.object.name}`);
+                }
                 this.drag.object.dispatchEvent({
                     type: "click",
                     viewer: this.viewer,
@@ -397,7 +421,9 @@ export class InputHandler extends EventDispatcher {
         let hoveredElements = this.getHoveredElements();
         if (hoveredElements.length > 0) {
             let names = hoveredElements.map(h => h.object.name).join(", ");
-            if (this.logMessages) console.log(`${this.constructor.name}: onMouseMove; hovered: '${names}'`);
+            if (this.logMessages) {
+                console.log(`${this.constructor.name}: onMouseMove; hovered: '${names}'`);
+            }
         }
 
         if (this.drag) {
@@ -409,14 +435,18 @@ export class InputHandler extends EventDispatcher {
             this.drag.end.set(x, y);
 
             if (this.drag.object) {
-                if (this.logMessages) console.log(this.constructor.name + ": drag: " + this.drag.object.name);
+                if (this.logMessages) {
+                    console.log(this.constructor.name + ": drag: " + this.drag.object.name);
+                }
                 this.drag.object.dispatchEvent({
                     type: "drag",
                     drag: this.drag,
                     viewer: this.viewer
                 });
             } else {
-                if (this.logMessages) console.log(this.constructor.name + ": drag: ");
+                if (this.logMessages) {
+                    console.log(this.constructor.name + ": drag: ");
+                }
 
                 let dragConsumed = false;
                 for (let inputListener of this.getSortedListeners()) {
@@ -440,14 +470,18 @@ export class InputHandler extends EventDispatcher {
 
             if (curr !== prev) {
                 if (curr) {
-                    if (this.logMessages) console.log(`${this.constructor.name}: mouseover: ${curr.name}`);
+                    if (this.logMessages) {
+                        console.log(`${this.constructor.name}: mouseover: ${curr.name}`);
+                    }
                     curr.dispatchEvent({
                         type: "mouseover",
                         object: curr,
                     });
                 }
                 if (prev) {
-                    if (this.logMessages) console.log(`${this.constructor.name}: mouseleave: ${prev.name}`);
+                    if (this.logMessages) {
+                        console.log(`${this.constructor.name}: mouseleave: ${prev.name}`);
+                    }
                     prev.dispatchEvent({
                         type: "mouseleave",
                         object: prev,
@@ -473,9 +507,13 @@ export class InputHandler extends EventDispatcher {
     }
 
     onMouseWheel(e) {
-        if (!this.enabled) return;
+        if (!this.enabled) {
+            return;
+        }
 
-        if (this.logMessages) console.log(this.constructor.name + ": onMouseWheel");
+        if (this.logMessages) {
+            console.log(this.constructor.name + ": onMouseWheel");
+        }
 
         e.preventDefault();
 
@@ -507,7 +545,9 @@ export class InputHandler extends EventDispatcher {
 
     startDragging(object, args = null) {
         let name = object ? object.name : "no name";
-        if (this.logMessages) console.log(`${this.constructor.name}: startDragging: '${name}'`);
+        if (this.logMessages) {
+            console.log(`${this.constructor.name}: startDragging: '${name}'`);
+        }
 
         this.drag = {
             start: this.mouse.clone(),

@@ -10,11 +10,13 @@
  * ********************************************************************************************************* */
 
 import * as THREE from "../libs/three.js/build/three.module.js";
+import TWEEN from "../libs/tween/tween.min.js";
 import { XHRFactory } from "./XHRFactory.js";
 import { Volume } from "./utils/Volume.js";
 import { Profile } from "./utils/Profile.js";
 import { Measure } from "./utils/Measure.js";
 import { PolygonClipVolume } from "./utils/PolygonClipVolume.js";
+import PotreeConfig from "./PotreeConfig.js";
 
 export class Utils {
     static async loadShapefileFeatures(file, callback) {
@@ -69,7 +71,7 @@ export class Utils {
         let material;
 
         if (color !== undefined) {
-            material = new THREE.MeshBasicMaterial({color: color});
+            material = new THREE.MeshBasicMaterial({ color: color });
         } else {
             material = new THREE.MeshNormalMaterial();
         }
@@ -82,7 +84,7 @@ export class Utils {
     }
 
     static debugLine(parent, start, end, color) {
-        let material = new THREE.LineBasicMaterial({color: color});
+        let material = new THREE.LineBasicMaterial({ color: color });
         let geometry = new THREE.Geometry();
 
         const p1 = new THREE.Vector3(0, 0, 0);
@@ -108,7 +110,7 @@ export class Utils {
     }
 
     static debugCircle(parent, center, radius, normal, color) {
-        let material = new THREE.LineBasicMaterial({color: color});
+        let material = new THREE.LineBasicMaterial({ color: color });
 
         let geometry = new THREE.Geometry();
 
@@ -161,14 +163,14 @@ export class Utils {
         let center = box.getCenter(new THREE.Vector3());
 
         let centroids = [
-            {position: [box.min.x, center.y, center.z], color: 0xFF0000},
-            {position: [box.max.x, center.y, center.z], color: 0x880000},
+            { position: [box.min.x, center.y, center.z], color: 0xFF0000 },
+            { position: [box.max.x, center.y, center.z], color: 0x880000 },
 
-            {position: [center.x, box.min.y, center.z], color: 0x00FF00},
-            {position: [center.x, box.max.y, center.z], color: 0x008800},
+            { position: [center.x, box.min.y, center.z], color: 0x00FF00 },
+            { position: [center.x, box.max.y, center.z], color: 0x008800 },
 
-            {position: [center.x, center.y, box.min.z], color: 0x0000FF},
-            {position: [center.x, center.y, box.max.z], color: 0x000088},
+            { position: [center.x, center.y, box.min.z], color: 0x0000FF },
+            { position: [center.x, center.y, box.max.z], color: 0x000088 },
         ];
 
         for (let vertex of vertices) {
@@ -246,10 +248,8 @@ export class Utils {
      * code from http://stackoverflow.com/questions/10343913/how-to-create-a-web-worker-from-a-string
      */
     static createWorker(code) {
-        let blob = new Blob([code], {type: "application/javascript"});
-        let worker = new Worker(URL.createObjectURL(blob));
-
-        return worker;
+        let blob = new Blob([code], { type: "application/javascript" });
+        return new Worker(URL.createObjectURL(blob));
     }
 
     static moveTo(scene, endPosition, endTarget) {
@@ -337,7 +337,7 @@ export class Utils {
         parent.children.push(camera);
         camera.parent = parent;
 
-        return {camera, scene, parent};
+        return { camera, scene, parent };
     }
 
     static createGrid(width, length, spacing, color) {
@@ -493,9 +493,7 @@ export class Utils {
         imageData.data.set(pixels);
         context.putImageData(imageData, 0, 0);
 
-        let dataURL = canvas.toDataURL();
-
-        return dataURL;
+        return canvas.toDataURL();
     }
 
     static pixelsArrayToCanvas(pixels, width, height) {
@@ -545,9 +543,7 @@ export class Utils {
         vector.unproject(camera);
         let direction = new THREE.Vector3().subVectors(vector, origin).normalize();
 
-        let ray = new THREE.Ray(origin, direction);
-
-        return ray;
+        return new THREE.Ray(origin, direction);
     }
 
     static projectedRadius(radius, camera, distance, screenWidth, screenHeight) {
@@ -623,7 +619,6 @@ export class Utils {
         let closestNode = null;
         let closestIndex = Infinity;
         let closestDistance = Infinity;
-        let closestValue = 0;
 
         for (const node of nodes) {
             const isOkay = node.geometryNode != null
@@ -646,16 +641,14 @@ export class Utils {
                 if (distance < closestDistance) {
                     closestIndex = i;
                     closestDistance = distance;
-                    closestValue = value;
                     closestNode = node;
-                    // console.log("found a closer one: " + value);
                 }
             }
         }
 
         const geometry = closestNode.geometryNode.geometry;
         const position = new THREE.Vector3(
-            geometry.attributes.position.array[3 * closestIndex + 0],
+            geometry.attributes.position.array[3 * closestIndex],
             geometry.attributes.position.array[3 * closestIndex + 1],
             geometry.attributes.position.array[3 * closestIndex + 2],
         );
@@ -674,7 +667,6 @@ export class Utils {
     }
 
     /**
-     *
      * 0: no intersection
      * 1: intersection
      * 2: fully inside
@@ -821,24 +813,24 @@ export class Utils {
     static getMeasurementIcon(measurement) {
         if (measurement instanceof Measure) {
             if (measurement.showDistances && !measurement.showArea && !measurement.showAngles) {
-                return `${Potree.resourcePath}/icons/distance.svg`;
+                return `${PotreeConfig.resourcePath}/icons/distance.svg`;
             } else if (measurement.showDistances && measurement.showArea && !measurement.showAngles) {
-                return `${Potree.resourcePath}/icons/area.svg`;
+                return `${PotreeConfig.resourcePath}/icons/area.svg`;
             } else if (measurement.maxMarkers === 1) {
-                return `${Potree.resourcePath}/icons/point.svg`;
+                return `${PotreeConfig.resourcePath}/icons/point.svg`;
             } else if (!measurement.showDistances && !measurement.showArea && measurement.showAngles) {
-                return `${Potree.resourcePath}/icons/angle.png`;
+                return `${PotreeConfig.resourcePath}/icons/angle.png`;
             } else if (measurement.showHeight) {
-                return `${Potree.resourcePath}/icons/height.svg`;
+                return `${PotreeConfig.resourcePath}/icons/height.svg`;
             } else {
-                return `${Potree.resourcePath}/icons/distance.svg`;
+                return `${PotreeConfig.resourcePath}/icons/distance.svg`;
             }
         } else if (measurement instanceof Profile) {
-            return `${Potree.resourcePath}/icons/profile.svg`;
+            return `${PotreeConfig.resourcePath}/icons/profile.svg`;
         } else if (measurement instanceof Volume) {
-            return `${Potree.resourcePath}/icons/volume.svg`;
+            return `${PotreeConfig.resourcePath}/icons/volume.svg`;
         } else if (measurement instanceof PolygonClipVolume) {
-            return `${Potree.resourcePath}/icons/clip-polygon.svg`;
+            return `${PotreeConfig.resourcePath}/icons/clip-polygon.svg`;
         }
     }
 
@@ -846,21 +838,16 @@ export class Utils {
         const P = [P0, P1, P2, P3];
 
         const d = (m, n, o, p) => {
-            let result =
-                (P[m].x - P[n].x) * (P[o].x - P[p].x)
+            return (P[m].x - P[n].x) * (P[o].x - P[p].x)
                 + (P[m].y - P[n].y) * (P[o].y - P[p].y)
                 + (P[m].z - P[n].z) * (P[o].z - P[p].z);
-
-            return result;
         };
 
         const mua = (d(0, 2, 3, 2) * d(3, 2, 1, 0) - d(0, 2, 1, 0) * d(3, 2, 3, 2))
-        /** -----------------------------------------------------------------**/ /
-            (d(1, 0, 1, 0) * d(3, 2, 3, 2) - d(3, 2, 1, 0) * d(3, 2, 1, 0));
+            / (d(1, 0, 1, 0) * d(3, 2, 3, 2) - d(3, 2, 1, 0) * d(3, 2, 1, 0));
 
         const mub = (d(0, 2, 3, 2) + mua * d(3, 2, 1, 0))
-        /** --------------------------------------**/ /
-            d(3, 2, 3, 2);
+            / d(3, 2, 3, 2);
 
         const P01 = P1.clone().sub(P0);
         const P23 = P3.clone().sub(P2);
@@ -868,9 +855,7 @@ export class Utils {
         const Pa = P0.clone().add(P01.multiplyScalar(mua));
         const Pb = P2.clone().add(P23.multiplyScalar(mub));
 
-        const center = Pa.clone().add(Pb).multiplyScalar(0.5);
-
-        return center;
+        return Pa.clone().add(Pb).multiplyScalar(0.5);
     }
 
     static computeCircleCenter(A, B, C) {
@@ -879,21 +864,19 @@ export class Utils {
 
         const N = AC.clone().cross(AB).normalize();
 
-        const ab_dir = AB.clone().cross(N).normalize();
-        const ac_dir = AC.clone().cross(N).normalize();
+        const abDir = AB.clone().cross(N).normalize();
+        const acDir = AC.clone().cross(N).normalize();
 
-        const ab_origin = A.clone().add(B).multiplyScalar(0.5);
-        const ac_origin = A.clone().add(C).multiplyScalar(0.5);
+        const abOrigin = A.clone().add(B).multiplyScalar(0.5);
+        const acOrigin = A.clone().add(C).multiplyScalar(0.5);
 
-        const P0 = ab_origin;
-        const P1 = ab_origin.clone().add(ab_dir);
+        const P0 = abOrigin;
+        const P1 = abOrigin.clone().add(abDir);
 
-        const P2 = ac_origin;
-        const P3 = ac_origin.clone().add(ac_dir);
+        const P2 = acOrigin;
+        const P3 = acOrigin.clone().add(acDir);
 
-        const center = Utils.lineToLineIntersection(P0, P1, P2, P3);
-
-        return center;
+        return Utils.lineToLineIntersection(P0, P1, P2, P3);
     }
 
     static getNorthVec(p1, distance, projection) {
@@ -915,9 +898,7 @@ export class Utils {
         } else {
             // if there is no projection, assume [0, 1, 0] as north direction
 
-            const vec = new THREE.Vector3(0, 1, 0).multiplyScalar(distance);
-
-            return vec;
+            return new THREE.Vector3(0, 1, 0).multiplyScalar(distance);
         }
     }
 

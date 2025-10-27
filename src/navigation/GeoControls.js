@@ -51,37 +51,10 @@ export class GeoControls extends EventDispatcher {
         this.rotateSpeed = 1.0;
         this.moveSpeed = 10.0;
 
-        let rotateStart = new THREE.Vector2();
-        let rotateEnd = new THREE.Vector2();
-        let rotateDelta = new THREE.Vector2();
-
-        let panStart = new THREE.Vector2();
-        let panEnd = new THREE.Vector2();
-        let panDelta = new THREE.Vector2();
-        let panOffset = new THREE.Vector3();
-
-        // TODO Unused: let offset = new THREE.Vector3();
-
-        let phiDelta = 0;
-        let thetaDelta = 0;
-        let pan = new THREE.Vector3();
-
         this.shiftDown = false;
-
-        let lastPosition = new THREE.Vector3();
-
-        let STATE = {NONE: -1, ROTATE: 0, SPEEDCHANGE: 1, PAN: 2};
-
-        let state = STATE.NONE;
 
         // for reset
         this.position0 = this.object.position.clone();
-
-        // events
-
-        let changeEvent = {type: "change"};
-        let startEvent = {type: "start"};
-        let endEvent = {type: "end"};
 
         this.domElement.addEventListener("contextmenu", (event) => {
             event.preventDefault();
@@ -307,7 +280,7 @@ export class GeoControls extends EventDispatcher {
         }
 
         if (proposeTransformEvent.objections > 0) {
-
+            // dummy
         } else {
             object.position.copy(this.object.position);
         }
@@ -338,8 +311,10 @@ export class GeoControls extends EventDispatcher {
         this.object.position.copy(this.position0);
     }
 
-    onMouseDown() {
-        if (this.enabled === false) return;
+    onMouseDown(event) {
+        if (this.enabled === false) {
+            return;
+        }
         event.preventDefault();
 
         if (event.button === 0) {
@@ -358,7 +333,9 @@ export class GeoControls extends EventDispatcher {
     }
 
     onMouseMove(event) {
-        if (this.enabled === false) return;
+        if (this.enabled === false) {
+            return;
+        }
 
         event.preventDefault();
 
@@ -385,7 +362,9 @@ export class GeoControls extends EventDispatcher {
     }
 
     onMouseUp(event) {
-        if (this.enabled === false) return;
+        if (this.enabled === false) {
+            return;
+        }
 
         if (event.button === 2) {
             this.moveForwardMouse = false;
@@ -396,7 +375,9 @@ export class GeoControls extends EventDispatcher {
     }
 
     onMouseWheel(event) {
-        if (this.enabled === false || this.noZoom === true) return;
+        if (this.enabled === false || this.noZoom === true) {
+            return;
+        }
 
         event.preventDefault();
 
@@ -421,7 +402,9 @@ export class GeoControls extends EventDispatcher {
     }
 
     onKeyDown(event) {
-        if (this.enabled === false) return;
+        if (this.enabled === false) {
+            return;
+        }
 
         this.shiftDown = event.shiftKey;
 

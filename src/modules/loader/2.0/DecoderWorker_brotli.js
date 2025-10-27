@@ -9,7 +9,6 @@
  *
  * ********************************************************************************************************* */
 
-// import {Version} from "../../Version.js";
 import { PointAttribute, PointAttributeTypes } from "../../../loader/PointAttributes.js";
 import { BrotliDecode } from "../../../../libs/brotli/decode.js";
 
@@ -58,21 +57,17 @@ function dealign24b(mortoncode) {
     return x;
 }
 
-let mask_b0 = new Uint8Array([0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 3, 2, 3]);
-
 onmessage = function (event) {
-    let {pointAttributes, scale, name, min, max, size, offset, numPoints} = event.data;
-
-    let tStart = performance.now();
+    let { pointAttributes, scale, name, min, size, offset, numPoints } = event.data;
 
     let buffer;
     if (numPoints === 0) {
-        buffer = {buffer: new ArrayBuffer(0)};
+        buffer = { buffer: new ArrayBuffer(0) };
     } else {
         try {
             buffer = BrotliDecode(new Int8Array(event.data.buffer));
         } catch (e) {
-            buffer = {buffer: new ArrayBuffer(numPoints * (pointAttributes.byteSize + 12))};
+            buffer = { buffer: new ArrayBuffer(numPoints * (pointAttributes.byteSize + 12)) };
             console.error(`problem with node ${name}: `, e);
         }
     }
@@ -80,12 +75,6 @@ onmessage = function (event) {
     let view = new DataView(buffer.buffer);
 
     let attributeBuffers = {};
-    let attributeOffset = 0;
-
-    let bytesPerPoint = 0;
-    for (let pointAttribute of pointAttributes.attributes) {
-        bytesPerPoint += pointAttribute.byteSize;
-    }
 
     let gridSize = 32;
     let grid = new Uint32Array(gridSize ** 3);
@@ -98,9 +87,7 @@ onmessage = function (event) {
         let iy = Math.min(parseInt(dy), gridSize - 1);
         let iz = Math.min(parseInt(dz), gridSize - 1);
 
-        let index = ix + iy * gridSize + iz * gridSize * gridSize;
-
-        return index;
+        return ix + iy * gridSize + iz * gridSize * gridSize;
     };
 
     let numOccupiedCells = 0;
@@ -111,31 +98,31 @@ onmessage = function (event) {
             let positions = new Float32Array(buff);
 
             for (let j = 0; j < numPoints; j++) {
-                let mc_0 = view.getUint32(byteOffset + 4, true);
-                let mc_1 = view.getUint32(byteOffset + 0, true);
-                let mc_2 = view.getUint32(byteOffset + 12, true);
-                let mc_3 = view.getUint32(byteOffset + 8, true);
+                let mc0 = view.getUint32(byteOffset + 4, true);
+                let mc1 = view.getUint32(byteOffset, true);
+                let mc2 = view.getUint32(byteOffset + 12, true);
+                let mc3 = view.getUint32(byteOffset + 8, true);
 
                 byteOffset += 16;
 
-                let X = dealign24b((mc_3 & 0x00FFFFFF) >>> 0)
-                    | (dealign24b(((mc_3 >>> 24) | (mc_2 << 8)) >>> 0) << 8);
+                let X = dealign24b((mc3 & 0x00FFFFFF) >>> 0)
+                    | (dealign24b(((mc3 >>> 24) | (mc2 << 8)) >>> 0) << 8);
 
-                let Y = dealign24b((mc_3 & 0x00FFFFFF) >>> 1)
-                    | (dealign24b(((mc_3 >>> 24) | (mc_2 << 8)) >>> 1) << 8);
+                let Y = dealign24b((mc3 & 0x00FFFFFF) >>> 1)
+                    | (dealign24b(((mc3 >>> 24) | (mc2 << 8)) >>> 1) << 8);
 
-                let Z = dealign24b((mc_3 & 0x00FFFFFF) >>> 2)
-                    | (dealign24b(((mc_3 >>> 24) | (mc_2 << 8)) >>> 2) << 8);
+                let Z = dealign24b((mc3 & 0x00FFFFFF) >>> 2)
+                    | (dealign24b(((mc3 >>> 24) | (mc2 << 8)) >>> 2) << 8);
 
-                if (mc_1 != 0 || mc_2 != 0) {
-                    X = X | (dealign24b((mc_1 & 0x00FFFFFF) >>> 0) << 16)
-                        | (dealign24b(((mc_1 >>> 24) | (mc_0 << 8)) >>> 0) << 24);
+                if (mc1 !== 0 || mc2 !== 0) {
+                    X = X | (dealign24b((mc1 & 0x00FFFFFF) >>> 0) << 16)
+                        | (dealign24b(((mc1 >>> 24) | (mc0 << 8)) >>> 0) << 24);
 
-                    Y = Y | (dealign24b((mc_1 & 0x00FFFFFF) >>> 1) << 16)
-                        | (dealign24b(((mc_1 >>> 24) | (mc_0 << 8)) >>> 1) << 24);
+                    Y = Y | (dealign24b((mc1 & 0x00FFFFFF) >>> 1) << 16)
+                        | (dealign24b(((mc1 >>> 24) | (mc0 << 8)) >>> 1) << 24);
 
-                    Z = Z | (dealign24b((mc_1 & 0x00FFFFFF) >>> 2) << 16)
-                        | (dealign24b(((mc_1 >>> 24) | (mc_0 << 8)) >>> 2) << 24);
+                    Z = Z | (dealign24b((mc1 & 0x00FFFFFF) >>> 2) << 16)
+                        | (dealign24b(((mc1 >>> 24) | (mc0 << 8)) >>> 2) << 24);
                 }
 
                 let x = parseInt(X) * scale[0] + offset[0] - min.x;
@@ -148,42 +135,42 @@ onmessage = function (event) {
                     numOccupiedCells++;
                 }
 
-                positions[3 * j + 0] = x;
+                positions[3 * j] = x;
                 positions[3 * j + 1] = y;
                 positions[3 * j + 2] = z;
             }
 
-            attributeBuffers[pointAttribute.name] = {buffer: buff, attribute: pointAttribute};
+            attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
         } else if (["RGBA", "rgba"].includes(pointAttribute.name)) {
             let buff = new ArrayBuffer(numPoints * 4);
             let colors = new Uint8Array(buff);
 
             for (let j = 0; j < numPoints; j++) {
-                let mc_0 = view.getUint32(byteOffset + 4, true);
-                let mc_1 = view.getUint32(byteOffset + 0, true);
+                let mc0 = view.getUint32(byteOffset + 4, true);
+                let mc1 = view.getUint32(byteOffset, true);
                 byteOffset += 8;
 
-                let r = dealign24b((mc_1 & 0x00FFFFFF) >>> 0)
-                    | (dealign24b(((mc_1 >>> 24) | (mc_0 << 8)) >>> 0) << 8);
+                let r = dealign24b((mc1 & 0x00FFFFFF) >>> 0)
+                    | (dealign24b(((mc1 >>> 24) | (mc0 << 8)) >>> 0) << 8);
 
-                let g = dealign24b((mc_1 & 0x00FFFFFF) >>> 1)
-                    | (dealign24b(((mc_1 >>> 24) | (mc_0 << 8)) >>> 1) << 8);
+                let g = dealign24b((mc1 & 0x00FFFFFF) >>> 1)
+                    | (dealign24b(((mc1 >>> 24) | (mc0 << 8)) >>> 1) << 8);
 
-                let b = dealign24b((mc_1 & 0x00FFFFFF) >>> 2)
-                    | (dealign24b(((mc_1 >>> 24) | (mc_0 << 8)) >>> 2) << 8);
+                let b = dealign24b((mc1 & 0x00FFFFFF) >>> 2)
+                    | (dealign24b(((mc1 >>> 24) | (mc0 << 8)) >>> 2) << 8);
 
                 colors[4 * j + 0] = r > 255 ? r / 256 : r;
                 colors[4 * j + 1] = g > 255 ? g / 256 : g;
                 colors[4 * j + 2] = b > 255 ? b / 256 : b;
             }
 
-            attributeBuffers[pointAttribute.name] = {buffer: buff, attribute: pointAttribute};
+            attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
         } else {
             let buff = new ArrayBuffer(numPoints * 4);
             let f32 = new Float32Array(buff);
 
             let TypedArray = typedArrayMapping[pointAttribute.type.name];
-            preciseBuffer = new TypedArray(numPoints);
+            const preciseBuffer = new TypedArray(numPoints);
 
             let [offset, scale] = [0, 1];
 
@@ -233,14 +220,14 @@ onmessage = function (event) {
             indices[i] = i;
         }
 
-        attributeBuffers["INDICES"] = {buffer: buff, attribute: PointAttribute.INDICES};
+        attributeBuffers["INDICES"] = { buffer: buff, attribute: PointAttribute.INDICES };
     }
 
     {
         let vectors = pointAttributes.vectors;
 
         for (let vector of vectors) {
-            let {name, attributes} = vector;
+            let { name, attributes } = vector;
             let numVectorElements = attributes.length;
             let buffer = new ArrayBuffer(numVectorElements * numPoints * 4);
             let f32 = new Float32Array(buffer);
@@ -248,7 +235,7 @@ onmessage = function (event) {
             let iElement = 0;
             for (let sourceName of attributes) {
                 let sourceBuffer = attributeBuffers[sourceName];
-                let {offset, scale} = sourceBuffer;
+                let { offset, scale } = sourceBuffer;
                 let view = new DataView(sourceBuffer.buffer);
 
                 const getter = view.getFloat32.bind(view);
@@ -270,9 +257,6 @@ onmessage = function (event) {
             };
         }
     }
-
-    let duration = performance.now() - tStart;
-    let pointsPerMs = numPoints / duration;
 
     let message = {
         buffer: buffer,

@@ -8,9 +8,72 @@
  *
  * ********************************************************************************************************* */
 
-import globals from "globals";
 import pluginJs from "@eslint/js";
+import importPlugin from "eslint-plugin-import";
 import unusedImports from "eslint-plugin-unused-imports";
+import globals from "globals";
+
+const jsRules = {
+    semi: ["error", "always"],
+    "semi-spacing": ["error", { "before": false, "after": true }],
+    "semi-style": ["error", "last"],
+    "camelcase": ["error", {
+        "properties": "always",
+        "ignoreImports": true,
+        "ignoreGlobals": true,
+        "ignoreDestructuring": true
+    }],
+    curly: ["error", "all"],
+    "brace-style": ["error", "1tbs", { allowSingleLine: false }],
+    "no-var": "error",
+    "no-extra-semi": "error",
+    "no-multiple-empty-lines": ["error", { "max": 1, "maxEOF": 0 }],
+    "eol-last": ["error", "always"],
+    "padded-blocks": ["error", "never"],
+    "keyword-spacing": ["error", { "before": true, "after": true }],
+    "space-before-blocks": ["error", "always"],
+    "indent": ["error", 4, { "SwitchCase": 1 }],
+    "no-tabs": "error",
+    "spaced-comment": ["error", "always", {
+        "line": {
+            "markers": ["//"],
+            "exceptions": ["-", "+"]
+        },
+        "block": {
+            "markers": ["!"],
+            "exceptions": ["*"]
+        }
+    }],
+    "quotes": ["error", "double", { "allowTemplateLiterals": true }],
+    "object-curly-spacing": ["error", "always"],
+    "import/extensions": ["error", "always", {
+        "js": "always",
+        "mjs": "always"
+    }],
+    "import/order": ["error", {
+        "groups": ["builtin", "external", "internal", ["parent", "sibling", "index"], "object"]
+    }],
+
+    "no-unused-vars": [
+        "error",
+        {
+            "vars": "all",
+            "varsIgnorePattern": "^_|^[A-Z]",
+            "args": "none",
+            "ignoreRestSiblings": false,
+            "ignoreUsingDeclarations": false,
+            "reportUsedIgnorePattern": false,
+            "caughtErrors": "none"
+        }
+    ],
+    "unused-imports/no-unused-imports": "error",
+    "no-undef": "off",
+    "no-empty": "error",
+    "no-constant-binary-expression": "off",
+    "getter-return": "off",
+    "no-global-assign": "off",
+    "no-redeclare": "off" // TODO(mkelnar) turned of because of global variables used randomly over sources - refactoring needed
+};
 
 export default [
     {
@@ -24,67 +87,30 @@ export default [
     pluginJs.configs.recommended,
     {
         plugins: {
-            "unused-imports": unusedImports
+            "unused-imports": unusedImports,
+            "import": importPlugin
         },
         languageOptions: {
             globals: {
                 "$": "readonly",
+                jQuery: "readonly",
+                proj4: "readonly",
+                ol: "readonly",
+                d3: "readonly",
+                i18n: "readonly"
             }
         },
-        rules: {
-            semi: ["error", "always"],
-            "semi-spacing": ["error", { "before": false, "after": true }],
-            "semi-style": ["error", "last"],
-            "no-extra-semi": "error",
-            "no-multiple-empty-lines": ["error", { "max": 1, "maxEOF": 0 }],
-            "eol-last": ["error", "always"],
-            "padded-blocks": ["error", "never"],
-            "keyword-spacing": ["error", { "before": true, "after": true }],
-            "space-before-blocks": ["error", "always"],
-            "indent": ["error", 4, { "SwitchCase": 1 }],
-            "no-tabs": "error",
-            "spaced-comment": ["error", "always", {
-                "line": {
-                    "markers": ["//"],
-                    "exceptions": ["-","+"]
-                },
-                "block": {
-                    "markers": ["!"],
-                    "exceptions": ["*"]
-                }
-            }],
-            "quotes": ["error", "double", { "allowTemplateLiterals": true }],
-
-            "no-unused-imports": "off",
-            "no-unused-vars": "off",
-            "unused-imports/no-unused-imports": "error",
-            "unused-imports/no-unused-vars": "off",
-            "no-undef": "off",
-            "no-empty": "off",
-            "no-prototype-builtins": "off",
-            "no-case-declarations": "off",
-            "no-debugger": "off",
-            "no-dupe-class-members": "off",
-            "no-constant-binary-expression": "off",
-            "getter-return": "off",
-            "no-global-assign": "off",
-            "no-redeclare": "off"
-            // "unused-imports/no-unused-vars": [
-            //     "warn",
-            //     {
-            //         "vars": "all",
-            //         "varsIgnorePattern": "^_",
-            //         "args": "after-used",
-            //         "argsIgnorePattern": "^_",
-            //     }
-            // ],
-            // "sort-imports": ["error", {
-            //     "ignoreCase": false,
-            //     "ignoreDeclarationSort": false,
-            //     "ignoreMemberSort": false,
-            //     "memberSyntaxSortOrder": ["none", "all", "multiple", "single"],
-            //     "allowSeparatedGroups": false
-            // }]
-        }
+        rules: jsRules
+    },
+    {
+        files: ["gulpfile.js", "rollup.*.js", "src/tools/*.js"],
+        languageOptions: {
+            globals: globals.node
+        },
+        plugins: {
+            "unused-imports": unusedImports,
+            "import": importPlugin
+        },
+        rules: jsRules
     }
 ];

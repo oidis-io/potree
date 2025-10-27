@@ -15,6 +15,9 @@ import { XRControllerModelFactory } from "../../libs/three.js/webxr/XRController
 import { Line2 } from "../../libs/three.js/lines/Line2.js";
 import { LineGeometry } from "../../libs/three.js/lines/LineGeometry.js";
 import { LineMaterial } from "../../libs/three.js/lines/LineMaterial.js";
+import { TextSprite } from "../TextSprite.js";
+import { Utils } from "../utils.js";
+import PotreeConfig from "../PotreeConfig.js";
 
 let fakeCam = new THREE.PerspectiveCamera();
 
@@ -47,14 +50,14 @@ function computeMove(vrControls, controller) {
     y = Math.sign(y) * (2 * y) ** 2;
 
     let maxSize = 0;
-    for (let pc of viewer.scene.pointclouds) {
+    for (let pc of this.viewer.scene.pointclouds) {
         let size = pc.boundingBox.min.distanceTo(pc.boundingBox.max);
         maxSize = Math.max(maxSize, size);
     }
     let multiplicator = Math.pow(maxSize, 0.5) / 2;
 
     let scale = vrControls.node.scale.x;
-    let moveSpeed = viewer.getMoveSpeed();
+    let moveSpeed = this.viewer.getMoveSpeed();
     let amount = multiplicator * y * (moveSpeed ** 0.5) / scale;
 
     let rotation = new THREE.Quaternion().setFromEuler(controller.rotation);
@@ -79,7 +82,7 @@ class FlyMode {
 
     start(vrControls) {
         if (!this.dbgLabel) {
-            this.dbgLabel = new Potree.TextSprite("abc");
+            this.dbgLabel = new TextSprite("abc");
             this.dbgLabel.name = "debug label";
             vrControls.viewer.sceneVR.add(this.dbgLabel);
             this.dbgLabel.visible = false;
@@ -116,7 +119,6 @@ class FlyMode {
 
         let vrPos = camVR.getWorldPosition(new THREE.Vector3());
         let vrDir = camVR.getWorldDirection(new THREE.Vector3());
-        let vrTarget = vrPos.clone().add(vrDir.multiplyScalar(scale));
 
         let scenePos = toScene(vrPos, vrControls.node);
         let sceneDir = toScene(vrPos.clone().add(vrDir), vrControls.node).sub(scenePos);
@@ -125,9 +127,9 @@ class FlyMode {
 
         vrControls.viewer.scene.view.setView(scenePos, sceneTarget);
 
-        if (Potree.debug.message) {
+        if (PotreeConfig.debug.message) {
             this.dbgLabel.visible = true;
-            this.dbgLabel.setText(Potree.debug.message);
+            this.dbgLabel.setText(PotreeConfig.debug.message);
             this.dbgLabel.scale.set(0.1, 0.1, 0.1);
             this.dbgLabel.position.copy(primary.position);
         }
@@ -174,14 +176,14 @@ class RotScaleMode {
 
     start(vrControls) {
         if (!this.line) {
-            this.line = Potree.Utils.debugLine(
+            this.line = Utils.debugLine(
                 vrControls.viewer.sceneVR,
                 new THREE.Vector3(0, 0, 0),
                 new THREE.Vector3(0, 0, 0),
                 0xffff00,
             );
 
-            this.dbgLabel = new Potree.TextSprite("abc");
+            this.dbgLabel = new TextSprite("abc");
             this.dbgLabel.scale.set(0.1, 0.1, 0.1);
             vrControls.viewer.sceneVR.add(this.dbgLabel);
         }
@@ -197,20 +199,20 @@ class RotScaleMode {
     }
 
     update(vrControls, delta) {
-        let start_c1 = vrControls.cPrimary.start.position.clone();
-        let start_c2 = vrControls.cSecondary.start.position.clone();
-        let start_center = start_c1.clone().add(start_c2).multiplyScalar(0.5);
-        let start_c1_c2 = start_c2.clone().sub(start_c1);
-        let end_c1 = vrControls.cPrimary.position.clone();
-        let end_c2 = vrControls.cSecondary.position.clone();
-        let end_center = end_c1.clone().add(end_c2).multiplyScalar(0.5);
-        let end_c1_c2 = end_c2.clone().sub(end_c1);
+        let startC1 = vrControls.cPrimary.start.position.clone();
+        let startC2 = vrControls.cSecondary.start.position.clone();
+        let startCenter = startC1.clone().add(startC2).multiplyScalar(0.5);
+        let startC1C2 = startC2.clone().sub(startC1);
+        let endC1 = vrControls.cPrimary.position.clone();
+        let endC2 = vrControls.cSecondary.position.clone();
+        let endCenter = endC1.clone().add(endC2).multiplyScalar(0.5);
+        let endC1C2 = endC2.clone().sub(endC1);
 
-        let d1 = start_c1_c2.length();
-        let d2 = end_c1_c2.length();
+        let d1 = startC1C2.length();
+        let d2 = endC1C2.length();
 
-        let angleStart = new THREE.Vector2(start_c1_c2.x, start_c1_c2.z).angle();
-        let angleEnd = new THREE.Vector2(end_c1_c2.x, end_c1_c2.z).angle();
+        let angleStart = new THREE.Vector2(startC1C2.x, startC1C2.z).angle();
+        let angleEnd = new THREE.Vector2(endC1C2.x, endC1C2.z).angle();
         let angleDiff = angleEnd - angleStart;
 
         let scale = d2 / d1;
@@ -219,8 +221,8 @@ class RotScaleMode {
         node.updateMatrix();
         node.matrixAutoUpdate = false;
 
-        let mToOrigin = new THREE.Matrix4().makeTranslation(...toScene(start_center, this.startState).multiplyScalar(-1).toArray());
-        let mToStart = new THREE.Matrix4().makeTranslation(...toScene(start_center, this.startState).toArray());
+        let mToOrigin = new THREE.Matrix4().makeTranslation(...toScene(startCenter, this.startState).multiplyScalar(-1).toArray());
+        let mToStart = new THREE.Matrix4().makeTranslation(...toScene(startCenter, this.startState).toArray());
         let mRotate = new THREE.Matrix4().makeRotationZ(angleDiff);
         let mScale = new THREE.Matrix4().makeScale(1 / scale, 1 / scale, 1 / scale);
 
@@ -229,8 +231,8 @@ class RotScaleMode {
         node.applyMatrix4(mScale);
         node.applyMatrix4(mToStart);
 
-        let oldScenePos = toScene(start_center, this.startState);
-        let newScenePos = toScene(end_center, node);
+        let oldScenePos = toScene(startCenter, this.startState);
+        let newScenePos = toScene(endCenter, node);
         let toNew = oldScenePos.clone().sub(newScenePos);
         let mToNew = new THREE.Matrix4().makeTranslation(...toNew.toArray());
         node.applyMatrix4(mToNew);
@@ -248,7 +250,6 @@ class RotScaleMode {
 
             let vrPos = camVR.getWorldPosition(new THREE.Vector3());
             let vrDir = camVR.getWorldDirection(new THREE.Vector3());
-            let vrTarget = vrPos.clone().add(vrDir.multiplyScalar(scale));
 
             let scenePos = toScene(vrPos, this.startState);
             let sceneDir = toScene(vrPos.clone().add(vrDir), this.startState).sub(scenePos);
@@ -260,11 +261,11 @@ class RotScaleMode {
         }
 
         { // update "GUI"
-            this.line.set(end_c1, end_c2);
+            this.line.set(endC1, endC2);
 
             let scale = vrControls.node.scale.x;
             this.dbgLabel.visible = true;
-            this.dbgLabel.position.copy(end_center);
+            this.dbgLabel.position.copy(endCenter);
             this.dbgLabel.setText(`scale: 1 : ${scale.toFixed(2)}`);
             this.dbgLabel.scale.set(0.05, 0.05, 0.05);
         }
@@ -399,21 +400,21 @@ export class VRControls extends EventDispatcher {
             this.cSecondary = controller;
         }
 
-        this.mode_fly = new FlyMode();
-        this.mode_translate = new TranslationMode();
-        this.mode_rotScale = new RotScaleMode();
-        this.setMode(this.mode_fly);
+        this.modeFly = new FlyMode();
+        this.modeTranslate = new TranslationMode();
+        this.modeRotScale = new RotScaleMode();
+        this.setMode(this.modeFly);
     }
 
     createSlider(label, min, max) {
         let sg = new THREE.SphereGeometry(1, 8, 8);
         let cg = new THREE.CylinderGeometry(1, 1, 1, 8);
-        let matHandle = new THREE.MeshBasicMaterial({color: 0xff0000});
-        let matScale = new THREE.MeshBasicMaterial({color: 0xff4444});
+        let matHandle = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        let matScale = new THREE.MeshBasicMaterial({ color: 0xff4444 });
         let matValue = new THREE.MeshNormalMaterial();
 
         let node = new THREE.Object3D("slider");
-        let nLabel = new Potree.TextSprite(`${label}: 0`);
+        let nLabel = new TextSprite(`${label}: 0`);
         let nMax = new THREE.Mesh(sg, matHandle);
         let nMin = new THREE.Mesh(sg, matHandle);
         let nValue = new THREE.Mesh(sg, matValue);
@@ -443,9 +444,9 @@ export class VRControls extends EventDispatcher {
     }
 
     createInfo() {
-        let texture = new THREE.TextureLoader().load(`${Potree.resourcePath}/images/vr_controller_help.jpg`);
+        let texture = new THREE.TextureLoader().load(`${PotreeConfig.resourcePath}/images/vr_controller_help.jpg`);
         let plane = new THREE.PlaneBufferGeometry(1, 1, 1, 1);
-        let infoMaterial = new THREE.MeshBasicMaterial({map: texture});
+        let infoMaterial = new THREE.MeshBasicMaterial({ map: texture });
         let infoNode = new THREE.Mesh(plane, infoMaterial);
 
         return infoNode;
@@ -506,11 +507,11 @@ export class VRControls extends EventDispatcher {
         this.triggered.add(controller);
 
         if (this.triggered.size === 0) {
-            this.setMode(this.mode_fly);
+            this.setMode(this.modeFly);
         } else if (this.triggered.size === 1) {
-            this.setMode(this.mode_translate);
+            this.setMode(this.modeTranslate);
         } else if (this.triggered.size === 2) {
-            this.setMode(this.mode_rotScale);
+            this.setMode(this.modeRotScale);
         }
     }
 
@@ -518,11 +519,11 @@ export class VRControls extends EventDispatcher {
         this.triggered.delete(controller);
 
         if (this.triggered.size === 0) {
-            this.setMode(this.mode_fly);
+            this.setMode(this.modeFly);
         } else if (this.triggered.size === 1) {
-            this.setMode(this.mode_translate);
+            this.setMode(this.modeTranslate);
         } else if (this.triggered.size === 2) {
-            this.setMode(this.mode_rotScale);
+            this.setMode(this.modeRotScale);
         }
     }
 
@@ -552,7 +553,6 @@ export class VRControls extends EventDispatcher {
     }
 
     getCamera() {
-        let reference = this.viewer.scene.getActiveCamera();
         let camera = new THREE.PerspectiveCamera();
         let scale = this.viewer.getMoveSpeed();
         camera.near = 0.1;

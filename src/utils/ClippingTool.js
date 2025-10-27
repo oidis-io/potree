@@ -72,7 +72,9 @@ export class ClippingTool extends EventDispatcher {
     startInsertion(args = {}) {
         let type = args.type || null;
 
-        if (!type) return null;
+        if (!type) {
+            return null;
+        }
 
         let domElement = this.viewer.renderer.domElement;
         let canvasSize = this.viewer.renderer.getSize(new THREE.Vector2());
@@ -107,7 +109,7 @@ export class ClippingTool extends EventDispatcher {
 
         let polyClipVol = new PolygonClipVolume(this.viewer.scene.getActiveCamera().clone());
 
-        this.dispatchEvent({"type": "start_inserting_clipping_volume"});
+        this.dispatchEvent({ "type": "start_inserting_clipping_volume" });
 
         this.viewer.scene.addPolygonClipVolume(polyClipVol);
         this.sceneMarker.add(polyClipVol);
@@ -125,7 +127,6 @@ export class ClippingTool extends EventDispatcher {
                     let newPoint = svg[0].createSVGPoint();
                     newPoint.x = e.offsetX;
                     newPoint.y = e.offsetY;
-                    let polyline = target.points.appendItem(newPoint);
                 });
 
                 if (polyClipVol.markers.length > this.maxPolygonVertices) {

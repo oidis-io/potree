@@ -26,8 +26,8 @@ export class Volume extends THREE.Object3D {
         this._modifiable = args.modifiable || true;
 
         this.label = new TextSprite("0");
-        this.label.setBorderColor({r: 0, g: 255, b: 0, a: 0.0});
-        this.label.setBackgroundColor({r: 0, g: 255, b: 0, a: 0.0});
+        this.label.setBorderColor({ r: 0, g: 255, b: 0, a: 0.0 });
+        this.label.setBackgroundColor({ r: 0, g: 255, b: 0, a: 0.0 });
         this.label.material.depthTest = false;
         this.label.material.depthWrite = false;
         this.label.material.transparent = true;
@@ -63,7 +63,7 @@ export class Volume extends THREE.Object3D {
         if (this._visible !== value) {
             this._visible = value;
 
-            this.dispatchEvent({type: "visibility_changed", object: this});
+            this.dispatchEvent({ type: "visibility_changed", object: this });
         }
     }
 
@@ -164,7 +164,7 @@ export class BoxVolume extends Volume {
         this.boundingBox = this.box.geometry.boundingBox;
         this.add(this.box);
 
-        this.frame = new THREE.LineSegments(boxFrameGeometry, new THREE.LineBasicMaterial({color: 0x000000}));
+        this.frame = new THREE.LineSegments(boxFrameGeometry, new THREE.LineBasicMaterial({ color: 0x000000 }));
         this.add(this.frame);
 
         this.update();
@@ -232,7 +232,6 @@ export class SphereVolume extends Volume {
             let steps = 64;
             let uSegments = 8;
             let vSegments = 5;
-            let r = 1;
 
             for (let uSegment = 0; uSegment < uSegments; uSegment++) {
                 let alpha = (uSegment / uSegments) * Math.PI * 2;
@@ -287,10 +286,10 @@ export class SphereVolume extends Volume {
             }
         }
 
-        this.frame = new THREE.LineSegments(frameGeometry, new THREE.LineBasicMaterial({color: 0x000000}));
+        this.frame = new THREE.LineSegments(frameGeometry, new THREE.LineBasicMaterial({ color: 0x000000 }));
         this.add(this.frame);
 
-        let frameMaterial = new THREE.MeshBasicMaterial({wireframe: true, color: 0x000000});
+        let frameMaterial = new THREE.MeshBasicMaterial({ wireframe: true, color: 0x000000 });
         this.frame = new THREE.Mesh(sphereGeometry, frameMaterial);
 
         this.update();

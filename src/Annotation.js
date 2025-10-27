@@ -10,9 +10,11 @@
  * ********************************************************************************************************* */
 
 import * as THREE from "../libs/three.js/build/three.module.js";
+import TWEEN from "../libs/tween/tween.min.js";
 import { Action } from "./Actions.js";
 import { Utils } from "./utils.js";
 import { EventDispatcher } from "./EventDispatcher.js";
+import PotreeConfig from "./PotreeConfig.js";
 
 export class Annotation extends EventDispatcher {
     constructor(args = {}) {
@@ -53,7 +55,7 @@ export class Annotation extends EventDispatcher {
         this.parent = null;
         this.boundingBox = new THREE.Box3();
 
-        let iconClose = exports.resourcePath + "/icons/close.svg";
+        let iconClose = PotreeConfig.resourcePath + "/icons/close.svg";
 
         this.domElement = $(`
             <div class="annotation" oncontextmenu="return false;">
@@ -79,7 +81,7 @@ export class Annotation extends EventDispatcher {
             if (this.hasView()) {
                 this.moveHere(this.scene.getActiveCamera());
             }
-            this.dispatchEvent({type: "click", target: this});
+            this.dispatchEvent({ type: "click", target: this });
         };
 
         this.elTitle.click(this.clickTitle);
@@ -102,7 +104,7 @@ export class Annotation extends EventDispatcher {
         for (let action of actions) {
             let elButton = $(`<img src="${action.icon}" class="annotation-action-icon">`);
             this.elTitlebar.append(elButton);
-            elButton.click(() => action.onclick({annotation: this}));
+            elButton.click(() => action.onclick({ annotation: this }));
         }
 
         this.elDescriptionClose.hover(
@@ -221,7 +223,6 @@ export class Annotation extends EventDispatcher {
         });
 
         let updateCallback = () => {
-            let position = this.position;
             let scene = viewer.scene;
 
             const renderAreaSize = viewer.renderer.getSize(new THREE.Vector2());
@@ -546,10 +547,10 @@ export class Annotation extends EventDispatcher {
             }
 
             { // animate radius
-                let t = {x: 0};
+                let t = { x: 0 };
 
                 let tween = new TWEEN.Tween(t)
-                    .to({x: 1}, animationDuration)
+                    .to({ x: 1 }, animationDuration)
                     .onUpdate(function () {
                         view.radius = this.x * endRadius + (1 - this.x) * startRadius;
                     });

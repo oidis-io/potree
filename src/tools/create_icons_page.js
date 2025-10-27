@@ -11,7 +11,6 @@
 
 const path = require("path");
 const fs = require("fs");
-const fsp = fs.promises;
 
 function createIconsPage() {
     let iconsPath = "resources/icons";

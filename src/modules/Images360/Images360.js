@@ -11,13 +11,14 @@
 
 import * as THREE from "../../../libs/three.js/build/three.module.js";
 import { EventDispatcher } from "../../EventDispatcher.js";
-import { Fetcher } from "../../utils/Fetcher";
+import { Fetcher } from "../../utils/Fetcher.js";
+import { Utils } from "../../utils.js";
 
 let sg = new THREE.SphereGeometry(1, 8, 8);
 let sgHigh = new THREE.SphereGeometry(1, 128, 128);
 
-let sm = new THREE.MeshBasicMaterial({side: THREE.BackSide});
-let smHovered = new THREE.MeshBasicMaterial({side: THREE.BackSide, color: 0xff0000});
+let sm = new THREE.MeshBasicMaterial({ side: THREE.BackSide });
+let smHovered = new THREE.MeshBasicMaterial({ side: THREE.BackSide, color: 0xff0000 });
 
 let raycaster = new THREE.Raycaster();
 let currentlyHovered = null;
@@ -117,7 +118,7 @@ export class Images360 extends EventDispatcher {
         previousView = {
             controls: this.viewer.controls,
             position: this.viewer.scene.view.position.clone(),
-            target: viewer.scene.view.getPivot(),
+            target: this.viewer.scene.view.getPivot(),
         };
 
         this.viewer.setControls(this.viewer.orbitControls);
@@ -138,7 +139,7 @@ export class Images360 extends EventDispatcher {
         });
 
         { // orientation
-            let {course, pitch, roll} = image360;
+            let { course, pitch, roll } = image360;
             this.sphere.rotation.set(
                 THREE.Math.degToRad(+roll + 90),
                 THREE.Math.degToRad(-pitch),
@@ -150,11 +151,11 @@ export class Images360 extends EventDispatcher {
         this.sphere.position.set(...image360.position);
 
         let target = new THREE.Vector3(...image360.position);
-        let dir = target.clone().sub(viewer.scene.view.position).normalize();
+        let dir = target.clone().sub(this.viewer.scene.view.position).normalize();
         let move = dir.multiplyScalar(0.000001);
         let newCamPos = target.clone().sub(move);
 
-        viewer.scene.view.setView(
+        this.viewer.scene.view.setView(
             newCamPos,
             target,
             500
@@ -182,16 +183,10 @@ export class Images360 extends EventDispatcher {
         this.sphere.material.needsUpdate = true;
         this.sphere.visible = false;
 
-        let pos = viewer.scene.view.position;
-        let target = viewer.scene.view.getPivot();
-        let dir = target.clone().sub(pos).normalize();
-        let move = dir.multiplyScalar(10);
-        let newCamPos = target.clone().sub(move);
+        this.viewer.orbitControls.doubleClockZoomEnabled = true;
+        this.viewer.setControls(previousView.controls);
 
-        viewer.orbitControls.doubleClockZoomEnabled = true;
-        viewer.setControls(previousView.controls);
-
-        viewer.scene.view.setView(
+        this.viewer.scene.view.setView(
             previousView.position,
             previousView.target,
             500
@@ -213,11 +208,11 @@ export class Images360 extends EventDispatcher {
     }
 
     handleHovering() {
-        let mouse = viewer.inputHandler.mouse;
-        let camera = viewer.scene.getActiveCamera();
-        let domElement = viewer.renderer.domElement;
+        let mouse = this.viewer.inputHandler.mouse;
+        let camera = this.viewer.scene.getActiveCamera();
+        let domElement = this.viewer.renderer.domElement;
 
-        let ray = Potree.Utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);
+        let ray = Utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);
 
         raycaster.ray.copy(ray);
         let intersections = raycaster.intersectObjects(this.node.children);
@@ -232,8 +227,6 @@ export class Images360 extends EventDispatcher {
     }
 
     update() {
-        let {viewer} = this;
-
         if (currentlyHovered) {
             currentlyHovered.material = sm;
             currentlyHovered = null;
@@ -296,7 +289,7 @@ export class Images360Loader {
 
     static createSceneNodes(images360, transform) {
         for (let image360 of images360.images) {
-            let {longitude, latitude, altitude} = image360;
+            let { longitude, latitude, altitude } = image360;
             let xy = transform.forward([longitude, latitude]);
 
             let mesh = new THREE.Mesh(sg, sm);
@@ -307,7 +300,7 @@ export class Images360Loader {
             mesh.image360 = image360;
 
             { // orientation
-                var {course, pitch, roll} = image360;
+                let { course, pitch, roll } = image360;
                 mesh.rotation.set(
                     THREE.Math.degToRad(+roll + 90),
                     THREE.Math.degToRad(-pitch),

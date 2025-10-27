@@ -9,7 +9,6 @@
  *
  * ********************************************************************************************************* */
 
-const path = require("path");
 const fs = require("fs");
 const fsp = fs.promises;
 const JSON5 = require("json5");

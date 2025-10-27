@@ -10,25 +10,29 @@
  * ********************************************************************************************************* */
 
 import * as THREE from "../../../libs/three.js/build/three.module.js";
-import { Fetcher } from "../../utils/Fetcher";
+import { Fetcher } from "../../utils/Fetcher.js";
+import PotreeConfig from "../../PotreeConfig.js";
+import PotreeRefs from "../../PotreeRefs.js";
 
 export class EptLaszipLoader {
     async load(node) {
-        if (node.loaded) return;
+        if (node.loaded) {
+            return;
+        }
 
-        const {Key} = window.Copc;
+        const { Key } = window.Copc;
 
         const url = `${node.owner.base}/ept-data/${Key.toString(node.key)}.laz`;
         const response = await Fetcher.download(url);
         const buffer = await response.arrayBuffer();
-        this.parse(node, buffer);
+        await this.parse(node, buffer);
     }
 
     async parse(node, compressed) {
         let handler = new EptLazBatcher(node);
 
         try {
-            const {Bounds, Las} = Copc;
+            const { Bounds, Las } = Copc;
 
             const get = (begin, end) => new Uint8Array(compressed, begin, end - begin);
 
@@ -36,7 +40,9 @@ export class EptLaszipLoader {
             const vlrs = await Las.Vlr.walk(get, header);
             let eb = [];
             const ebVlr = Las.Vlr.find(vlrs, "LASF_Spec", 4);
-            if (ebVlr) eb = Las.ExtraBytes.parse(await Las.Vlr.fetch(get, ebVlr));
+            if (ebVlr) {
+                eb = Las.ExtraBytes.parse(await Las.Vlr.fetch(get, ebVlr));
+            }
 
             const message = {
                 isFullFile: true,
@@ -55,7 +61,9 @@ export class EptLaszipLoader {
 
 export class CopcLaszipLoader {
     async load(node) {
-        if (node.loaded) return;
+        if (node.loaded) {
+            return;
+        }
 
         // There are utilities to do all of this in one async call via copc.js,
         // however we must split things out a bit to accommodate the expensive
@@ -63,12 +71,14 @@ export class CopcLaszipLoader {
         // isolate the compressed data buffer, which is passed to the worker.
         // The time-consuming decompression and extracting the data into
         // GPU-compatible buffers happens in the worker.
-        const {pointCount, pointDataOffset, pointDataLength} = node.nodeinfo;
+        const { pointCount, pointDataOffset, pointDataLength } = node.nodeinfo;
 
         // Note that COPC explicitly allows nodes to exist with no data.  They
         // may have children, but there is no point cloud data.  Make sure we
         // don't try to fetch a slice of point data in this case.
-        if (!pointCount) return this.parse(node, new ArrayBuffer());
+        if (!pointCount) {
+            return this.parse(node, new ArrayBuffer());
+        }
         const compressed = await node.owner.getter(
             pointDataOffset,
             pointDataOffset + pointDataLength);
@@ -99,11 +109,11 @@ export class EptLazBatcher {
     }
 
     push(las) {
-        const {isFullFile, compressed, header, eb, pointCount, nodemin} = las;
+        const { isFullFile, compressed, header, eb, pointCount, nodemin } = las;
 
-        let workerPath = Potree.scriptPath +
+        let workerPath = PotreeConfig.scriptPath +
             "/workers/EptLaszipDecoderWorker.js";
-        let worker = Potree.workerPool.getWorker(workerPath);
+        let worker = PotreeRefs.workerPool.getWorker(workerPath);
         const pointAttributes = this.node.owner.pointAttributes;
 
         worker.onmessage = (e) => {
@@ -167,10 +177,10 @@ export class EptLazBatcher {
                 pointCount,
                 new THREE.Vector3(...e.data.mean));
 
-            Potree.workerPool.returnWorker(workerPath, worker);
+            PotreeRefs.workerPool.returnWorker(workerPath, worker);
         };
 
-        let message = {isFullFile, compressed, header, eb, pointCount, nodemin};
+        let message = { isFullFile, compressed, header, eb, pointCount, nodemin };
 
         worker.postMessage(message, [message.compressed]);
     }

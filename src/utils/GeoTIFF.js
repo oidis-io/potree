@@ -11,7 +11,7 @@
 
 import { Enum } from "../Enum.js";
 
-var GeoTIFF = (function (exports) {
+let GeoTIFF = (function (exports) {
     "use strict";
 
     const Endianness = new Enum({
@@ -20,18 +20,18 @@ var GeoTIFF = (function (exports) {
     });
 
     const Type = new Enum({
-        BYTE: {value: 1, bytes: 1},
-        ASCII: {value: 2, bytes: 1},
-        SHORT: {value: 3, bytes: 2},
-        LONG: {value: 4, bytes: 4},
-        RATIONAL: {value: 5, bytes: 8},
-        SBYTE: {value: 6, bytes: 1},
-        UNDEFINED: {value: 7, bytes: 1},
-        SSHORT: {value: 8, bytes: 2},
-        SLONG: {value: 9, bytes: 4},
-        SRATIONAL: {value: 10, bytes: 8},
-        FLOAT: {value: 11, bytes: 4},
-        DOUBLE: {value: 12, bytes: 8},
+        BYTE: { value: 1, bytes: 1 },
+        ASCII: { value: 2, bytes: 1 },
+        SHORT: { value: 3, bytes: 2 },
+        LONG: { value: 4, bytes: 4 },
+        RATIONAL: { value: 5, bytes: 8 },
+        SBYTE: { value: 6, bytes: 1 },
+        UNDEFINED: { value: 7, bytes: 1 },
+        SSHORT: { value: 8, bytes: 2 },
+        SLONG: { value: 9, bytes: 4 },
+        SRATIONAL: { value: 10, bytes: 8 },
+        FLOAT: { value: 11, bytes: 4 },
+        DOUBLE: { value: 12, bytes: 8 },
     });
 
     const Tag = new Enum({
@@ -99,9 +99,6 @@ var GeoTIFF = (function (exports) {
         }
 
         static read(data) {
-            let endiannessTag = String.fromCharCode(...Array.from(data.slice(0, 2)));
-            let endianness = Endianness.fromValue(endiannessTag);
-
             let tiffCheckTag = data.readUInt8(2);
 
             if (tiffCheckTag !== 42) {
@@ -175,7 +172,6 @@ var GeoTIFF = (function (exports) {
 
             let width = ifdForTag(Tag.IMAGE_WIDTH, ifds).value;
             let height = ifdForTag(Tag.IMAGE_HEIGHT, ifds).value;
-            let compression = ifdForTag(Tag.COMPRESSION, ifds).value;
             let rowsPerStrip = ifdForTag(Tag.ROWS_PER_STRIP, ifds).value;
             let ifdStripOffsets = ifdForTag(Tag.STRIP_OFFSETS, ifds);
             let ifdStripByteCounts = ifdForTag(Tag.STRIP_BYTE_COUNTS, ifds);
@@ -291,8 +287,6 @@ var GeoTIFF = (function (exports) {
                 let entryBuffer = new ArrayBuffer(12);
                 let entryView = new DataView(entryBuffer);
 
-                let valueBytes = ifd.type.bytes * ifd.count;
-
                 entryView.setUint16(0, ifd.tag.value, true);
                 entryView.setUint16(2, ifd.type.value, true);
                 entryView.setUint32(4, ifd.count, true);
@@ -346,7 +340,7 @@ var GeoTIFF = (function (exports) {
                 image.buffer
             ]);
 
-            return {width: width, height: height, buffer: tiffBuffer};
+            return { width: width, height: height, buffer: tiffBuffer };
         }
     }
 

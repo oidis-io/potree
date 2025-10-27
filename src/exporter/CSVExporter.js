@@ -16,10 +16,18 @@ export class CSVExporter {
         let attributes = Object.keys(points.data)
             .filter(a => a !== "normal")
             .sort((a, b) => {
-                if (a === "position") return -1;
-                if (b === "position") return 1;
-                if (a === "rgba") return -1;
-                if (b === "rgba") return 1;
+                if (a === "position") {
+                    return -1;
+                }
+                if (b === "position") {
+                    return 1;
+                }
+                if (a === "rgba") {
+                    return -1;
+                }
+                if (b === "rgba") {
+                    return 1;
+                }
             });
 
         let headerValues = [];

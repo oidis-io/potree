@@ -10,9 +10,11 @@
  * ********************************************************************************************************* */
 
 import * as THREE from "../../../../libs/three.js/build/three.module.js";
-import { PointAttribute, PointAttributes, PointAttributeTypes } from "../../../loader/PointAttributes.js";
+import { PointAttribute, PointAttributeTypes, PointAttributes } from "../../../loader/PointAttributes.js";
 import { OctreeGeometry, OctreeGeometryNode } from "./OctreeGeometry.js";
-import { Fetcher } from "../../../utils/Fetcher";
+import { Fetcher } from "../../../utils/Fetcher.js";
+import PotreeConfig from "../../../PotreeConfig.js";
+import PotreeRefs from "../../../PotreeRefs.js";
 
 // let loadedNodes = new Set();
 
@@ -27,14 +29,14 @@ export class NodeLoader {
         }
 
         node.loading = true;
-        Potree.numNodesLoading++;
+        PotreeConfig.numNodesLoading++;
 
         try {
             if (node.nodeType === 2) {
                 await this.loadHierarchy(node);
             }
 
-            let {byteOffset, byteSize} = node;
+            let { byteOffset, byteSize } = node;
 
             let urlOctree = `${this.url}/../octree.bin`;
 
@@ -59,18 +61,18 @@ export class NodeLoader {
 
             let workerPath;
             if (this.metadata.encoding === "BROTLI") {
-                workerPath = Potree.scriptPath + "/workers/2.0/DecoderWorker_brotli.js";
+                workerPath = PotreeConfig.scriptPath + "/workers/2.0/DecoderWorker_brotli.js";
             } else {
-                workerPath = Potree.scriptPath + "/workers/2.0/DecoderWorker.js";
+                workerPath = PotreeConfig.scriptPath + "/workers/2.0/DecoderWorker.js";
             }
 
-            let worker = Potree.workerPool.getWorker(workerPath);
+            let worker = PotreeRefs.workerPool.getWorker(workerPath);
 
             worker.onmessage = function (e) {
                 let data = e.data;
                 let buffers = data.attributeBuffers;
 
-                Potree.workerPool.returnWorker(workerPath, worker);
+                PotreeRefs.workerPool.returnWorker(workerPath, worker);
 
                 let geometry = new THREE.BufferGeometry();
 
@@ -102,13 +104,12 @@ export class NodeLoader {
                         geometry.setAttribute(property, bufferAttribute);
                     }
                 }
-                // indices ??
 
                 node.density = data.density;
                 node.geometry = geometry;
                 node.loaded = true;
                 node.loading = false;
-                Potree.numNodesLoading--;
+                PotreeConfig.numNodesLoading--;
             };
 
             let pointAttributes = node.octreeGeometry.pointAttributes;
@@ -138,7 +139,7 @@ export class NodeLoader {
         } catch (e) {
             node.loaded = false;
             node.loading = false;
-            Potree.numNodesLoading--;
+            PotreeConfig.numNodesLoading--;
 
             console.log(`failed to load ${node.name}`);
             console.log(e);
@@ -148,7 +149,6 @@ export class NodeLoader {
 
     parseHierarchy(node, buffer) {
         let view = new DataView(buffer);
-        let tStart = performance.now();
 
         let bytesPerNode = 22;
         let numNodes = buffer.byteLength / bytesPerNode;
@@ -216,7 +216,7 @@ export class NodeLoader {
     }
 
     async loadHierarchy(node) {
-        let {hierarchyByteOffset, hierarchyByteSize} = node;
+        let { hierarchyByteOffset, hierarchyByteSize } = node;
         let hierarchyPath = `${this.url}/../hierarchy.bin`;
 
         let first = hierarchyByteOffset;
@@ -285,7 +285,7 @@ export class OctreeLoader {
         };
 
         for (const jsonAttribute of jsonAttributes) {
-            let {name, description, size, numElements, elementSize, min, max} = jsonAttribute;
+            let { name, numElements, min, max } = jsonAttribute;
 
             let type = typenameTypeattributeMap[jsonAttribute.type];
 

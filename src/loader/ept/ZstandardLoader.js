@@ -10,6 +10,7 @@
  * ********************************************************************************************************* */
 
 import { EptBinaryLoader } from "./BinaryLoader.js";
+import PotreeConfig from "../../PotreeConfig.js";
 
 export class EptZstandardLoader extends EptBinaryLoader {
     extension() {
@@ -17,6 +18,6 @@ export class EptZstandardLoader extends EptBinaryLoader {
     }
 
     workerPath() {
-        return Potree.scriptPath + "/workers/EptZstandardDecoderWorker.js";
+        return PotreeConfig.scriptPath + "/workers/EptZstandardDecoderWorker.js";
     }
 }

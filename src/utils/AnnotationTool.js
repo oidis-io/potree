@@ -34,7 +34,7 @@ export class AnnotationTool extends EventDispatcher {
             title: "Annotation Title",
             description: `Annotation Description`
         });
-        this.dispatchEvent({type: "start_inserting_annotation", annotation: annotation});
+        this.dispatchEvent({ type: "start_inserting_annotation", annotation: annotation });
 
         const annotations = this.viewer.scene.annotations;
         annotations.add(annotation);
@@ -70,7 +70,7 @@ export class AnnotationTool extends EventDispatcher {
                 e.viewer.scene.getActiveCamera(),
                 e.viewer,
                 e.viewer.scene.pointclouds,
-                {pickClipped: true});
+                { pickClipped: true });
 
             if (I) {
                 this.s.position.copy(I.location);

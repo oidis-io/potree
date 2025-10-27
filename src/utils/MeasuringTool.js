@@ -14,6 +14,7 @@ import { Measure } from "./Measure.js";
 import { Utils } from "../utils.js";
 import { CameraMode } from "../defines.js";
 import { EventDispatcher } from "../EventDispatcher.js";
+import PotreeConfig from "../PotreeConfig.js";
 
 function updateAzimuth(viewer, measure) {
     const azimuth = measure.azimuth;
@@ -152,7 +153,7 @@ export class MeasuringTool extends EventDispatcher {
         };
 
         for (let measurement of viewer.scene.measurements) {
-            this.onAdd({measurement: measurement});
+            this.onAdd({ measurement: measurement });
         }
 
         viewer.addEventListener("update", this.update.bind(this));
@@ -251,7 +252,6 @@ export class MeasuringTool extends EventDispatcher {
 
     update() {
         let camera = this.viewer.scene.getActiveCamera();
-        let domElement = this.renderer.domElement;
         let measurements = this.viewer.scene.measurements;
 
         const renderAreaSize = this.renderer.getSize(new THREE.Vector2());
@@ -280,8 +280,8 @@ export class MeasuringTool extends EventDispatcher {
                 let pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
                 let scale = (70 / pr);
 
-                if (Potree.debug.scale) {
-                    scale = (Potree.debug.scale / pr);
+                if (PotreeConfig.debug.scale) {
+                    scale = (PotreeConfig.debug.scale / pr);
                 }
 
                 label.scale.set(scale, scale, scale);

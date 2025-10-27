@@ -14,7 +14,8 @@ import { Line2 } from "../../libs/three.js/lines/Line2.js";
 import { LineGeometry } from "../../libs/three.js/lines/LineGeometry.js";
 import { LineMaterial } from "../../libs/three.js/lines/LineMaterial.js";
 import { Utils } from "../utils.js";
-import { Fetcher } from "../utils/Fetcher";
+import { Fetcher } from "../utils/Fetcher.js";
+import PotreeConfig from "../PotreeConfig.js";
 
 const defaultColors = {
     "landuse": [0.5, 0.5, 0.5],
@@ -50,8 +51,8 @@ export class GeoPackageLoader {
 
     static async loadUrl(url, params) {
         await Promise.all([
-            Utils.loadScript(`${Potree.scriptPath}/lazylibs/geopackage/geopackage.js`),
-            Utils.loadScript(`${Potree.scriptPath}/lazylibs/sql.js/sql-wasm.js`),
+            Utils.loadScript(`${PotreeConfig.scriptPath}/lazylibs/geopackage/geopackage.js`),
+            Utils.loadScript(`${PotreeConfig.scriptPath}/lazylibs/sql.js/sql-wasm.js`),
         ]);
 
         const result = await Fetcher.download(url);
@@ -66,8 +67,8 @@ export class GeoPackageLoader {
 
     static async loadBuffer(buffer, params) {
         await Promise.all([
-            Utils.loadScript(`${Potree.scriptPath}/lazylibs/geopackage/geopackage.js`),
-            Utils.loadScript(`${Potree.scriptPath}/lazylibs/sql.js/sql-wasm.js`),
+            Utils.loadScript(`${PotreeConfig.scriptPath}/lazylibs/geopackage/geopackage.js`),
+            Utils.loadScript(`${PotreeConfig.scriptPath}/lazylibs/sql.js/sql-wasm.js`),
         ]);
 
         params = params || {};
@@ -75,11 +76,11 @@ export class GeoPackageLoader {
         const resolver = async (resolve) => {
             let transform = params.transform;
             if (!transform) {
-                transform = {forward: (arg) => arg};
+                transform = { forward: (arg) => arg };
             }
 
-            const wasmPath = `${Potree.scriptPath}/lazylibs/sql.js/sql-wasm.wasm`;
-            const SQL = await initSqlJs({locateFile: filename => wasmPath});
+            const wasmPath = `${PotreeConfig.scriptPath}/lazylibs/sql.js/sql-wasm.wasm`;
+            await initSqlJs({ locateFile: filename => wasmPath });
 
             const u8 = new Uint8Array(buffer);
 
@@ -116,7 +117,7 @@ export class GeoPackageLoader {
                 node.name = table;
                 geo.node.add(node);
 
-                for (const [index, feature] of Object.entries(geoJson)) {
+                for (const [_index, feature] of Object.entries(geoJson)) {
                     const featureNode = GeoPackageLoader.featureToSceneNode(feature, matLine, dao.projection, transform);
                     node.add(featureNode);
                 }
@@ -130,8 +131,6 @@ export class GeoPackageLoader {
 
     static featureToSceneNode(feature, matLine, geopackageProjection, transform) {
         let geometry = feature.geometry;
-
-        let color = new THREE.Color(1, 1, 1);
 
         if (feature.geometry.type === "Point") {
             let sg = new THREE.SphereGeometry(1, 18, 18);

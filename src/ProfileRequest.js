@@ -11,6 +11,7 @@
 
 import * as THREE from "../libs/three.js/build/three.module.js";
 import { Points } from "./Points.js";
+import PotreeRefs from "./PotreeRefs.js";
 
 export class ProfileData {
     constructor(profile) {
@@ -30,8 +31,7 @@ export class ProfileData {
             let length = startGround.distanceTo(endGround);
             let side = new THREE.Vector3().subVectors(endGround, startGround).normalize();
             let up = new THREE.Vector3(0, 0, 1);
-            let forward = new THREE.Vector3().crossVectors(side, up).normalize();
-            let N = forward;
+            let N = new THREE.Vector3().crossVectors(side, up).normalize();
             let cutPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(N, startGround);
             let halfPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(side, center);
 
@@ -65,7 +65,6 @@ export class ProfileRequest {
         this.maxDepth = maxDepth || Number.MAX_VALUE;
         this.callback = callback;
         this.temporaryResult = new ProfileData(this.profile);
-        this.pointsServed = 0;
         this.highestLevelServed = 0;
 
         this.priorityQueue = new BinaryHeap(function (x) {
@@ -76,7 +75,7 @@ export class ProfileRequest {
     }
 
     initialize() {
-        this.priorityQueue.push({node: this.pointcloud.pcoGeometry.root, weight: Infinity});
+        this.priorityQueue.push({ node: this.pointcloud.pcoGeometry.root, weight: Infinity });
     }
 
     // traverse the node and add intersecting descendants to queue
@@ -93,7 +92,7 @@ export class ProfileRequest {
             let node = stack.pop();
             let weight = node.boundingSphere.radius;
 
-            this.priorityQueue.push({node: node, weight: weight});
+            this.priorityQueue.push({ node: node, weight: weight });
 
             if (node.level < this.maxDepth) {
                 for (let i = 0; i < 8; i++) {
@@ -118,8 +117,6 @@ export class ProfileRequest {
     }
 
     * updateGenerator() {
-        let start = performance.now();
-
         let maxNodesPerUpdate = 1;
         let intersectedNodes = [];
 
@@ -133,13 +130,13 @@ export class ProfileRequest {
 
             if (node.loaded) {
                 intersectedNodes.push(node);
-                exports.lru.touch(node);
+                PotreeRefs.lru.touch(node);
                 this.highestLevelServed = Math.max(node.getLevel(), this.highestLevelServed);
 
-                var geom = node.pcoGeometry;
-                var hierarchyStepSize = geom ? geom.hierarchyStepSize : 1;
+                let geom = node.pcoGeometry;
+                let hierarchyStepSize = geom ? geom.hierarchyStepSize : 1;
 
-                var doTraverse = node.getLevel() === 0 ||
+                let doTraverse = node.getLevel() === 0 ||
                     (node.level % hierarchyStepSize === 0 && node.hasChildren);
 
                 if (doTraverse) {
@@ -158,8 +155,7 @@ export class ProfileRequest {
                 }
             }
             if (this.temporaryResult.size() > 100) {
-                this.pointsServed += this.temporaryResult.size();
-                this.callback.onProgress({request: this, points: this.temporaryResult});
+                this.callback.onProgress({ request: this, points: this.temporaryResult });
                 this.temporaryResult = new ProfileData(this.profile);
             }
         }
@@ -168,12 +164,11 @@ export class ProfileRequest {
             // we're done! inform callback and remove from pending requests
 
             if (this.temporaryResult.size() > 0) {
-                this.pointsServed += this.temporaryResult.size();
-                this.callback.onProgress({request: this, points: this.temporaryResult});
+                this.callback.onProgress({ request: this, points: this.temporaryResult });
                 this.temporaryResult = new ProfileData(this.profile);
             }
 
-            this.callback.onFinish({request: this});
+            this.callback.onFinish({ request: this });
 
             let index = this.pointcloud.profileRequests.indexOf(this);
             if (index >= 0) {
@@ -199,7 +194,7 @@ export class ProfileRequest {
 
         for (let i = 0; i < numPoints; i++) {
             pos.set(
-                view[i * 3 + 0],
+                view[i * 3],
                 view[i * 3 + 1],
                 view[i * 3 + 2]);
 
@@ -217,7 +212,7 @@ export class ProfileRequest {
 
                 pos.sub(this.pointcloud.position);
 
-                acceptedPositions[3 * numAccepted + 0] = pos.x;
+                acceptedPositions[3 * numAccepted] = pos.x;
                 acceptedPositions[3 * numAccepted + 1] = pos.y;
                 acceptedPositions[3 * numAccepted + 2] = pos.z;
 
@@ -289,7 +284,6 @@ export class ProfileRequest {
                 let acceptedPositions = null;
                 for (let result of this.getAccepted(numPoints, node, matrix, segment, segmentDir, points, totalMileage)) {
                     if (!result) {
-                        let duration = performance.now() - checkpoint;
                         yield false;
                         checkpoint = performance.now();
                     } else {
@@ -310,17 +304,11 @@ export class ProfileRequest {
                     let attribute = geometry.attributes[attributeName];
                     let numElements = attribute.array.length / numPoints;
 
-                    if (numElements !== parseInt(numElements)) {
-                        debugger;
-                    }
-
                     let Type = attribute.array.constructor;
 
                     let filteredBuffer = new Type(numElements * accepted.length);
 
                     let source = attribute.array;
-                    let target = filteredBuffer;
-
                     for (let i = 0; i < accepted.length; i++) {
                         let index = accepted[i];
 
@@ -328,7 +316,7 @@ export class ProfileRequest {
                         let end = start + numElements;
                         let sub = source.subarray(start, end);
 
-                        target.set(sub, i * numElements);
+                        filteredBuffer.set(sub, i * numElements);
                     }
 
                     points.data[attributeName] = filteredBuffer;

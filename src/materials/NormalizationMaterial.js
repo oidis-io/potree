@@ -17,8 +17,8 @@ export class NormalizationMaterial extends THREE.RawShaderMaterial {
         super();
 
         let uniforms = {
-            uDepthMap: {type: "t", value: null},
-            uWeightMap: {type: "t", value: null},
+            uDepthMap: { type: "t", value: null },
+            uWeightMap: { type: "t", value: null },
         };
 
         this.setValues({

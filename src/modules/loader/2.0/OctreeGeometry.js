@@ -10,6 +10,7 @@
  * ********************************************************************************************************* */
 
 import * as THREE from "../../../../libs/three.js/build/three.module.js";
+import PotreeConfig from "../../../PotreeConfig.js";
 
 export class OctreeGeometry {
     constructor() {
@@ -72,12 +73,8 @@ export class OctreeGeometryNode {
         return children;
     }
 
-    getBoundingBox() {
-        return this.boundingBox;
-    }
-
     load() {
-        if (Potree.numNodesLoading >= Potree.maxNodesLoading) {
+        if (PotreeConfig.numNodesLoading >= PotreeConfig.maxNodesLoading) {
             return;
         }
 

@@ -45,7 +45,6 @@ export class DXFProfileExporter {
         const pData = points.data;
         const pMileage = pData.mileage;
         const pCoords = pData.position;
-        const pColor = pData.rgba;
 
         for (let pIx = 0; pIx < points.numPoints; pIx++) {
             const poMileage = pMileage[pIx];
@@ -58,24 +57,44 @@ export class DXFProfileExporter {
                 pointsXYZ.y.push(0);
                 pointsXYZ.z.push(poCoordZ);
 
-                if (pointsXYZ.maxX < poMileage) pointsXYZ.maxX = poMileage;
-                if (pointsXYZ.minX > poMileage) pointsXYZ.minX = poMileage;
+                if (pointsXYZ.maxX < poMileage) {
+                    pointsXYZ.maxX = poMileage;
+                }
+                if (pointsXYZ.minX > poMileage) {
+                    pointsXYZ.minX = poMileage;
+                }
 
-                if (pointsXYZ.maxZ < poCoordZ) pointsXYZ.maxZ = poCoordZ;
-                if (pointsXYZ.minZ > poCoordZ) pointsXYZ.minZ = poCoordZ;
+                if (pointsXYZ.maxZ < poCoordZ) {
+                    pointsXYZ.maxZ = poCoordZ;
+                }
+                if (pointsXYZ.minZ > poCoordZ) {
+                    pointsXYZ.minZ = poCoordZ;
+                }
             } else {
                 pointsXYZ.x.push(poCoordX);
                 pointsXYZ.y.push(poCoordY);
                 pointsXYZ.z.push(poCoordZ);
 
-                if (pointsXYZ.maxX < poCoordX) pointsXYZ.maxX = poCoordX;
-                if (pointsXYZ.minX > poCoordX) pointsXYZ.minX = poCoordX;
+                if (pointsXYZ.maxX < poCoordX) {
+                    pointsXYZ.maxX = poCoordX;
+                }
+                if (pointsXYZ.minX > poCoordX) {
+                    pointsXYZ.minX = poCoordX;
+                }
 
-                if (pointsXYZ.maxY < poCoordY) pointsXYZ.maxY = poCoordY;
-                if (pointsXYZ.minY > poCoordY) pointsXYZ.minY = poCoordY;
+                if (pointsXYZ.maxY < poCoordY) {
+                    pointsXYZ.maxY = poCoordY;
+                }
+                if (pointsXYZ.minY > poCoordY) {
+                    pointsXYZ.minY = poCoordY;
+                }
 
-                if (pointsXYZ.maxZ < poCoordZ) pointsXYZ.maxZ = poCoordZ;
-                if (pointsXYZ.minZ > poCoordZ) pointsXYZ.minZ = poCoordZ;
+                if (pointsXYZ.maxZ < poCoordZ) {
+                    pointsXYZ.maxZ = poCoordZ;
+                }
+                if (pointsXYZ.minZ > poCoordZ) {
+                    pointsXYZ.minZ = poCoordZ;
+                }
             }
         }
 
