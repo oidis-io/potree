@@ -61,7 +61,6 @@
             const posY = document.getElementById("profile_info_pos_y");
             const posZ = document.getElementById("profile_info_pos_z");
             viewer.profileControl.addEventListener("on_profile_point_changed", (data) => {
-                console.log("on_profile_point_changed", data);
                 const point = data.attributes["position"];
                 posX.innerHTML = `X: ${point.x.toFixed(2)}`;
                 posY.innerHTML = `Y: ${point.y.toFixed(2)}`;
