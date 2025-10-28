@@ -591,6 +591,11 @@ export class Measure extends THREE.Object3D {
         return this.getAngleBetweenLines(point, previous, next);
     }
 
+    getHeight() {
+        const sorted = this.points.slice().sort((a, b) => a.position.z - b.position.z);
+        return sorted[sorted.length - 1].position.clone().z - sorted[0].position.clone().z;
+    }
+
     update() {
         if (this.points.length === 0) {
             return;
