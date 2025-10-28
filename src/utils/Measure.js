@@ -302,6 +302,7 @@ export class Measure extends THREE.Object3D {
         this._showHeight = false;
         this._showEdges = true;
         this._showAzimuth = false;
+        this._title = null;
         this.maxMarkers = Number.MAX_SAFE_INTEGER;
 
         this.sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
@@ -606,8 +607,12 @@ export class Measure extends THREE.Object3D {
 
             {
                 let coordinateLabel = this.coordinateLabels[0];
-                let msg = position.toArray().map(p => Utils.addCommas(p.toFixed(2))).join(" / ");
-                coordinateLabel.setText(msg);
+                if (this._title === null) {
+                    let msg = position.toArray().map(p => Utils.addCommas(p.toFixed(2))).join(" / ");
+                    coordinateLabel.setText(msg);
+                } else {
+                    coordinateLabel.setText(this._title);
+                }
                 coordinateLabel.visible = this.showCoordinates;
             }
 
@@ -910,5 +915,9 @@ export class Measure extends THREE.Object3D {
     set showDistances(value) {
         this._showDistances = value;
         this.update();
+    }
+
+    set title(value) {
+        this._title = value;
     }
 }
