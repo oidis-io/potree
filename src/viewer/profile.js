@@ -735,6 +735,34 @@ export class ProfileControl extends EventDispatcher {
 
         this.requestScaleUpdate();
     }
+
+    exportDxf() {
+        let getProfilePoints = (truePosition) => {
+            let points = new Points();
+
+            for (let [pointcloud, entry] of this.pointclouds) {
+                for (let pointSet of entry.points) {
+                    let originPos = pointSet.data.position;
+                    let truePointPosition = new Float64Array(originPos);
+                    for (let i = 0; i < pointSet.numPoints; i++) {
+                        if (truePosition === true) {
+                            truePointPosition[3 * i] += pointcloud.position.x;
+                            truePointPosition[3 * i + 1] += pointcloud.position.y;
+                        }
+
+                        truePointPosition[3 * i + 2] += pointcloud.position.z;
+                    }
+
+                    pointSet.data.position = truePointPosition;
+                    points.add(pointSet);
+                    pointSet.data.position = originPos;
+                }
+            }
+
+            return points;
+        };
+        return DXFProfileExporter.toString(getProfilePoints(), true);
+    }
 }
 
 export class ProfileWindow extends ProfileControl {
