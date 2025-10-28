@@ -1118,6 +1118,10 @@ export class Viewer extends EventDispatcher {
     }
 
     loadGUI(callback) {
+        if (this.profileRenderArea) {
+            this.profileControl = new ProfileControl(this, this.profileRenderArea);
+            this.profileControlController = new ProfileControlController(this);
+        }
         if (callback) {
             this.onGUILoaded(callback);
         }
@@ -1199,13 +1203,8 @@ export class Viewer extends EventDispatcher {
 
                 let elProfile = $("<div>").load(new URL(PotreeConfig.scriptPath + "/profile.html").href, () => {
                     $(document.body).append(elProfile.children());
-                    if (this.profileRenderArea) {
-                        this.profileControl = new ProfileControl(this, this.profileRenderArea);
-                        this.profileControlController = new ProfileControlController(this);
-                    } else {
-                        this.profileWindow = new ProfileWindow(this);
-                        this.profileWindowController = new ProfileWindowController(this);
-                    }
+                    this.profileWindow = new ProfileWindow(this);
+                    this.profileWindowController = new ProfileWindowController(this);
 
                     $("#profile_window").draggable({
                         handle: $("#profile_titlebar"),
