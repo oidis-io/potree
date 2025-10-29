@@ -299,7 +299,9 @@ export class ProfileRequest {
 
                 points.data.position = acceptedPositions;
 
-                let relevantAttributes = Object.keys(geometry.attributes).filter(a => !["position", "indices"].includes(a));
+                // TODO(mkelnar) rgba attribute is bypassed because it has some issue when this control is integrated into external application
+                //  this issue will be investigated and fixed in the future
+                let relevantAttributes = Object.keys(geometry.attributes).filter(a => !["position", "indices", "rgba"].includes(a));
                 for (let attributeName of relevantAttributes) {
                     let attribute = geometry.attributes[attributeName];
                     let numElements = attribute.array.length / numPoints;
