@@ -106,6 +106,17 @@ Object.defineProperty(Potree, "resourcePath", {
     enumerable: true
 });
 
+Object.defineProperty(Potree, "viewMode", {
+    get() {
+        return PotreeConfig.viewMode;
+    },
+    set(viewMode) {
+        PotreeConfig.viewMode = viewMode;
+    },
+    configurable: true,
+    enumerable: true
+});
+
 PotreeConfig.loadPointCloud = (path, name, callback) => {
     let loaded = function (e) {
         e.pointcloud.name = name;

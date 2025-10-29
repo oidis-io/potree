@@ -15,6 +15,7 @@ import { CameraMode } from "../defines.js";
 import { View } from "./View.js";
 import { Utils } from "../utils.js";
 import { EventDispatcher } from "../EventDispatcher.js";
+import PotreeConfig, { ViewMode } from "../PotreeConfig.js";
 
 export class Scene extends EventDispatcher {
     constructor() {
@@ -349,12 +350,16 @@ export class Scene extends EventDispatcher {
             return this.overrideCamera;
         }
 
-        if (this.cameraMode === CameraMode.PERSPECTIVE) {
-            return this.cameraP;
-        } else if (this.cameraMode === CameraMode.ORTHOGRAPHIC) {
+        if (PotreeConfig.viewMode === ViewMode.FLAT) {
             return this.cameraO;
-        } else if (this.cameraMode === CameraMode.VR) {
-            return this.cameraVR;
+        } else {
+            if (this.cameraMode === CameraMode.PERSPECTIVE) {
+                return this.cameraP;
+            } else if (this.cameraMode === CameraMode.ORTHOGRAPHIC) {
+                return this.cameraO;
+            } else if (this.cameraMode === CameraMode.VR) {
+                return this.cameraVR;
+            }
         }
 
         return null;

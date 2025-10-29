@@ -858,6 +858,13 @@ void doClipping(){
 
 void main() {
     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0 );
+    #if defined hq_depth_pass
+        if(uUseOrthographicCamera){
+            float originalDepth = mvPosition.z;
+            mvPosition.z += 2.0 * vRadius;
+        }
+    #endif
+
     vViewPosition = mvPosition.xyz;
     gl_Position = projectionMatrix * mvPosition;
     vLogDepth = log2(-mvPosition.z);
@@ -888,12 +895,14 @@ void main() {
 
 
     #if defined hq_depth_pass
-        float originalDepth = gl_Position.w;
-        float adjustedDepth = originalDepth + 2.0 * vRadius;
-        float adjust = adjustedDepth / originalDepth;
+        if(!uUseOrthographicCamera){
+            float originalDepth = gl_Position.w;
+            float adjustedDepth = originalDepth + 2.0 * vRadius;
+            float adjust = adjustedDepth / originalDepth;
 
-        mvPosition.xyz = mvPosition.xyz * adjust;
-        gl_Position = projectionMatrix * mvPosition;
+            mvPosition.xyz = mvPosition.xyz * adjust;
+            gl_Position = projectionMatrix * mvPosition;
+        }
     #endif
 
 

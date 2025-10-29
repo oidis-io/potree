@@ -10,8 +10,14 @@
 
 import { Version } from "./Version.js";
 
+export const ViewMode = Object.freeze({
+    FLAT: "2D",
+    SPATIAL: "3D"
+});
+
 let _scriptPath = "";
 let _resourcePath = "";
+let _viewMode = ViewMode.SPATIAL;
 
 const PotreeConfig = {
     version: {
@@ -53,6 +59,17 @@ Object.defineProperty(PotreeConfig, "resourcePath", {
     },
     set(newPath) {
         _resourcePath = newPath.replace(/\/$/, "");
+    },
+    configurable: true,
+    enumerable: true
+});
+
+Object.defineProperty(PotreeConfig, "viewMode", {
+    get() {
+        return _viewMode;
+    },
+    set(viewMode) {
+        _viewMode = viewMode;
     },
     configurable: true,
     enumerable: true
