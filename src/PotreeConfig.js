@@ -26,6 +26,9 @@ const PotreeConfig = {
     numNodesLoading: 0,
     maxNodesLoading: 4,
     pointLoadLimit: 0,
+    showPivot: false,
+    // TODO(mkelnar) size is right now like scale factor to actual view radius
+    pivotMarkerSize: 50,
     // TODO(mkelnar) create loader class for this method
     loadPointCloud: function (path, name, callback) {
         throw new Error(`Not implemented loadPointCloud`);

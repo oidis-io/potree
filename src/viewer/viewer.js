@@ -291,6 +291,9 @@ export class Viewer extends EventDispatcher {
             this.measuringTool = new MeasuringTool(this);
             this.profileTool = new ProfileTool(this);
             this.volumeTool = new VolumeTool(this);
+            this.pivotMarker = new THREE.AxesHelper(2);
+            this.scene.scene.add(this.pivotMarker);
+            this.pivotMarker.visible = PotreeConfig.showPivot;
         } catch (e) {
             this.onCrash(e);
         }
@@ -1675,6 +1678,13 @@ export class Viewer extends EventDispatcher {
             if (this.mapView.sceneProjection) {
                 $("#potree_map_toggle").css("display", "block");
             }
+        }
+
+        if (this.pivotMarker) {
+            this.pivotMarker.position.copy(scene.view.getPivot());
+            this.pivotMarker.scale.set(scene.view.radius / PotreeConfig.pivotMarkerSize,
+                scene.view.radius / PotreeConfig.pivotMarkerSize,
+                scene.view.radius / PotreeConfig.pivotMarkerSize);
         }
 
         TWEEN.update(timestamp);

@@ -224,6 +224,7 @@ export class MeasuringTool extends EventDispatcher {
                 this.viewer.inputHandler.startDragging(
                     measure.spheres[measure.spheres.length - 1]);
             } else if (e.button === THREE.MOUSE.RIGHT) {
+                // TODO(mkelnar) handle also escape to finish insertions
                 cancel.callback();
             }
         };
