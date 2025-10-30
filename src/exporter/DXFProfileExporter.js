@@ -48,7 +48,7 @@ export class DXFProfileExporter {
 
         for (let pIx = 0; pIx < points.numPoints; pIx++) {
             const poMileage = pMileage[pIx];
-            const poCoordX = pCoords[((pIx * 3) + 0)];
+            const poCoordX = pCoords[((pIx * 3))];
             const poCoordY = pCoords[((pIx * 3) + 1)];
             const poCoordZ = pCoords[((pIx * 3) + 2)];
 
@@ -109,7 +109,7 @@ export class DXFProfileExporter {
     }
 
     static plotPCloudPoint(x, y, z) {
-        const dxfSection = `0
+        return `0
 POINT
 8
 layer_pointCloud
@@ -120,8 +120,6 @@ ${y}
 30
 ${z}
 `;
-
-        return dxfSection;
     }
 
     static toString(points, flatten = false) {
@@ -179,8 +177,6 @@ ENTITIES
 ENDSEC
 `;
 
-        const dxf = dxfHeader + dxfBody + "0\nEOF";
-
-        return dxf;
+        return dxfHeader + dxfBody + "0\nEOF";
     }
 }

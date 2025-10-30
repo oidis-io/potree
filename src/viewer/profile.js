@@ -736,32 +736,33 @@ export class ProfileControl extends EventDispatcher {
         this.requestScaleUpdate();
     }
 
-    exportDxf() {
-        let getProfilePoints = (truePosition) => {
-            let points = new Points();
+    getProfilePoints(truePosition) {
+        let points = new Points();
 
-            for (let [pointcloud, entry] of this.pointclouds) {
-                for (let pointSet of entry.points) {
-                    let originPos = pointSet.data.position;
-                    let truePointPosition = new Float64Array(originPos);
-                    for (let i = 0; i < pointSet.numPoints; i++) {
-                        if (truePosition === true) {
-                            truePointPosition[3 * i] += pointcloud.position.x;
-                            truePointPosition[3 * i + 1] += pointcloud.position.y;
-                        }
-
-                        truePointPosition[3 * i + 2] += pointcloud.position.z;
+        for (let [pointcloud, entry] of this.pointclouds) {
+            for (let pointSet of entry.points) {
+                let originPos = pointSet.data.position;
+                let truePointPosition = new Float64Array(originPos);
+                for (let i = 0; i < pointSet.numPoints; i++) {
+                    if (truePosition === true) {
+                        truePointPosition[3 * i] += pointcloud.position.x;
+                        truePointPosition[3 * i + 1] += pointcloud.position.y;
                     }
 
-                    pointSet.data.position = truePointPosition;
-                    points.add(pointSet);
-                    pointSet.data.position = originPos;
+                    truePointPosition[3 * i + 2] += pointcloud.position.z;
                 }
-            }
 
-            return points;
-        };
-        return DXFProfileExporter.toString(getProfilePoints(), true);
+                pointSet.data.position = truePointPosition;
+                points.add(pointSet);
+                pointSet.data.position = originPos;
+            }
+        }
+
+        return points;
+    };
+
+    exportDxf(flatten = false) {
+        return DXFProfileExporter.toString(this.getProfilePoints(), flatten);
     }
 }
 
@@ -977,63 +978,28 @@ export class ProfileWindow extends ProfileControl {
             this.hide();
         });
 
-        let getProfilePoints = (truePosition) => {
-            let points = new Points();
-
-            for (let [pointcloud, entry] of this.pointclouds) {
-                for (let pointSet of entry.points) {
-                    let originPos = pointSet.data.position;
-                    let truePointPosition = new Float64Array(originPos);
-                    for (let i = 0; i < pointSet.numPoints; i++) {
-                        if (truePosition === true) {
-                            truePointPosition[3 * i] += pointcloud.position.x;
-                            truePointPosition[3 * i + 1] += pointcloud.position.y;
-                        }
-
-                        truePointPosition[3 * i + 2] += pointcloud.position.z;
-                    }
-
-                    pointSet.data.position = truePointPosition;
-                    points.add(pointSet);
-                    pointSet.data.position = originPos;
-                }
-            }
-
-            return points;
-        };
-
         $("#potree_download_dxf2D_icon").click(() => {
-            const points = getProfilePoints();
-
-            const string = DXFProfileExporter.toString(points, true);
-
+            const string = this.exportDxf(true);
             const blob = new Blob([string], { type: "text/string" });
             $("#potree_download_profile_dxf2D_link").attr("href", URL.createObjectURL(blob));
         });
 
         $("#potree_download_dxf3D_icon").click(() => {
-            const points = getProfilePoints(true);
-
-            const string = DXFProfileExporter.toString(points);
-
+            const string = this.exportDxf(false);
             const blob = new Blob([string], { type: "text/string" });
             $("#potree_download_profile_dxf3D_link").attr("href", URL.createObjectURL(blob));
         });
 
         $("#potree_download_csv_icon").click(() => {
-            let points = getProfilePoints(true);
-
+            let points = this.getProfilePoints(true);
             let string = CSVExporter.toString(points);
-
             let blob = new Blob([string], { type: "text/string" });
             $("#potree_download_profile_ortho_link").attr("href", URL.createObjectURL(blob));
         });
 
         $("#potree_download_las_icon").click(() => {
-            let points = getProfilePoints(true);
-
+            let points = this.getProfilePoints(true);
             let buffer = LASExporter.toLAS(points);
-
             let blob = new Blob([buffer], { type: "application/octet-binary" });
             $("#potree_download_profile_link").attr("href", URL.createObjectURL(blob));
         });
