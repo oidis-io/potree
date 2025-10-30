@@ -293,6 +293,7 @@ export class Measure extends THREE.Object3D {
 
         this.name = "Measure_" + this.constructor.counter;
         this.points = [];
+        this.enabled = true;
         this._showDistances = true;
         this._showCoordinates = false;
         this._showArea = false;
@@ -418,6 +419,9 @@ export class Measure extends THREE.Object3D {
 
         {
             let drag = (e) => {
+                if (this.enabled === false) {
+                    return;
+                }
                 let I = Utils.getMousePointCloudIntersection(
                     e.drag.end,
                     e.viewer.scene.getActiveCamera(),
@@ -457,7 +461,12 @@ export class Measure extends THREE.Object3D {
                 }
             };
 
-            let mouseover = (e) => e.object.material.emissive.setHex(0x888888);
+            let mouseover = (e) => {
+                if (this.enabled === false) {
+                    return;
+                }
+                e.object.material.emissive.setHex(0x888888);
+            };
             let mouseleave = (e) => e.object.material.emissive.setHex(0x000000);
 
             sphere.addEventListener("drag", drag);
