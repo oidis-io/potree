@@ -759,7 +759,7 @@ export class ProfileControl extends EventDispatcher {
         }
 
         return points;
-    };
+    }
 
     exportDxf(flatten = false) {
         return DXFProfileExporter.toString(this.getProfilePoints(), flatten);
@@ -908,7 +908,7 @@ export class ProfileWindow extends ProfileControl {
                                     <td>${value.join(", ")}</td>
                                 </tr>`;
                         } else if (attributeName === "normal") {
-                            continue;
+                            // nothing to do
                         } else if (attributeName === "mileage") {
                             html += `
                                 <tr>
@@ -1051,8 +1051,7 @@ export class ProfileControlController {
             const str = $("#potree_profile_rotate_amount").val();
 
             if (!isNaN(str)) {
-                const value = parseFloat(str);
-                this.rotateAmount = value;
+                this.rotateAmount = parseFloat(str);
                 $("#potree_profile_rotate_amount").css("background-color", "");
             } else {
                 $("#potree_profile_rotate_amount").css("background-color", "#ff9999");
