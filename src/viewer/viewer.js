@@ -51,6 +51,7 @@ import { loadProject } from "./LoadProject.js";
 import { GeoPackageLoader } from "../loader/GeoPackageLoader.js";
 import { updatePointClouds } from "../Potree_update_visibility.js";  // TODO(mkelnar) refactor
 import PotreeRefs from "../PotreeRefs.js";
+import { CesiumRenderer } from "./CesiumRenderer.js";
 
 export class Viewer extends EventDispatcher {
     constructor(domElement, args = {}) {
@@ -148,6 +149,7 @@ export class Viewer extends EventDispatcher {
             this.edlRenderer = null;
             this.renderer = null;
             this.pRenderer = null;
+            this.cesiumRender = null;
 
             this.scene = null;
             this.sceneVR = null;
@@ -287,6 +289,9 @@ export class Viewer extends EventDispatcher {
 
             this.loadGUI = this.loadGUI.bind(this);
 
+            if (args.cesiumRenderArea) {
+                this.cesiumRender = new CesiumRenderer(this, { element: args.cesiumRenderArea });
+            }
             this.annotationTool = new AnnotationTool(this);
             this.measuringTool = new MeasuringTool(this);
             this.profileTool = new ProfileTool(this);
@@ -479,6 +484,18 @@ export class Viewer extends EventDispatcher {
 
     getFreeze() {
         return this.freeze;
+    }
+
+    setShowCesium(value) {
+        value = Boolean(value);
+        if (this.cesiumRender.enabled !== value) {
+            this.cesiumRender.enabled = value;
+            this.dispatchEvent({ "type": "show_cesium_changed", "viewer": this });
+        }
+    }
+
+    getShowCesium() {
+        return this.cesiumRender.enabled;
     }
 
     getClipTask() {
@@ -1902,8 +1919,8 @@ export class Viewer extends EventDispatcher {
             let frustumScale = this.scene.view.radius;
             scene.cameraO.left = -frustumScale;
             scene.cameraO.right = frustumScale;
-            scene.cameraO.top = frustumScale * 1 / aspect;
-            scene.cameraO.bottom = -frustumScale * 1 / aspect;
+            scene.cameraO.top = frustumScale / aspect;
+            scene.cameraO.bottom = -frustumScale / aspect;
             scene.cameraO.updateProjectionMatrix();
 
             scene.cameraScreenSpace.top = 1 / aspect;
@@ -1915,6 +1932,10 @@ export class Viewer extends EventDispatcher {
 
         pRenderer.render(this.renderer);
         this.renderer.render(this.overlay, this.overlayCamera);
+
+        if (this.cesiumRender) {
+            this.cesiumRender.render();
+        }
     }
 
     render() {

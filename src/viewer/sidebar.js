@@ -1512,5 +1512,9 @@ export class Sidebar {
         $("#set_freeze").click(() => {
             this.viewer.setFreeze($("#set_freeze").prop("checked"));
         });
+
+        $("#show_cesium").click(() => {
+            this.viewer.setShowCesium($("#show_cesium").prop("checked"));
+        });
     }
 }
