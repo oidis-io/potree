@@ -1520,5 +1520,9 @@ export class Sidebar {
         $("#show_pivot").click(() => {
             this.viewer.pivotMarker.visible = ($("#show_pivot").prop("checked"));
         });
+
+        $("#show_jgw").click(() => {
+            this.viewer.jgwImage.visible = ($("#show_jgw").prop("checked"));
+        });
     }
 }

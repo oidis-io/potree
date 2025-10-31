@@ -52,6 +52,7 @@ import { GeoPackageLoader } from "../loader/GeoPackageLoader.js";
 import { updatePointClouds } from "../Potree_update_visibility.js";  // TODO(mkelnar) refactor
 import PotreeRefs from "../PotreeRefs.js";
 import { CesiumRenderer } from "./CesiumRenderer.js";
+import { JGWImage } from "./JGWImage.js";
 
 export class Viewer extends EventDispatcher {
     constructor(domElement, args = {}) {
@@ -299,6 +300,7 @@ export class Viewer extends EventDispatcher {
             this.pivotMarker = new THREE.AxesHelper(2);
             this.scene.scene.add(this.pivotMarker);
             this.pivotMarker.visible = PotreeConfig.showPivot;
+            this.jgwImage = new JGWImage(this);
         } catch (e) {
             this.onCrash(e);
         }
@@ -1693,6 +1695,10 @@ export class Viewer extends EventDispatcher {
 
         { // update navigation cube
             this.navigationCube.update(camera.rotation);
+        }
+
+        {
+            this.jgwImage.update();
         }
 
         this.updateAnnotations();
