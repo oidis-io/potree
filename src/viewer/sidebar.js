@@ -1516,5 +1516,9 @@ export class Sidebar {
         $("#show_cesium").click(() => {
             this.viewer.setShowCesium($("#show_cesium").prop("checked"));
         });
+
+        $("#show_pivot").click(() => {
+            this.viewer.pivotMarker.visible = ($("#show_pivot").prop("checked"));
+        });
     }
 }
