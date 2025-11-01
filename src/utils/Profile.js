@@ -28,8 +28,7 @@ export class Profile extends THREE.Object3D {
         this._modifiable = true;
 
         this.sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
-        this.color = new THREE.Color(0xff0000);
-        this.lineColor = new THREE.Color(0xff0000);
+        this.color = 0xff0000;
     }
 
     createSphereMaterial() {
@@ -95,7 +94,8 @@ export class Profile extends THREE.Object3D {
         if (this.points.length > 1) {
             let lineGeometry = new THREE.Geometry();
             lineGeometry.vertices.push(new THREE.Vector3(), new THREE.Vector3());
-            lineGeometry.colors.push(this.lineColor, this.lineColor, this.lineColor);
+            let lineColor = new THREE.Color(this.color);
+            lineGeometry.colors.push(lineColor, lineColor, lineColor);
             let lineMaterial = new THREE.LineBasicMaterial({
                 vertexColors: THREE.VertexColors,
                 linewidth: 2,
@@ -110,7 +110,7 @@ export class Profile extends THREE.Object3D {
             this.edges.push(edge);
 
             let boxGeometry = new THREE.BoxGeometry(1, 1, 1);
-            let boxMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0.2 });
+            let boxMaterial = new THREE.MeshBasicMaterial({ color: this.color, transparent: true, opacity: 0.2 });
             let box = new THREE.Mesh(boxGeometry, boxMaterial);
             box.visible = false;
 

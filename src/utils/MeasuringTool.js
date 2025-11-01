@@ -177,13 +177,6 @@ export class MeasuringTool extends EventDispatcher {
     startInsertion(args = {}) {
         let domElement = this.viewer.renderer.domElement;
 
-        let measure = new Measure();
-
-        this.dispatchEvent({
-            type: "start_inserting_measurement",
-            measure: measure
-        });
-
         const pick = (defaul, alternative) => {
             if (defaul != null) {
                 return defaul;
@@ -191,6 +184,13 @@ export class MeasuringTool extends EventDispatcher {
                 return alternative;
             }
         };
+
+        let measure = new Measure({ color: pick(args.color, new THREE.Color(0xff0000)) });
+
+        this.dispatchEvent({
+            type: "start_inserting_measurement",
+            measure: measure
+        });
 
         measure.showDistances = (args.showDistances === null) ? true : args.showDistances;
 
@@ -203,7 +203,6 @@ export class MeasuringTool extends EventDispatcher {
         measure.showEdges = pick(args.showEdges, true);
         measure.closed = pick(args.closed, false);
         measure.maxMarkers = pick(args.maxMarkers, Infinity);
-        measure.color = pick(args.color, new THREE.Color(0xff0000));
 
         measure.name = args.name || "Measurement";
 

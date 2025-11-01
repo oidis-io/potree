@@ -83,7 +83,7 @@ function createCircleRadiusLabel() {
     return circleRadiusLabel;
 }
 
-function createCircleRadiusLine() {
+function createCircleRadiusLine($color) {
     const lineGeometry = new LineGeometry();
 
     lineGeometry.setPositions([
@@ -92,7 +92,7 @@ function createCircleRadiusLine() {
     ]);
 
     const lineMaterial = new LineMaterial({
-        color: 0xff0000,
+        color: $color,
         linewidth: 2,
         resolution: new THREE.Vector2(1000, 1000),
         gapSize: 1,
@@ -107,7 +107,7 @@ function createCircleRadiusLine() {
     return circleRadiusLine;
 }
 
-function createCircleLine() {
+function createCircleLine($color) {
     const coordinates = [];
 
     let n = 128;
@@ -137,7 +137,7 @@ function createCircleLine() {
     geometry.setPositions(coordinates);
 
     const material = new LineMaterial({
-        color: 0xff0000,
+        color: $color,
         dashSize: 5,
         gapSize: 2,
         linewidth: 2,
@@ -163,7 +163,7 @@ function createCircleCenter() {
     return circleCenter;
 }
 
-function createLine() {
+function createLine($color) {
     const geometry = new LineGeometry();
 
     geometry.setPositions([
@@ -172,7 +172,7 @@ function createLine() {
     ]);
 
     const material = new LineMaterial({
-        color: 0xff0000,
+        color: $color,
         linewidth: 2,
         resolution: new THREE.Vector2(1000, 1000),
         gapSize: 1,
@@ -184,7 +184,7 @@ function createLine() {
     return new Line2(geometry, material);
 }
 
-function createCircle() {
+function createCircle($color) {
     const coordinates = [];
 
     let n = 128;
@@ -214,7 +214,7 @@ function createCircle() {
     geometry.setPositions(coordinates);
 
     const material = new LineMaterial({
-        color: 0xff0000,
+        color: $color,
         dashSize: 5,
         gapSize: 2,
         linewidth: 2,
@@ -229,7 +229,7 @@ function createCircle() {
     return line;
 }
 
-function createAzimuth() {
+function createAzimuth($color) {
     const azimuth = {
         label: null,
         center: null,
@@ -263,11 +263,11 @@ function createAzimuth() {
     azimuth.center = new THREE.Mesh(sg, sm);
     azimuth.target = new THREE.Mesh(sg, sm);
     azimuth.north = new THREE.Mesh(sg, sm);
-    azimuth.centerToNorth = createLine();
-    azimuth.centerToTarget = createLine();
-    azimuth.centerToTargetground = createLine();
-    azimuth.targetgroundToTarget = createLine();
-    azimuth.circle = createCircle();
+    azimuth.centerToNorth = createLine($color);
+    azimuth.centerToTarget = createLine($color);
+    azimuth.centerToTargetground = createLine($color);
+    azimuth.targetgroundToTarget = createLine($color);
+    azimuth.circle = createCircle($color);
 
     azimuth.node = new THREE.Object3D();
     azimuth.node.add(
@@ -286,7 +286,7 @@ function createAzimuth() {
 }
 
 export class Measure extends THREE.Object3D {
-    constructor() {
+    constructor($args) {
         super();
 
         this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
@@ -307,7 +307,7 @@ export class Measure extends THREE.Object3D {
         this.maxMarkers = Number.MAX_SAFE_INTEGER;
 
         this.sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
-        this.color = new THREE.Color(0xff0000);
+        this.color = $args?.color ? $args.color : 0xff0000;
 
         this.spheres = [];
         this.edges = [];
@@ -320,11 +320,11 @@ export class Measure extends THREE.Object3D {
         this.heightLabel = createHeightLabel();
         this.areaLabel = createAreaLabel();
         this.circleRadiusLabel = createCircleRadiusLabel();
-        this.circleRadiusLine = createCircleRadiusLine();
-        this.circleLine = createCircleLine();
+        this.circleRadiusLine = createCircleRadiusLine(this.color);
+        this.circleLine = createCircleLine(this.color);
         this.circleCenter = createCircleCenter();
 
-        this.azimuth = createAzimuth();
+        this.azimuth = createAzimuth(this.color);
 
         this.add(this.heightEdge);
         this.add(this.heightLabel);
@@ -368,7 +368,7 @@ export class Measure extends THREE.Object3D {
             ]);
 
             let lineMaterial = new LineMaterial({
-                color: 0xff0000,
+                color: this.color,
                 linewidth: 2,
                 resolution: new THREE.Vector2(1000, 1000),
             });
@@ -649,12 +649,12 @@ export class Measure extends THREE.Object3D {
             let sphere = this.spheres[index];
 
             sphere.position.copy(point.position);
-            sphere.material.color = this.color;
+            sphere.material.color = new THREE.Color(this.color);
 
             {
                 let edge = this.edges[index];
 
-                edge.material.color = this.color;
+                edge.material.color = new THREE.Color(this.color);
 
                 edge.position.copy(point.position);
 
