@@ -1524,5 +1524,9 @@ export class Sidebar {
         $("#show_jgw").click(() => {
             this.viewer.jgwImage.visible = ($("#show_jgw").prop("checked"));
         });
+
+        $("#show_drawableArea").click(() => {
+            this.viewer.drawableArea.visible = ($("#show_drawableArea").prop("checked"));
+        });
     }
 }

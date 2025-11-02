@@ -53,6 +53,7 @@ import { updatePointClouds } from "../Potree_update_visibility.js";  // TODO(mke
 import PotreeRefs from "../PotreeRefs.js";
 import { CesiumRenderer } from "./CesiumRenderer.js";
 import { JGWImage } from "./JGWImage.js";
+import { DrawableArea } from "./DrawableArea.js";
 
 export class Viewer extends EventDispatcher {
     constructor(domElement, args = {}) {
@@ -301,6 +302,7 @@ export class Viewer extends EventDispatcher {
             this.scene.scene.add(this.pivotMarker);
             this.pivotMarker.visible = PotreeConfig.showPivot;
             this.jgwImage = new JGWImage(this);
+            this.drawableArea = new DrawableArea(this);
         } catch (e) {
             this.onCrash(e);
         }
@@ -1699,6 +1701,10 @@ export class Viewer extends EventDispatcher {
 
         {
             this.jgwImage.update();
+        }
+
+        {
+            this.drawableArea.update();
         }
 
         this.updateAnnotations();
