@@ -233,7 +233,9 @@ export class DrawableArea extends DrawableEntity {
             }
             this.fromJson(d);
         };
-        if (typeof data === "string" && (data.includes("\n") || data.includes(" "))) {
+        if (typeof data === "object") {
+            this.fromJson(data);
+        } else if (typeof data === "string" && (data.includes("\n") || data.includes(" "))) {
             processData(data);
         } else if (typeof data === "string") {
             Fetcher.download(data)
