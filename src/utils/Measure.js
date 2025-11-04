@@ -434,15 +434,17 @@ export class Measure extends THREE.Object3D {
                     if (i !== -1) {
                         let point = this.points[i];
 
-                        // loop through current keys and cleanup ones that will be orphaned
-                        for (let key of Object.keys(point)) {
-                            if (!I.point[key]) {
-                                delete point[key];
+                        if (I.point) {
+                            // loop through current keys and cleanup ones that will be orphaned
+                            for (let key of Object.keys(point)) {
+                                if (!I.point[key]) {
+                                    delete point[key];
+                                }
                             }
-                        }
 
-                        for (let key of Object.keys(I.point).filter(e => e !== "position")) {
-                            point[key] = I.point[key];
+                            for (let key of Object.keys(I.point).filter(e => e !== "position")) {
+                                point[key] = I.point[key];
+                            }
                         }
 
                         this.setPosition(i, I.location);
@@ -832,7 +834,7 @@ export class Measure extends THREE.Object3D {
             sphere.raycast(raycaster, intersects);
         }
 
-        // recalculate distances because they are not necessarely correct
+        // recalculate distances because they are not necessarily correct
         // for scaled objects.
         // see https://github.com/mrdoob/three.js/issues/5827
         // TODO: remove this once the bug has been fixed

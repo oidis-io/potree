@@ -37,6 +37,7 @@ export class Sidebar {
         this.viewer = viewer;
 
         this.measuringTool = viewer.measuringTool;
+        this.drawingTool = viewer.drawingTool;
         this.profileTool = viewer.profileTool;
         this.volumeTool = viewer.volumeTool;
 
@@ -71,6 +72,7 @@ export class Sidebar {
 
     initToolbar() {
         let elToolbar = $("#tools");
+        let drawingToolbar = $("#drawing_tools");
         elToolbar.append(this.createToolIcon(
             PotreeConfig.resourcePath + "/icons/angle.png",
             "[title]tt.angle_measurement",
@@ -221,6 +223,24 @@ export class Sidebar {
             }
         ));
 
+        drawingToolbar.append(this.createToolIcon(
+            PotreeConfig.resourcePath + "/icons/distance.svg",
+            "Draw line",
+            () => {
+                let drawing = this.drawingTool.startInsertion({
+                    showDistances: true,
+                    showArea: false,
+                    closed: false,
+                    name: "Line"
+                });
+
+                let drawingRoot = $("#jstree_scene").jstree().get_json("drawings");
+                let jsonNode = drawingRoot.children.find(child => child.data.uuid === drawing.uuid);
+                $.jstree.reference(jsonNode.id).deselect_all();
+                $.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+            }
+        ));
+
         elToolbar.append(this.createToolIcon(
             PotreeConfig.resourcePath + "/icons/volume.svg",
             "[title]tt.volume_measurement",
@@ -289,11 +309,22 @@ export class Sidebar {
             elShow.selectgroup({ title: "Show/Hide labels" });
 
             elShow.find("input").click((e) => {
-                const show = e.target.value === "SHOW";
-                this.measuringTool.showLabels = show;
+                this.measuringTool.showLabels = e.target.value === "SHOW";
             });
 
             let currentShow = this.measuringTool.showLabels ? "SHOW" : "HIDE";
+            elShow.find(`input[value=${currentShow}]`).trigger("click");
+        }
+
+        {
+            let elShow = $("#drawing_tools_show");
+            elShow.selectgroup({ title: "Show/Hide labels" });
+
+            elShow.find("input").click((e) => {
+                this.drawingTool.showLabels = e.target.value === "SHOW";
+            });
+
+            let currentShow = this.drawingTool.showLabels ? "SHOW" : "HIDE";
             elShow.find(`input[value=${currentShow}]`).trigger("click");
         }
     }
@@ -404,6 +435,7 @@ export class Sidebar {
 
         let pcID = tree.jstree("create_node", "#", { "text": "<b>Point Clouds</b>", "id": "pointclouds" }, "last", false, false);
         let measurementID = tree.jstree("create_node", "#", { "text": "<b>Measurements</b>", "id": "measurements" }, "last", false, false);
+        let drawingID = tree.jstree("create_node", "#", { "text": "<b>Drawings</b>", "id": "drawings" }, "last", false, false);
         let annotationsID = tree.jstree("create_node", "#", { "text": "<b>Annotations</b>", "id": "annotations" }, "last", false, false);
         let otherID = tree.jstree("create_node", "#", { "text": "<b>Other</b>", "id": "other" }, "last", false, false);
         let vectorsID = tree.jstree("create_node", "#", { "text": "<b>Vectors</b>", "id": "vectors" }, "last", false, false);
@@ -411,6 +443,7 @@ export class Sidebar {
 
         tree.jstree("check_node", pcID);
         tree.jstree("check_node", measurementID);
+        tree.jstree("check_node", drawingID);
         tree.jstree("check_node", annotationsID);
         tree.jstree("check_node", otherID);
         tree.jstree("check_node", vectorsID);
@@ -559,6 +592,12 @@ export class Sidebar {
             createNode(measurementID, measurement.name, icon, measurement);
         };
 
+        let onDrawingAdded = (e)=>{
+            let drawing = e.drawing;
+            let icon = Utils.getMeasurementIcon(drawing);
+            createNode(drawingID, drawing.name, icon, drawing);
+        };
+
         let onVolumeAdded = (e) => {
             let volume = e.volume;
             let icon = Utils.getMeasurementIcon(volume);
@@ -671,6 +710,13 @@ export class Sidebar {
             tree.jstree("delete_node", jsonNode.id);
         };
 
+        let onDrawingRemoved = (e) => {
+            let drawingsRoot = $("#jstree_scene").jstree().get_json("drawings");
+            let jsonNode = drawingsRoot.children.find(child => child.data.uuid === e.measurement.uuid);
+
+            tree.jstree("delete_node", jsonNode.id);
+        };
+
         let onVolumeRemoved = (e) => {
             let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
             let jsonNode = measurementsRoot.children.find(child => child.data.uuid === e.volume.uuid);
@@ -693,6 +739,7 @@ export class Sidebar {
         };
 
         this.viewer.scene.addEventListener("measurement_removed", onMeasurementRemoved);
+        this.viewer.scene.addEventListener("drawing_removed", onDrawingRemoved);
         this.viewer.scene.addEventListener("volume_removed", onVolumeRemoved);
         this.viewer.scene.addEventListener("polygon_clip_volume_removed", onPolygonClipVolumeRemoved);
         this.viewer.scene.addEventListener("profile_removed", onProfileRemoved);
@@ -715,6 +762,10 @@ export class Sidebar {
 
         for (let measurement of scene.measurements) {
             onMeasurementAdded({ measurement: measurement });
+        }
+
+        for (let drawing of scene.drawings) {
+            onDrawingAdded({ drawing: drawing });
         }
 
         for (let volume of [...scene.volumes, ...scene.polygonClipVolumes]) {
@@ -750,17 +801,21 @@ export class Sidebar {
 
             e.oldScene.removeEventListener("pointcloud_added", onPointCloudAdded);
             e.oldScene.removeEventListener("measurement_added", onMeasurementAdded);
+            e.oldScene.removeEventListener("drawing_added", onDrawingAdded);
             e.oldScene.removeEventListener("profile_added", onProfileAdded);
             e.oldScene.removeEventListener("volume_added", onVolumeAdded);
             e.oldScene.removeEventListener("polygon_clip_volume_added", onVolumeAdded);
             e.oldScene.removeEventListener("measurement_removed", onMeasurementRemoved);
+            e.oldScene.removeEventListener("drawing_removed", onDrawingRemoved);
 
             e.scene.addEventListener("pointcloud_added", onPointCloudAdded);
             e.scene.addEventListener("measurement_added", onMeasurementAdded);
+            e.scene.addEventListener("drawing_added", onDrawingAdded);
             e.scene.addEventListener("profile_added", onProfileAdded);
             e.scene.addEventListener("volume_added", onVolumeAdded);
             e.scene.addEventListener("polygon_clip_volume_added", onVolumeAdded);
             e.scene.addEventListener("measurement_removed", onMeasurementRemoved);
+            e.scene.addEventListener("drawing_removed", onDrawingRemoved);
         });
     }
 

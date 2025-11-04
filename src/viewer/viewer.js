@@ -54,6 +54,7 @@ import PotreeRefs from "../PotreeRefs.js";
 import { CesiumRenderer } from "./CesiumRenderer.js";
 import { JGWImage } from "./JGWImage.js";
 import { DrawableArea } from "./DrawableArea.js";
+import { DrawingTool } from "../utils/DrawingTool.js";
 
 export class Viewer extends EventDispatcher {
     constructor(domElement, args = {}) {
@@ -302,6 +303,7 @@ export class Viewer extends EventDispatcher {
             this.scene.scene.add(this.pivotMarker);
             this.pivotMarker.visible = PotreeConfig.showPivot;
             this.jgwImage = new JGWImage(this);
+            this.drawingTool = new DrawingTool(this);
             this.drawableArea = new DrawableArea(this);
         } catch (e) {
             this.onCrash(e);

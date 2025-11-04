@@ -57,8 +57,9 @@ export class CesiumRenderer {
         });
 
         // TODO(mkelnar) simple hack for true geoHeight - experimental
-        this._geoidOffset = -1 * (this.viewer.scene.pointclouds[0].boundingSphere.center.z) + 2;
-
+        if (this.viewer.scene.pointclouds[0]) {
+            this._geoidOffset = -1 * (this.viewer.scene.pointclouds[0].boundingSphere.center.z) + 2;
+        }
         let pointcloudProjection = proj4.defs("EPSG:5514"); // TODO(mkelnar) should be loaded from point cloud SRS
         let mapProjection = proj4.defs("WGS84");
 
