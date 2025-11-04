@@ -661,7 +661,6 @@ export class Renderer {
             let vbo = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
             gl.bufferData(gl.ARRAY_BUFFER, bufferAttribute.array, gl.STATIC_DRAW);
-
             let normalized = bufferAttribute.normalized;
             let type = this.glTypeMapping.get(bufferAttribute.array.constructor);
 

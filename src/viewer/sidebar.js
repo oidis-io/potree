@@ -1512,5 +1512,21 @@ export class Sidebar {
         $("#set_freeze").click(() => {
             this.viewer.setFreeze($("#set_freeze").prop("checked"));
         });
+
+        $("#show_cesium").click(() => {
+            this.viewer.setShowCesium($("#show_cesium").prop("checked"));
+        });
+
+        $("#show_pivot").click(() => {
+            this.viewer.pivotMarker.visible = ($("#show_pivot").prop("checked"));
+        });
+
+        $("#show_jgw").click(() => {
+            this.viewer.jgwImage.visible = ($("#show_jgw").prop("checked"));
+        });
+
+        $("#show_drawableArea").click(() => {
+            this.viewer.drawableArea.visible = ($("#show_drawableArea").prop("checked"));
+        });
     }
 }

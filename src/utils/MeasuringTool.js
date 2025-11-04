@@ -177,13 +177,6 @@ export class MeasuringTool extends EventDispatcher {
     startInsertion(args = {}) {
         let domElement = this.viewer.renderer.domElement;
 
-        let measure = new Measure();
-
-        this.dispatchEvent({
-            type: "start_inserting_measurement",
-            measure: measure
-        });
-
         const pick = (defaul, alternative) => {
             if (defaul != null) {
                 return defaul;
@@ -191,6 +184,13 @@ export class MeasuringTool extends EventDispatcher {
                 return alternative;
             }
         };
+
+        let measure = new Measure({ color: pick(args.color, new THREE.Color(0xff0000)) });
+
+        this.dispatchEvent({
+            type: "start_inserting_measurement",
+            measure: measure
+        });
 
         measure.showDistances = (args.showDistances === null) ? true : args.showDistances;
 
@@ -224,6 +224,7 @@ export class MeasuringTool extends EventDispatcher {
                 this.viewer.inputHandler.startDragging(
                     measure.spheres[measure.spheres.length - 1]);
             } else if (e.button === THREE.MOUSE.RIGHT) {
+                // TODO(mkelnar) handle also escape to finish insertions
                 cancel.callback();
             }
         };

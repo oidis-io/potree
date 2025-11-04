@@ -26,6 +26,7 @@ import TWEEN from "../../libs/tween/tween.min.js";
 import { MOUSE } from "../defines.js";
 import { Utils } from "../utils.js";
 import { EventDispatcher } from "../EventDispatcher.js";
+import PotreeConfig, { ViewMode } from "../PotreeConfig.js";
 
 export class OrbitControls extends EventDispatcher {
     constructor(viewer) {
@@ -247,6 +248,11 @@ export class OrbitControls extends EventDispatcher {
 
             yaw -= progression * this.yawDelta;
             pitch -= progression * this.pitchDelta;
+
+            if (PotreeConfig.viewMode === ViewMode.FLAT) {
+                yaw = 0;
+                pitch = -Math.PI / 2;
+            }
 
             view.yaw = yaw;
             view.pitch = pitch;

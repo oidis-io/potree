@@ -10,8 +10,14 @@
 
 import { Version } from "./Version.js";
 
+export const ViewMode = Object.freeze({
+    FLAT: "2D",
+    SPATIAL: "3D"
+});
+
 let _scriptPath = "";
 let _resourcePath = "";
+let _viewMode = ViewMode.SPATIAL;
 
 const PotreeConfig = {
     version: {
@@ -26,6 +32,9 @@ const PotreeConfig = {
     numNodesLoading: 0,
     maxNodesLoading: 4,
     pointLoadLimit: 0,
+    showPivot: false,
+    // TODO(mkelnar) size is right now like scale factor to actual view radius
+    pivotMarkerSize: 50,
     // TODO(mkelnar) create loader class for this method
     loadPointCloud: function (path, name, callback) {
         throw new Error(`Not implemented loadPointCloud`);
@@ -50,6 +59,17 @@ Object.defineProperty(PotreeConfig, "resourcePath", {
     },
     set(newPath) {
         _resourcePath = newPath.replace(/\/$/, "");
+    },
+    configurable: true,
+    enumerable: true
+});
+
+Object.defineProperty(PotreeConfig, "viewMode", {
+    get() {
+        return _viewMode;
+    },
+    set(viewMode) {
+        _viewMode = viewMode;
     },
     configurable: true,
     enumerable: true

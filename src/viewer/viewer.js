@@ -51,6 +51,9 @@ import { loadProject } from "./LoadProject.js";
 import { GeoPackageLoader } from "../loader/GeoPackageLoader.js";
 import { updatePointClouds } from "../Potree_update_visibility.js";  // TODO(mkelnar) refactor
 import PotreeRefs from "../PotreeRefs.js";
+import { CesiumRenderer } from "./CesiumRenderer.js";
+import { JGWImage } from "./JGWImage.js";
+import { DrawableArea } from "./DrawableArea.js";
 
 export class Viewer extends EventDispatcher {
     constructor(domElement, args = {}) {
@@ -148,6 +151,7 @@ export class Viewer extends EventDispatcher {
             this.edlRenderer = null;
             this.renderer = null;
             this.pRenderer = null;
+            this.cesiumRender = null;
 
             this.scene = null;
             this.sceneVR = null;
@@ -287,10 +291,18 @@ export class Viewer extends EventDispatcher {
 
             this.loadGUI = this.loadGUI.bind(this);
 
+            if (args.cesiumRenderArea) {
+                this.cesiumRender = new CesiumRenderer(this, { element: args.cesiumRenderArea });
+            }
             this.annotationTool = new AnnotationTool(this);
             this.measuringTool = new MeasuringTool(this);
             this.profileTool = new ProfileTool(this);
             this.volumeTool = new VolumeTool(this);
+            this.pivotMarker = new THREE.AxesHelper(2);
+            this.scene.scene.add(this.pivotMarker);
+            this.pivotMarker.visible = PotreeConfig.showPivot;
+            this.jgwImage = new JGWImage(this);
+            this.drawableArea = new DrawableArea(this);
         } catch (e) {
             this.onCrash(e);
         }
@@ -476,6 +488,18 @@ export class Viewer extends EventDispatcher {
 
     getFreeze() {
         return this.freeze;
+    }
+
+    setShowCesium(value) {
+        value = Boolean(value);
+        if (this.cesiumRender.enabled !== value) {
+            this.cesiumRender.enabled = value;
+            this.dispatchEvent({ "type": "show_cesium_changed", "viewer": this });
+        }
+    }
+
+    getShowCesium() {
+        return this.cesiumRender.enabled;
     }
 
     getClipTask() {
@@ -1121,110 +1145,116 @@ export class Viewer extends EventDispatcher {
         if (callback) {
             this.onGUILoaded(callback);
         }
+        if (this.profileRenderArea) {
+            this.profileControl = new ProfileControl(this, this.profileRenderArea);
+            this.profileControlController = new ProfileControlController(this);
+        }
 
         let sidebarContainer = $("#potree_sidebar_container");
-        sidebarContainer.load(new URL(PotreeConfig.scriptPath + "/sidebar.html").href, () => {
-            sidebarContainer.css("width", "300px");
-            sidebarContainer.css("height", "100%");
+        if (sidebarContainer.length > 0) {
+            sidebarContainer.load(new URL(PotreeConfig.scriptPath + "/sidebar.html").href, () => {
+                sidebarContainer.css("width", "300px");
+                sidebarContainer.css("height", "100%");
 
-            let imgMenuToggle = document.createElement("img");
-            imgMenuToggle.src = new URL(PotreeConfig.resourcePath + "/icons/menu_button.svg").href;
-            imgMenuToggle.onclick = this.toggleSidebar;
-            imgMenuToggle.classList.add("potree_menu_toggle");
+                let imgMenuToggle = document.createElement("img");
+                imgMenuToggle.src = new URL(PotreeConfig.resourcePath + "/icons/menu_button.svg").href;
+                imgMenuToggle.onclick = this.toggleSidebar;
+                imgMenuToggle.classList.add("potree_menu_toggle");
 
-            let imgMapToggle = document.createElement("img");
-            imgMapToggle.src = new URL(PotreeConfig.resourcePath + "/icons/map_icon.png").href;
-            imgMapToggle.style.display = "none";
-            imgMapToggle.onclick = e => {
-                this.toggleMap();
-            };
-            imgMapToggle.id = "potree_map_toggle";
+                let imgMapToggle = document.createElement("img");
+                imgMapToggle.src = new URL(PotreeConfig.resourcePath + "/icons/map_icon.png").href;
+                imgMapToggle.style.display = "none";
+                imgMapToggle.onclick = e => {
+                    this.toggleMap();
+                };
+                imgMapToggle.id = "potree_map_toggle";
 
-            let elButtons = $("#potree_quick_buttons").get(0);
+                let elButtons = $("#potree_quick_buttons").get(0);
 
-            elButtons.append(imgMenuToggle);
-            elButtons.append(imgMapToggle);
+                elButtons.append(imgMenuToggle);
+                elButtons.append(imgMapToggle);
 
-            VRButton.createButton(this.renderer).then(vrButton => {
-                if (vrButton == null) {
-                    console.log("VR not supported or active.");
+                VRButton.createButton(this.renderer).then(vrButton => {
+                    if (vrButton == null) {
+                        console.log("VR not supported or active.");
 
-                    return;
-                }
-
-                this.renderer.xr.enabled = true;
-
-                let element = vrButton.element;
-
-                element.style.position = "";
-                element.style.bottom = "";
-                element.style.left = "";
-                element.style.margin = "4px";
-                element.style.fontSize = "100%";
-                element.style.width = "2.5em";
-                element.style.height = "2.5em";
-                element.style.padding = "0";
-                element.style.textShadow = "black 2px 2px 2px";
-                element.style.display = "block";
-
-                elButtons.append(element);
-
-                vrButton.onStart(() => {
-                    this.dispatchEvent({ type: "vr_start" });
-                });
-
-                vrButton.onEnd(() => {
-                    this.dispatchEvent({ type: "vr_end" });
-                });
-            });
-
-            this.mapView = new MapView(this);
-            this.mapView.init();
-
-            i18n.init({
-                lng: "en",
-                resGetPath: PotreeConfig.resourcePath + "/lang/__lng__/__ns__.json",
-                preload: ["en", "fr", "de", "jp", "se", "es", "zh", "it", "ca"],
-                getAsync: true,
-                debug: false
-            }, function (t) {
-                $("body").i18n();
-            });
-
-            $(() => {
-                let sidebar = new Sidebar(this);
-                sidebar.init();
-
-                this.sidebar = sidebar;
-
-                let elProfile = $("<div>").load(new URL(PotreeConfig.scriptPath + "/profile.html").href, () => {
-                    $(document.body).append(elProfile.children());
-                    if (this.profileRenderArea) {
-                        this.profileControl = new ProfileControl(this, this.profileRenderArea);
-                        this.profileControlController = new ProfileControlController(this);
-                    } else {
-                        this.profileWindow = new ProfileWindow(this);
-                        this.profileWindowController = new ProfileWindowController(this);
+                        return;
                     }
 
-                    $("#profile_window").draggable({
-                        handle: $("#profile_titlebar"),
-                        containment: $(document.body)
-                    });
-                    $("#profile_window").resizable({
-                        containment: $(document.body),
-                        handles: "n, e, s, w"
+                    this.renderer.xr.enabled = true;
+
+                    let element = vrButton.element;
+
+                    element.style.position = "";
+                    element.style.bottom = "";
+                    element.style.left = "";
+                    element.style.margin = "4px";
+                    element.style.fontSize = "100%";
+                    element.style.width = "2.5em";
+                    element.style.height = "2.5em";
+                    element.style.padding = "0";
+                    element.style.textShadow = "black 2px 2px 2px";
+                    element.style.display = "block";
+
+                    elButtons.append(element);
+
+                    vrButton.onStart(() => {
+                        this.dispatchEvent({ type: "vr_start" });
                     });
 
-                    $(() => {
-                        this.guiLoaded = true;
-                        for (let task of this.guiLoadTasks) {
-                            task();
-                        }
+                    vrButton.onEnd(() => {
+                        this.dispatchEvent({ type: "vr_end" });
+                    });
+                });
+
+                this.mapView = new MapView(this);
+                this.mapView.init();
+
+                i18n.init({
+                    lng: "en",
+                    resGetPath: PotreeConfig.resourcePath + "/lang/__lng__/__ns__.json",
+                    preload: ["en", "fr", "de", "jp", "se", "es", "zh", "it", "ca"],
+                    getAsync: true,
+                    debug: false
+                }, function (t) {
+                    $("body").i18n();
+                });
+
+                $(() => {
+                    let sidebar = new Sidebar(this);
+                    sidebar.init();
+
+                    this.sidebar = sidebar;
+
+                    let elProfile = $("<div>").load(new URL(PotreeConfig.scriptPath + "/profile.html").href, () => {
+                        $(document.body).append(elProfile.children());
+                        this.profileWindow = new ProfileWindow(this);
+                        this.profileWindowController = new ProfileWindowController(this);
+
+                        $("#profile_window").draggable({
+                            handle: $("#profile_titlebar"),
+                            containment: $(document.body)
+                        });
+                        $("#profile_window").resizable({
+                            containment: $(document.body),
+                            handles: "n, e, s, w"
+                        });
+
+                        $(() => {
+                            this.guiLoaded = true;
+                            for (let task of this.guiLoadTasks) {
+                                task();
+                            }
+                        });
                     });
                 });
             });
-        });
+        } else {
+            this.guiLoaded = true;
+            for (let task of this.guiLoadTasks) {
+                task();
+            }
+        }
 
         return this.promiseGuiLoaded();
     }
@@ -1669,6 +1699,14 @@ export class Viewer extends EventDispatcher {
             this.navigationCube.update(camera.rotation);
         }
 
+        {
+            this.jgwImage.update();
+        }
+
+        {
+            this.drawableArea.update();
+        }
+
         this.updateAnnotations();
 
         if (this.mapView) {
@@ -1676,6 +1714,13 @@ export class Viewer extends EventDispatcher {
             if (this.mapView.sceneProjection) {
                 $("#potree_map_toggle").css("display", "block");
             }
+        }
+
+        if (this.pivotMarker) {
+            this.pivotMarker.position.copy(scene.view.getPivot());
+            this.pivotMarker.scale.set(scene.view.radius / PotreeConfig.pivotMarkerSize,
+                scene.view.radius / PotreeConfig.pivotMarkerSize,
+                scene.view.radius / PotreeConfig.pivotMarkerSize);
         }
 
         TWEEN.update(timestamp);
@@ -1886,8 +1931,8 @@ export class Viewer extends EventDispatcher {
             let frustumScale = this.scene.view.radius;
             scene.cameraO.left = -frustumScale;
             scene.cameraO.right = frustumScale;
-            scene.cameraO.top = frustumScale * 1 / aspect;
-            scene.cameraO.bottom = -frustumScale * 1 / aspect;
+            scene.cameraO.top = frustumScale / aspect;
+            scene.cameraO.bottom = -frustumScale / aspect;
             scene.cameraO.updateProjectionMatrix();
 
             scene.cameraScreenSpace.top = 1 / aspect;
@@ -1899,6 +1944,10 @@ export class Viewer extends EventDispatcher {
 
         pRenderer.render(this.renderer);
         this.renderer.render(this.overlay, this.overlayCamera);
+
+        if (this.cesiumRender) {
+            this.cesiumRender.render();
+        }
     }
 
     render() {

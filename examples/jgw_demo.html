@@ -1,0 +1,109 @@
+<!--
+
+ Copyright 2025 Oidis
+
+ SPDX-License-Identifier: BSD-2-Clause
+ The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
+ or at https://spdx.org/licenses/BSD-2-Clause.html#licenseText
+
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Potree Viewer</title>
+
+    <link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
+    <link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
+    <link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
+    <link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
+    <link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
+    <link rel="stylesheet" type="text/css" href="../libs/Cesium/Widgets/CesiumWidget/CesiumWidget.css">
+</head>
+
+<body>
+    <script src="../libs/jquery/jquery-3.1.1.min.js"></script>
+    <script src="../libs/spectrum/spectrum.js"></script>
+    <script src="../libs/jquery-ui/jquery-ui.min.js"></script>
+    <script src="../libs/other/BinaryHeap.js"></script>
+    <script src="../libs/tween/tween.min.js"></script>
+    <script src="../libs/d3/d3.js"></script>
+    <script src="../libs/proj4/proj4.js"></script>
+    <script src="../libs/openlayers3/ol.js"></script>
+    <script src="../libs/i18next/i18next.js"></script>
+    <script src="../libs/jstree/jstree.js"></script>
+    <script src="../build/potree/potree.js"></script>
+    <script src="../libs/plasio/js/laslaz.js"></script>
+    <script src="../libs/Cesium/Cesium.js"></script>
+    <script src="../libs/copc/index.js"></script>
+
+    <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
+        <div id="potree_render_area" style="background-image: url('../build/potree/resources/images/background.jpg');">
+            <div id="cesiumContainer" style="position: absolute; width: 100%; height: 100%; background-color:green"></div>
+        </div>
+        <div id="potree_sidebar_container"></div>
+    </div>
+
+    <script type="module">
+        import * as THREE from "../libs/three.js/build/three.module.js";
+        import { ViewMode } from "../src/PotreeConfig.js";
+        import { CameraMode } from "../src/defines.js";
+
+        // proj4.defs("EPSG:5514", "+proj=krovak +lat_0=49.5 +lon_0=24.83333333333333 +alpha=30.2881397527778 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +towgs84=589,76,480,0,0,0,0 +units=m +no_defs");
+        // let [x, y] = proj4("EPSG:4326", "EPSG:5514", [17.050547295, 49.685828670]);
+        //
+        // console.log("eps: ", x, y);
+
+        // const startLonLat = [17.050547295, 49.685828670]; // epsg.io -> 1898092.646677 6392065.599605
+
+        window.potreeViewer = new Potree.Viewer(document.getElementById("potree_render_area"), {
+            cesiumRenderArea: document.getElementById("cesiumContainer")
+        });
+        potreeViewer.setEDLEnabled(true);
+        potreeViewer.setFOV(60);
+        potreeViewer.setPointBudget(1_000_000);
+        potreeViewer.setMinNodeSize(50);
+        potreeViewer.loadSettingsFromURL();
+        potreeViewer.setBackground(null);
+        potreeViewer.useHQ = true;
+
+        // Potree.viewMode = ViewMode.FLAT;
+
+        potreeViewer.setDescription(`
+		Potree using <a href="https://cesiumjs.org/" target="_blank">Cesium</a> to display an
+		<a href="https://www.openstreetmap.org" target="_blank">OpenStreetMap</a> map below.<br>
+		Setup EPT local hosting for http://localhost:7891/ept.json,.. <br>`);
+
+        potreeViewer.loadGUI(() => {
+            potreeViewer.setLanguage('en');
+            $("#menu_appearance").next().show();
+            $("#menu_tools").next().show();
+            $("#menu_scene").next().show();
+            potreeViewer.toggleSidebar();
+        });
+
+        Potree.loadPointCloud("http://localhost:7891/ept.json", "Test", function (e) {
+            let scene = potreeViewer.scene;
+
+            scene.addPointCloud(e.pointcloud);
+
+            potreeViewer.scene.view.setView(e.pointcloud.boundingBox.max, e.pointcloud.boundingBox.getCenter());
+
+            let material = e.pointcloud.material;
+            material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+            material.size = 0.7;
+            material.elevationRange = [0, 70];
+            material.weightRGB = 1.0;
+            material.weightElevation = 1.0;
+
+            // TODO(mkelnar) replace by better loadPointCloud handling - event?
+            potreeViewer.cesiumRender.init();
+            potreeViewer.jgwImage.load("http://localhost:7891/img.jpg", "http://localhost:7891/img.jgw");
+            potreeViewer.drawableArea.load("http://localhost:7891/drawable.json");
+        });
+    </script>
+</body>
+</html>
