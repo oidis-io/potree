@@ -380,6 +380,90 @@ export class Measure extends THREE.Object3D {
 
             this.add(edge);
             this.edges.push(edge);
+            let actualEdge = null;
+
+            let mouseover = (e) => {
+                if (this.enabled === false) {
+                    return;
+                }
+                actualEdge = e.object;
+                e.object.material.color.set(0xff8800);
+                e.object.material.linewidth = 4;
+            };
+            let mouseleave = (e) => {
+                e.object.material.color.set(this.color);
+                e.object.material.linewidth = 2;
+            };
+
+            let ghostLine = null;
+            let dragOffset = null;
+            let isDragging = false;
+
+            let drag = (e) => {
+                if (this.enabled === false) {
+                    return;
+                }
+
+                const I = Utils.getMousePointCloudIntersection(
+                    e.drag.end,
+                    e.viewer.scene.getActiveCamera(),
+                    e.viewer,
+                    e.viewer.scene.pointclouds,
+                    { pickClipped: true }
+                );
+                if (!I) {
+                    return;
+                }
+                if (!isDragging) {
+                    isDragging = true;
+                    const localMousePos = e.drag.object.parent.worldToLocal(I.location.clone());
+                    dragOffset = new THREE.Vector3().subVectors(localMousePos, e.drag.object.position);
+                    ghostLine = e.drag.object.clone();
+                    ghostLine.material = e.drag.object.material.clone();
+                    ghostLine.material.color.set(0x00ffff);
+                    ghostLine.material.transparent = true;
+                    ghostLine.material.opacity = 0.6;
+                    ghostLine.renderOrder = 9999;
+                    ghostLine.material.depthTest = false;
+                    this.add(ghostLine);
+                }
+
+                if (ghostLine) {
+                    const localMousePos = e.drag.object.parent.worldToLocal(I.location.clone());
+                    ghostLine.position.copy(localMousePos.sub(dragOffset));
+                }
+            };
+
+            let drop = (e) => {
+                if (isDragging) {
+                    isDragging = false;
+                }
+                if (actualEdge) {
+                    actualEdge.material.color.set(this.color);
+                    actualEdge.material.linewidth = 2;
+                }
+                if (ghostLine) {
+                    const start = new THREE.Vector3().fromBufferAttribute(ghostLine.geometry.attributes.instanceStart, 0).applyMatrix4(ghostLine.matrixWorld);
+                    const end = new THREE.Vector3().fromBufferAttribute(ghostLine.geometry.attributes.instanceEnd, 0).applyMatrix4(ghostLine.matrixWorld);
+
+                    this.remove(ghostLine);
+                    ghostLine.geometry.dispose();
+                    ghostLine.material.dispose();
+                    ghostLine = null;
+
+                    e.viewer.dispatchEvent({
+                        "type": "line_dropped",
+                        "measurement": this,
+                        "start": start,
+                        "end": end
+                    });
+                }
+            };
+
+            edge.addEventListener("drag", drag);
+            edge.addEventListener("drop", drop);
+            edge.addEventListener("mouseover", mouseover);
+            edge.addEventListener("mouseleave", mouseleave);
         }
 
         {
@@ -656,7 +740,7 @@ export class Measure extends THREE.Object3D {
             {
                 let edge = this.edges[index];
 
-                edge.material.color = new THREE.Color(this.color);
+                // edge.material.color = new THREE.Color(this.color);
 
                 edge.position.copy(point.position);
 
