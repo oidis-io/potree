@@ -11,6 +11,7 @@
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
 import { Fetcher } from "../utils/Fetcher.js";
+import { Measure } from "../utils/Measure.js";
 
 export const DxfEntityType = {
     UNKNOWN: "UNKNOWN",
@@ -56,6 +57,9 @@ export const DxfEntityType = {
 };
 
 const flatOffset = 0.2;
+// TODO(mkelnar) just temporary solution until drawable will be fully refactored and integrated
+//  -> current solution is to redirect shapes to measurement items
+const suppressDrawing = true;
 
 export class DrawableEntity extends THREE.Object3D {
     constructor() {
@@ -81,7 +85,9 @@ export class DrawableEntity extends THREE.Object3D {
 
     addChild(child) {
         this.entities.push(child);
-        super.add(child);
+        if (!suppressDrawing) {
+            super.add(child);
+        }
     }
 
     get visible() {
@@ -212,7 +218,7 @@ export class PolylineEntity extends DrawableEntity {
                 return;
             }
 
-            if (this.isShape) {
+            if (this.isShape && !suppressDrawing) {
                 this.vertices.push(this.vertices[0].clone());
             }
 
@@ -653,6 +659,33 @@ export class DrawableArea extends DrawableEntity {
             }
         }
 
-        this.viewer.scene.scene.add(this);
+        if (suppressDrawing) {
+            for (const entity of this.entities) {
+                console.log("Suppress drawing: " + entity.type);
+                if (entity.type === DxfEntityType.POLYLINE) {
+                    const measure = new Measure(entity.color);
+                    measure.showDistances = true;
+                    measure.showArea = false;
+                    measure.closed = entity.isShape;
+                    measure.name = "Distance";
+                    for (const pt of entity.vertices) {
+                        measure.addMarker(pt);
+                    }
+                    this.viewer.scene.addMeasurement(measure);
+                } else if (entity.type === DxfEntityType.CIRCLE) {
+                    const measure = new Measure(entity.color);
+                    measure.showDistances = false;
+                    measure.showAngles = false;
+                    measure.showCoordinates = true;
+                    measure.showArea = false;
+                    measure.closed = true;
+                    measure.maxMarkers = 1;
+                    measure.name = "Point";
+                    this.viewer.scene.addMeasurement(measure);
+                }
+            }
+        } else {
+            this.viewer.scene.scene.add(this);
+        }
     }
 }
