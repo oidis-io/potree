@@ -1587,5 +1587,16 @@ export class Sidebar {
         $("#lockToUpperHemisphere").click(() => {
             PotreeConfig.lockToUpperHemisphere = ($("#lockToUpperHemisphere").prop("checked"));
         });
+
+        const _this = this;
+        $(document).on("change", "#show_cesium_map_provider input[type=checkbox]", function () {
+            const selectedValues = $("#show_cesium_map_provider input:checked").map(function () {
+                return this.value;
+            }).get();
+
+            if (_this.viewer.cesiumRender) {
+                _this.viewer.cesiumRender.mapProviders = selectedValues;
+            }
+        });
     }
 }
