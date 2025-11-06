@@ -18,6 +18,7 @@ export const ViewMode = Object.freeze({
 let _scriptPath = "";
 let _resourcePath = "";
 let _viewMode = ViewMode.SPATIAL;
+let _lockToUpperHemisphere = true;
 
 const PotreeConfig = {
     version: {
@@ -70,6 +71,17 @@ Object.defineProperty(PotreeConfig, "viewMode", {
     },
     set(viewMode) {
         _viewMode = viewMode;
+    },
+    configurable: true,
+    enumerable: true
+});
+
+Object.defineProperty(PotreeConfig, "lockToUpperHemisphere", {
+    get() {
+        return _lockToUpperHemisphere;
+    },
+    set(value) {
+        _lockToUpperHemisphere = value;
     },
     configurable: true,
     enumerable: true

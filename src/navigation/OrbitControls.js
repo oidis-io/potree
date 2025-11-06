@@ -256,6 +256,9 @@ export class OrbitControls extends EventDispatcher {
 
             view.yaw = yaw;
             view.pitch = pitch;
+            if (PotreeConfig.lockToUpperHemisphere && pitch > Math.PI / 8) {
+                view.pitch = Math.PI / 8;
+            }
 
             let V = this.scene.view.direction.multiplyScalar(-view.radius);
             let position = new THREE.Vector3().addVectors(pivot, V);

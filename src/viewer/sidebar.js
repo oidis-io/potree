@@ -592,7 +592,7 @@ export class Sidebar {
             createNode(measurementID, measurement.name, icon, measurement);
         };
 
-        let onDrawingAdded = (e)=>{
+        let onDrawingAdded = (e) => {
             let drawing = e.drawing;
             let icon = Utils.getMeasurementIcon(drawing);
             createNode(drawingID, drawing.name, icon, drawing);
@@ -1582,6 +1582,10 @@ export class Sidebar {
 
         $("#show_drawableArea").click(() => {
             this.viewer.drawableArea.visible = ($("#show_drawableArea").prop("checked"));
+        });
+
+        $("#lockToUpperHemisphere").click(() => {
+            PotreeConfig.lockToUpperHemisphere = ($("#lockToUpperHemisphere").prop("checked"));
         });
     }
 }
