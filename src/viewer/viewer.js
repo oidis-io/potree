@@ -307,7 +307,7 @@ export class Viewer extends EventDispatcher {
             this.drawingTool = new DrawingTool(this);
             this.drawableArea = new DrawableArea(this);
 
-            this.addEventListener("line_dropped",(e)=>{
+            this.addEventListener("line_dropped", (e) => {
                 const clone = new Measure(e.measurement.color);
                 clone.showDistances = true;
                 clone.showArea = false;
@@ -1357,7 +1357,7 @@ export class Viewer extends EventDispatcher {
             alpha: true,
             depth: true,
             stencil: false,
-            antialias: false,
+            antialias: true,
             preserveDrawingBuffer: true,
             powerPreference: "high-performance",
         };
@@ -1368,6 +1368,7 @@ export class Viewer extends EventDispatcher {
 
         this.renderer = new THREE.WebGLRenderer({
             alpha: true,
+            antialias: true,
             premultipliedAlpha: false,
             canvas: canvas,
             context: context
@@ -1375,6 +1376,7 @@ export class Viewer extends EventDispatcher {
         this.renderer.sortObjects = false;
         this.renderer.setSize(width, height);
         this.renderer.autoClear = false;
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 4));
         this.renderArea.appendChild(this.renderer.domElement);
         this.renderer.domElement.tabIndex = "2222";
         this.renderer.domElement.style.position = "absolute";

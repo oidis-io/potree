@@ -52,7 +52,7 @@ export class CesiumRenderer {
 
     set mapProviders(value) {
         if (!Array.isArray(value)) {
-            value = [value]
+            value = [value];
         }
         this.cesiumViewer.imageryLayers.removeAll();
         if (value.length === 0) {
