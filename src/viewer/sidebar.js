@@ -223,6 +223,27 @@ export class Sidebar {
             }
         ));
 
+        elToolbar.append(this.createToolIcon(
+            PotreeConfig.resourcePath + "/icons/rectangle.svg",
+            "[title]tt.rectangle_measurement",
+            () => {
+                $("#menu_measurements").next().slideDown();
+                let measurement = this.measuringTool.startInsertion({
+                    showDistances: false,
+                    showRectangle: true,
+                    showArea: true,
+                    closed: true,
+                    name: "Rectangle",
+                    maxMarkers: 2
+                });
+
+                let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
+                let jsonNode = measurementsRoot.children.find(child => child.data.uuid === measurement.uuid);
+                $.jstree.reference(jsonNode.id).deselect_all();
+                $.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+            }
+        ));
+
         drawingToolbar.append(this.createToolIcon(
             PotreeConfig.resourcePath + "/icons/distance.svg",
             "Draw line",

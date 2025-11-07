@@ -195,6 +195,7 @@ export class MeasuringTool extends EventDispatcher {
         measure.showDistances = (args.showDistances === null) ? true : args.showDistances;
 
         measure.showArea = pick(args.showArea, false);
+        measure.showRectangle = pick(args.showRectangle, false);
         measure.showAngles = pick(args.showAngles, false);
         measure.showCoordinates = pick(args.showCoordinates, false);
         measure.showHeight = pick(args.showHeight, false);

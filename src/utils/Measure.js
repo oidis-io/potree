@@ -69,6 +69,15 @@ function createAreaLabel() {
     return areaLabel;
 }
 
+function createRectangle(color) {
+    const rectObject = new THREE.Object3D();
+
+    for (let i = 0; i < 4; i++) {
+        rectObject.add(createLine(color));
+    }
+    return rectObject;
+}
+
 function createCircleRadiusLabel() {
     const circleRadiusLabel = new TextSprite("");
 
@@ -300,6 +309,7 @@ export class Measure extends THREE.Object3D {
         this._closed = true;
         this._showAngles = false;
         this._showCircle = false;
+        this._showRectangle = false;
         this._showHeight = false;
         this._showEdges = true;
         this._showAzimuth = false;
@@ -323,6 +333,7 @@ export class Measure extends THREE.Object3D {
         this.circleRadiusLine = createCircleRadiusLine(this.color);
         this.circleLine = createCircleLine(this.color);
         this.circleCenter = createCircleCenter();
+        this.rectangle = createRectangle(this.color);
 
         this.azimuth = createAzimuth(this.color);
 
@@ -333,6 +344,7 @@ export class Measure extends THREE.Object3D {
         this.add(this.circleRadiusLine);
         this.add(this.circleLine);
         this.add(this.circleCenter);
+        this.add(this.rectangle);
 
         this.add(this.azimuth.node);
     }
@@ -909,6 +921,61 @@ export class Measure extends THREE.Object3D {
             let msg = `${txtArea} ${suffix}\u00B2`;
             this.areaLabel.setText(msg);
         }
+
+        {
+            if (this.showRectangle && this.points.length === 2) {
+                this.rectangle.visible = true;
+                const p1 = this.points[0].position;
+                const p2 = this.points[1].position;
+
+                const rectanglePoints = [
+                    new THREE.Vector3(p1.x, p1.y, p1.z),
+                    new THREE.Vector3(p2.x, p1.y, p1.z),
+                    new THREE.Vector3(p2.x, p2.y, p2.z),
+                    new THREE.Vector3(p1.x, p2.y, p2.z)
+                ];
+
+                if (this.rectangle && this.rectangle.children.length === 4) {
+                    for (let i = 0; i < 4; i++) {
+                        const start = rectanglePoints[i];
+                        const end = rectanglePoints[(i + 1) % 4];
+                        const line = this.rectangle.children[i];
+                        const geom = line.geometry;
+                        geom.setPositions([
+                            start.x, start.y, start.z,
+                            end.x, end.y, end.z
+                        ]);
+                        geom.attributes.position.needsUpdate = true;
+                    }
+                }
+
+                const width = Math.abs(p2.x - p1.x);
+                const height = Math.abs(p2.y - p1.y);
+                let area = width * height;
+
+                let suffix = "";
+                if (this.lengthUnit && this.lengthUnitDisplay) {
+                    area = area / Math.pow(this.lengthUnit.unitspermeter, 2)
+                        * Math.pow(this.lengthUnitDisplay.unitspermeter, 2);
+                    suffix = this.lengthUnitDisplay.code;
+                }
+
+                const centroid = new THREE.Vector3(
+                    (p1.x + p2.x) / 2,
+                    (p1.y + p2.y) / 2,
+                    (p1.z + p2.z) / 2
+                );
+
+                this.areaLabel.position.copy(centroid);
+                this.areaLabel.visible = this.showArea && this.points.length >= 2;
+                const txtArea = Utils.addCommas(area.toFixed(1));
+                const msg = `${txtArea} ${suffix}\u00B2`;
+                this.areaLabel.setText(msg);
+            } else {
+                this.areaLabel.visible = false;
+                this.rectangle.visible = false;
+            }
+        }
     }
 
     raycast(raycaster, intersects) {
@@ -946,6 +1013,15 @@ export class Measure extends THREE.Object3D {
 
     set showAngles(value) {
         this._showAngles = value;
+        this.update();
+    }
+
+    get showRectangle() {
+        return this._showRectangle;
+    }
+
+    set showRectangle(value) {
+        this._showRectangle = value;
         this.update();
     }
 
