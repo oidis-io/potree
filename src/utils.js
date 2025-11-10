@@ -449,7 +449,21 @@ export class Utils {
                 point: closestPoint
             };
         } else {
-            return null;
+            if (!viewer?.jgwImage?.mesh?.position.z) {
+                return null;
+            }
+            const planeZ0 = new THREE.Plane(new THREE.Vector3(0, 0, 1), -viewer.jgwImage.mesh.position.z);
+            const intersection = new THREE.Vector3();
+            const hasIntersection = ray.intersectPlane(planeZ0, intersection);
+            if (!hasIntersection) {
+                intersection.copy(ray.origin).add(ray.direction.clone().multiplyScalar(10));
+            }
+            return {
+                location: intersection,
+                distance: null,
+                pointcloud: null,
+                point: null
+            };
         }
     }
 

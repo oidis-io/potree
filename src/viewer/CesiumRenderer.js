@@ -10,6 +10,13 @@
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
 
+export const MapProvider = Object.freeze({
+    OPEN_STREET_MAP: "openStreetMap",
+    CUZK: "cuzk",
+    ORTOFOTO: "orto",
+    KATASTR: "katastr"
+});
+
 export class CesiumRenderer {
     constructor(viewer, args) {
         this.viewer = viewer;
@@ -27,7 +34,6 @@ export class CesiumRenderer {
             selectionIndicator: false,
             timeline: false,
             navigationHelpButton: false,
-            imageryProvider: Cesium.createOpenStreetMapImageryProvider({ url: "https://tile.openstreetmap.org/" }),
             terrainShadows: Cesium.ShadowMode.DISABLED,
         });
 
@@ -44,7 +50,93 @@ export class CesiumRenderer {
         this._enabled = value;
     }
 
+    set mapProviders(value) {
+        if (!Array.isArray(value)) {
+            value = [value];
+        }
+        this.cesiumViewer.imageryLayers.removeAll();
+        if (value.length === 0) {
+            this.viewer.setShowCesium(false);
+            return;
+        } else {
+            this.viewer.setShowCesium(true);
+        }
+        for (const provider of value) {
+            switch (provider) {
+                case MapProvider.OPEN_STREET_MAP:
+                    this.cesiumViewer.imageryLayers.addImageryProvider(
+                        Cesium.createOpenStreetMapImageryProvider({ url: "https://tile.openstreetmap.org/" })
+                    );
+                    break;
+
+                case MapProvider.CUZK:
+                    this.cesiumViewer.imageryLayers.addImageryProvider(
+                        new Cesium.WebMapServiceImageryProvider({
+                            url: "https://geoportal.cuzk.cz/WMS_ZM10_PUB/WMService.aspx",
+                            layers: "GR_ZM10",
+                            parameters: {
+                                service: "WMS",
+                                format: "image/png",
+                                transparent: true,
+                                version: "1.3.0",
+                            },
+                            tilingScheme: new Cesium.WebMercatorTilingScheme(),
+                            maximumLevel: 18
+                        })
+                    );
+                    break;
+
+                case MapProvider.ORTOFOTO:
+                    this.cesiumViewer.imageryLayers.addImageryProvider(
+                        new Cesium.WebMapServiceImageryProvider({
+                            url: "https://ags.cuzk.gov.cz/arcgis1/rest/services/ORTOFOTO/MapServer/export",
+                            layers: "show",
+                            rectangleSouthwestInMeters: new Cesium.Cartesian2(48.5, 12),
+                            rectangleNortheastInMeters: new Cesium.Cartesian2(51.5, 19),
+                            numberOfLevelZeroTilesX: 1,
+                            numberOfLevelZeroTilesY: 1,
+                            parameters: {
+                                bboxSR: "4326",
+                                imageSR: "4326",
+                                dpi: 192,
+                                format: "image/jpg",
+                                transparent: true,
+                                f: "image"
+                            },
+                            maximumLevel: 18
+                        })
+                    );
+                    break;
+
+                case MapProvider.KATASTR:
+                    this.cesiumViewer.imageryLayers.addImageryProvider(
+                        new Cesium.WebMapServiceImageryProvider({
+                            url: "https://services.cuzk.gov.cz/wms/local-km-wms.asp",
+                            layers: "RST_KN,RST_KMD,omp,parcelni_cisla,obrazy_parcel,hranice_parcel,DKM,dalsi_p_mapy,prehledka_kraju-linie,polygony_parcel",
+                            rectangleSouthwestInMeters: new Cesium.Cartesian2(48.5, 12),
+                            rectangleNortheastInMeters: new Cesium.Cartesian2(51.5, 19),
+                            numberOfLevelZeroTilesX: 1,
+                            numberOfLevelZeroTilesY: 1,
+                            parameters: {
+                                service: "WMS",
+                                format: "image/png",
+                                transparent: true,
+                                version: "1.1.1",
+                                crs: "EPSG:4326"
+                            },
+                            maximumLevel: 100
+                        })
+                    );
+                    break;
+
+                default:
+                    console.warn(`Map provider '${provider}' not supported by Cesium renderer.`);
+            }
+        }
+    }
+
     init() {
+        this.mapProviders = [];
         const startLonLat = [17.050547295, 49.685828670];
         let startPos = Cesium.Cartesian3.fromDegrees(startLonLat[0], startLonLat[1]);
         this.cesiumViewer.camera.setView({
@@ -57,8 +149,9 @@ export class CesiumRenderer {
         });
 
         // TODO(mkelnar) simple hack for true geoHeight - experimental
-        this._geoidOffset = -1 * (this.viewer.scene.pointclouds[0].boundingSphere.center.z) + 2;
-
+        if (this.viewer.scene.pointclouds[0]) {
+            this._geoidOffset = -1 * (this.viewer.scene.pointclouds[0].boundingSphere.center.z) + 2;
+        }
         let pointcloudProjection = proj4.defs("EPSG:5514"); // TODO(mkelnar) should be loaded from point cloud SRS
         let mapProjection = proj4.defs("WGS84");
 

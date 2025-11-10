@@ -91,6 +91,15 @@
                     <label for="show_cesium">Show Cesium</label>
                 </div>
                 <div>
+                    <label for="show_cesium_map_provider">Map Type</label>
+                    <div id="show_cesium_map_provider" class="map-provider-list">
+                        <label><input type="checkbox" value="openStreetMap">Open Street Map</label>
+                        <label><input type="checkbox" value="cuzk">CUZK</label>
+                        <label><input type="checkbox" value="orto">Ortofoto</label>
+                        <label><input type="checkbox" value="katastr">Katast</label>
+                    </div>
+                </div>
+                <div>
                     <input id="show_pivot" type="checkbox"/>
                     <label for="show_pivot">Show Pivot</label>
                 </div>
@@ -102,6 +111,21 @@
                     <input id="show_drawableArea" type="checkbox"/>
                     <label for="show_drawableArea">Show Drawable Area</label>
                 </div>
+                <div>
+                    <input id="lockToUpperHemisphere" type="checkbox" checked/>
+                    <label for="lockToUpperHemisphere">Lock view to upper hemisphere</label>
+                </div>
+
+<!--                <div class="divider"><span>Drawing</span></div>-->
+
+<!--                <li id="drawing_tools"></li>-->
+
+<!--                <li>-->
+<!--                    <selectgroup id="drawing_tools_show">-->
+<!--                        <option id="drawing_tools_show_yes" value="SHOW">Show</option>-->
+<!--                        <option id="drawing_tools_show_no" value="HIDE">Hide</option>-->
+<!--                    </selectgroup>-->
+<!--                </li>-->
 
                 <div class="divider"><span>Measurement</span></div>
 
@@ -364,5 +388,3 @@
     </div>
 
 </div>
-
-

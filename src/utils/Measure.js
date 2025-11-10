@@ -69,6 +69,15 @@ function createAreaLabel() {
     return areaLabel;
 }
 
+function createRectangle(color) {
+    const rectObject = new THREE.Object3D();
+
+    for (let i = 0; i < 4; i++) {
+        rectObject.add(createLine(color));
+    }
+    return rectObject;
+}
+
 function createCircleRadiusLabel() {
     const circleRadiusLabel = new TextSprite("");
 
@@ -300,6 +309,7 @@ export class Measure extends THREE.Object3D {
         this._closed = true;
         this._showAngles = false;
         this._showCircle = false;
+        this._showRectangle = false;
         this._showHeight = false;
         this._showEdges = true;
         this._showAzimuth = false;
@@ -323,6 +333,7 @@ export class Measure extends THREE.Object3D {
         this.circleRadiusLine = createCircleRadiusLine(this.color);
         this.circleLine = createCircleLine(this.color);
         this.circleCenter = createCircleCenter();
+        this.rectangle = createRectangle(this.color);
 
         this.azimuth = createAzimuth(this.color);
 
@@ -333,6 +344,7 @@ export class Measure extends THREE.Object3D {
         this.add(this.circleRadiusLine);
         this.add(this.circleLine);
         this.add(this.circleCenter);
+        this.add(this.rectangle);
 
         this.add(this.azimuth.node);
     }
@@ -380,6 +392,90 @@ export class Measure extends THREE.Object3D {
 
             this.add(edge);
             this.edges.push(edge);
+            let actualEdge = null;
+
+            let mouseover = (e) => {
+                if (this.enabled === false) {
+                    return;
+                }
+                actualEdge = e.object;
+                e.object.material.color.set(0xff8800);
+                e.object.material.linewidth = 4;
+            };
+            let mouseleave = (e) => {
+                e.object.material.color.set(this.color);
+                e.object.material.linewidth = 2;
+            };
+
+            let ghostLine = null;
+            let dragOffset = null;
+            let isDragging = false;
+
+            let drag = (e) => {
+                if (this.enabled === false) {
+                    return;
+                }
+
+                const I = Utils.getMousePointCloudIntersection(
+                    e.drag.end,
+                    e.viewer.scene.getActiveCamera(),
+                    e.viewer,
+                    e.viewer.scene.pointclouds,
+                    { pickClipped: true }
+                );
+                if (!I) {
+                    return;
+                }
+                if (!isDragging) {
+                    isDragging = true;
+                    const localMousePos = e.drag.object.parent.worldToLocal(I.location.clone());
+                    dragOffset = new THREE.Vector3().subVectors(localMousePos, e.drag.object.position);
+                    ghostLine = e.drag.object.clone();
+                    ghostLine.material = e.drag.object.material.clone();
+                    ghostLine.material.color.set(0x00ffff);
+                    ghostLine.material.transparent = true;
+                    ghostLine.material.opacity = 0.6;
+                    ghostLine.renderOrder = 9999;
+                    ghostLine.material.depthTest = false;
+                    this.add(ghostLine);
+                }
+
+                if (ghostLine) {
+                    const localMousePos = e.drag.object.parent.worldToLocal(I.location.clone());
+                    ghostLine.position.copy(localMousePos.sub(dragOffset));
+                }
+            };
+
+            let drop = (e) => {
+                if (isDragging) {
+                    isDragging = false;
+                }
+                if (actualEdge) {
+                    actualEdge.material.color.set(this.color);
+                    actualEdge.material.linewidth = 2;
+                }
+                if (ghostLine) {
+                    const start = new THREE.Vector3().fromBufferAttribute(ghostLine.geometry.attributes.instanceStart, 0).applyMatrix4(ghostLine.matrixWorld);
+                    const end = new THREE.Vector3().fromBufferAttribute(ghostLine.geometry.attributes.instanceEnd, 0).applyMatrix4(ghostLine.matrixWorld);
+
+                    this.remove(ghostLine);
+                    ghostLine.geometry.dispose();
+                    ghostLine.material.dispose();
+                    ghostLine = null;
+
+                    e.viewer.dispatchEvent({
+                        "type": "line_dropped",
+                        "measurement": this,
+                        "start": start,
+                        "end": end
+                    });
+                }
+            };
+
+            edge.addEventListener("drag", drag);
+            edge.addEventListener("drop", drop);
+            edge.addEventListener("mouseover", mouseover);
+            edge.addEventListener("mouseleave", mouseleave);
         }
 
         {
@@ -434,15 +530,17 @@ export class Measure extends THREE.Object3D {
                     if (i !== -1) {
                         let point = this.points[i];
 
-                        // loop through current keys and cleanup ones that will be orphaned
-                        for (let key of Object.keys(point)) {
-                            if (!I.point[key]) {
-                                delete point[key];
+                        if (I.point) {
+                            // loop through current keys and cleanup ones that will be orphaned
+                            for (let key of Object.keys(point)) {
+                                if (!I.point[key]) {
+                                    delete point[key];
+                                }
                             }
-                        }
 
-                        for (let key of Object.keys(I.point).filter(e => e !== "position")) {
-                            point[key] = I.point[key];
+                            for (let key of Object.keys(I.point).filter(e => e !== "position")) {
+                                point[key] = I.point[key];
+                            }
                         }
 
                         this.setPosition(i, I.location);
@@ -654,7 +752,7 @@ export class Measure extends THREE.Object3D {
             {
                 let edge = this.edges[index];
 
-                edge.material.color = new THREE.Color(this.color);
+                // edge.material.color = new THREE.Color(this.color);
 
                 edge.position.copy(point.position);
 
@@ -823,6 +921,61 @@ export class Measure extends THREE.Object3D {
             let msg = `${txtArea} ${suffix}\u00B2`;
             this.areaLabel.setText(msg);
         }
+
+        {
+            if (this.showRectangle && this.points.length === 2) {
+                this.rectangle.visible = true;
+                const p1 = this.points[0].position;
+                const p2 = this.points[1].position;
+
+                const rectanglePoints = [
+                    new THREE.Vector3(p1.x, p1.y, p1.z),
+                    new THREE.Vector3(p2.x, p1.y, p1.z),
+                    new THREE.Vector3(p2.x, p2.y, p2.z),
+                    new THREE.Vector3(p1.x, p2.y, p2.z)
+                ];
+
+                if (this.rectangle && this.rectangle.children.length === 4) {
+                    for (let i = 0; i < 4; i++) {
+                        const start = rectanglePoints[i];
+                        const end = rectanglePoints[(i + 1) % 4];
+                        const line = this.rectangle.children[i];
+                        const geom = line.geometry;
+                        geom.setPositions([
+                            start.x, start.y, start.z,
+                            end.x, end.y, end.z
+                        ]);
+                        geom.attributes.position.needsUpdate = true;
+                    }
+                }
+
+                const width = Math.abs(p2.x - p1.x);
+                const height = Math.abs(p2.y - p1.y);
+                let area = width * height;
+
+                let suffix = "";
+                if (this.lengthUnit && this.lengthUnitDisplay) {
+                    area = area / Math.pow(this.lengthUnit.unitspermeter, 2)
+                        * Math.pow(this.lengthUnitDisplay.unitspermeter, 2);
+                    suffix = this.lengthUnitDisplay.code;
+                }
+
+                const centroid = new THREE.Vector3(
+                    (p1.x + p2.x) / 2,
+                    (p1.y + p2.y) / 2,
+                    (p1.z + p2.z) / 2
+                );
+
+                this.areaLabel.position.copy(centroid);
+                this.areaLabel.visible = this.showArea && this.points.length >= 2;
+                const txtArea = Utils.addCommas(area.toFixed(1));
+                const msg = `${txtArea} ${suffix}\u00B2`;
+                this.areaLabel.setText(msg);
+            } else {
+                this.areaLabel.visible = false;
+                this.rectangle.visible = false;
+            }
+        }
     }
 
     raycast(raycaster, intersects) {
@@ -832,7 +985,7 @@ export class Measure extends THREE.Object3D {
             sphere.raycast(raycaster, intersects);
         }
 
-        // recalculate distances because they are not necessarely correct
+        // recalculate distances because they are not necessarily correct
         // for scaled objects.
         // see https://github.com/mrdoob/three.js/issues/5827
         // TODO: remove this once the bug has been fixed
@@ -860,6 +1013,15 @@ export class Measure extends THREE.Object3D {
 
     set showAngles(value) {
         this._showAngles = value;
+        this.update();
+    }
+
+    get showRectangle() {
+        return this._showRectangle;
+    }
+
+    set showRectangle(value) {
+        this._showRectangle = value;
         this.update();
     }
 

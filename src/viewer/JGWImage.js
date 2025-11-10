@@ -10,6 +10,7 @@
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
 import { Fetcher } from "../utils/Fetcher.js";
+import { Vector3 } from "../../libs/three.js/build/three.js";
 
 export class JGWImage extends THREE.Object3D {
     constructor(viewer, options) {
@@ -41,10 +42,15 @@ export class JGWImage extends THREE.Object3D {
         }
     }
 
-    load(img, jgw) {
+    load(img, jgw, callback) {
         // TODO(mkelnar) add better callback/handling
+        if (!callback) {
+            callback = () => {
+                // dummy handler
+            };
+        }
         this._addJgwImageToPotree(img, jgw, 0.1)
-            .then()
+            .then(callback)
             .catch(err => {
                 throw err;
             });
@@ -134,7 +140,7 @@ export class JGWImage extends THREE.Object3D {
                     // this.mesh.rotation.z = -Math.PI/2;
                     this.viewer.scene.scene.add(mesh);
 
-                    resolve(mesh);
+                    resolve(new THREE.Box3(new Vector3(xMin, yMin, zOffset), new Vector3(xMax, yMax, zOffset)));
                 },
                 undefined,
                 (err) => {

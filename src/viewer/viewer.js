@@ -54,6 +54,8 @@ import PotreeRefs from "../PotreeRefs.js";
 import { CesiumRenderer } from "./CesiumRenderer.js";
 import { JGWImage } from "./JGWImage.js";
 import { DrawableArea } from "./DrawableArea.js";
+import { DrawingTool } from "../utils/DrawingTool.js";
+import { Measure } from "../utils/Measure.js";
 
 export class Viewer extends EventDispatcher {
     constructor(domElement, args = {}) {
@@ -302,7 +304,20 @@ export class Viewer extends EventDispatcher {
             this.scene.scene.add(this.pivotMarker);
             this.pivotMarker.visible = PotreeConfig.showPivot;
             this.jgwImage = new JGWImage(this);
+            this.drawingTool = new DrawingTool(this);
             this.drawableArea = new DrawableArea(this);
+
+            this.addEventListener("line_dropped", (e) => {
+                const clone = new Measure(e.measurement.color);
+                clone.showDistances = true;
+                clone.showArea = false;
+                clone.closed = false;
+                clone.addMarker(e.start);
+                clone.addMarker(e.end);
+                clone.clonedFrom = e.measurement.uuid;
+                this.scene.addMeasurement(clone);
+                console.log(e);
+            });
         } catch (e) {
             this.onCrash(e);
         }
@@ -1343,7 +1358,7 @@ export class Viewer extends EventDispatcher {
             alpha: true,
             depth: true,
             stencil: false,
-            antialias: false,
+            antialias: true,
             preserveDrawingBuffer: true,
             powerPreference: "high-performance",
         };
@@ -1354,6 +1369,7 @@ export class Viewer extends EventDispatcher {
 
         this.renderer = new THREE.WebGLRenderer({
             alpha: true,
+            antialias: true,
             premultipliedAlpha: false,
             canvas: canvas,
             context: context
@@ -1361,6 +1377,7 @@ export class Viewer extends EventDispatcher {
         this.renderer.sortObjects = false;
         this.renderer.setSize(width, height);
         this.renderer.autoClear = false;
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 4));
         this.renderArea.appendChild(this.renderer.domElement);
         this.renderer.domElement.tabIndex = "2222";
         this.renderer.domElement.style.position = "absolute";

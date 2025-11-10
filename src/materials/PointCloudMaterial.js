@@ -41,7 +41,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 
         let pointSize = getValid(parameters.size, 1.0);
         let minSize = getValid(parameters.minSize, 2.0);
-        let maxSize = getValid(parameters.maxSize, 50.0);
+        let maxSize = getValid(parameters.maxSize, 10.0);
         let treeType = getValid(parameters.treeType, TreeType.OCTREE);
 
         this._pointSizeType = PointSizeType.FIXED;

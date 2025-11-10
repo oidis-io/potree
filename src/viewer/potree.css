@@ -795,3 +795,14 @@ body {
     padding-top: 0.6em;
     padding-bottom: 0.1em;
 }
+
+.map-provider-list label {
+    display: block;
+    margin-left: 10px;
+    padding: 5px 0;
+}
+
+.map-provider-list input[type="checkbox"] {
+    margin-right: 8px;
+}
+

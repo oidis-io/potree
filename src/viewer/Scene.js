@@ -36,6 +36,7 @@ export class Scene extends EventDispatcher {
         this.pointclouds = [];
 
         this.measurements = [];
+        this.drawings = [];
         this.profiles = [];
         this.volumes = [];
         this.polygonClipVolumes = [];
