@@ -314,6 +314,7 @@ export class Viewer extends EventDispatcher {
                 clone.closed = false;
                 clone.addMarker(e.start);
                 clone.addMarker(e.end);
+                clone.clonedFrom = e.measurement.uuid;
                 this.scene.addMeasurement(clone);
                 console.log(e);
             });
