@@ -15,6 +15,7 @@ import { CameraMode } from "../defines.js";
 import { View } from "./View.js";
 import { Utils } from "../utils.js";
 import { EventDispatcher } from "../EventDispatcher.js";
+import PotreeConfig, { ViewMode } from "../PotreeConfig.js";
 
 export class Scene extends EventDispatcher {
     constructor() {
@@ -352,17 +353,17 @@ export class Scene extends EventDispatcher {
 
         // TODO(mkelnar) render re/positioning with cesium not working properly for ortho camera (looks like problem with pivot based calc).
         //  Necessary to validate root cause and also try to figure out how to use "pivot" as true origin of scene.
-        // if (PotreeConfig.viewMode === ViewMode.FLAT) {
-        //     return this.cameraO;
-        // } else {
-        if (this.cameraMode === CameraMode.PERSPECTIVE) {
-            return this.cameraP;
-        } else if (this.cameraMode === CameraMode.ORTHOGRAPHIC) {
+        if (PotreeConfig.viewMode === ViewMode.FLAT) {
             return this.cameraO;
-        } else if (this.cameraMode === CameraMode.VR) {
-            return this.cameraVR;
+        } else {
+            if (this.cameraMode === CameraMode.PERSPECTIVE) {
+                return this.cameraP;
+            } else if (this.cameraMode === CameraMode.ORTHOGRAPHIC) {
+                return this.cameraO;
+            } else if (this.cameraMode === CameraMode.VR) {
+                return this.cameraVR;
+            }
         }
-        // }
 
         return null;
     }

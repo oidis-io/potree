@@ -19,6 +19,7 @@ export const DxfEntityType = {
     SOLID3D: "SOLID3D",
     ACAD_PROXY_ENTITY: "ACAD_PROXY_ENTITY",
     ARC: "ARC",
+    ATTDEF: "ATTDEF",
     ATTRIB: "ATTRIB",
     BODY: "BODY",
     CIRCLE: "CIRCLE",
@@ -69,6 +70,8 @@ export class DrawableEntity extends THREE.Object3D {
         this.name = "entity_" + this.constructor.counter;
         this.type = DxfEntityType.UNKNOWN;
 
+        this.color = new THREE.Color(0x000000);
+
         this.entities = [];
     }
 
@@ -77,7 +80,11 @@ export class DrawableEntity extends THREE.Object3D {
     }
 
     fromJson(json, root) {
-        // override me
+        this.color = new THREE.Color(json.color ?? 0x000000);
+        if (json.colorIndex === 7) {
+            // TODO(mkelnar) default render color (ACI palette)
+            this.color = new THREE.Color(0x000000);
+        }
     }
 
     toJson() {
@@ -160,11 +167,9 @@ export class PointEntity extends DrawableEntity {
 
         this.type = DxfEntityType.POINT;
 
-        this.position = new THREE.Vector3();
-        this.color = new THREE.Color(0x000000);
         this.handle = null;
 
-        this.radius = 0.5;
+        this.radius = 0.2;
         this.circleMesh = null;
         this.circleOutline = null;
     }
@@ -174,11 +179,13 @@ export class PointEntity extends DrawableEntity {
             return;
         }
 
-        this.position = new THREE.Vector3(
+        super.fromJson(json, root);
+
+        this.position.copy(new THREE.Vector3(
             json.x ?? json.position?.x ?? 0,
             json.y ?? json.position?.y ?? 0,
             json.z ?? json.position?.z ?? 0
-        );
+        ));
 
         if (isFlat) {
             this.position.z = flatOffset;
@@ -249,7 +256,6 @@ export class LineEntity extends DrawableEntity {
         super();
 
         this.type = DxfEntityType.LINE;
-        this.color = new THREE.Color(0x000000);
 
         this.start = new THREE.Vector3();
         this.end = new THREE.Vector3();
@@ -261,6 +267,8 @@ export class LineEntity extends DrawableEntity {
         if (json?.type !== DxfEntityType.LINE) {
             return;
         }
+
+        super.fromJson(json, root);
 
         const verts = (json.vertices && json.vertices.length) ? json.vertices : [];
         if (verts.length < 2) {
@@ -275,7 +283,6 @@ export class LineEntity extends DrawableEntity {
             new THREE.Vector3(verts[1].x, verts[1].y, z1)
         ];
 
-        this.color = new THREE.Color(json.color ?? 0xff0000);
         this.layer = json.layer ?? this.layer;
 
         if (this.line) {
@@ -306,17 +313,17 @@ export class PolylineEntity extends DrawableEntity {
 
         this.type = DxfEntityType.POLYLINE;
 
-        this.color = new THREE.Color(0x000000);
         this.isShape = false;
         this.vertices = [];
     }
 
     fromJson(json, root) {
         if (json?.type === DxfEntityType.POLYLINE) {
+            super.fromJson(json, root);
+
             this.vertices = json.vertices.map(vertex => {
                 return new THREE.Vector3(vertex.x, vertex.y, isFlat ? flatOffset : vertex.z);
             });
-            this.color = new THREE.Color(json.color);
             this.isShape = json.shape ?? false;
 
             if (!this.vertices.length) {
@@ -431,7 +438,6 @@ export class LWPolylineEntity extends DrawableEntity {
 
         this.type = DxfEntityType.LWPOLYLINE;
 
-        this.color = new THREE.Color(0x000000);
         this.isShape = false;
         this.vertices = [];
         this.elevation = 0;
@@ -444,7 +450,8 @@ export class LWPolylineEntity extends DrawableEntity {
             return;
         }
 
-        this.color = new THREE.Color(json.color);
+        super.fromJson(json, root);
+
         this.isShape = json.shape ?? false;
         this.elevation = json.elevation ?? 0;
         if (isFlat) {
@@ -539,7 +546,6 @@ export class SplineEntity extends DrawableEntity {
 
         this.type = DxfEntityType.SPLINE;
 
-        this.color = new THREE.Color(0x000000);
         this.degree = 3;
         this.controlPoints = [];
         this.knotValues = [];
@@ -553,7 +559,8 @@ export class SplineEntity extends DrawableEntity {
             return;
         }
 
-        this.color = new THREE.Color(json.color || 0x000000);
+        super.fromJson(json, root);
+
         this.degree = json.degreeOfSplineCurve ?? 3;
         this.planar = json.planar ?? true;
         this.knotValues = json.knotValues ?? [];
@@ -631,7 +638,6 @@ export class CircleEntity extends DrawableEntity {
 
         this.center = new THREE.Vector3();
         this.radius = 1;
-        this.color = new THREE.Color(0x00FF00);
 
         this.line = null;
         this.fillMesh = null;
@@ -642,6 +648,9 @@ export class CircleEntity extends DrawableEntity {
         if (json?.type !== DxfEntityType.CIRCLE) {
             return;
         }
+
+        super.fromJson(json, root);
+
         this.center = new THREE.Vector3(
             json.center?.x ?? 0,
             json.center?.y ?? 0,
@@ -651,7 +660,6 @@ export class CircleEntity extends DrawableEntity {
             this.center.z = flatOffset;
         }
         this.radius = json.radius ?? 1;
-        this.color = new THREE.Color(json.color ?? 0x00FF00);
         this.handle = json.handle ?? null;
 
         if (this.line) {
@@ -729,7 +737,6 @@ export class ArcEntity extends DrawableEntity {
         this.radius = 1;
         this.startAngle = 0;
         this.endAngle = 0;
-        this.color = new THREE.Color(0x000000);
 
         this.line = null;
         this.handle = null;
@@ -739,6 +746,8 @@ export class ArcEntity extends DrawableEntity {
         if (json?.type !== DxfEntityType.ARC) {
             return;
         }
+
+        super.fromJson(json, root);
 
         this.center = new THREE.Vector3(
             json.center?.x ?? 0,
@@ -752,7 +761,6 @@ export class ArcEntity extends DrawableEntity {
         this.radius = json.radius ?? 1;
         this.startAngle = json.startAngle ?? 0;
         this.endAngle = json.endAngle ?? 0;
-        this.color = new THREE.Color(json.color ?? 0x000000);
         this.handle = json.handle ?? null;
 
         if (this.line) {
@@ -787,7 +795,6 @@ export class SolidEntity extends DrawableEntity {
     constructor() {
         super();
         this.type = DxfEntityType.SOLID;
-        this.color = new THREE.Color(0x000000);
         this.points = [];
         this.mesh = null;
     }
@@ -797,12 +804,13 @@ export class SolidEntity extends DrawableEntity {
             return;
         }
 
+        super.fromJson(json, root);
+
         const pts = json.points || [];
         if (pts.length < 3) {
             return;
         }
 
-        this.color = new THREE.Color(json.color ?? 0x000000);
         this.layer = json.layer ?? this.layer;
 
         const flatOffset = 0;
@@ -912,6 +920,11 @@ export class ObjectEntity extends DrawableEntity {
                 this.addChild(PointEntity.FromJson(entity, root));
             } else if (entity.type === DxfEntityType.INSERT) {
                 this.addChild(InsertEntity.FromJson(entity, root));
+            } else if (entity.type === DxfEntityType.TEXT) {
+                this.addChild(TextEntity.FromJson(entity, root));
+            } else if (entity.type === DxfEntityType.ATTDEF) {
+                // TODO(mkelnar) support to pre-process ATTDEFs, should be somehow linked with INSERTs or other entities
+                //  currently seems not fully supported by dxf-parser
             } else {
                 console.warn("Unsupported DWG entity type: " + entity.type);
             }
@@ -927,7 +940,6 @@ export class InsertEntity extends DrawableEntity {
 
         this.center = new THREE.Vector3();
         this.radius = 1;
-        this.color = new THREE.Color(0x00FF00);
 
         this.line = null;
         this.fillMesh = null;
@@ -950,13 +962,124 @@ export class InsertEntity extends DrawableEntity {
     }
 }
 
+export class TextEntity extends DrawableEntity {
+    constructor() {
+        super();
+
+        this.type = DxfEntityType.TEXT;
+
+        this.font = null;
+
+        this.textMesh = null;
+        this.sprite = null;
+
+        this.handle = null;
+    }
+
+    fromJson(json, root) {
+        if (json?.type !== DxfEntityType.TEXT) {
+            return;
+        }
+
+        super.fromJson(json, root);
+
+        this.clearPrevious();
+
+        this.handle = json.handle ?? null;
+
+        this.position.copy(new THREE.Vector3(
+            json.startPoint?.x ?? 0,
+            json.startPoint?.y ?? 0,
+            json.startPoint?.z ?? 0
+        ));
+
+        if (isFlat) {
+            this.position.z = flatOffset;
+        }
+
+        this.textValue = json.text ?? "";
+        this.height = json.textHeight ?? 1.0;
+
+        if (this.font) {
+            this.buildMeshText();
+        } else {
+            this.buildSpriteText();
+        }
+    }
+
+    clearPrevious() {
+        if (this.textMesh) {
+            this.remove(this.textMesh);
+            this.textMesh.geometry.dispose();
+            this.textMesh.material.dispose();
+            this.textMesh = null;
+        }
+        if (this.sprite) {
+            this.remove(this.sprite);
+            this.sprite.material.dispose();
+            this.sprite = null;
+        }
+    }
+
+    buildMeshText() {
+        const geom = new THREE.TextGeometry(this.textValue, {
+            font: this.font,
+            size: this.height,
+            height: 0.01,
+            curveSegments: 4,
+        });
+
+        geom.computeBoundingBox();
+        geom.center();
+
+        const mat = new THREE.MeshBasicMaterial({
+            color: this.color,
+            side: THREE.DoubleSide
+        });
+
+        this.textMesh = new THREE.Mesh(geom, mat);
+
+        this.textMesh.position.copy(this.position);
+
+        this.textMesh.lookAt(this.position.clone().add(new THREE.Vector3(0, 0, 1)));
+
+        this.add(this.textMesh);
+    }
+
+    buildSpriteText() {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        const size = 256;
+        canvas.width = canvas.height = size;
+
+        ctx.fillStyle = "#" + this.color.getHexString();
+        ctx.font = `${size * 0.35}px sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(this.textValue, size / 2, size / 2);
+
+        const texture = new THREE.CanvasTexture(canvas);
+
+        const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
+        this.sprite = new THREE.Sprite(material);
+
+        const scale = this.height * 2.0;
+        this.sprite.scale.set(scale, scale, 1);
+
+        this.sprite.position.copy(this.position);
+
+        this.add(this.sprite);
+    }
+}
+
 export class DrawableArea extends ObjectEntity {
     constructor(viewer, options) {
         super();
 
         this.viewer = viewer;
         this.options = options || {};
-        this.zOffset = 0;
+        this.zOffset = 0.2;
 
         this.zPlane = new Plane();
         // this.addChild(this.zPlane);
