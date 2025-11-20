@@ -133,6 +133,7 @@ gulp.task("archive", async () => {
 gulp.task("webserver", gulp.series(async function () {
     connect.server({
         root: ".",
+        host: "0.0.0.0",
         port: 1234,
         https: false,
         middleware: function() {

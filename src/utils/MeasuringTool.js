@@ -235,12 +235,19 @@ export class MeasuringTool extends EventDispatcher {
                 measure.removeMarker(measure.points.length - 1);
             }
             domElement.removeEventListener("mouseup", insertionCallback, false);
+            domElement.removeEventListener("keydown", cancel.esc, false);
             this.viewer.removeEventListener("cancel_insertions", cancel.callback);
+        };
+        cancel.esc = e => {
+            if (e.keyCode === 27) {
+                cancel.callback();
+            }
         };
 
         if (measure.maxMarkers > 1) {
             this.viewer.addEventListener("cancel_insertions", cancel.callback);
             domElement.addEventListener("mouseup", insertionCallback, false);
+            domElement.addEventListener("keydown", cancel.esc, false);
         }
 
         measure.addMarker(new THREE.Vector3(0, 0, 0));

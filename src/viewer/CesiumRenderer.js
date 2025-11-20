@@ -199,14 +199,19 @@ export class CesiumRenderer {
                 }
             });
 
-            let cameraP = this.viewer.scene.cameraP;
-            if (cameraP) {
-                let aspect = cameraP.aspect;
-                let fovy = Math.PI * (cameraP.fov / 180);
-                this.cesiumViewer.camera.frustum.fov =
-                    aspect < 1
-                        ? fovy
-                        : Math.atan(Math.tan(0.5 * fovy) * aspect) * 2;
+            if (camera === this.viewer.scene.cameraP) {
+                let aspect = camera.aspect;
+                let fovy = Math.PI * (camera.fov / 180);
+                this.cesiumViewer.camera.frustum.fov = aspect < 1 ? fovy : Math.atan(Math.tan(0.5 * fovy) * aspect) * 2;
+            } else if (camera === this.viewer.scene.cameraO) {
+                let worldWidth = (camera.right - camera.left) / camera.zoom;
+                let worldHeight = (camera.top - camera.bottom) / camera.zoom;
+                let dist = Cesium.Cartesian3.distance(cPos, cTarget);
+
+                this.cesiumViewer.camera.frustum.fov = 2 * Math.atan(worldHeight / (2 * dist));
+                this.cesiumViewer.camera.frustum.aspectRatio = worldWidth / worldHeight;
+                this.cesiumViewer.camera.frustum.near = 0.1;
+                this.cesiumViewer.camera.frustum.far = 10_000_000;
             }
 
             this.cesiumViewer.render();
