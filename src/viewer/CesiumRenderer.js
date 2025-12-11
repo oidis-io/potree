@@ -161,32 +161,46 @@ export class CesiumRenderer {
 
     render(params) {
         this._element.style.display = this._enabled ? "block" : "none";
-        if (window.toMap !== undefined && this._enabled === true) {
-            let camera = this.viewer.scene.getActiveCamera();
-            let pivot = this.viewer.scene.view.getPivot();
-            let pPos = new THREE.Vector3(0, 0, 0).applyMatrix4(camera.matrixWorld);
-            let pTarget = pivot.clone();
-            let upDir = new THREE.Vector3(0, 1, 0).applyMatrix4(camera.matrixWorld)
-                .sub(pPos)
-                .normalize();
-            let pUpPoint = pPos.clone().add(upDir.multiplyScalar(10));
 
-            let toCes = (vec) => {
-                let xy = [vec.x, vec.y];
-                let height = vec.z + this._geoidOffset;
-                let deg = toMap.forward(xy);
+        const containerWidth = this._element.clientWidth;
+        const containerHeight = this._element.clientHeight;
+
+        if (containerWidth <= 0 || containerHeight <= 0) {
+            return;
+        }
+        const canvas = this.cesiumViewer.canvas;
+
+        if (canvas.width !== containerWidth || canvas.height !== containerHeight) {
+            canvas.width = containerWidth;
+            canvas.height = containerHeight;
+            this.cesiumViewer.resize();
+        }
+
+        if (window.toMap !== undefined && this._enabled === true) {
+            const activeCamera = this.viewer.scene.getActiveCamera();
+            const pivot = this.viewer.scene.view.getPivot();
+
+            const pPos = new THREE.Vector3(0, 0, 0).applyMatrix4(activeCamera.matrixWorld);
+            const pTarget = pivot.clone();
+            const upDir = new THREE.Vector3(0, 1, 0).applyMatrix4(activeCamera.matrixWorld).sub(pPos).normalize();
+            const pUpPoint = pPos.clone().add(upDir.multiplyScalar(10));
+
+            const toCes = (vec) => {
+                const xy = [vec.x, vec.y];
+                const height = vec.z + this._geoidOffset;
+                const deg = toMap.forward(xy);
                 return Cesium.Cartesian3.fromDegrees(...deg, height);
             };
 
-            let cPos = toCes(pPos);
-            let cTarget = toCes(pTarget);
-            let cUpPoint = toCes(pUpPoint);
+            const cPos = toCes(pPos);
+            const cTarget = toCes(pTarget);
+            const cUpPoint = toCes(pUpPoint);
 
-            let cDir = Cesium.Cartesian3.normalize(
+            const cDir = Cesium.Cartesian3.normalize(
                 Cesium.Cartesian3.subtract(cTarget, cPos, new Cesium.Cartesian3()),
                 new Cesium.Cartesian3()
             );
-            let cUp = Cesium.Cartesian3.normalize(
+            const cUp = Cesium.Cartesian3.normalize(
                 Cesium.Cartesian3.subtract(cUpPoint, cPos, new Cesium.Cartesian3()),
                 new Cesium.Cartesian3()
             );
@@ -199,17 +213,24 @@ export class CesiumRenderer {
                 }
             });
 
-            if (camera === this.viewer.scene.cameraP) {
-                let aspect = camera.aspect;
-                let fovy = Math.PI * (camera.fov / 180);
-                this.cesiumViewer.camera.frustum.fov = aspect < 1 ? fovy : Math.atan(Math.tan(0.5 * fovy) * aspect) * 2;
-            } else if (camera === this.viewer.scene.cameraO) {
-                let worldWidth = (camera.right - camera.left) / camera.zoom;
-                let worldHeight = (camera.top - camera.bottom) / camera.zoom;
-                let dist = Cesium.Cartesian3.distance(cPos, cTarget);
+            const widthPx = containerWidth || this.cesiumViewer.canvas.clientWidth || 1;
+            const heightPx = containerHeight || this.cesiumViewer.canvas.clientHeight || 1;
+            const aspect = widthPx / heightPx;
 
-                this.cesiumViewer.camera.frustum.fov = 2 * Math.atan(worldHeight / (2 * dist));
-                this.cesiumViewer.camera.frustum.aspectRatio = worldWidth / worldHeight;
+            const scene = this.viewer.scene;
+
+            if (activeCamera === scene.cameraP) {
+                const fovy = THREE.MathUtils.degToRad(activeCamera.fov);
+                this.cesiumViewer.camera.frustum.fov = aspect < 1 ? fovy : Math.atan(Math.tan(0.5 * fovy) * aspect) * 2;
+                this.cesiumViewer.camera.frustum.aspectRatio = aspect;
+            } else if (activeCamera === scene.cameraO) {
+                const cameraO = activeCamera;
+                const worldHeight = (cameraO.top - cameraO.bottom) / cameraO.zoom;
+                const dist = Cesium.Cartesian3.distance(cPos, cTarget) || 1.0;
+
+                let fovY = 2 * Math.atan(worldHeight / (2 * dist));
+                this.cesiumViewer.camera.frustum.fov = aspect < 1 ? fovY : Math.atan(Math.tan(0.5 * fovY) * aspect) * 2;
+                this.cesiumViewer.camera.frustum.aspectRatio = aspect;
                 this.cesiumViewer.camera.frustum.near = 0.1;
                 this.cesiumViewer.camera.frustum.far = 10_000_000;
             }

@@ -40,11 +40,13 @@
     <script src="../libs/Cesium/Cesium.js"></script>
     <script src="../libs/copc/index.js"></script>
 
-    <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
-        <div id="potree_render_area" style="background-image: url('../build/potree/resources/images/background.jpg');">
-            <div id="cesiumContainer" style="position: absolute; width: 100%; height: 100%; background-color:green"></div>
+    <div style="position:relative; width: 90%; height:90%; left: 5%; top: 5%;">
+        <div class="potree_container" style="position: absolute; inset:0">
+            <div id="potree_render_area" style="position: absolute; background-image: url('../build/potree/resources/images/background.jpg');">
+                <div id="cesiumContainer" style="position: absolute; inset: 0; background-color:green"></div>
+            </div>
+            <div id="potree_sidebar_container"></div>
         </div>
-        <div id="potree_sidebar_container"></div>
     </div>
 
     <script type="module">
