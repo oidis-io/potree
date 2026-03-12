@@ -1,6 +1,6 @@
 /*! ******************************************************************************************************** *
  *
- * Copyright 2025 Oidis
+ * Copyright 2025-2026 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -18,24 +18,16 @@ export const MapProvider = Object.freeze({
 });
 
 export class CesiumRenderer {
+    static CONTEXT_RECOVERY_TIMEOUT_MS = 5000;
+
     constructor(viewer, args) {
         this.viewer = viewer;
         this._enabled = false;
         this._element = args.element;
-        this.cesiumViewer = new Cesium.Viewer(this._element, {
-            useDefaultRenderLoop: false,
-            animation: false,
-            baseLayerPicker: false,
-            fullscreenButton: false,
-            geocoder: false,
-            homeButton: false,
-            infoBox: false,
-            sceneModePicker: false,
-            selectionIndicator: false,
-            timeline: false,
-            navigationHelpButton: false,
-            terrainShadows: Cesium.ShadowMode.DISABLED,
-        });
+        this.cesiumViewer = null;
+        this._initFailed = false;
+        this._cesiumContextLost = false;
+        this._currentProviders = [];
 
         proj4.defs("EPSG:5514", "+proj=krovak +lat_0=49.5 +lon_0=24.83333333333333 +alpha=30.2881397527778 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +towgs84=589,76,480,0,0,0,0 +units=m +no_defs");
 
@@ -47,13 +39,96 @@ export class CesiumRenderer {
     }
 
     set enabled(value) {
+        if (this._initFailed) {
+            return;
+        }
         this._enabled = value;
     }
 
+    get failed() {
+        return this._initFailed;
+    }
+
+    _createViewer() {
+        if (this.cesiumViewer) {
+            return;
+        }
+
+        const creditContainer = document.createElement("div");
+        creditContainer.style.display = "none";
+        this._element.appendChild(creditContainer);
+
+        this.cesiumViewer = new Cesium.Viewer(this._element, {
+            useDefaultRenderLoop: false,
+            showRenderLoopErrors: false,
+            animation: false,
+            baseLayerPicker: false,
+            fullscreenButton: false,
+            geocoder: false,
+            homeButton: false,
+            infoBox: false,
+            sceneModePicker: false,
+            selectionIndicator: false,
+            timeline: false,
+            navigationHelpButton: false,
+            terrainShadows: Cesium.ShadowMode.DISABLED,
+            creditContainer: creditContainer,
+            imageryProvider: Cesium.createOpenStreetMapImageryProvider({
+                url: "https://tile.openstreetmap.org/",
+                maximumLevel: 19
+            }),
+        });
+
+        this.cesiumViewer.canvas.addEventListener("webglcontextlost", (e) => {
+            e.preventDefault();
+            console.warn("[CesiumRenderer] WebGL context lost");
+            this._cesiumContextLost = true;
+        }, false);
+
+        this.cesiumViewer.canvas.addEventListener("webglcontextrestored", () => {
+            console.warn("[CesiumRenderer] WebGL context restored, reinitializing");
+            this._cesiumContextLost = false;
+            try {
+                this._tryRecovery();
+            } catch (e) {
+                console.error("[CesiumRenderer] reinit failed:", e);
+                this._initFailed = true;
+            }
+        }, false);
+
+        if (this.cesiumViewer.scene && this.cesiumViewer.scene.renderError) {
+            this.cesiumViewer.scene.renderError.addEventListener((scene, error) => {
+                console.error("[CesiumRenderer] scene.renderError:", error);
+            });
+        }
+    }
+
+    _tryRecovery() {
+        let savedProviders = this._currentProviders;
+        if (this.cesiumViewer) {
+            try {
+                this.cesiumViewer.destroy();
+            } catch (e) {
+                // ignore destroy errors on lost context
+            }
+            this.cesiumViewer = null;
+        }
+        while (this._element.firstChild) {
+            this._element.removeChild(this._element.firstChild);
+        }
+        this._createViewer();
+        this.mapProviders = savedProviders;
+    }
+
     set mapProviders(value) {
+        if (!this.cesiumViewer || this._initFailed) {
+            console.warn(`[CesiumRenderer] mapProviders SKIPPED: viewer=${!!this.cesiumViewer}, failed=${this._initFailed}`);
+            return;
+        }
         if (!Array.isArray(value)) {
             value = [value];
         }
+        this._currentProviders = [...value];
         this.cesiumViewer.imageryLayers.removeAll();
         if (value.length === 0) {
             this.viewer.setShowCesium(false);
@@ -65,7 +140,7 @@ export class CesiumRenderer {
             switch (provider) {
                 case MapProvider.OPEN_STREET_MAP:
                     this.cesiumViewer.imageryLayers.addImageryProvider(
-                        Cesium.createOpenStreetMapImageryProvider({ url: "https://tile.openstreetmap.org/" })
+                        Cesium.createOpenStreetMapImageryProvider({ url: "https://tile.openstreetmap.org/", maximumLevel: 19 })
                     );
                     break;
 
@@ -136,7 +211,14 @@ export class CesiumRenderer {
     }
 
     init() {
-        this.mapProviders = [];
+        try {
+            this._createViewer();
+        } catch (e) {
+            console.error("[CesiumRenderer] init FAILED:", e);
+            this._initFailed = true;
+            return;
+        }
+
         const startLonLat = [17.050547295, 49.685828670];
         let startPos = Cesium.Cartesian3.fromDegrees(startLonLat[0], startLonLat[1]);
         this.cesiumViewer.camera.setView({
@@ -160,6 +242,35 @@ export class CesiumRenderer {
     }
 
     render(params) {
+        if (!this.cesiumViewer || this._initFailed) {
+            return;
+        }
+
+        if (this._cesiumContextLost) {
+            if (!this._contextLostTime) {
+                this._contextLostTime = Date.now();
+            }
+            if (Date.now() - this._contextLostTime > CesiumRenderer.CONTEXT_RECOVERY_TIMEOUT_MS && document.visibilityState === "visible") {
+                console.warn("[CesiumRenderer] Context not restored after 5s, attempting manual recovery");
+                this._cesiumContextLost = false;
+                this._contextLostTime = null;
+                try {
+                    this._tryRecovery();
+                } catch (e) {
+                    console.error("[CesiumRenderer] manual recovery failed:", e);
+                    this._initFailed = true;
+                }
+            }
+            return;
+        }
+        this._contextLostTime = null;
+
+        let gl = this.cesiumViewer.canvas.getContext("webgl");
+        if (!gl || gl.isContextLost()) {
+            this._cesiumContextLost = true;
+            return;
+        }
+
         this._element.style.display = this._enabled ? "block" : "none";
 
         const containerWidth = this._element.clientWidth;

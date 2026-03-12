@@ -1,7 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
- * Copyright 2025 Oidis
+ * Copyright 2025-2026 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -1085,10 +1085,14 @@ export class Renderer {
 
         {
             if (!this.shaders.has(material)) {
-                let [vs, fs] = [material.vertexShader, material.fragmentShader];
-                let shader = new Shader(gl, "pointcloud", vs, fs);
-
-                this.shaders.set(material, shader);
+                try {
+                    let [vs, fs] = [material.vertexShader, material.fragmentShader];
+                    let shader = new Shader(gl, "pointcloud", vs, fs);
+                    this.shaders.set(material, shader);
+                } catch (e) {
+                    console.error("Shader compilation failed, skipping octree:", e);
+                    return;
+                }
             }
 
             shader = this.shaders.get(material);
