@@ -96,9 +96,18 @@ export class CesiumRenderer {
             }
         }, false);
 
+        if (this.cesiumViewer.cesiumWidget) {
+            this.cesiumViewer.cesiumWidget.showErrorPanel = function() {};
+        }
+
+        if (this.cesiumViewer.scene) {
+            this.cesiumViewer.scene.rethrowRenderErrors = true;
+        }
+
         if (this.cesiumViewer.scene && this.cesiumViewer.scene.renderError) {
             this.cesiumViewer.scene.renderError.addEventListener((scene, error) => {
                 console.error("[CesiumRenderer] scene.renderError:", error);
+                this._cesiumContextLost = true;
             });
         }
     }
