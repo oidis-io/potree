@@ -1,7 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
- * Copyright 2025 Oidis
+ * Copyright 2025-2026 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -186,15 +186,52 @@ export class Viewer extends EventDispatcher {
                 document.body.appendChild(this.stats.dom);
             }
 
+            this._contextLost = false;
+
             {
                 let canvas = this.renderer.domElement;
                 canvas.addEventListener("webglcontextlost", (e) => {
-                    console.log(e);
-                    this.postMessage("WebGL context lost. \u2639");
+                    e.preventDefault();
+                    console.warn("Potree WebGL context lost");
+                    this._contextLost = true;
+                    this.renderer.setAnimationLoop(null);
+                    this._contextLostMessage = this.postMessage("WebGL context lost. \u2639");
+                }, false);
 
-                    let gl = this.renderer.getContext();
-                    let error = gl.getError();
-                    console.log(error);
+                canvas.addEventListener("webglcontextrestored", () => {
+                    console.warn("Potree WebGL context restored");
+                    this._contextLost = false;
+
+                    if (this._contextLostMessage) {
+                        this._contextLostMessage.element.remove();
+                        let index = this.messages.indexOf(this._contextLostMessage);
+                        if (index >= 0) {
+                            this.messages.splice(index, 1);
+                        }
+                        this._contextLostMessage = null;
+                    }
+
+                    if (this.pRenderer) {
+                        this.pRenderer.buffers.clear();
+                        this.pRenderer.shaders.clear();
+                        this.pRenderer.textures.clear();
+                    }
+
+                    if (this.hqRenderer) {
+                        this.hqRenderer.initialized = false;
+                        this.hqRenderer.depthMaterials.clear();
+                        this.hqRenderer.attributeMaterials.clear();
+                        this.hqRenderer.normalizationMaterial = null;
+                        this.hqRenderer.normalizationEDLMaterial = null;
+                        this.hqRenderer.rtDepth = null;
+                        this.hqRenderer.rtAttribute = null;
+                    }
+
+                    if (this.navigationCube) {
+                        this.navigationCube.refreshTextures();
+                    }
+
+                    this.renderer.setAnimationLoop(this.loop.bind(this));
                 }, false);
             }
 
@@ -1961,12 +1998,26 @@ export class Viewer extends EventDispatcher {
         pRenderer.render(this.renderer);
         this.renderer.render(this.overlay, this.overlayCamera);
 
-        if (this.cesiumRender) {
-            this.cesiumRender.render();
+        if (this.cesiumRender && !this.cesiumRender.failed) {
+            try {
+                this.cesiumRender.render();
+            } catch (e) {
+                console.warn("Cesium render failed, disabling map overlay:", e.message);
+                this.cesiumRender.enabled = false;
+            }
         }
     }
 
     render() {
+        if (this._contextLost) {
+            return;
+        }
+
+        let gl = this.renderer.getContext();
+        if (gl.isContextLost()) {
+            return;
+        }
+
         if (PotreeConfig.measureTimings) {
             performance.mark("render-start");
         }

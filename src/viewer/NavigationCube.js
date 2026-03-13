@@ -1,7 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
- * Copyright 2025 Oidis
+ * Copyright 2025-2026 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -145,24 +145,6 @@ export class NavigationCube extends THREE.Object3D {
         this.camera.lookAt(new THREE.Vector3(0, 1, 0));
         this.camera.rotation.order = "ZXY";
 
-        this.navRenderer = new THREE.WebGLRenderer({
-            antialias: true,
-            alpha: true
-        });
-        this.navRenderer.setPixelRatio(window.devicePixelRatio * this.width);
-        this.navRenderer.setSize(this.width, this.width);
-        this.navRenderer.domElement.style.position = "absolute";
-        this.navRenderer.domElement.style.right = "0px";
-        this.navRenderer.domElement.style.bottom = "0px";
-        this.navRenderer.domElement.style.pointerEvents = "none";
-        document.body.appendChild(this.navRenderer.domElement);
-        viewer.postRenderCallbacks = viewer.postRenderCallbacks || [];
-        viewer.postRenderCallbacks.push(() => {
-            this.navRenderer.clearDepth();
-            this.navRenderer.clear();
-            this.navRenderer.render(this, this.camera);
-        });
-
         this.front = this.createSide("FRONT");
         this.front.rotation.x = Math.PI / 2;
         this.front.position.y = -0.5;
@@ -205,10 +187,6 @@ export class NavigationCube extends THREE.Object3D {
             this.edgeMeshes[side] = sideGroup.children.filter(o => o.userData.type === "edge");
         });
 
-        window.addEventListener("resize", () => {
-            this.navRenderer.setSize(this.width, this.width);
-        });
-
         this.viewer.renderer.domElement.addEventListener("mousemove", (event) => {
             this.onMouseMove(event);
         });
@@ -216,6 +194,14 @@ export class NavigationCube extends THREE.Object3D {
         this.viewer.renderer.domElement.addEventListener("mousedown", (event) => {
             this.onMouseDown(event);
         }, false);
+    }
+
+    refreshTextures() {
+        this.traverse((child) => {
+            if (child.material && child.material.map) {
+                child.material.map.needsUpdate = true;
+            }
+        });
     }
 
     createTextLabel(text, size = 256, color = "#000000", background = null) {
