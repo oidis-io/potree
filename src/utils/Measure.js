@@ -879,30 +879,38 @@ export class Measure extends THREE.Object3D {
                 const N = AC.clone().cross(AB).normalize();
 
                 const center = Utils.computeCircleCenter(A, B, C);
-                const radius = center.distanceTo(A);
 
-                const scale = radius / 20;
-                circleCenter.position.copy(center);
-                circleCenter.scale.set(scale, scale, scale);
+                if (isNaN(center.x) || isNaN(center.y) || isNaN(center.z)) {
+                    circleRadiusLabel.visible = false;
+                    circleRadiusLine.visible = false;
+                    circleLine.visible = false;
+                    circleCenter.visible = false;
+                } else {
+                    const radius = center.distanceTo(A);
 
-                circleRadiusLine.geometry.setPositions([
-                    0, 0, 0,
-                    ...B.clone().sub(center).toArray()
-                ]);
+                    const scale = radius / 20;
+                    circleCenter.position.copy(center);
+                    circleCenter.scale.set(scale, scale, scale);
 
-                circleRadiusLine.geometry.verticesNeedUpdate = true;
-                circleRadiusLine.geometry.computeBoundingSphere();
-                circleRadiusLine.position.copy(center);
-                circleRadiusLine.computeLineDistances();
+                    circleRadiusLine.geometry.setPositions([
+                        0, 0, 0,
+                        ...B.clone().sub(center).toArray()
+                    ]);
 
-                const target = center.clone().add(N);
-                circleLine.position.copy(center);
-                circleLine.scale.set(radius, radius, radius);
-                circleLine.lookAt(target);
+                    circleRadiusLine.geometry.verticesNeedUpdate = true;
+                    circleRadiusLine.geometry.computeBoundingSphere();
+                    circleRadiusLine.position.copy(center);
+                    circleRadiusLine.computeLineDistances();
 
-                circleRadiusLabel.visible = true;
-                circleRadiusLabel.position.copy(center.clone().add(B).multiplyScalar(0.5));
-                circleRadiusLabel.setText(`${radius.toFixed(3)}`);
+                    const target = center.clone().add(N);
+                    circleLine.position.copy(center);
+                    circleLine.scale.set(radius, radius, radius);
+                    circleLine.lookAt(target);
+
+                    circleRadiusLabel.visible = true;
+                    circleRadiusLabel.position.copy(center.clone().add(B).multiplyScalar(0.5));
+                    circleRadiusLabel.setText(`${radius.toFixed(3)}`);
+                }
             }
         }
 

@@ -2,7 +2,7 @@
   "name": "@oidis-io/potree",
   "repository": "https://github.com/oidis-io/potree.git",
   "private": false,
-  "version": "2025.3.0",
+  "version": "2026.0.0",
   "description": "WebGL point cloud viewer for large datasets - enhanced by Oidis",
   "keywords": [
     "oidis",
