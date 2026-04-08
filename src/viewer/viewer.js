@@ -192,24 +192,20 @@ export class Viewer extends EventDispatcher {
                 let canvas = this.renderer.domElement;
                 canvas.addEventListener("webglcontextlost", (e) => {
                     e.preventDefault();
-                    console.warn("Potree WebGL context lost");
                     this._contextLost = true;
                     this.renderer.setAnimationLoop(null);
-                    this._contextLostMessage = this.postMessage("WebGL context lost. \u2639");
+
+                    if (this._intentionalContextRelease) {
+                        console.info("[Potree] Context intentionally released for background tab");
+                    } else {
+                        console.warn("Potree WebGL context lost");
+                        this._showContextOverlay("lost");
+                    }
                 }, false);
 
                 canvas.addEventListener("webglcontextrestored", () => {
                     console.warn("Potree WebGL context restored");
                     this._contextLost = false;
-
-                    if (this._contextLostMessage) {
-                        this._contextLostMessage.element.remove();
-                        let index = this.messages.indexOf(this._contextLostMessage);
-                        if (index >= 0) {
-                            this.messages.splice(index, 1);
-                        }
-                        this._contextLostMessage = null;
-                    }
 
                     if (this.pRenderer) {
                         this.pRenderer.buffers.clear();
@@ -232,6 +228,8 @@ export class Viewer extends EventDispatcher {
                     }
 
                     this.renderer.setAnimationLoop(this.loop.bind(this));
+                    this._hideContextOverlay();
+                    this.dispatchEvent({ type: "context_restored" });
                 }, false);
             }
 
@@ -354,8 +352,105 @@ export class Viewer extends EventDispatcher {
                 clone.clonedFrom = e.measurement.uuid;
                 this.scene.addMeasurement(clone);
             });
+            this._setupVisibilityHandler();
         } catch (e) {
             this.onCrash(e);
+        }
+    }
+
+    _setupVisibilityHandler() {
+        this._intentionalContextRelease = false;
+        this._visibilityContextsReleased = false;
+
+        this._visibilityHandler = () => {
+            if (document.hidden) {
+                this._releaseContextsForBackground();
+            } else {
+                this._restoreContextsFromBackground();
+            }
+        };
+
+        document.addEventListener("visibilitychange", this._visibilityHandler);
+    }
+
+    _releaseContextsForBackground() {
+        if (this._visibilityContextsReleased) {
+            return;
+        }
+        this._intentionalContextRelease = true;
+        this._visibilityContextsReleased = true;
+
+        this.renderer.setAnimationLoop(null);
+        this.renderer.forceContextLoss();
+
+        if (this.profileControl) {
+            this.profileControl.releaseContext();
+        }
+
+        if (this.cesiumRender) {
+            this.cesiumRender.releaseContext();
+        }
+
+        console.info("[Potree] Contexts intentionally released for background tab");
+    }
+
+    _restoreContextsFromBackground() {
+        if (!this._visibilityContextsReleased) {
+            return;
+        }
+
+        this._showContextOverlay("restoring");
+        this._intentionalContextRelease = false;
+
+        this.renderer.forceContextRestore();
+
+        if (this.profileControl) {
+            this.profileControl.restoreContext();
+        }
+
+        if (this.cesiumRender && !this.cesiumRender.failed) {
+            this.cesiumRender.restoreContext();
+        }
+
+        this._visibilityContextsReleased = false;
+    }
+
+    _showContextOverlay(type) {
+        this._hideContextOverlay();
+
+        let overlay = document.createElement("div");
+        overlay.className = "potree_context_overlay";
+
+        if (type === "restoring") {
+            overlay.innerHTML = `
+                <div class="potree_context_spinner"></div>
+                <div>Obnovuji 3D pohled...</div>`;
+        } else {
+            overlay.innerHTML = `
+                <div style="font-size:48px; margin-bottom:16px">\u26A0</div>
+                <div>WebGL kontext byl ztracen</div>
+                <div style="margin-top:8px; font-size:13px; opacity:0.7">Příliš mnoho otevřených záložek s 3D editorem</div>
+                <button onclick="this.parentElement.dispatchEvent(new Event('restore'))">Obnovit zobrazení</button>`;
+            overlay.addEventListener("restore", () => {
+                this._showContextOverlay("restoring");
+                this.renderer.forceContextRestore();
+                if (this.profileControl) {
+                    this.profileControl.restoreContext();
+                }
+                if (this.cesiumRender && !this.cesiumRender.failed) {
+                    this.cesiumRender.restoreContext();
+                }
+            });
+        }
+
+        this.renderArea.appendChild(overlay);
+        this._contextOverlay = overlay;
+    }
+
+    _hideContextOverlay() {
+        if (this._contextOverlay) {
+            this._contextOverlay.remove();
+            this._contextOverlay = null;
         }
     }
 
