@@ -245,13 +245,35 @@ export class ProfileControl extends EventDispatcher {
         this.autoFitEnabled = true; // completely disable/enable
         this.autoFit = false; // internal
 
-        this.initControl();
+        this._threeInitialized = false;
+        this._contextLost = false;
+        this.renderer = null;
+        this.pRenderer = null;
 
+        this.initControl();
+        this.initListeners();
+    }
+
+    ensureRenderer() {
+        if (this._threeInitialized) {
+            return;
+        }
         this.initTHREE();
         this.initSVG();
-        this.initListeners();
-
         this.pRenderer = new Renderer(this.renderer);
+        this._threeInitialized = true;
+    }
+
+    releaseContext() {
+        if (this._threeInitialized && this.renderer) {
+            this.renderer.forceContextLoss();
+        }
+    }
+
+    restoreContext() {
+        if (this._threeInitialized && this.renderer) {
+            this.renderer.forceContextRestore();
+        }
     }
 
     initControl() {
@@ -514,6 +536,20 @@ export class ProfileControl extends EventDispatcher {
         this.scene.add(this.pickSphere);
 
         this.viewerPickSphere = new THREE.Mesh(sg, sm);
+
+        this.renderer.domElement.addEventListener("webglcontextlost", (e) => {
+            e.preventDefault();
+            this._contextLost = true;
+        }, false);
+
+        this.renderer.domElement.addEventListener("webglcontextrestored", () => {
+            this._contextLost = false;
+            if (this.pRenderer) {
+                this.pRenderer.buffers.clear();
+                this.pRenderer.shaders.clear();
+                this.pRenderer.textures.clear();
+            }
+        }, false);
     }
 
     initSVG() {
@@ -701,6 +737,12 @@ export class ProfileControl extends EventDispatcher {
     }
 
     render() {
+        this.ensureRenderer();
+
+        if (this._contextLost || !this.renderer) {
+            return;
+        }
+
         let width = this.renderArea[0].clientWidth;
         let height = this.renderArea[0].clientHeight;
 

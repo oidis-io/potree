@@ -27,6 +27,7 @@ export class CesiumRenderer {
         this.cesiumViewer = null;
         this._initFailed = false;
         this._cesiumContextLost = false;
+        this._intentionalRelease = false;
         this._currentProviders = [];
 
         proj4.defs("EPSG:5514", "+proj=krovak +lat_0=49.5 +lon_0=24.83333333333333 +alpha=30.2881397527778 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +towgs84=589,76,480,0,0,0,0 +units=m +no_defs");
@@ -81,19 +82,17 @@ export class CesiumRenderer {
 
         this.cesiumViewer.canvas.addEventListener("webglcontextlost", (e) => {
             e.preventDefault();
-            console.warn("[CesiumRenderer] WebGL context lost");
             this._cesiumContextLost = true;
+            if (this._intentionalRelease) {
+                console.info("[CesiumRenderer] Context intentionally released for background tab");
+            } else {
+                console.warn("[CesiumRenderer] WebGL context lost");
+            }
         }, false);
 
         this.cesiumViewer.canvas.addEventListener("webglcontextrestored", () => {
-            console.warn("[CesiumRenderer] WebGL context restored, reinitializing");
+            console.warn("[CesiumRenderer] WebGL context restored");
             this._cesiumContextLost = false;
-            try {
-                this._tryRecovery();
-            } catch (e) {
-                console.error("[CesiumRenderer] reinit failed:", e);
-                this._initFailed = true;
-            }
         }, false);
 
         if (this.cesiumViewer.cesiumWidget) {
@@ -127,6 +126,38 @@ export class CesiumRenderer {
         }
         this._createViewer();
         this.mapProviders = savedProviders;
+    }
+
+    releaseContext() {
+        this._intentionalRelease = true;
+        if (this.cesiumViewer) {
+            try {
+                let canvas = this.cesiumViewer.canvas;
+                let gl = canvas.getContext("webgl") || canvas.getContext("webgl2");
+                if (gl) {
+                    let ext = gl.getExtension("WEBGL_lose_context");
+                    if (ext) {
+                        ext.loseContext();
+                    }
+                }
+            } catch (e) {
+                console.warn("[CesiumRenderer] releaseContext failed:", e.message);
+            }
+        }
+    }
+
+    restoreContext() {
+        this._intentionalRelease = false;
+        this._cesiumContextLost = false;
+        this._contextLostTime = null;
+        if (this.cesiumViewer) {
+            try {
+                this._tryRecovery();
+            } catch (e) {
+                console.error("[CesiumRenderer] restore failed:", e);
+                this._initFailed = true;
+            }
+        }
     }
 
     set mapProviders(value) {
@@ -256,23 +287,8 @@ export class CesiumRenderer {
         }
 
         if (this._cesiumContextLost) {
-            if (!this._contextLostTime) {
-                this._contextLostTime = Date.now();
-            }
-            if (Date.now() - this._contextLostTime > CesiumRenderer.CONTEXT_RECOVERY_TIMEOUT_MS && document.visibilityState === "visible") {
-                console.warn("[CesiumRenderer] Context not restored after 5s, attempting manual recovery");
-                this._cesiumContextLost = false;
-                this._contextLostTime = null;
-                try {
-                    this._tryRecovery();
-                } catch (e) {
-                    console.error("[CesiumRenderer] manual recovery failed:", e);
-                    this._initFailed = true;
-                }
-            }
             return;
         }
-        this._contextLostTime = null;
 
         let gl = this.cesiumViewer.canvas.getContext("webgl");
         if (!gl || gl.isContextLost()) {
