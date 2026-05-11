@@ -194,17 +194,10 @@ export class Viewer extends EventDispatcher {
                     e.preventDefault();
                     this._contextLost = true;
                     this.renderer.setAnimationLoop(null);
-
-                    if (this._intentionalContextRelease) {
-                        console.info("[Potree] Context intentionally released for background tab");
-                    } else {
-                        console.warn("Potree WebGL context lost");
-                        this._showContextOverlay("lost");
-                    }
+                    console.warn("Potree WebGL context lost");
                 }, false);
 
                 canvas.addEventListener("webglcontextrestored", () => {
-                    console.warn("Potree WebGL context restored");
                     this._contextLost = false;
 
                     if (this.pRenderer) {
@@ -224,7 +217,18 @@ export class Viewer extends EventDispatcher {
                     }
 
                     if (this.navigationCube) {
-                        this.navigationCube.refreshTextures();
+                        this.navigationCube.traverse((child) => {
+                            const tex = child.material && child.material.map;
+                            if (!tex) {
+                                return;
+                            }
+                            tex.needsUpdate = true;
+                            try {
+                                this.renderer.initTexture(tex);
+                            } catch (e) {
+                                // initTexture may throw on some Three.js versions if texture state is incomplete
+                            }
+                        });
                     }
 
                     this.renderer.setAnimationLoop(this.loop.bind(this));
@@ -352,67 +356,9 @@ export class Viewer extends EventDispatcher {
                 clone.clonedFrom = e.measurement.uuid;
                 this.scene.addMeasurement(clone);
             });
-            this._setupVisibilityHandler();
         } catch (e) {
             this.onCrash(e);
         }
-    }
-
-    _setupVisibilityHandler() {
-        this._intentionalContextRelease = false;
-        this._visibilityContextsReleased = false;
-
-        this._visibilityHandler = () => {
-            if (document.hidden) {
-                this._releaseContextsForBackground();
-            } else {
-                this._restoreContextsFromBackground();
-            }
-        };
-
-        document.addEventListener("visibilitychange", this._visibilityHandler);
-    }
-
-    _releaseContextsForBackground() {
-        if (this._visibilityContextsReleased) {
-            return;
-        }
-        this._intentionalContextRelease = true;
-        this._visibilityContextsReleased = true;
-
-        this.renderer.setAnimationLoop(null);
-        this.renderer.forceContextLoss();
-
-        if (this.profileControl) {
-            this.profileControl.releaseContext();
-        }
-
-        if (this.cesiumRender) {
-            this.cesiumRender.releaseContext();
-        }
-
-        console.info("[Potree] Contexts intentionally released for background tab");
-    }
-
-    _restoreContextsFromBackground() {
-        if (!this._visibilityContextsReleased) {
-            return;
-        }
-
-        this._showContextOverlay("restoring");
-        this._intentionalContextRelease = false;
-
-        this.renderer.forceContextRestore();
-
-        if (this.profileControl) {
-            this.profileControl.restoreContext();
-        }
-
-        if (this.cesiumRender && !this.cesiumRender.failed) {
-            this.cesiumRender.restoreContext();
-        }
-
-        this._visibilityContextsReleased = false;
     }
 
     _showContextOverlay(type) {

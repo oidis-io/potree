@@ -205,12 +205,10 @@ export class NavigationCube extends THREE.Object3D {
     }
 
     createTextLabel(text, size = 256, color = "#000000", background = null) {
-        const dpi = window.devicePixelRatio || 1;
         const canvas = document.createElement("canvas");
-        canvas.width = size * dpi;
-        canvas.height = size * dpi;
+        canvas.width = size;
+        canvas.height = size;
         const ctx = canvas.getContext("2d");
-        ctx.scale(dpi, dpi);
 
         if (background) {
             ctx.fillStyle = background;
@@ -280,7 +278,7 @@ export class NavigationCube extends THREE.Object3D {
         faceMesh.userData = { type: "face", side: name };
         group.add(faceMesh);
 
-        const textMesh = this.createTextLabel(name, 4 * this.width, this.options.color);
+        const textMesh = this.createTextLabel(name, 512, this.options.color);
         textMesh.userData = { type: "label", parent: faceMesh };
         textMesh.scale.set(edgeSize, edgeSize, 1);
         textMesh.position.z = 0.001;
