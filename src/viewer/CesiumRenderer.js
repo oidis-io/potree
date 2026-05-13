@@ -100,13 +100,12 @@ export class CesiumRenderer {
         }
 
         if (this.cesiumViewer.scene) {
-            this.cesiumViewer.scene.rethrowRenderErrors = true;
+            this.cesiumViewer.scene.rethrowRenderErrors = false;
         }
 
         if (this.cesiumViewer.scene && this.cesiumViewer.scene.renderError) {
             this.cesiumViewer.scene.renderError.addEventListener((scene, error) => {
-                console.error("[CesiumRenderer] scene.renderError:", error);
-                this._cesiumContextLost = true;
+                console.warn("[CesiumRenderer] scene.renderError (frame skipped):", error?.message ?? error);
             });
         }
     }
@@ -271,8 +270,10 @@ export class CesiumRenderer {
         });
 
         // TODO(mkelnar) simple hack for true geoHeight - experimental
-        if (this.viewer.scene.pointclouds[0]) {
-            this._geoidOffset = -1 * (this.viewer.scene.pointclouds[0].boundingSphere.center.z) + 2;
+        const firstCloud = this.viewer.scene.pointclouds[0];
+        const centerZ = firstCloud?.boundingSphere?.center?.z;
+        if (Number.isFinite(centerZ)) {
+            this._geoidOffset = -1 * centerZ + 2;
         }
         let pointcloudProjection = proj4.defs("EPSG:5514"); // TODO(mkelnar) should be loaded from point cloud SRS
         let mapProjection = proj4.defs("WGS84");
@@ -316,21 +317,37 @@ export class CesiumRenderer {
             const activeCamera = this.viewer.scene.getActiveCamera();
             const pivot = this.viewer.scene.view.getPivot();
 
+            if (!pivot || !activeCamera) {
+                return;
+            }
+
             const pPos = new THREE.Vector3(0, 0, 0).applyMatrix4(activeCamera.matrixWorld);
             const pTarget = pivot.clone();
             const upDir = new THREE.Vector3(0, 1, 0).applyMatrix4(activeCamera.matrixWorld).sub(pPos).normalize();
             const pUpPoint = pPos.clone().add(upDir.multiplyScalar(10));
 
+            const isFiniteVec = (vec) => Number.isFinite(vec.x) && Number.isFinite(vec.y) && Number.isFinite(vec.z);
+            if (!isFiniteVec(pPos) || !isFiniteVec(pTarget) || !isFiniteVec(pUpPoint)) {
+                return;
+            }
+
             const toCes = (vec) => {
                 const xy = [vec.x, vec.y];
                 const height = vec.z + this._geoidOffset;
                 const deg = toMap.forward(xy);
-                return Cesium.Cartesian3.fromDegrees(...deg, height);
+                if (!Array.isArray(deg) || !Number.isFinite(deg[0]) || !Number.isFinite(deg[1]) || !Number.isFinite(height)) {
+                    return null;
+                }
+                return Cesium.Cartesian3.fromDegrees(deg[0], deg[1], height);
             };
 
             const cPos = toCes(pPos);
             const cTarget = toCes(pTarget);
             const cUpPoint = toCes(pUpPoint);
+
+            if (!cPos || !cTarget || !cUpPoint) {
+                return;
+            }
 
             const cDir = Cesium.Cartesian3.normalize(
                 Cesium.Cartesian3.subtract(cTarget, cPos, new Cesium.Cartesian3()),
