@@ -22,9 +22,9 @@ let _lockToUpperHemisphere = true;
 
 const PotreeConfig = {
     version: {
-        major: 2025,
-        minor: 3,
-        suffix: ".0"
+        major: 2026,
+        minor: 1,
+        suffix: ".1"
     },
     measureTimings: false,
     debug: {},

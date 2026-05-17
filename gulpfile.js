@@ -13,7 +13,6 @@ const path = require("path");
 const fs = require("fs");
 const exec = require("child_process").exec;
 const gulp = require("gulp");
-const del = require("del");
 const fsp = fs.promises;
 const concat = require("gulp-concat");
 const merge = require("merge-stream");
@@ -90,7 +89,8 @@ let assets = ["build/potree", "build/shaders", "pointclouds", "libs", "examples"
 // For development, it is now possible to use 'gulp webserver'
 // from the command line to start the server (default port is 8080)
 gulp.task("clean", async () => {
-    return del.deleteAsync(["build"]);
+    const { deleteAsync } = await import("del");
+    return deleteAsync(["build"]);
 });
 
 gulp.task("archive", async () => {
@@ -217,7 +217,7 @@ gulp.task("shaders", async () => {
 
 gulp.task("pack", async () => {
     return new Promise((resolve, reject) => {
-        exec("rollup -c", (err, stdout, stderr) => {
+        exec("rollup -c rollup.config.mjs", (err, stdout, stderr) => {
             console.log(stdout);
             console.error(stderr);
 
