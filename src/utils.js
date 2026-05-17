@@ -12,12 +12,9 @@
 import * as THREE from "../libs/three.js/build/three.module.js";
 import TWEEN from "../libs/tween/tween.min.js";
 import { XHRFactory } from "./XHRFactory.js";
-import { Volume } from "./utils/Volume.js";
-import { PolygonClipVolume } from "./utils/PolygonClipVolume.js";
 // Profile and Measure are intentionally NOT imported here to avoid a circular
 // dependency (utils.js <-> Measure.js/Profile.js). Logic that needs to
 // distinguish those types lives in sidebar.js (see getMeasurementIcon).
-import PotreeConfig from "./PotreeConfig.js";
 
 export class Utils {
     static async loadShapefileFeatures(file, callback) {
