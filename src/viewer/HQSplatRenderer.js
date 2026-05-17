@@ -323,6 +323,7 @@ export class HQSplatRenderer {
             viewer.renderer.setViewport(width - viewer.navigationCube.width,
                 height - viewer.navigationCube.width,
                 viewer.navigationCube.width, viewer.navigationCube.width);
+            viewer.renderer.clearDepth();
             viewer.renderer.render(viewer.navigationCube, viewer.navigationCube.camera);
             viewer.renderer.setViewport(0, 0, width, height);
         }

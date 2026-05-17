@@ -33,6 +33,20 @@ export class CesiumRenderer {
         proj4.defs("EPSG:5514", "+proj=krovak +lat_0=49.5 +lon_0=24.83333333333333 +alpha=30.2881397527778 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +towgs84=589,76,480,0,0,0,0 +units=m +no_defs");
 
         this._geoidOffset = 0;
+        this._renderErrorLog = { suppressed: 0, lastAt: 0, intervalMs: 5000 };
+    }
+
+    _logRenderErrorThrottled(message) {
+        const state = this._renderErrorLog;
+        const now = typeof performance !== "undefined" ? performance.now() : Date.now();
+        if (now - state.lastAt < state.intervalMs) {
+            state.suppressed++;
+            return;
+        }
+        const suffix = state.suppressed > 0 ? ` (+${state.suppressed} similar suppressed)` : "";
+        state.suppressed = 0;
+        state.lastAt = now;
+        console.warn(`[CesiumRenderer] ${message}${suffix}`);
     }
 
     get enabled() {
@@ -100,13 +114,12 @@ export class CesiumRenderer {
         }
 
         if (this.cesiumViewer.scene) {
-            this.cesiumViewer.scene.rethrowRenderErrors = true;
+            this.cesiumViewer.scene.rethrowRenderErrors = false;
         }
 
         if (this.cesiumViewer.scene && this.cesiumViewer.scene.renderError) {
             this.cesiumViewer.scene.renderError.addEventListener((scene, error) => {
-                console.error("[CesiumRenderer] scene.renderError:", error);
-                this._cesiumContextLost = true;
+                this._logRenderErrorThrottled(`scene.renderError (frame skipped): ${error?.message ?? error}`);
             });
         }
     }
@@ -271,8 +284,10 @@ export class CesiumRenderer {
         });
 
         // TODO(mkelnar) simple hack for true geoHeight - experimental
-        if (this.viewer.scene.pointclouds[0]) {
-            this._geoidOffset = -1 * (this.viewer.scene.pointclouds[0].boundingSphere.center.z) + 2;
+        const firstCloud = this.viewer.scene.pointclouds[0];
+        const centerZ = firstCloud?.boundingSphere?.center?.z;
+        if (Number.isFinite(centerZ)) {
+            this._geoidOffset = -1 * centerZ + 2;
         }
         let pointcloudProjection = proj4.defs("EPSG:5514"); // TODO(mkelnar) should be loaded from point cloud SRS
         let mapProjection = proj4.defs("WGS84");
@@ -316,38 +331,69 @@ export class CesiumRenderer {
             const activeCamera = this.viewer.scene.getActiveCamera();
             const pivot = this.viewer.scene.view.getPivot();
 
+            if (!pivot || !activeCamera) {
+                return;
+            }
+
             const pPos = new THREE.Vector3(0, 0, 0).applyMatrix4(activeCamera.matrixWorld);
             const pTarget = pivot.clone();
             const upDir = new THREE.Vector3(0, 1, 0).applyMatrix4(activeCamera.matrixWorld).sub(pPos).normalize();
             const pUpPoint = pPos.clone().add(upDir.multiplyScalar(10));
 
+            const isFiniteVec = (vec) => Number.isFinite(vec.x) && Number.isFinite(vec.y) && Number.isFinite(vec.z);
+            if (!isFiniteVec(pPos) || !isFiniteVec(pTarget) || !isFiniteVec(pUpPoint)) {
+                return;
+            }
+
             const toCes = (vec) => {
                 const xy = [vec.x, vec.y];
                 const height = vec.z + this._geoidOffset;
-                const deg = toMap.forward(xy);
-                return Cesium.Cartesian3.fromDegrees(...deg, height);
+                let deg;
+                try {
+                    deg = toMap.forward(xy);
+                } catch (e) {
+                    return null;
+                }
+                if (!Array.isArray(deg) || !Number.isFinite(deg[0]) || !Number.isFinite(deg[1]) || !Number.isFinite(height)) {
+                    return null;
+                }
+                const cart = Cesium.Cartesian3.fromDegrees(deg[0], deg[1], height);
+                if (!Number.isFinite(cart.x) || !Number.isFinite(cart.y) || !Number.isFinite(cart.z)) {
+                    return null;
+                }
+                return cart;
             };
 
             const cPos = toCes(pPos);
             const cTarget = toCes(pTarget);
             const cUpPoint = toCes(pUpPoint);
 
-            const cDir = Cesium.Cartesian3.normalize(
-                Cesium.Cartesian3.subtract(cTarget, cPos, new Cesium.Cartesian3()),
-                new Cesium.Cartesian3()
-            );
-            const cUp = Cesium.Cartesian3.normalize(
-                Cesium.Cartesian3.subtract(cUpPoint, cPos, new Cesium.Cartesian3()),
-                new Cesium.Cartesian3()
-            );
+            if (!cPos || !cTarget || !cUpPoint) {
+                return;
+            }
 
-            this.cesiumViewer.camera.setView({
-                destination: cPos,
-                orientation: {
-                    direction: cDir,
-                    up: cUp
-                }
-            });
+            const cDirRaw = Cesium.Cartesian3.subtract(cTarget, cPos, new Cesium.Cartesian3());
+            const cUpRaw = Cesium.Cartesian3.subtract(cUpPoint, cPos, new Cesium.Cartesian3());
+            const cDirMag = Cesium.Cartesian3.magnitude(cDirRaw);
+            const cUpMag = Cesium.Cartesian3.magnitude(cUpRaw);
+            if (!Number.isFinite(cDirMag) || cDirMag <= 0 || !Number.isFinite(cUpMag) || cUpMag <= 0) {
+                return;
+            }
+            const cDir = Cesium.Cartesian3.normalize(cDirRaw, new Cesium.Cartesian3());
+            const cUp = Cesium.Cartesian3.normalize(cUpRaw, new Cesium.Cartesian3());
+
+            try {
+                this.cesiumViewer.camera.setView({
+                    destination: cPos,
+                    orientation: {
+                        direction: cDir,
+                        up: cUp
+                    }
+                });
+            } catch (e) {
+                this._logRenderErrorThrottled(`setView threw: ${e?.message ?? e}`);
+                return;
+            }
 
             const widthPx = containerWidth || this.cesiumViewer.canvas.clientWidth || 1;
             const heightPx = containerHeight || this.cesiumViewer.canvas.clientHeight || 1;
@@ -355,23 +401,46 @@ export class CesiumRenderer {
 
             const scene = this.viewer.scene;
 
+            if (!Number.isFinite(aspect) || aspect <= 0) {
+                return;
+            }
+
+            let nextFov = null;
             if (activeCamera === scene.cameraP) {
                 const fovy = THREE.MathUtils.degToRad(activeCamera.fov);
-                this.cesiumViewer.camera.frustum.fov = aspect < 1 ? fovy : Math.atan(Math.tan(0.5 * fovy) * aspect) * 2;
-                this.cesiumViewer.camera.frustum.aspectRatio = aspect;
+                nextFov = aspect < 1 ? fovy : Math.atan(Math.tan(0.5 * fovy) * aspect) * 2;
             } else if (activeCamera === scene.cameraO) {
                 const cameraO = activeCamera;
-                const worldHeight = (cameraO.top - cameraO.bottom) / cameraO.zoom;
+                const span = cameraO.top - cameraO.bottom;
+                const zoom = cameraO.zoom;
+                if (!Number.isFinite(span) || !Number.isFinite(zoom) || zoom === 0) {
+                    return;
+                }
+                const worldHeight = span / zoom;
                 const dist = Cesium.Cartesian3.distance(cPos, cTarget) || 1.0;
+                if (!Number.isFinite(worldHeight) || !Number.isFinite(dist)) {
+                    return;
+                }
+                const fovY = 2 * Math.atan(worldHeight / (2 * dist));
+                nextFov = aspect < 1 ? fovY : Math.atan(Math.tan(0.5 * fovY) * aspect) * 2;
+            }
 
-                let fovY = 2 * Math.atan(worldHeight / (2 * dist));
-                this.cesiumViewer.camera.frustum.fov = aspect < 1 ? fovY : Math.atan(Math.tan(0.5 * fovY) * aspect) * 2;
-                this.cesiumViewer.camera.frustum.aspectRatio = aspect;
+            if (nextFov === null || !Number.isFinite(nextFov) || nextFov <= 0 || nextFov >= Math.PI) {
+                return;
+            }
+
+            this.cesiumViewer.camera.frustum.fov = nextFov;
+            this.cesiumViewer.camera.frustum.aspectRatio = aspect;
+            if (activeCamera === scene.cameraO) {
                 this.cesiumViewer.camera.frustum.near = 0.1;
                 this.cesiumViewer.camera.frustum.far = 10_000_000;
             }
 
-            this.cesiumViewer.render();
+            try {
+                this.cesiumViewer.render();
+            } catch (e) {
+                this._logRenderErrorThrottled(`render threw: ${e?.message ?? e}`);
+            }
         }
     }
 }
