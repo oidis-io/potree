@@ -32,6 +32,30 @@ import PotreeConfig from "../PotreeConfig.js";
 import { Geopackage } from "../loader/GeoPackageLoader.js";
 import { saveProject } from "./SaveProject.js";
 
+function getMeasurementIcon(measurement) {
+    if (measurement instanceof Measure) {
+        if (measurement.showDistances && !measurement.showArea && !measurement.showAngles) {
+            return `${PotreeConfig.resourcePath}/icons/distance.svg`;
+        } else if (measurement.showDistances && measurement.showArea && !measurement.showAngles) {
+            return `${PotreeConfig.resourcePath}/icons/area.svg`;
+        } else if (measurement.maxMarkers === 1) {
+            return `${PotreeConfig.resourcePath}/icons/point.svg`;
+        } else if (!measurement.showDistances && !measurement.showArea && measurement.showAngles) {
+            return `${PotreeConfig.resourcePath}/icons/angle.png`;
+        } else if (measurement.showHeight) {
+            return `${PotreeConfig.resourcePath}/icons/height.svg`;
+        } else {
+            return `${PotreeConfig.resourcePath}/icons/distance.svg`;
+        }
+    } else if (measurement instanceof Profile) {
+        return `${PotreeConfig.resourcePath}/icons/profile.svg`;
+    } else if (measurement instanceof Volume) {
+        return `${PotreeConfig.resourcePath}/icons/volume.svg`;
+    } else if (measurement instanceof PolygonClipVolume) {
+        return `${PotreeConfig.resourcePath}/icons/clip-polygon.svg`;
+    }
+}
+
 export class Sidebar {
     constructor(viewer) {
         this.viewer = viewer;
@@ -609,19 +633,19 @@ export class Sidebar {
 
         let onMeasurementAdded = (e) => {
             let measurement = e.measurement;
-            let icon = Utils.getMeasurementIcon(measurement);
+            let icon = getMeasurementIcon(measurement);
             createNode(measurementID, measurement.name, icon, measurement);
         };
 
         let onDrawingAdded = (e) => {
             let drawing = e.drawing;
-            let icon = Utils.getMeasurementIcon(drawing);
+            let icon = getMeasurementIcon(drawing);
             createNode(drawingID, drawing.name, icon, drawing);
         };
 
         let onVolumeAdded = (e) => {
             let volume = e.volume;
-            let icon = Utils.getMeasurementIcon(volume);
+            let icon = getMeasurementIcon(volume);
             let node = createNode(measurementID, volume.name, icon, volume);
 
             volume.addEventListener("visibility_changed", () => {
@@ -635,7 +659,7 @@ export class Sidebar {
 
         let onProfileAdded = (e) => {
             let profile = e.profile;
-            let icon = Utils.getMeasurementIcon(profile);
+            let icon = getMeasurementIcon(profile);
             createNode(measurementID, profile.name, icon, profile);
         };
 

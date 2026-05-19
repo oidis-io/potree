@@ -12,11 +12,9 @@
 import * as THREE from "../libs/three.js/build/three.module.js";
 import TWEEN from "../libs/tween/tween.min.js";
 import { XHRFactory } from "./XHRFactory.js";
-import { Volume } from "./utils/Volume.js";
-import { Profile } from "./utils/Profile.js";
-import { Measure } from "./utils/Measure.js";
-import { PolygonClipVolume } from "./utils/PolygonClipVolume.js";
-import PotreeConfig from "./PotreeConfig.js";
+// Profile and Measure are intentionally NOT imported here to avoid a circular
+// dependency (utils.js <-> Measure.js/Profile.js). Logic that needs to
+// distinguish those types lives in sidebar.js (see getMeasurementIcon).
 
 export class Utils {
     static async loadShapefileFeatures(file, callback) {
@@ -822,30 +820,6 @@ export class Utils {
         }
 
         document.body.removeChild(textArea);
-    }
-
-    static getMeasurementIcon(measurement) {
-        if (measurement instanceof Measure) {
-            if (measurement.showDistances && !measurement.showArea && !measurement.showAngles) {
-                return `${PotreeConfig.resourcePath}/icons/distance.svg`;
-            } else if (measurement.showDistances && measurement.showArea && !measurement.showAngles) {
-                return `${PotreeConfig.resourcePath}/icons/area.svg`;
-            } else if (measurement.maxMarkers === 1) {
-                return `${PotreeConfig.resourcePath}/icons/point.svg`;
-            } else if (!measurement.showDistances && !measurement.showArea && measurement.showAngles) {
-                return `${PotreeConfig.resourcePath}/icons/angle.png`;
-            } else if (measurement.showHeight) {
-                return `${PotreeConfig.resourcePath}/icons/height.svg`;
-            } else {
-                return `${PotreeConfig.resourcePath}/icons/distance.svg`;
-            }
-        } else if (measurement instanceof Profile) {
-            return `${PotreeConfig.resourcePath}/icons/profile.svg`;
-        } else if (measurement instanceof Volume) {
-            return `${PotreeConfig.resourcePath}/icons/volume.svg`;
-        } else if (measurement instanceof PolygonClipVolume) {
-            return `${PotreeConfig.resourcePath}/icons/clip-polygon.svg`;
-        }
     }
 
     static lineToLineIntersection(P0, P1, P2, P3) {
