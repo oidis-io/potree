@@ -1,0 +1,1070 @@
+/*! ******************************************************************************************************** *
+ *
+ * Copyright 2026 Oidis
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
+ * or at https://spdx.org/licenses/BSD-2-Clause.html#licenseText
+ *
+ * ********************************************************************************************************* */
+
+import * as THREE from "../../libs/three.js/build/three.module.js";
+import { TextSprite } from "../TextSprite.js";
+import { Utils } from "../utils.js";
+import { Line2 } from "../../libs/three.js/lines/Line2.js";
+import { LineGeometry } from "../../libs/three.js/lines/LineGeometry.js";
+import { LineMaterial } from "../../libs/three.js/lines/LineMaterial.js";
+import { bestFitPlane, projectOntoPlane, prismVolume, computeCentroid } from "./CubatureMath.js";
+
+function isValidPosition(p) {
+    return p
+        && Number.isFinite(p.x)
+        && Number.isFinite(p.y)
+        && Number.isFinite(p.z);
+}
+
+function createVolumeLabel() {
+    const label = new TextSprite("");
+    label.setTextColor({ r: 255, g: 220, b: 100, a: 1.0 });
+    label.setBorderColor({ r: 0, g: 0, b: 0, a: 1.0 });
+    label.setBackgroundColor({ r: 0, g: 0, b: 0, a: 1.0 });
+    label.fontsize = 16;
+    label.material.depthTest = false;
+    label.material.opacity = 1;
+    label.visible = false;
+    return label;
+}
+
+function createEdgeLabel() {
+    const label = new TextSprite("");
+    label.setTextColor({ r: 210, g: 230, b: 255, a: 1.0 });
+    label.setBorderColor({ r: 0, g: 0, b: 0, a: 1.0 });
+    label.setBackgroundColor({ r: 0, g: 0, b: 0, a: 1.0 });
+    label.fontsize = 14;
+    label.material.depthTest = false;
+    label.material.opacity = 1;
+    label.visible = false;
+    return label;
+}
+
+function formatLengthCs(value, unitCode) {
+    const text = value.toLocaleString("cs-CZ", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+    return text + " " + unitCode;
+}
+
+export class Cubature extends THREE.Object3D {
+    constructor(args = {}) {
+        super();
+
+        this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
+        this.name = "Cubature_" + this.constructor.counter;
+
+        this.phase = "insertion";
+        this.enabled = true;
+
+        this.topControlPoints = [];
+        this.bottomControlPoints = [];
+
+        this.topPlane = null;
+        this.bottomPlane = null;
+
+        this.topSpheres = [];
+        this.bottomSpheres = [];
+        this.topEdges = [];
+        this.bottomEdges = [];
+        this.sideEdges = [];
+        this.sideMeshes = [];
+        this.topEdgeLabels = [];
+        this.bottomEdgeLabels = [];
+        this.sideEdgeLabels = [];
+        this.showEdgeLengths = true;
+
+        this.topColor = args.topColor !== undefined ? args.topColor : 0xff0000;
+        this.bottomColor = args.bottomColor !== undefined ? args.bottomColor : 0x3399ff;
+        this.sideColor = args.sideColor !== undefined ? args.sideColor : 0xffaa00;
+        this.sideMeshColor = args.sideMeshColor !== undefined ? args.sideMeshColor : 0xffdd66;
+
+        this.sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
+
+        this.topMesh = this.createPolygonMesh(this.topColor);
+        this.bottomMesh = this.createPolygonMesh(this.bottomColor);
+        this.add(this.topMesh);
+        this.add(this.bottomMesh);
+
+        this.volumeLabel = createVolumeLabel();
+        this.add(this.volumeLabel);
+
+        this.lengthUnit = null;
+        this.lengthUnitDisplay = null;
+    }
+
+    createSphereMaterial(color) {
+        return new THREE.MeshLambertMaterial({
+            color: color,
+            depthTest: false,
+            depthWrite: false
+        });
+    }
+
+    createEdge(color, linewidth) {
+        const geometry = new LineGeometry();
+        geometry.setPositions([0, 0, 0, 0, 0, 0]);
+        const material = new LineMaterial({
+            color: color,
+            linewidth: linewidth,
+            resolution: new THREE.Vector2(1000, 1000)
+        });
+        material.depthTest = false;
+        const edge = new Line2(geometry, material);
+        return edge;
+    }
+
+    createSideMesh() {
+        const geometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(18);
+        geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+        const material = new THREE.MeshBasicMaterial({
+            color: this.sideMeshColor,
+            transparent: true,
+            opacity: 0.15,
+            depthTest: true,
+            depthWrite: false,
+            side: THREE.DoubleSide
+        });
+        const mesh = new THREE.Mesh(geometry, material);
+        return mesh;
+    }
+
+    createPolygonMesh(color) {
+        const geometry = new THREE.BufferGeometry();
+        const material = new THREE.MeshBasicMaterial({
+            color: color,
+            transparent: true,
+            opacity: 0.18,
+            depthTest: true,
+            depthWrite: false,
+            side: THREE.DoubleSide
+        });
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.visible = false;
+        return mesh;
+    }
+
+    updatePolygonMesh(mesh, controlPoints) {
+        const N = controlPoints.length;
+        if (N < 3) {
+            mesh.visible = false;
+            return;
+        }
+        const shape2D = controlPoints.map(p => new THREE.Vector2(p.x, p.y));
+        const triangles = THREE.ShapeUtils.triangulateShape(shape2D, []);
+        if (triangles.length === 0) {
+            mesh.visible = false;
+            return;
+        }
+        const positions = new Float32Array(N * 3);
+        for (let i = 0; i < N; i++) {
+            positions[i * 3] = controlPoints[i].x;
+            positions[i * 3 + 1] = controlPoints[i].y;
+            positions[i * 3 + 2] = controlPoints[i].z;
+        }
+        const indices = new Uint32Array(triangles.length * 3);
+        for (let i = 0; i < triangles.length; i++) {
+            indices[i * 3] = triangles[i][0];
+            indices[i * 3 + 1] = triangles[i][1];
+            indices[i * 3 + 2] = triangles[i][2];
+        }
+        mesh.geometry.dispose();
+        mesh.geometry = new THREE.BufferGeometry();
+        mesh.geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+        mesh.geometry.setIndex(new THREE.BufferAttribute(indices, 1));
+        mesh.geometry.computeVertexNormals();
+        mesh.geometry.computeBoundingSphere();
+        mesh.visible = true;
+    }
+
+    attachSphereHandlers(sphere, polygonId) {
+        const mouseover = (e) => {
+            if (!this.enabled) {
+                return;
+            }
+            e.object.material.emissive.setHex(0x888888);
+        };
+        const mouseleave = (e) => {
+            e.object.material.emissive.setHex(0x000000);
+        };
+        const drag = (e) => {
+            if (!this.enabled || this.phase === "pushpull") {
+                return;
+            }
+            const list = polygonId === "top" ? this.topSpheres : this.bottomSpheres;
+            const index = list.indexOf(e.drag.object);
+            if (index === -1) {
+                return;
+            }
+            const intersection = Utils.getMousePointCloudIntersection(
+                e.drag.end,
+                e.viewer.scene.getActiveCamera(),
+                e.viewer,
+                e.viewer.scene.pointclouds,
+                { pickClipped: true }
+            );
+            let target = null;
+            if (intersection && intersection.distance !== null) {
+                target = intersection.location;
+            } else {
+                const camera = e.viewer.scene.getActiveCamera();
+                const renderer = e.viewer.renderer;
+                const ndc = new THREE.Vector2(
+                    (e.drag.end.x / renderer.domElement.clientWidth) * 2 - 1,
+                    -(e.drag.end.y / renderer.domElement.clientHeight) * 2 + 1
+                );
+                const raycaster = new THREE.Raycaster();
+                raycaster.setFromCamera(ndc, camera);
+                const list2 = polygonId === "top" ? this.topControlPoints : this.bottomControlPoints;
+                const currentPoint = list2[index];
+                const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), -currentPoint.z);
+                const hit = new THREE.Vector3();
+                if (raycaster.ray.intersectPlane(plane, hit)) {
+                    target = hit;
+                }
+            }
+            if (!target) {
+                return;
+            }
+            if (polygonId === "top") {
+                this.setTopPoint(index, target);
+            } else {
+                this.setBottomPoint(index, target);
+            }
+        };
+
+        sphere.addEventListener("mouseover", mouseover);
+        sphere.addEventListener("mouseleave", mouseleave);
+        sphere.addEventListener("drag", drag);
+    }
+
+    addTopMarker(position) {
+        if (!isValidPosition(position)) {
+            return;
+        }
+        this.topControlPoints.push(position.clone());
+
+        const sphere = new THREE.Mesh(this.sphereGeometry, this.createSphereMaterial(this.topColor));
+        this.add(sphere);
+        this.topSpheres.push(sphere);
+        this.attachSphereHandlers(sphere, "top");
+
+        if (this.topControlPoints.length >= 2) {
+            const edge = this.createEdge(this.topColor, 2);
+            this.add(edge);
+            this.topEdges.push(edge);
+            const lbl = createEdgeLabel();
+            this.add(lbl);
+            this.topEdgeLabels.push(lbl);
+        }
+
+        this.update();
+        this.dispatchEvent({ type: "marker_added", cubature: this, polygonId: "top" });
+    }
+
+    removeTopMarker(index) {
+        if (index < 0 || index >= this.topControlPoints.length) {
+            return;
+        }
+        const sphere = this.topSpheres[index];
+        this.remove(sphere);
+        sphere.material.dispose();
+        this.topSpheres.splice(index, 1);
+        this.topControlPoints.splice(index, 1);
+
+        if (this.topEdges.length > 0) {
+            const lastEdge = this.topEdges.pop();
+            this.remove(lastEdge);
+            lastEdge.geometry.dispose();
+            lastEdge.material.dispose();
+        }
+        if (this.topEdgeLabels.length > 0) {
+            const lastLabel = this.topEdgeLabels.pop();
+            this.remove(lastLabel);
+        }
+
+        this.update();
+        this.dispatchEvent({ type: "marker_removed", cubature: this, polygonId: "top" });
+    }
+
+    closeTopPolygon() {
+        if (this.topControlPoints.length < 3) {
+            return false;
+        }
+
+        const closingEdge = this.createEdge(this.topColor, 2);
+        this.add(closingEdge);
+        this.topEdges.push(closingEdge);
+        const closingLabel = createEdgeLabel();
+        this.add(closingLabel);
+        this.topEdgeLabels.push(closingLabel);
+
+        for (let i = 0; i < this.topControlPoints.length; i++) {
+            const bottomPoint = this.topControlPoints[i].clone();
+            this.bottomControlPoints.push(bottomPoint);
+
+            const bsphere = new THREE.Mesh(this.sphereGeometry, this.createSphereMaterial(this.bottomColor));
+            this.add(bsphere);
+            this.bottomSpheres.push(bsphere);
+            this.attachSphereHandlers(bsphere, "bottom");
+
+            const bedge = this.createEdge(this.bottomColor, 2);
+            this.add(bedge);
+            this.bottomEdges.push(bedge);
+
+            const sedge = this.createEdge(this.sideColor, 1);
+            this.add(sedge);
+            this.sideEdges.push(sedge);
+
+            const smesh = this.createSideMesh();
+            this.add(smesh);
+            this.sideMeshes.push(smesh);
+
+            const blbl = createEdgeLabel();
+            this.add(blbl);
+            this.bottomEdgeLabels.push(blbl);
+
+            const slbl = createEdgeLabel();
+            this.add(slbl);
+            this.sideEdgeLabels.push(slbl);
+        }
+
+        this.phase = "pushpull";
+        this.update();
+        this.dispatchEvent({ type: "phase_changed", cubature: this, phase: this.phase });
+        return true;
+    }
+
+    setPushPullOffset(deltaZ) {
+        const clamped = Math.max(-100, Math.min(100, deltaZ));
+        for (let i = 0; i < this.topControlPoints.length; i++) {
+            const top = this.topControlPoints[i];
+            const bottom = this.bottomControlPoints[i];
+            bottom.x = top.x;
+            bottom.y = top.y;
+            bottom.z = top.z + clamped;
+        }
+        this.update();
+    }
+
+    commitPushPull() {
+        this.phase = "edit";
+        this.update();
+        this.dispatchEvent({ type: "phase_changed", cubature: this, phase: this.phase });
+    }
+
+    setTopPoint(index, newPosition) {
+        if (!isValidPosition(newPosition)) {
+            return;
+        }
+        if (index < 0 || index >= this.topControlPoints.length) {
+            return;
+        }
+        this.topControlPoints[index].copy(newPosition);
+        this.update();
+        this.dispatchEvent({ type: "marker_moved", cubature: this, polygonId: "top", index: index });
+    }
+
+    setBottomPoint(index, newPosition) {
+        if (!isValidPosition(newPosition)) {
+            return;
+        }
+        if (index < 0 || index >= this.bottomControlPoints.length) {
+            return;
+        }
+        this.bottomControlPoints[index].copy(newPosition);
+        this.update();
+        this.dispatchEvent({ type: "marker_moved", cubature: this, polygonId: "bottom", index: index });
+    }
+
+    insertVertexAt(polygonId, edgeIndex, position) {
+        if (this.phase !== "edit") {
+            return false;
+        }
+        const N = this.topControlPoints.length;
+        if (N === 0 || edgeIndex < 0 || edgeIndex >= N) {
+            return false;
+        }
+        const nextIndex = (edgeIndex + 1) % N;
+
+        let t = 0.5;
+        if (position && isValidPosition(position)) {
+            const source = polygonId === "top" ? this.topControlPoints : this.bottomControlPoints;
+            const a = source[edgeIndex];
+            const b = source[nextIndex];
+            const abx = b.x - a.x;
+            const aby = b.y - a.y;
+            const abz = b.z - a.z;
+            const abLen2 = abx * abx + aby * aby + abz * abz;
+            if (abLen2 > 1e-12) {
+                const apx = position.x - a.x;
+                const apy = position.y - a.y;
+                const apz = position.z - a.z;
+                t = (apx * abx + apy * aby + apz * abz) / abLen2;
+                t = Math.max(0, Math.min(1, t));
+            }
+        }
+
+        const midTop = this.topControlPoints[edgeIndex].clone().lerp(this.topControlPoints[nextIndex], t);
+        const midBottom = this.bottomControlPoints[edgeIndex].clone().lerp(this.bottomControlPoints[nextIndex], t);
+        if (position && isValidPosition(position)) {
+            if (polygonId === "top") {
+                midTop.copy(position);
+            } else {
+                midBottom.copy(position);
+            }
+        }
+
+        const insertIndex = edgeIndex + 1;
+        this.topControlPoints.splice(insertIndex, 0, midTop);
+        this.bottomControlPoints.splice(insertIndex, 0, midBottom);
+
+        const tsphere = new THREE.Mesh(this.sphereGeometry, this.createSphereMaterial(this.topColor));
+        this.add(tsphere);
+        this.topSpheres.splice(insertIndex, 0, tsphere);
+        this.attachSphereHandlers(tsphere, "top");
+
+        const bsphere = new THREE.Mesh(this.sphereGeometry, this.createSphereMaterial(this.bottomColor));
+        this.add(bsphere);
+        this.bottomSpheres.splice(insertIndex, 0, bsphere);
+        this.attachSphereHandlers(bsphere, "bottom");
+
+        const newTopEdge = this.createEdge(this.topColor, 2);
+        this.add(newTopEdge);
+        this.topEdges.splice(insertIndex, 0, newTopEdge);
+
+        const newBottomEdge = this.createEdge(this.bottomColor, 2);
+        this.add(newBottomEdge);
+        this.bottomEdges.splice(insertIndex, 0, newBottomEdge);
+
+        const newSideEdge = this.createEdge(this.sideColor, 1);
+        this.add(newSideEdge);
+        this.sideEdges.splice(insertIndex, 0, newSideEdge);
+
+        const newSideMesh = this.createSideMesh();
+        this.add(newSideMesh);
+        this.sideMeshes.splice(insertIndex, 0, newSideMesh);
+
+        const newTopLabel = createEdgeLabel();
+        this.add(newTopLabel);
+        this.topEdgeLabels.splice(insertIndex, 0, newTopLabel);
+        const newBottomLabel = createEdgeLabel();
+        this.add(newBottomLabel);
+        this.bottomEdgeLabels.splice(insertIndex, 0, newBottomLabel);
+        const newSideLabel = createEdgeLabel();
+        this.add(newSideLabel);
+        this.sideEdgeLabels.splice(insertIndex, 0, newSideLabel);
+
+        this.update();
+        this.dispatchEvent({ type: "vertex_inserted", cubature: this, polygonId: polygonId, index: insertIndex });
+        return true;
+    }
+
+    removeVertex(index) {
+        if (this.phase !== "edit") {
+            return false;
+        }
+        if (this.topControlPoints.length <= 3) {
+            return false;
+        }
+        if (index < 0 || index >= this.topControlPoints.length) {
+            return false;
+        }
+
+        this.topControlPoints.splice(index, 1);
+        this.bottomControlPoints.splice(index, 1);
+
+        const disposeMesh = (m, disposeGeometry) => {
+            this.remove(m);
+            if (disposeGeometry && m.geometry) {
+                m.geometry.dispose();
+            }
+            if (m.material) {
+                m.material.dispose();
+            }
+        };
+
+        disposeMesh(this.topSpheres.splice(index, 1)[0], false);
+        disposeMesh(this.bottomSpheres.splice(index, 1)[0], false);
+        disposeMesh(this.topEdges.splice(index, 1)[0], true);
+        disposeMesh(this.bottomEdges.splice(index, 1)[0], true);
+        disposeMesh(this.sideEdges.splice(index, 1)[0], true);
+        disposeMesh(this.sideMeshes.splice(index, 1)[0], true);
+        this.remove(this.topEdgeLabels.splice(index, 1)[0]);
+        this.remove(this.bottomEdgeLabels.splice(index, 1)[0]);
+        this.remove(this.sideEdgeLabels.splice(index, 1)[0]);
+
+        this.update();
+        this.dispatchEvent({ type: "vertex_removed", cubature: this, index: index });
+        return true;
+    }
+
+    getProjectedTop() {
+        if (!this.topPlane || this.topControlPoints.length < 3) {
+            return this.topControlPoints.map(p => p.clone());
+        }
+        return this.topControlPoints.map(p => {
+            const projected = projectOntoPlane(p, this.topPlane);
+            return new THREE.Vector3(projected.x, projected.y, projected.z);
+        });
+    }
+
+    getProjectedBottom() {
+        if (!this.bottomPlane || this.bottomControlPoints.length < 3) {
+            return this.bottomControlPoints.map(p => p.clone());
+        }
+        return this.bottomControlPoints.map(p => {
+            const projected = projectOntoPlane(p, this.bottomPlane);
+            return new THREE.Vector3(projected.x, projected.y, projected.z);
+        });
+    }
+
+    computeVolume() {
+        if (this.topControlPoints.length < 3 || this.bottomControlPoints.length < 3) {
+            return 0;
+        }
+        return prismVolume(this.topControlPoints, this.bottomControlPoints);
+    }
+
+    update() {
+        const N = this.topControlPoints.length;
+        const M = this.bottomControlPoints.length;
+
+        for (let i = 0; i < this.topSpheres.length; i++) {
+            this.topSpheres[i].position.copy(this.topControlPoints[i]);
+        }
+        for (let i = 0; i < this.bottomSpheres.length; i++) {
+            this.bottomSpheres[i].position.copy(this.bottomControlPoints[i]);
+        }
+
+        for (let i = 0; i < this.topEdges.length; i++) {
+            if (N < 2) {
+                this.topEdges[i].visible = false;
+                continue;
+            }
+            const next = (i + 1) % N;
+            const isClosing = (i === N - 1);
+            if (isClosing && this.phase === "insertion") {
+                this.topEdges[i].visible = false;
+                continue;
+            }
+            const a = this.topControlPoints[i];
+            const b = this.topControlPoints[next];
+            const edge = this.topEdges[i];
+            edge.visible = true;
+            edge.position.copy(a);
+            edge.geometry.setPositions([0, 0, 0, b.x - a.x, b.y - a.y, b.z - a.z]);
+            edge.computeLineDistances();
+            edge.geometry.computeBoundingSphere();
+        }
+
+        for (let i = 0; i < this.bottomEdges.length; i++) {
+            if (M < 2) {
+                this.bottomEdges[i].visible = false;
+                continue;
+            }
+            const next = (i + 1) % M;
+            const a = this.bottomControlPoints[i];
+            const b = this.bottomControlPoints[next];
+            const edge = this.bottomEdges[i];
+            edge.visible = true;
+            edge.position.copy(a);
+            edge.geometry.setPositions([0, 0, 0, b.x - a.x, b.y - a.y, b.z - a.z]);
+            edge.computeLineDistances();
+            edge.geometry.computeBoundingSphere();
+        }
+
+        for (let i = 0; i < this.sideEdges.length; i++) {
+            if (i >= M) {
+                this.sideEdges[i].visible = false;
+                continue;
+            }
+            const a = this.topControlPoints[i];
+            const b = this.bottomControlPoints[i];
+            const edge = this.sideEdges[i];
+            edge.visible = true;
+            edge.position.copy(a);
+            edge.geometry.setPositions([0, 0, 0, b.x - a.x, b.y - a.y, b.z - a.z]);
+            edge.computeLineDistances();
+            edge.geometry.computeBoundingSphere();
+        }
+
+        for (let i = 0; i < this.sideMeshes.length; i++) {
+            const mesh = this.sideMeshes[i];
+            if (i >= M || N < 2) {
+                mesh.visible = false;
+                continue;
+            }
+            const next = (i + 1) % N;
+            if (next >= M) {
+                mesh.visible = false;
+                continue;
+            }
+            const t0 = this.topControlPoints[i];
+            const t1 = this.topControlPoints[next];
+            const b0 = this.bottomControlPoints[i];
+            const b1 = this.bottomControlPoints[next];
+            mesh.visible = true;
+
+            const positions = mesh.geometry.attributes.position.array;
+            positions[0] = t0.x; positions[1] = t0.y; positions[2] = t0.z;
+            positions[3] = b0.x; positions[4] = b0.y; positions[5] = b0.z;
+            positions[6] = b1.x; positions[7] = b1.y; positions[8] = b1.z;
+            positions[9] = t0.x; positions[10] = t0.y; positions[11] = t0.z;
+            positions[12] = b1.x; positions[13] = b1.y; positions[14] = b1.z;
+            positions[15] = t1.x; positions[16] = t1.y; positions[17] = t1.z;
+            mesh.geometry.attributes.position.needsUpdate = true;
+            mesh.geometry.computeVertexNormals();
+            mesh.geometry.computeBoundingSphere();
+        }
+
+        if (N >= 3) {
+            this.topPlane = bestFitPlane(this.topControlPoints);
+            this.updatePolygonMesh(this.topMesh, this.topControlPoints);
+        } else {
+            this.topPlane = null;
+            this.topMesh.visible = false;
+        }
+        if (M >= 3) {
+            this.bottomPlane = bestFitPlane(this.bottomControlPoints);
+            this.updatePolygonMesh(this.bottomMesh, this.bottomControlPoints);
+        } else {
+            this.bottomPlane = null;
+            this.bottomMesh.visible = false;
+        }
+
+        const unitCode = (this.lengthUnit && this.lengthUnitDisplay)
+            ? this.lengthUnitDisplay.code
+            : "m";
+        const unitFactor = (this.lengthUnit && this.lengthUnitDisplay)
+            ? (this.lengthUnitDisplay.unitspermeter / this.lengthUnit.unitspermeter)
+            : 1;
+        const updateEdgeLabel = (label, a, b, visible) => {
+            if (!label) {
+                return;
+            }
+            if (!visible || !a || !b) {
+                label.visible = false;
+                return;
+            }
+            const dx = b.x - a.x;
+            const dy = b.y - a.y;
+            const dz = b.z - a.z;
+            const length = Math.sqrt(dx * dx + dy * dy + dz * dz) * unitFactor;
+            label.position.set((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2);
+            label.setText(formatLengthCs(length, unitCode));
+            label.visible = this.showEdgeLengths;
+        };
+
+        for (let i = 0; i < this.topEdgeLabels.length; i++) {
+            if (N < 2 || i >= N) {
+                updateEdgeLabel(this.topEdgeLabels[i], null, null, false);
+                continue;
+            }
+            const next = (i + 1) % N;
+            const isClosing = (i === N - 1);
+            const visible = !(isClosing && this.phase === "insertion");
+            updateEdgeLabel(this.topEdgeLabels[i], this.topControlPoints[i], this.topControlPoints[next], visible);
+        }
+        for (let i = 0; i < this.bottomEdgeLabels.length; i++) {
+            if (M < 2 || i >= M) {
+                updateEdgeLabel(this.bottomEdgeLabels[i], null, null, false);
+                continue;
+            }
+            const next = (i + 1) % M;
+            updateEdgeLabel(this.bottomEdgeLabels[i], this.bottomControlPoints[i], this.bottomControlPoints[next], true);
+        }
+        for (let i = 0; i < this.sideEdgeLabels.length; i++) {
+            if (i >= M || i >= N) {
+                updateEdgeLabel(this.sideEdgeLabels[i], null, null, false);
+                continue;
+            }
+            updateEdgeLabel(this.sideEdgeLabels[i], this.topControlPoints[i], this.bottomControlPoints[i], true);
+        }
+
+        if (this.phase === "insertion" || N < 3 || M < 3) {
+            this.volumeLabel.visible = false;
+        } else {
+            const topCentroid = computeCentroid(this.topControlPoints);
+            const bottomCentroid = computeCentroid(this.bottomControlPoints);
+            const labelPos = new THREE.Vector3(
+                (topCentroid.x + bottomCentroid.x) / 2,
+                (topCentroid.y + bottomCentroid.y) / 2,
+                (topCentroid.z + bottomCentroid.z) / 2
+            );
+            this.volumeLabel.position.copy(labelPos);
+
+            let volume = this.computeVolume();
+            let suffix = "m";
+            if (this.lengthUnit && this.lengthUnitDisplay) {
+                volume = volume / Math.pow(this.lengthUnit.unitspermeter, 3) * Math.pow(this.lengthUnitDisplay.unitspermeter, 3);
+                suffix = this.lengthUnitDisplay.code;
+            }
+            const formatted = volume.toLocaleString("cs-CZ", {
+                minimumFractionDigits: 3,
+                maximumFractionDigits: 3
+            });
+            this.volumeLabel.setText(formatted + " " + suffix + "³");
+            this.volumeLabel.visible = true;
+        }
+    }
+
+    findOctreeNodeMinZAt(viewer, x, y) {
+        let result = null;
+        for (const pc of viewer.scene.pointclouds) {
+            if (!pc.root || !pc.root.geometryNode) {
+                continue;
+            }
+            const stack = [pc.root];
+            let bestSpacing = Infinity;
+            let bestZ = null;
+            while (stack.length > 0) {
+                const node = stack.pop();
+                if (!node.geometryNode) {
+                    continue;
+                }
+                const box = node.getBoundingBox();
+                const minX = box.min.x + pc.position.x;
+                const maxX = box.max.x + pc.position.x;
+                const minY = box.min.y + pc.position.y;
+                const maxY = box.max.y + pc.position.y;
+                if (x < minX || x > maxX || y < minY || y > maxY) {
+                    continue;
+                }
+                const nodeMinZ = node.geometryNode.boundingBox.min.z + pc.position.z;
+                if (node.geometryNode.spacing <= bestSpacing) {
+                    bestZ = nodeMinZ;
+                    bestSpacing = node.geometryNode.spacing;
+                }
+                for (const idx of Object.keys(node.children)) {
+                    const child = node.children[idx];
+                    if (child && child.geometryNode) {
+                        stack.push(child);
+                    }
+                }
+            }
+            if (bestZ !== null && (result === null || bestZ < result)) {
+                result = bestZ;
+            }
+        }
+        return result;
+    }
+
+    pickPointCloudAt(viewer, worldPos) {
+        const camera = viewer.scene.getActiveCamera();
+        const renderer = viewer.renderer;
+        if (!renderer || !renderer.domElement) {
+            return null;
+        }
+        const projected = worldPos.clone().project(camera);
+        if (!Number.isFinite(projected.x) || !Number.isFinite(projected.y)) {
+            return null;
+        }
+        const pixel = new THREE.Vector2(
+            (projected.x + 1) * renderer.domElement.clientWidth / 2,
+            (-projected.y + 1) * renderer.domElement.clientHeight / 2
+        );
+        const intersection = Utils.getMousePointCloudIntersection(
+            pixel,
+            camera,
+            viewer,
+            viewer.scene.pointclouds,
+            { pickClipped: true }
+        );
+        if (intersection && intersection.distance !== null && intersection.location) {
+            return intersection.location;
+        }
+        return null;
+    }
+
+    findClosestPointcloudPointToLine(viewer, lineStart, lineEnd, callerVertex, xyThreshold) {
+        const lineDir = new THREE.Vector3().subVectors(lineEnd, lineStart);
+        const lineLen = lineDir.length();
+        if (lineLen < 1e-6) {
+            return null;
+        }
+        let bestPoint = null;
+        let bestDistToCaller = Infinity;
+
+        const tempLocal = new THREE.Vector3();
+        const tempWorld = new THREE.Vector3();
+        const tempAP = new THREE.Vector3();
+        const tempCross = new THREE.Vector3();
+        const nodeBox = new THREE.Box3();
+
+        for (const pc of viewer.scene.pointclouds) {
+            const nodes = pc.visibleNodes || [];
+            for (const node of nodes) {
+                const sceneNode = node.sceneNode;
+                if (!sceneNode || !sceneNode.geometry) {
+                    continue;
+                }
+                const positions = sceneNode.geometry.attributes.position;
+                if (!positions) {
+                    continue;
+                }
+
+                const localBox = node.getBoundingBox();
+                nodeBox.min.copy(localBox.min).add(pc.position);
+                nodeBox.max.copy(localBox.max).add(pc.position);
+                const cx = Math.max(nodeBox.min.x, Math.min(nodeBox.max.x, lineStart.x));
+                const cy = Math.max(nodeBox.min.y, Math.min(nodeBox.max.y, lineStart.y));
+                const ndx = cx - lineStart.x;
+                const ndy = cy - lineStart.y;
+                if (Math.sqrt(ndx * ndx + ndy * ndy) > xyThreshold + 0.5) {
+                    continue;
+                }
+
+                const matrixWorld = sceneNode.matrixWorld;
+                const count = positions.count;
+                for (let i = 0; i < count; i++) {
+                    tempLocal.set(positions.getX(i), positions.getY(i), positions.getZ(i));
+                    tempWorld.copy(tempLocal).applyMatrix4(matrixWorld);
+
+                    tempAP.subVectors(tempWorld, lineStart);
+                    tempCross.crossVectors(tempAP, lineDir);
+                    const distToLine = tempCross.length() / lineLen;
+                    if (distToLine > xyThreshold) {
+                        continue;
+                    }
+
+                    const distToCaller = tempWorld.distanceTo(callerVertex);
+                    if (distToCaller < bestDistToCaller) {
+                        bestDistToCaller = distToCaller;
+                        bestPoint = tempWorld.clone();
+                    }
+                }
+            }
+        }
+
+        return bestPoint;
+    }
+
+    snapVertexToTerrain(viewer, polygonId, index) {
+        if (this.phase === "insertion") {
+            return false;
+        }
+        if (this.topControlPoints.length < 3 || this.bottomControlPoints.length < 3) {
+            return false;
+        }
+        if (index < 0 || index >= this.topControlPoints.length) {
+            return false;
+        }
+        const top = this.topControlPoints[index];
+        const bottom = this.bottomControlPoints[index];
+        const xyThreshold = this.computeSnapThreshold(viewer);
+        const callerVertex = polygonId === "top" ? top : bottom;
+        const target = polygonId === "top" ? top : bottom;
+        const picked = this.findClosestPointcloudPointToLine(viewer, top, bottom, callerVertex, xyThreshold);
+        if (picked) {
+            target.z = picked.z;
+            this.update();
+            this.dispatchEvent({ type: "snapped_to_terrain", cubature: this, polygonId: polygonId, index: index });
+            return true;
+        }
+        if (polygonId === "bottom") {
+            const nodeZ = this.findOctreeNodeMinZAt(viewer, top.x, top.y);
+            if (nodeZ !== null && nodeZ < top.z) {
+                target.z = nodeZ;
+                this.update();
+                this.dispatchEvent({ type: "snapped_to_terrain", cubature: this, polygonId: polygonId, index: index });
+                return true;
+            }
+        }
+        return false;
+    }
+
+    snapBottomToTerrain(viewer) {
+        if (this.phase === "insertion") {
+            return false;
+        }
+        if (this.topControlPoints.length < 3 || this.bottomControlPoints.length < 3) {
+            return false;
+        }
+        let anySnapped = false;
+        for (let i = 0; i < this.topControlPoints.length; i++) {
+            if (this.snapVertexToTerrain(viewer, "bottom", i)) {
+                anySnapped = true;
+            }
+        }
+        return anySnapped;
+    }
+
+    snapTopToTerrain(viewer) {
+        if (this.phase === "insertion") {
+            return false;
+        }
+        if (this.topControlPoints.length < 3 || this.bottomControlPoints.length < 3) {
+            return false;
+        }
+        let anySnapped = false;
+        for (let i = 0; i < this.topControlPoints.length; i++) {
+            if (this.snapVertexToTerrain(viewer, "top", i)) {
+                anySnapped = true;
+            }
+        }
+        return anySnapped;
+    }
+
+    computeSnapThreshold(viewer) {
+        let maxSpacing = 0;
+        for (const pc of viewer.scene.pointclouds) {
+            if (pc.pcoGeometry && pc.pcoGeometry.spacing) {
+                if (pc.pcoGeometry.spacing > maxSpacing) {
+                    maxSpacing = pc.pcoGeometry.spacing;
+                }
+            }
+        }
+        const dynamic = maxSpacing > 0 ? maxSpacing * 4 : 0.5;
+        return Math.max(0.5, Math.min(5, dynamic));
+    }
+
+    computeSnapPreviewPositions(viewer) {
+        if (this.topControlPoints.length < 3 || this.bottomControlPoints.length < 3) {
+            return [];
+        }
+        const xyThreshold = this.computeSnapThreshold(viewer);
+        const result = [];
+        for (let i = 0; i < this.topControlPoints.length; i++) {
+            const top = this.topControlPoints[i];
+            const bottom = this.bottomControlPoints[i];
+            const picked = this.findClosestPointcloudPointToLine(viewer, top, bottom, bottom, xyThreshold);
+            if (picked) {
+                result.push(picked);
+                continue;
+            }
+            const nodeZ = this.findOctreeNodeMinZAt(viewer, top.x, top.y);
+            if (nodeZ !== null && nodeZ < top.z) {
+                result.push(new THREE.Vector3(top.x, top.y, nodeZ));
+                continue;
+            }
+            result.push(null);
+        }
+        return result;
+    }
+
+    raycast(raycaster, intersects) {
+        for (const s of this.topSpheres) {
+            s.raycast(raycaster, intersects);
+        }
+        for (const s of this.bottomSpheres) {
+            s.raycast(raycaster, intersects);
+        }
+        for (let i = 0; i < intersects.length; i++) {
+            intersects[i].distance = raycaster.ray.origin.distanceTo(intersects[i].point);
+        }
+        intersects.sort((a, b) => a.distance - b.distance);
+    }
+
+    pickEdge(raycaster, threshold) {
+        const limit = threshold !== undefined ? threshold : 0.5;
+        const ray = raycaster.ray;
+        const ro = ray.origin;
+        const rd = ray.direction;
+        let bestHit = null;
+        let bestDist = Infinity;
+
+        const processEdges = (controlPoints, edges, polygonId) => {
+            const N = controlPoints.length;
+            for (let i = 0; i < edges.length; i++) {
+                if (!edges[i].visible) {
+                    continue;
+                }
+                const next = (i + 1) % N;
+                if (next >= controlPoints.length) {
+                    continue;
+                }
+                const a = controlPoints[i];
+                const b = controlPoints[next];
+                const sx = b.x - a.x;
+                const sy = b.y - a.y;
+                const sz = b.z - a.z;
+                const segLen2 = sx * sx + sy * sy + sz * sz;
+                if (segLen2 < 1e-12) {
+                    continue;
+                }
+                const wx = ro.x - a.x;
+                const wy = ro.y - a.y;
+                const wz = ro.z - a.z;
+                const aDot = rd.x * rd.x + rd.y * rd.y + rd.z * rd.z;
+                const bDot = rd.x * sx + rd.y * sy + rd.z * sz;
+                const cDot = segLen2;
+                const dDot = rd.x * wx + rd.y * wy + rd.z * wz;
+                const eDot = sx * wx + sy * wy + sz * wz;
+                const denom = aDot * cDot - bDot * bDot;
+                let tRay;
+                let tParam;
+                if (Math.abs(denom) < 1e-9) {
+                    tRay = 0;
+                    tParam = eDot / cDot;
+                } else {
+                    tRay = (bDot * eDot - cDot * dDot) / denom;
+                    tParam = (aDot * eDot - bDot * dDot) / denom;
+                }
+                if (tRay < 0) {
+                    continue;
+                }
+                tParam = Math.max(0, Math.min(1, tParam));
+                const closestSegX = a.x + sx * tParam;
+                const closestSegY = a.y + sy * tParam;
+                const closestSegZ = a.z + sz * tParam;
+                const closestRayX = ro.x + rd.x * tRay;
+                const closestRayY = ro.y + rd.y * tRay;
+                const closestRayZ = ro.z + rd.z * tRay;
+                const ddx = closestSegX - closestRayX;
+                const ddy = closestSegY - closestRayY;
+                const ddz = closestSegZ - closestRayZ;
+                const distance = Math.sqrt(ddx * ddx + ddy * ddy + ddz * ddz);
+                if (distance <= limit && distance < bestDist) {
+                    bestDist = distance;
+                    bestHit = {
+                        polygonId,
+                        edgeIndex: i,
+                        point: new THREE.Vector3(closestSegX, closestSegY, closestSegZ),
+                        distance
+                    };
+                }
+            }
+        };
+
+        processEdges(this.topControlPoints, this.topEdges, "top");
+        processEdges(this.bottomControlPoints, this.bottomEdges, "bottom");
+
+        return bestHit;
+    }
+
+    pickMarker(raycaster) {
+        const candidates = [];
+        const collect = (spheres, polygonId) => {
+            for (let i = 0; i < spheres.length; i++) {
+                const s = spheres[i];
+                const intersects = [];
+                s.raycast(raycaster, intersects);
+                if (intersects.length > 0) {
+                    candidates.push({
+                        distance: intersects[0].distance,
+                        polygonId: polygonId,
+                        index: i,
+                        point: intersects[0].point.clone()
+                    });
+                }
+            }
+        };
+        collect(this.topSpheres, "top");
+        collect(this.bottomSpheres, "bottom");
+        if (candidates.length === 0) {
+            return null;
+        }
+        candidates.sort((a, b) => a.distance - b.distance);
+        return candidates[0];
+    }
+}
