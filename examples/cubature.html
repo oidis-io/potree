@@ -1,0 +1,112 @@
+<!--
+
+ Copyright 2026 Oidis
+
+ SPDX-License-Identifier: BSD-2-Clause
+ The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
+ or at https://spdx.org/licenses/BSD-2-Clause.html#licenseText
+
+ Cubature (2-polygon volume measurement) demo.
+ Default cloud: lion_takanawa_ept_laz (in-repo EPT/LAZ).
+ Press K (or use the Cubature button in the Tools section of the sidebar) to start measuring.
+
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Potree — Cubature demo (2 polygons)</title>
+
+    <link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
+    <link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
+    <link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
+    <link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
+    <link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
+</head>
+
+<body>
+    <script src="../libs/jquery/jquery-3.1.1.min.js"></script>
+    <script src="../libs/spectrum/spectrum.js"></script>
+    <script src="../libs/jquery-ui/jquery-ui.min.js"></script>
+    <script src="../libs/other/BinaryHeap.js"></script>
+    <script src="../libs/tween/tween.min.js"></script>
+    <script src="../libs/d3/d3.js"></script>
+    <script src="../libs/proj4/proj4.js"></script>
+    <script src="../libs/openlayers3/ol.js"></script>
+    <script src="../libs/i18next/i18next.js"></script>
+    <script src="../libs/jstree/jstree.js"></script>
+    <script src="../build/potree/potree.js"></script>
+    <script src="../libs/plasio/js/laslaz.js"></script>
+    <script src="../libs/copc/index.js"></script>
+
+    <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px;">
+        <div id="potree_render_area" style="background-image: url('../build/potree/resources/images/background.jpg');"></div>
+        <div id="potree_sidebar_container"></div>
+    </div>
+
+    <script type="module">
+        import * as THREE from "../libs/three.js/build/three.module.js";
+
+        window.potreeViewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+        potreeViewer.setEDLEnabled(true);
+        potreeViewer.setFOV(60);
+        potreeViewer.setPointBudget(2_000_000);
+        potreeViewer.setMinNodeSize(50);
+        potreeViewer.loadSettingsFromURL();
+        potreeViewer.setBackground("gradient");
+        potreeViewer.useHQ = true;
+
+        potreeViewer.setDescription(`
+            <b>Cubature demo</b> &mdash; 2-polygonov&yacute; v&yacute;po&ccaron;et objemu.<br>
+            <ol style="margin: 4px 0 0 14px; padding: 0; line-height: 1.4em;">
+              <li>Stiskn&ecaron;te <b>K</b> nebo tla&ccaron;&iacute;tko <b>Kubatura</b> v sidebaru.</li>
+              <li>Levým tla&ccaron;&iacute;tkem klikejte body horn&iacute;ho polygonu (alespo&ntilde; 3).</li>
+              <li>Prav&yacute;m tla&ccaron;&iacute;tkem / Enter / Esc polygon uzav&rcaron;ete.</li>
+              <li>Pohybem my&scaron;i nahoru/dol&uacute; nastavte hloubku (<b>T</b> = p&rcaron;esn&aacute; hodnota, <b>S</b> = p&rcaron;ichytit dno k ter&eacute;nu).</li>
+              <li>Lev&yacute;m kliknut&iacute;m hloubku potvr&dcaron;te.</li>
+              <li>V Edit modu lze tahat markery, klik na hranu vlo&zcaron;&iacute; vrchol, <b>Delete</b> sma&zcaron;e vrchol, <b>S</b> p&rcaron;ichyt&iacute; dno k ter&eacute;nu, prav&yacute; klik otev&rcaron;e menu.</li>
+            </ol>`);
+
+        potreeViewer.loadGUI(() => {
+            potreeViewer.setLanguage("en");
+            $("#menu_appearance").next().show();
+            $("#menu_tools").next().show();
+            $("#menu_scene").next().show();
+            potreeViewer.toggleSidebar();
+        });
+
+        Potree.loadPointCloud("../pointclouds/lion_takanawa_ept_laz/ept.json", "lion_takanawa", function (e) {
+            const scene = potreeViewer.scene;
+            scene.addPointCloud(e.pointcloud);
+
+            const bb = e.pointcloud.boundingBox;
+            const center = bb.getCenter(new THREE.Vector3());
+            const sizeMax = Math.max(bb.max.x - bb.min.x, bb.max.y - bb.min.y, bb.max.z - bb.min.z);
+            const dist = sizeMax * 1.8;
+            scene.view.setView(
+                [center.x + dist * 0.5, center.y - dist * 0.5, center.z + dist * 0.35],
+                [center.x, center.y, center.z]
+            );
+
+            const material = e.pointcloud.material;
+            material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+            material.size = 0.8;
+            material.elevationRange = [bb.min.z, bb.max.z];
+            material.activeAttributeName = "rgba";
+        });
+
+        window.addEventListener("keydown", (e) => {
+            if ((e.key === "k" || e.key === "K") && !e.repeat) {
+                const target = e.target;
+                if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA")) {
+                    return;
+                }
+                potreeViewer.cubatureTool.startInsertion();
+            }
+        });
+    </script>
+</body>
+</html>
