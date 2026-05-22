@@ -76,6 +76,13 @@ export class CubatureTool extends EventDispatcher {
         this.addEventListener("start_inserting_cubature", () => {
             this.viewer.dispatchEvent({ type: "cancel_insertions" });
         });
+
+        this.onCancelInsertions = () => {
+            if (this.activeCubature) {
+                this.cancelCubature(this.activeCubature);
+            }
+        };
+        viewer.addEventListener("cancel_insertions", this.onCancelInsertions);
     }
 
     onSceneChange(e) {
@@ -207,6 +214,7 @@ export class CubatureTool extends EventDispatcher {
             }
         }
         if (!cubature.closeTopPolygon()) {
+            this.cancelCubature(cubature);
             return;
         }
         this.detachAll();
