@@ -192,10 +192,23 @@ export class CubatureTool extends EventDispatcher {
     }
 
     finishInsertion(cubature) {
+        const N = cubature.topControlPoints.length;
+        if (N >= 2) {
+            const last = cubature.topControlPoints[N - 1];
+            const prev = cubature.topControlPoints[N - 2];
+            const dx = last.x - prev.x;
+            const dy = last.y - prev.y;
+            const dz = last.z - prev.z;
+            const duplicate = Math.sqrt(dx * dx + dy * dy + dz * dz) < 0.01;
+            if (duplicate) {
+                cubature.removeTopMarker(N - 1);
+            }
+        }
         if (!cubature.closeTopPolygon()) {
             return;
         }
         this.detachAll();
+        this.cancelInputHandlerDrag();
         this.renderer.domElement.style.cursor = "ns-resize";
         this.attachPushPullListeners(cubature);
     }
@@ -331,8 +344,13 @@ export class CubatureTool extends EventDispatcher {
         cubature.commitPushPull();
         this.detachAll();
         this.clearSnapHints();
+        this.cancelInputHandlerDrag();
         this.renderer.domElement.style.cursor = "";
-        this.attachEditListeners(cubature);
+        setTimeout(() => {
+            if (this.activeCubature === cubature) {
+                this.attachEditListeners(cubature);
+            }
+        }, 0);
     }
 
     cancelCubature(cubature) {
@@ -364,22 +382,6 @@ export class CubatureTool extends EventDispatcher {
                 this.renderer.domElement.style.cursor = "crosshair";
             } else {
                 this.renderer.domElement.style.cursor = "";
-            }
-        };
-        const onMouseUp = (e) => {
-            if (e.button !== THREE.MOUSE.LEFT) {
-                return;
-            }
-            if (this.hoveredMarker) {
-                return;
-            }
-            const raycaster = this.getRaycaster();
-            const hit = cubature.pickEdge(raycaster, this.computePickThreshold(cubature));
-            if (hit) {
-                e.preventDefault();
-                e.stopPropagation();
-                cubature.insertVertexAt(hit.polygonId, hit.edgeIndex, hit.point);
-                this.hoveredEdge = null;
             }
         };
         const onMouseDown = (e) => {
@@ -431,10 +433,6 @@ export class CubatureTool extends EventDispatcher {
                     {
                         label: "Přichytit dno k terénu (S)",
                         action: () => cubature.snapBottomToTerrain(this.viewer)
-                    },
-                    {
-                        label: "Smazat kubaturu",
-                        action: () => this.cancelCubature(cubature)
                     }
                 ]);
             }
@@ -457,7 +455,6 @@ export class CubatureTool extends EventDispatcher {
         };
 
         this.attach("mousemove", onMouseMove);
-        this.attach("mouseup", onMouseUp);
         this.attach("mousedown", onMouseDown);
         this.attach("contextmenu", onContextMenu);
         this.attach("keydown", onKeyDown);
