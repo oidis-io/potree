@@ -81,13 +81,21 @@ export function prismVolume(topVerts, bottomVerts) {
         return 0;
     }
 
+    let signedXY = 0;
+    for (let i = 0; i < n; i++) {
+        const j = (i + 1) % n;
+        signedXY += topVerts[i].x * topVerts[j].y - topVerts[j].x * topVerts[i].y;
+    }
+    const topOrdered = signedXY < 0 ? topVerts.slice().reverse() : topVerts;
+    const botOrdered = signedXY < 0 ? bottomVerts.slice().reverse() : bottomVerts;
+
     let cx = 0, cy = 0, cz = 0;
-    for (const p of topVerts) {
+    for (const p of topOrdered) {
         cx += p.x;
         cy += p.y;
         cz += p.z;
     }
-    for (const p of bottomVerts) {
+    for (const p of botOrdered) {
         cx += p.x;
         cy += p.y;
         cz += p.z;
@@ -97,8 +105,8 @@ export function prismVolume(topVerts, bottomVerts) {
     cy /= total;
     cz /= total;
 
-    const top = topVerts.map(p => ({ x: p.x - cx, y: p.y - cy, z: p.z - cz }));
-    const bot = bottomVerts.map(p => ({ x: p.x - cx, y: p.y - cy, z: p.z - cz }));
+    const top = topOrdered.map(p => ({ x: p.x - cx, y: p.y - cy, z: p.z - cz }));
+    const bot = botOrdered.map(p => ({ x: p.x - cx, y: p.y - cy, z: p.z - cz }));
 
     const triangles = [];
 

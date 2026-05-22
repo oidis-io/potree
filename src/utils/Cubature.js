@@ -710,8 +710,8 @@ export class Cubature extends THREE.Object3D {
                 suffix = this.lengthUnitDisplay.code;
             }
             const formatted = volume.toLocaleString("cs-CZ", {
-                minimumFractionDigits: 3,
-                maximumFractionDigits: 3
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
             });
             this.volumeLabel.setText(formatted + " " + suffix + "³");
             this.volumeLabel.visible = true;
