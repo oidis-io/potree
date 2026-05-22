@@ -139,6 +139,8 @@ export class CubatureTool extends EventDispatcher {
         if (this.activeCubature) {
             this.cancelCubature(this.activeCubature);
         }
+        this.detachAll();
+        this.clearSnapHints();
 
         const cubature = new Cubature({
             topColor: args.topColor,
@@ -346,11 +348,8 @@ export class CubatureTool extends EventDispatcher {
         this.clearSnapHints();
         this.cancelInputHandlerDrag();
         this.renderer.domElement.style.cursor = "";
-        setTimeout(() => {
-            if (this.activeCubature === cubature) {
-                this.attachEditListeners(cubature);
-            }
-        }, 0);
+        this.activeCubature = null;
+        this.attachEditListeners(cubature);
     }
 
     cancelCubature(cubature) {
