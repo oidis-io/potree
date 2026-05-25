@@ -64,6 +64,7 @@ export class Sidebar {
         this.drawingTool = viewer.drawingTool;
         this.profileTool = viewer.profileTool;
         this.volumeTool = viewer.volumeTool;
+        this.cubatureTool = viewer.cubatureTool;
 
         this.dom = $("#sidebar_root");
     }
@@ -309,6 +310,14 @@ export class Sidebar {
                 let jsonNode = measurementsRoot.children.find(child => child.data.uuid === volume.uuid);
                 $.jstree.reference(jsonNode.id).deselect_all();
                 $.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+            }
+        ));
+
+        elToolbar.append(this.createToolIcon(
+            PotreeConfig.resourcePath + "/icons/volume.svg",
+            "[title]Kubatura (2-polygon)",
+            () => {
+                this.cubatureTool.startInsertion();
             }
         ));
 

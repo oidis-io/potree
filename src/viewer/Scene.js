@@ -40,6 +40,7 @@ export class Scene extends EventDispatcher {
         this.drawings = [];
         this.profiles = [];
         this.volumes = [];
+        this.cubatures = [];
         this.polygonClipVolumes = [];
         this.cameraAnimations = [];
         this.orientedImages = [];
@@ -309,6 +310,35 @@ export class Scene extends EventDispatcher {
         });
     }
 
+    addCubature(cubature) {
+        cubature.lengthUnit = this.lengthUnit;
+        cubature.lengthUnitDisplay = this.lengthUnitDisplay;
+        this.cubatures.push(cubature);
+        this.dispatchEvent({
+            "type": "cubature_added",
+            "scene": this,
+            "cubature": cubature
+        });
+    }
+
+    removeCubature(cubature) {
+        const index = this.cubatures.indexOf(cubature);
+        if (index > -1) {
+            this.cubatures.splice(index, 1);
+            this.dispatchEvent({
+                "type": "cubature_removed",
+                "scene": this,
+                "cubature": cubature
+            });
+        }
+    }
+
+    removeAllCubatures() {
+        while (this.cubatures.length > 0) {
+            this.removeCubature(this.cubatures[0]);
+        }
+    }
+
     removeProfile(profile) {
         let index = this.profiles.indexOf(profile);
         if (index > -1) {
@@ -333,6 +363,8 @@ export class Scene extends EventDispatcher {
         while (this.volumes.length > 0) {
             this.removeVolume(this.volumes[0]);
         }
+
+        this.removeAllCubatures();
     }
 
     removeAllClipVolumes() {
