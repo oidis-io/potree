@@ -663,7 +663,9 @@ export class ProfileControl extends EventDispatcher {
         if (this.autoFitEnabled) {
             this.scale.set(1, 1, 1);
         }
-        this.pickSphere.visible = false;
+        if (this.pickSphere) {
+            this.pickSphere.visible = false;
+        }
 
         this.render();
     }
