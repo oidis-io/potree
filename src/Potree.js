@@ -37,6 +37,9 @@ import { Profile } from "./utils/Profile.js";
 import { Measure } from "./utils/Measure.js";
 import { Annotation } from "./Annotation.js";
 import { BoxVolume, Volume } from "./utils/Volume.js";
+import { Cubature } from "./utils/Cubature.js";
+import { CubatureTool } from "./utils/CubatureTool.js";
+import { bestFitPlane, projectOntoPlane, prismVolume } from "./utils/CubatureMath.js";
 import { Scene } from "./viewer/Scene.js";
 import { Images360Loader } from "./modules/Images360/Images360.js";
 import { AnimationPath } from "./AnimationPath.js";
@@ -75,6 +78,9 @@ const Potree = {
     SpotLightHelper,
     ShapefileLoader,
     Volume,
+    Cubature,
+    CubatureTool,
+    CubatureMath: { bestFitPlane, projectOntoPlane, prismVolume },
     pointBudget: PotreeConfig.pointBudget,
     framenumber: PotreeConfig.framenumber,
     numNodesLoading: PotreeConfig.numNodesLoading,
