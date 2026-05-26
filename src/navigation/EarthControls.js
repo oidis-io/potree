@@ -32,6 +32,8 @@ export class EarthControls extends EventDispatcher {
         this.zoomDelta = new THREE.Vector3();
         this.camStart = null;
 
+        this.doubleClickZoomEnabled = true;
+
         this.tweens = [];
 
         {
@@ -153,7 +155,9 @@ export class EarthControls extends EventDispatcher {
         };
 
         let dblclick = (e) => {
-            this.zoomToLocation(e.mouse);
+            if (this.doubleClickZoomEnabled) {
+                this.zoomToLocation(e.mouse);
+            }
         };
 
         this.addEventListener("drag", drag);

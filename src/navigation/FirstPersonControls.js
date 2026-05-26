@@ -56,6 +56,8 @@ export class FirstPersonControls extends EventDispatcher {
         this.translationDelta = new THREE.Vector3(0, 0, 0);
         this.translationWorldDelta = new THREE.Vector3(0, 0, 0);
 
+        this.doubleClickZoomEnabled = true;
+
         this.tweens = [];
 
         let drag = (e) => {
@@ -104,7 +106,9 @@ export class FirstPersonControls extends EventDispatcher {
         };
 
         let dblclick = (e) => {
-            this.zoomToLocation(e.mouse);
+            if (this.doubleClickZoomEnabled) {
+                this.zoomToLocation(e.mouse);
+            }
         };
 
         this.addEventListener("drag", drag);
