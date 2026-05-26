@@ -43,7 +43,14 @@ export class CubatureTool extends EventDispatcher {
         this.contextMenuEl = this.createContextMenuEl();
 
         this.globalContextMenuHandler = (e) => {
-            if (this.activeCubature) {
+            const canvas = this.viewer.renderer.domElement;
+            let insideCanvasArea = false;
+            if (canvas) {
+                const rect = canvas.getBoundingClientRect();
+                insideCanvasArea = e.clientX >= rect.left && e.clientX <= rect.right &&
+                    e.clientY >= rect.top && e.clientY <= rect.bottom;
+            }
+            if (this.activeCubature || insideCanvasArea) {
                 e.preventDefault();
                 e.stopPropagation();
             }
@@ -528,9 +535,21 @@ export class CubatureTool extends EventDispatcher {
             });
             el.appendChild(row);
         }
-        el.style.left = x + "px";
-        el.style.top = y + "px";
+        el.style.left = "0px";
+        el.style.top = "0px";
+        el.style.visibility = "hidden";
         el.style.display = "block";
+
+        const rect = el.getBoundingClientRect();
+        const padding = 4;
+        const maxLeft = Math.max(0, window.innerWidth - rect.width - padding);
+        const maxTop = Math.max(0, window.innerHeight - rect.height - padding);
+        const clampedX = Math.min(Math.max(0, x), maxLeft);
+        const clampedY = Math.min(Math.max(0, y), maxTop);
+
+        el.style.left = clampedX + "px";
+        el.style.top = clampedY + "px";
+        el.style.visibility = "";
 
         const onOutside = (e) => {
             if (!el.contains(e.target)) {
