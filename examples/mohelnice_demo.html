@@ -1,0 +1,204 @@
+<!--
+
+ Copyright 2026 Oidis
+
+ SPDX-License-Identifier: BSD-2-Clause
+ The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
+ or at https://spdx.org/licenses/BSD-2-Clause.html#licenseText
+
+ Interactive Mohelnice demo for JGW + Cesium OSM + 3D point cloud combinations.
+ Toggle layers via buttons to verify event-driven sync between JGW Z position,
+ Cesium geoid offset, and point cloud add/remove. EPSG:5514 / Krovak.
+ Data symlinked from ~/Downloads/0Ukázkové data/Mohelnice_propoj_2/
+ to examples/data/mohelnice/ (gitignored).
+
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Mohelnice - interactive demo (JGW + OSM + 3D)</title>
+
+    <link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
+    <link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
+    <link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
+    <link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
+    <link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
+    <link rel="stylesheet" type="text/css" href="../libs/Cesium/Widgets/CesiumWidget/CesiumWidget.css">
+    <style>
+        #demoPanel {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 10000;
+            background: rgba(0, 0, 0, 0.75);
+            color: white;
+            padding: 12px;
+            font: 12px/1.4 monospace;
+            border-radius: 4px;
+            max-width: 380px;
+        }
+        #demoPanel button {
+            display: block;
+            width: 100%;
+            margin: 4px 0;
+            padding: 6px 10px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        #demoPanel pre { margin: 8px 0 0; color: #afa; font-size: 11px; }
+        #demoPanel h3 { margin: 0 0 6px; font-size: 13px; color: #fc6; }
+    </style>
+</head>
+
+<body>
+    <script src="../libs/jquery/jquery-3.1.1.min.js"></script>
+    <script src="../libs/spectrum/spectrum.js"></script>
+    <script src="../libs/jquery-ui/jquery-ui.min.js"></script>
+    <script src="../libs/other/BinaryHeap.js"></script>
+    <script src="../libs/tween/tween.min.js"></script>
+    <script src="../libs/d3/d3.js"></script>
+    <script src="../libs/proj4/proj4.js"></script>
+    <script src="../libs/openlayers3/ol.js"></script>
+    <script src="../libs/i18next/i18next.js"></script>
+    <script src="../libs/jstree/jstree.js"></script>
+    <script src="../build/potree/potree.js"></script>
+    <script src="../libs/plasio/js/laslaz.js"></script>
+    <script src="../libs/Cesium/Cesium.js"></script>
+    <script src="../libs/copc/index.js"></script>
+
+    <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px;">
+        <div id="potree_render_area" style="background-image: url('../build/potree/resources/images/background.jpg');">
+            <div id="cesiumContainer" style="position: absolute; inset: 0; background-color:#102030"></div>
+        </div>
+        <div id="potree_sidebar_container"></div>
+    </div>
+
+    <div id="demoPanel">
+        <h3>Mohelnice interactive demo</h3>
+        <button id="togglePcBtn" disabled>Loading JGW...</button>
+        <button id="toggleJgwBtn">Hide JGW</button>
+        <button id="toggleOsmBtn">Hide OSM</button>
+        <button id="resetCamBtn">Reset camera (fitToScreen)</button>
+        <pre id="stateLog">(waiting for JGW load)</pre>
+    </div>
+
+    <script type="module">
+        import * as THREE from "../libs/three.js/build/three.module.js";
+
+        window.potreeViewer = new Potree.Viewer(document.getElementById("potree_render_area"), {
+            cesiumRenderArea: document.getElementById("cesiumContainer")
+        });
+        potreeViewer.setEDLEnabled(true);
+        potreeViewer.setFOV(60);
+        potreeViewer.setPointBudget(2_000_000);
+        potreeViewer.setMinNodeSize(50);
+        potreeViewer.loadSettingsFromURL();
+        potreeViewer.setBackground(null);
+        potreeViewer.useHQ = true;
+
+        potreeViewer.setDescription(`
+            <b>Mohelnice interactive demo</b> &mdash; toggle JGW, OSM and 3D layers via the panel
+            in the top-left to verify event-driven sync. EPSG:5514 / Krovak.<br>`);
+
+        potreeViewer.loadGUI(() => {
+            potreeViewer.setLanguage("en");
+            $("#menu_appearance").next().show();
+            $("#menu_tools").next().show();
+            $("#menu_scene").next().show();
+            potreeViewer.toggleSidebar();
+            $("#show_jgw").prop("checked", true);
+        });
+
+        const togglePcBtn = document.getElementById("togglePcBtn");
+        const toggleJgwBtn = document.getElementById("toggleJgwBtn");
+        const toggleOsmBtn = document.getElementById("toggleOsmBtn");
+        const resetCamBtn = document.getElementById("resetCamBtn");
+        const stateLog = document.getElementById("stateLog");
+
+        function dumpState() {
+            const v = window.potreeViewer;
+            const pc = v.scene.pointclouds[0];
+            stateLog.textContent = [
+                `PC count:     ${v.scene.pointclouds.length}`,
+                `PC center.z:  ${pc?.boundingSphere?.center?.z?.toFixed(2) ?? "—"}`,
+                `JGW visible:  ${v.jgwImage?.visible}`,
+                `JGW mesh.z:   ${v.jgwImage?.mesh?.position?.z?.toFixed(2) ?? "—"}`,
+                `OSM enabled:  ${v.cesiumRender?.enabled}`,
+                `Camera.z:     ${v.scene.view.position.z.toFixed(2)}`,
+                `geoidOffset:  ${v.cesiumRender?._geoidOffset?.toFixed(2) ?? "—"}`,
+            ].join("\n");
+        }
+
+        potreeViewer.jgwImage.visible = true;
+        potreeViewer.jgwImage.load("./data/mohelnice/img.jpg", "./data/mohelnice/img.jgw", (bounds) => {
+            const center = bounds.getCenter();
+            const sizeMax = Math.max(bounds.max.x - bounds.min.x, bounds.max.y - bounds.min.y);
+            const dist = sizeMax * 1.3;
+            potreeViewer.scene.view.setView(
+                [center.x + dist * 0.5, center.y - dist * 0.5, center.z + dist * 0.35],
+                [center.x, center.y, center.z]
+            );
+            potreeViewer.cesiumRender.init();
+            potreeViewer.setShowCesium(true);
+
+            togglePcBtn.disabled = false;
+            togglePcBtn.textContent = "Add 3D point cloud";
+            dumpState();
+        });
+
+        togglePcBtn.addEventListener("click", () => {
+            const v = window.potreeViewer;
+            if (v.scene.pointclouds.length === 0) {
+                togglePcBtn.disabled = true;
+                togglePcBtn.textContent = "Loading PC...";
+                Potree.loadPointCloud("./data/mohelnice/ept/ept.json", "Mohelnice PC", (e) => {
+                    const pointcloud = e.pointcloud;
+                    v.scene.addPointCloud(pointcloud);
+                    const material = pointcloud.material;
+                    material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+                    material.size = 0.8;
+                    material.elevationRange = [pointcloud.boundingBox.min.z, pointcloud.boundingBox.max.z];
+                    material.activeAttributeName = "rgba";
+                    setTimeout(() => {
+                        togglePcBtn.textContent = "Remove 3D point cloud";
+                        togglePcBtn.disabled = false;
+                        dumpState();
+                    }, 600);
+                });
+            } else {
+                const pc = v.scene.pointclouds[0];
+                v.scene.scene.remove(pc);
+                v.scene.pointclouds.length = 0;
+                v.scene.dispatchEvent({ type: "pointcloud_removed", pointcloud: pc });
+                setTimeout(() => {
+                    togglePcBtn.textContent = "Add 3D point cloud";
+                    dumpState();
+                }, 200);
+            }
+        });
+
+        toggleJgwBtn.addEventListener("click", () => {
+            const v = window.potreeViewer;
+            v.jgwImage.visible = !v.jgwImage.visible;
+            toggleJgwBtn.textContent = v.jgwImage.visible ? "Hide JGW" : "Show JGW";
+            dumpState();
+        });
+
+        toggleOsmBtn.addEventListener("click", () => {
+            const v = window.potreeViewer;
+            v.setShowCesium(!v.cesiumRender.enabled);
+            toggleOsmBtn.textContent = v.cesiumRender.enabled ? "Hide OSM" : "Show OSM";
+            dumpState();
+        });
+
+        resetCamBtn.addEventListener("click", () => {
+            potreeViewer.fitToScreen(1, 600);
+            setTimeout(dumpState, 800);
+        });
+
+        setInterval(dumpState, 1000);
+    </script>
+</body>
+</html>

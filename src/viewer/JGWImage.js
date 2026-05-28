@@ -23,6 +23,7 @@ export class JGWImage extends THREE.Object3D {
         this.texture = null;
         this.mesh = null;
         this.zOffset = 0.0;
+        this._sceneListenersInstalled = false;
     }
 
     get visible() {
@@ -36,9 +37,33 @@ export class JGWImage extends THREE.Object3D {
     update() {
         if (this.mesh) {
             this.mesh.visible = this.visible;
-            if (this.viewer.scene.pointclouds?.at(0)) {
-                this.mesh.position.z = this.viewer.scene.pointclouds[0].boundingSphere.center.z + this.zOffset;
-            }
+        }
+    }
+
+    _installSceneListeners() {
+        if (this._sceneListenersInstalled || !this.viewer.scene) {
+            return;
+        }
+        const refresh = () => this._refreshMeshZ();
+        this.viewer.scene.addEventListener("pointcloud_added", refresh);
+        this.viewer.scene.addEventListener("pointcloud_removed", refresh);
+        this._sceneListenersInstalled = true;
+    }
+
+    _refreshMeshZ() {
+        if (!this.mesh) {
+            return;
+        }
+        const firstCloud = this.viewer.scene.pointclouds?.at(0);
+        if (!firstCloud) {
+            this.mesh.position.z = this.zOffset;
+            return;
+        }
+        const centerZ = firstCloud.boundingSphere?.center?.z;
+        if (Number.isFinite(centerZ)) {
+            this.mesh.position.z = centerZ + this.zOffset;
+        } else {
+            requestAnimationFrame(() => this._refreshMeshZ());
         }
     }
 
@@ -101,6 +126,12 @@ export class JGWImage extends THREE.Object3D {
             new THREE.TextureLoader().load(
                 imgSrc,
                 (texture) => {
+                    texture.minFilter = THREE.LinearFilter;
+                    texture.magFilter = THREE.LinearFilter;
+                    texture.generateMipmaps = false;
+                    texture.wrapS = THREE.ClampToEdgeWrapping;
+                    texture.wrapT = THREE.ClampToEdgeWrapping;
+
                     const img = texture.image;
                     const width = img.width;
                     const height = img.height;
@@ -124,6 +155,8 @@ export class JGWImage extends THREE.Object3D {
                         });
                         this.mesh.position.set(centerX, centerY, zOffset);
                         // this.mesh.rotation.z = -Math.PI/2;
+                        this._installSceneListeners();
+                        this._refreshMeshZ();
                         resolve(this.mesh);
                         return;
                     }
@@ -139,6 +172,9 @@ export class JGWImage extends THREE.Object3D {
                     this.mesh = mesh;
                     // this.mesh.rotation.z = -Math.PI/2;
                     this.viewer.scene.scene.add(mesh);
+
+                    this._installSceneListeners();
+                    this._refreshMeshZ();
 
                     resolve(new THREE.Box3(new Vector3(xMin, yMin, zOffset), new Vector3(xMax, yMax, zOffset)));
                 },

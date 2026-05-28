@@ -291,25 +291,29 @@ export class OrbitControls extends EventDispatcher {
 
         if (this.wheelDelta !== 0) {
             let camera = this.scene.getActiveCamera();
-            let I = Utils.getMousePointCloudIntersection(
-                this.viewer.inputHandler.mouse,
-                camera,
-                this.viewer,
-                this.scene.pointclouds,
-                { pickClipped: true });
-
-            if (I) {
-                let resolvedPos = new THREE.Vector3().addVectors(view.position, this.zoomDelta);
-                let distance = I.location.distanceTo(resolvedPos);
-                let jumpDistance = distance * 0.2 * this.wheelDelta;
-                let targetDir = new THREE.Vector3().subVectors(I.location, view.position).normalize();
-
-                resolvedPos.add(targetDir.multiplyScalar(jumpDistance));
-                this.zoomDelta.subVectors(resolvedPos, view.position);
-
-                view.radius = resolvedPos.distanceTo(I.location);
-            } else {
+            if (camera.isOrthographicCamera) {
                 this.radiusDelta += -this.wheelDelta * (view.radius + this.radiusDelta) * 0.1;
+            } else {
+                let I = Utils.getMousePointCloudIntersection(
+                    this.viewer.inputHandler.mouse,
+                    camera,
+                    this.viewer,
+                    this.scene.pointclouds,
+                    { pickClipped: true });
+
+                if (I) {
+                    let resolvedPos = new THREE.Vector3().addVectors(view.position, this.zoomDelta);
+                    let distance = I.location.distanceTo(resolvedPos);
+                    let jumpDistance = distance * 0.2 * this.wheelDelta;
+                    let targetDir = new THREE.Vector3().subVectors(I.location, view.position).normalize();
+
+                    resolvedPos.add(targetDir.multiplyScalar(jumpDistance));
+                    this.zoomDelta.subVectors(resolvedPos, view.position);
+
+                    view.radius = resolvedPos.distanceTo(I.location);
+                } else {
+                    this.radiusDelta += -this.wheelDelta * (view.radius + this.radiusDelta) * 0.1;
+                }
             }
         }
 

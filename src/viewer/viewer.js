@@ -976,6 +976,13 @@ export class Viewer extends EventDispatcher {
     fitToScreen(factor = 1, animationDuration = 0) {
         let box = this.getBoundingBox(this.scene.pointclouds);
 
+        if (this.jgwImage?.mesh && this.jgwImage.visible) {
+            const jgwBox = new THREE.Box3().setFromObject(this.jgwImage.mesh);
+            if (!jgwBox.isEmpty()) {
+                box.union(jgwBox);
+            }
+        }
+
         let node = new THREE.Object3D();
         node.boundingBox = box;
 
