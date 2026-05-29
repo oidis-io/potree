@@ -33,6 +33,8 @@ export class CesiumRenderer {
         proj4.defs("EPSG:5514", "+proj=krovak +lat_0=49.5 +lon_0=24.83333333333333 +alpha=30.2881397527778 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +towgs84=589,76,480,0,0,0,0 +units=m +no_defs");
 
         this._geoidOffset = 0;
+        this._geoidOffsetDirty = false;
+        this._sceneListenersInstalled = false;
         this._renderErrorLog = { suppressed: 0, lastAt: 0, intervalMs: 5000 };
     }
 
@@ -283,17 +285,40 @@ export class CesiumRenderer {
             }
         });
 
-        // TODO(mkelnar) simple hack for true geoHeight - experimental
-        const firstCloud = this.viewer.scene.pointclouds[0];
-        const centerZ = firstCloud?.boundingSphere?.center?.z;
-        if (Number.isFinite(centerZ)) {
-            this._geoidOffset = -1 * centerZ + 2;
-        }
+        this._installSceneListeners();
+        this._refreshGeoidOffset();
+
         let pointcloudProjection = proj4.defs("EPSG:5514"); // TODO(mkelnar) should be loaded from point cloud SRS
         let mapProjection = proj4.defs("WGS84");
 
         window.toMap = proj4(pointcloudProjection, mapProjection);
         window.toScene = proj4(mapProjection, pointcloudProjection);
+    }
+
+    _installSceneListeners() {
+        if (this._sceneListenersInstalled || !this.viewer.scene) {
+            return;
+        }
+        const refresh = () => this._refreshGeoidOffset();
+        this.viewer.scene.addEventListener("pointcloud_added", refresh);
+        this.viewer.scene.addEventListener("pointcloud_removed", refresh);
+        this._sceneListenersInstalled = true;
+    }
+
+    _refreshGeoidOffset() {
+        const firstCloud = this.viewer.scene.pointclouds[0];
+        if (!firstCloud) {
+            this._geoidOffset = 0;
+            this._geoidOffsetDirty = false;
+            return;
+        }
+        const centerZ = firstCloud.boundingSphere?.center?.z;
+        if (Number.isFinite(centerZ)) {
+            this._geoidOffset = -1 * centerZ + 2;
+            this._geoidOffsetDirty = false;
+        } else {
+            this._geoidOffsetDirty = true;
+        }
     }
 
     render(params) {
@@ -328,6 +353,10 @@ export class CesiumRenderer {
         }
 
         if (window.toMap !== undefined && this._enabled === true) {
+            if (this._geoidOffsetDirty) {
+                this._refreshGeoidOffset();
+            }
+
             const activeCamera = this.viewer.scene.getActiveCamera();
             const pivot = this.viewer.scene.view.getPivot();
 

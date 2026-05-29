@@ -133,6 +133,7 @@ export class Viewer extends EventDispatcher {
             this.classifications = ClassificationScheme.DEFAULT;
 
             this.moveSpeed = 10;
+            this.doubleClickZoom = true;
 
             this.lengthUnit = LengthUnits.METER;
             this.lengthUnitDisplay = LengthUnits.METER;
@@ -565,6 +566,24 @@ export class Viewer extends EventDispatcher {
         return this.moveSpeed;
     }
 
+    setDoubleClickZoom(value) {
+        value = Boolean(value);
+        if (this.doubleClickZoom === value) {
+            return;
+        }
+        this.doubleClickZoom = value;
+        for (let controls of [this.orbitControls, this.earthControls, this.fpControls]) {
+            if (controls) {
+                controls.doubleClickZoomEnabled = value;
+            }
+        }
+        this.dispatchEvent({ type: "doubleclick_zoom_changed", viewer: this, enabled: value });
+    }
+
+    getDoubleClickZoom() {
+        return this.doubleClickZoom;
+    }
+
     setWeightClassification(w) {
         for (let i = 0; i < this.scene.pointclouds.length; i++) {
             this.scene.pointclouds[i].material.weightClassification = w;
@@ -957,11 +976,44 @@ export class Viewer extends EventDispatcher {
     fitToScreen(factor = 1, animationDuration = 0) {
         let box = this.getBoundingBox(this.scene.pointclouds);
 
+        if (this.jgwImage?.mesh && this.jgwImage.visible) {
+            const jgwBox = new THREE.Box3().setFromObject(this.jgwImage.mesh);
+            if (!jgwBox.isEmpty()) {
+                box.union(jgwBox);
+            }
+        }
+
         let node = new THREE.Object3D();
         node.boundingBox = box;
 
         this.zoomTo(node, factor, animationDuration);
         this.controls.stop();
+    }
+
+    home(animationDuration = 600) {
+        this.fitToScreen(1, animationDuration);
+        this.dispatchEvent({ type: "home", viewer: this });
+    }
+
+    zoomIn(step = 1) {
+        this._dispatchWheelZoom(step);
+    }
+
+    zoomOut(step = 1) {
+        this._dispatchWheelZoom(-step);
+    }
+
+    _dispatchWheelZoom(delta) {
+        let controls = this.getControls();
+        if (!controls) {
+            return;
+        }
+        controls.dispatchEvent({ type: "mousewheel", delta: delta });
+        this.dispatchEvent({ type: "zoom_step", viewer: this, delta: delta });
+    }
+
+    requestViewSettings() {
+        this.dispatchEvent({ type: "request_view_settings", viewer: this });
     }
 
     toggleNavigationCube() {

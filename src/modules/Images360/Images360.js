@@ -27,6 +27,7 @@ let previousView = {
     controls: null,
     position: null,
     target: null,
+    doubleClickZoom: false,
 };
 
 class Image360 {
@@ -119,10 +120,11 @@ export class Images360 extends EventDispatcher {
             controls: this.viewer.controls,
             position: this.viewer.scene.view.position.clone(),
             target: this.viewer.scene.view.getPivot(),
+            doubleClickZoom: this.viewer.getDoubleClickZoom(),
         };
 
         this.viewer.setControls(this.viewer.orbitControls);
-        this.viewer.orbitControls.doubleClockZoomEnabled = false;
+        this.viewer.setDoubleClickZoom(false);
 
         for (let image of this.images) {
             image.mesh.visible = false;
@@ -183,7 +185,7 @@ export class Images360 extends EventDispatcher {
         this.sphere.material.needsUpdate = true;
         this.sphere.visible = false;
 
-        this.viewer.orbitControls.doubleClockZoomEnabled = true;
+        this.viewer.setDoubleClickZoom(previousView.doubleClickZoom);
         this.viewer.setControls(previousView.controls);
 
         this.viewer.scene.view.setView(

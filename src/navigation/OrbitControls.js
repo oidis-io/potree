@@ -45,8 +45,10 @@ export class OrbitControls extends EventDispatcher {
         this.pitchDelta = 0;
         this.panDelta = new THREE.Vector2(0, 0);
         this.radiusDelta = 0;
+        this.wheelDelta = 0;
+        this.zoomDelta = new THREE.Vector3();
 
-        this.doubleClockZoomEnabled = true;
+        this.doubleClickZoomEnabled = true;
 
         this.tweens = [];
 
@@ -84,15 +86,12 @@ export class OrbitControls extends EventDispatcher {
         };
 
         let scroll = (e) => {
-            let resolvedRadius = this.scene.view.radius + this.radiusDelta;
-
-            this.radiusDelta += -e.delta * resolvedRadius * 0.1;
-
+            this.wheelDelta += e.delta;
             this.stopTweens();
         };
 
         let dblclick = (e) => {
-            if (this.doubleClockZoomEnabled) {
+            if (this.doubleClickZoomEnabled) {
                 this.zoomToLocation(e.mouse);
             }
         };
@@ -162,10 +161,20 @@ export class OrbitControls extends EventDispatcher {
         this.scene = scene;
     }
 
+    get doubleClockZoomEnabled() {
+        return this.doubleClickZoomEnabled;
+    }
+
+    set doubleClockZoomEnabled(value) {
+        this.doubleClickZoomEnabled = value;
+    }
+
     stop() {
         this.yawDelta = 0;
         this.pitchDelta = 0;
         this.radiusDelta = 0;
+        this.wheelDelta = 0;
+        this.zoomDelta.set(0, 0, 0);
         this.panDelta.set(0, 0);
     }
 
@@ -280,7 +289,43 @@ export class OrbitControls extends EventDispatcher {
             view.pan(px, py);
         }
 
-        {
+        if (this.wheelDelta !== 0) {
+            let camera = this.scene.getActiveCamera();
+            if (camera.isOrthographicCamera) {
+                this.radiusDelta += -this.wheelDelta * (view.radius + this.radiusDelta) * 0.1;
+            } else {
+                let I = Utils.getMousePointCloudIntersection(
+                    this.viewer.inputHandler.mouse,
+                    camera,
+                    this.viewer,
+                    this.scene.pointclouds,
+                    { pickClipped: true });
+
+                if (I) {
+                    let resolvedPos = new THREE.Vector3().addVectors(view.position, this.zoomDelta);
+                    let distance = I.location.distanceTo(resolvedPos);
+                    let jumpDistance = distance * 0.2 * this.wheelDelta;
+                    let targetDir = new THREE.Vector3().subVectors(I.location, view.position).normalize();
+
+                    resolvedPos.add(targetDir.multiplyScalar(jumpDistance));
+                    this.zoomDelta.subVectors(resolvedPos, view.position);
+
+                    view.radius = resolvedPos.distanceTo(I.location);
+                } else {
+                    this.radiusDelta += -this.wheelDelta * (view.radius + this.radiusDelta) * 0.1;
+                }
+            }
+        }
+
+        if (this.zoomDelta.lengthSq() !== 0) {
+            let fade = Math.pow(0.5, this.fadeFactor * delta);
+            let progression = 1 - fade;
+            let step = this.zoomDelta.clone().multiplyScalar(progression);
+            view.position.add(step);
+            this.zoomDelta.multiplyScalar(fade);
+        }
+
+        if (this.radiusDelta !== 0) {
             let progression = Math.min(1, this.fadeFactor * delta);
             let radius = view.radius + progression * this.radiusDelta;
             let V = view.direction.multiplyScalar(-radius);
@@ -303,6 +348,7 @@ export class OrbitControls extends EventDispatcher {
             this.pitchDelta *= attenuation;
             this.panDelta.multiplyScalar(attenuation);
             this.radiusDelta -= progression * this.radiusDelta;
+            this.wheelDelta = 0;
         }
     }
 }
