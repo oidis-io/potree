@@ -157,7 +157,7 @@ export class JGWImage extends THREE.Object3D {
                         // this.mesh.rotation.z = -Math.PI/2;
                         this._installSceneListeners();
                         this._refreshMeshZ();
-                        resolve(this.mesh);
+                        resolve(new THREE.Box3(new Vector3(xMin, yMin, zOffset), new Vector3(xMax, yMax, zOffset)));
                         return;
                     }
 
