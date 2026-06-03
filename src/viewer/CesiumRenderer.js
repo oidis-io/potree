@@ -202,15 +202,21 @@ export class CesiumRenderer {
                 case MapProvider.CUZK:
                     this.cesiumViewer.imageryLayers.addImageryProvider(
                         new Cesium.WebMapServiceImageryProvider({
-                            url: "https://geoportal.cuzk.cz/WMS_ZM10_PUB/WMService.aspx",
-                            layers: "GR_ZM10",
+                            url: "https://ags.cuzk.gov.cz/arcgis1/rest/services/ZTM_WM/MapServer/export",
+                            proxy: { getURL: (resourceUrl) => "/api/mapProxy?url=" + encodeURIComponent(resourceUrl) },
+                            layers: "show",
+                            rectangleSouthwestInMeters: new Cesium.Cartesian2(48.5, 12),
+                            rectangleNortheastInMeters: new Cesium.Cartesian2(51.5, 19),
+                            numberOfLevelZeroTilesX: 1,
+                            numberOfLevelZeroTilesY: 1,
                             parameters: {
-                                service: "WMS",
+                                bboxSR: "4326",
+                                imageSR: "4326",
+                                dpi: 192,
                                 format: "image/png",
                                 transparent: true,
-                                version: "1.3.0",
+                                f: "image"
                             },
-                            tilingScheme: new Cesium.WebMercatorTilingScheme(),
                             maximumLevel: 18
                         })
                     );
@@ -220,6 +226,7 @@ export class CesiumRenderer {
                     this.cesiumViewer.imageryLayers.addImageryProvider(
                         new Cesium.WebMapServiceImageryProvider({
                             url: "https://ags.cuzk.gov.cz/arcgis1/rest/services/ORTOFOTO/MapServer/export",
+                            proxy: { getURL: (resourceUrl) => "/api/mapProxy?url=" + encodeURIComponent(resourceUrl) },
                             layers: "show",
                             rectangleSouthwestInMeters: new Cesium.Cartesian2(48.5, 12),
                             rectangleNortheastInMeters: new Cesium.Cartesian2(51.5, 19),
@@ -242,6 +249,7 @@ export class CesiumRenderer {
                     this.cesiumViewer.imageryLayers.addImageryProvider(
                         new Cesium.WebMapServiceImageryProvider({
                             url: "https://services.cuzk.gov.cz/wms/local-km-wms.asp",
+                            proxy: { getURL: (resourceUrl) => "/api/mapProxy?url=" + encodeURIComponent(resourceUrl) },
                             layers: "RST_KN,RST_KMD,omp,parcelni_cisla,obrazy_parcel,hranice_parcel,DKM,dalsi_p_mapy,prehledka_kraju-linie,polygony_parcel",
                             rectangleSouthwestInMeters: new Cesium.Cartesian2(48.5, 12),
                             rectangleNortheastInMeters: new Cesium.Cartesian2(51.5, 19),

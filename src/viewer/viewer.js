@@ -973,14 +973,33 @@ export class Viewer extends EventDispatcher {
         return range;
     }
 
-    fitToScreen(factor = 1, animationDuration = 0) {
+    getFitBox() {
         let box = this.getBoundingBox(this.scene.pointclouds);
 
         if (this.jgwImage?.mesh && this.jgwImage.visible) {
             const jgwBox = new THREE.Box3().setFromObject(this.jgwImage.mesh);
             if (!jgwBox.isEmpty()) {
-                box.union(jgwBox);
+                if (box.isEmpty()) {
+                    box = jgwBox;
+                } else {
+                    const union = box.clone().union(jgwBox);
+                    const cloudSize = box.getSize(new THREE.Vector3()).length();
+                    const unionSize = union.getSize(new THREE.Vector3()).length();
+                    if (unionSize <= cloudSize * 8) {
+                        box = union;
+                    }
+                }
             }
+        }
+
+        return box;
+    }
+
+    fitToScreen(factor = 1, animationDuration = 0) {
+        const box = this.getFitBox();
+
+        if (box.isEmpty()) {
+            return;
         }
 
         let node = new THREE.Object3D();
