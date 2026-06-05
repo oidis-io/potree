@@ -992,6 +992,13 @@ export class Viewer extends EventDispatcher {
             }
         }
 
+        if (box.isEmpty() && this.drawableArea?.entities?.length > 0) {
+            const dxfBox = this.drawableArea.getBoundingBox();
+            if (dxfBox && !dxfBox.isEmpty()) {
+                box = dxfBox;
+            }
+        }
+
         return box;
     }
 

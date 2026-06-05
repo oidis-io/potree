@@ -884,6 +884,162 @@ export class SolidEntity extends DrawableEntity {
     }
 }
 
+export class HatchEntity extends DrawableEntity {
+    constructor() {
+        super();
+        this.type = DxfEntityType.HATCH;
+        this.fillMesh = null;
+    }
+
+    static FromJson(json, root, parentColor) {
+        const entity = new this();
+        entity.fromJson(json, root, parentColor);
+        return entity;
+    }
+
+    fromJson(json, root, parentColor) {
+        if (json?.type !== DxfEntityType.HATCH) {
+            return;
+        }
+        super.fromJson(json, root);
+        // colorIndex 0 = ByBlock -> inherit the color of the placing INSERT
+        if (json.colorIndex === 0 && parentColor) {
+            this.color = parentColor.clone();
+        }
+
+        if (this.fillMesh) {
+            this.remove(this.fillMesh);
+            this.fillMesh.geometry.dispose();
+            this.fillMesh.material.dispose();
+            this.fillMesh = null;
+        }
+
+        const loops = (json.boundaryPaths || [])
+            .map(path => this.buildLoop(path))
+            .filter(loop => loop.length >= 3);
+        if (!loops.length) {
+            return;
+        }
+        loops.sort((a, b) => this.loopArea(b) - this.loopArea(a));
+        const outer = loops[0];
+        const holes = loops.slice(1);
+
+        const triangles = THREE.ShapeUtils.triangulateShape(outer, holes);
+        if (!triangles || !triangles.length) {
+            return;
+        }
+
+        const ring = outer.concat(...holes);
+        const elevation = isFlat ? flatOffset : 0;
+        const positions = new Float32Array(ring.length * 3);
+        for (let i = 0; i < ring.length; i++) {
+            positions[i * 3] = ring[i].x;
+            positions[i * 3 + 1] = ring[i].y;
+            positions[i * 3 + 2] = elevation;
+        }
+        const indices = [];
+        for (const tri of triangles) {
+            indices.push(tri[0], tri[1], tri[2]);
+        }
+
+        const geom = new THREE.BufferGeometry();
+        geom.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+        geom.setIndex(indices);
+        geom.computeVertexNormals();
+
+        const fillColor = this.color.clone().lerp(new THREE.Color(0xffffff), 0.3);
+        const material = new THREE.MeshBasicMaterial({
+            color: fillColor,
+            opacity: 0.8,
+            transparent: true,
+            side: THREE.DoubleSide,
+            depthWrite: false
+        });
+        this.fillMesh = new THREE.Mesh(geom, material);
+        this.add(this.fillMesh);
+    }
+
+    buildLoop(path) {
+        let points;
+        if (path.isPolyline) {
+            points = (path.vertices || []).map(v => new THREE.Vector2(v.x, v.y));
+        } else {
+            points = [];
+            for (const edge of (path.edges || [])) {
+                this.appendEdgePoints(points, edge);
+            }
+        }
+        return this.cleanLoop(points);
+    }
+
+    appendEdgePoints(points, edge) {
+        if (edge.type === "line") {
+            points.push(new THREE.Vector2(edge.start.x, edge.start.y));
+            points.push(new THREE.Vector2(edge.end.x, edge.end.y));
+        } else if (edge.type === "arc") {
+            this.appendArcPoints(points, edge.center, edge.radius, edge.startAngle, edge.endAngle, edge.counterClockwise);
+        } else if (edge.type === "ellipse") {
+            this.appendEllipsePoints(points, edge);
+        }
+    }
+
+    appendArcPoints(points, center, radius, startDeg, endDeg, counterClockwise) {
+        const segments = 48;
+        const a0 = startDeg * Math.PI / 180;
+        let sweep = (endDeg - startDeg) * Math.PI / 180;
+        if (counterClockwise && sweep <= 0) {
+            sweep += 2 * Math.PI;
+        } else if (!counterClockwise && sweep >= 0) {
+            sweep -= 2 * Math.PI;
+        }
+        for (let i = 0; i <= segments; i++) {
+            const angle = a0 + sweep * (i / segments);
+            points.push(new THREE.Vector2(center.x + Math.cos(angle) * radius, center.y + Math.sin(angle) * radius));
+        }
+    }
+
+    appendEllipsePoints(points, edge) {
+        const segments = 48;
+        const majorLength = Math.sqrt(edge.majorAxisEnd.x * edge.majorAxisEnd.x + edge.majorAxisEnd.y * edge.majorAxisEnd.y);
+        const minorLength = majorLength * edge.axisRatio;
+        const majorAngle = Math.atan2(edge.majorAxisEnd.y, edge.majorAxisEnd.x);
+        const a0 = edge.startAngle * Math.PI / 180;
+        const a1 = edge.endAngle * Math.PI / 180;
+        for (let i = 0; i <= segments; i++) {
+            const t = a0 + (a1 - a0) * (i / segments);
+            const localX = Math.cos(t) * majorLength;
+            const localY = Math.sin(t) * minorLength;
+            points.push(new THREE.Vector2(
+                edge.center.x + localX * Math.cos(majorAngle) - localY * Math.sin(majorAngle),
+                edge.center.y + localX * Math.sin(majorAngle) + localY * Math.cos(majorAngle)
+            ));
+        }
+    }
+
+    cleanLoop(points) {
+        const epsilon = 1e-6;
+        const result = [];
+        for (const point of points) {
+            if (result.length === 0 || result[result.length - 1].distanceTo(point) > epsilon) {
+                result.push(point);
+            }
+        }
+        if (result.length > 1 && result[0].distanceTo(result[result.length - 1]) <= epsilon) {
+            result.pop();
+        }
+        return result;
+    }
+
+    loopArea(points) {
+        let area = 0;
+        for (let i = 0; i < points.length; i++) {
+            const next = points[(i + 1) % points.length];
+            area += points[i].x * next.y - next.x * points[i].y;
+        }
+        return Math.abs(area / 2);
+    }
+}
+
 export class ObjectEntity extends DrawableEntity {
     constructor() {
         super();
@@ -892,7 +1048,13 @@ export class ObjectEntity extends DrawableEntity {
         this.ownerHandle = "";
     }
 
-    fromJson(json, root) {
+    static FromJson(json, root, parentColor) {
+        const entity = new this();
+        entity.fromJson(json, root, parentColor);
+        return entity;
+    }
+
+    fromJson(json, root, parentColor) {
         if (!json.entities) {
             return;
         }
@@ -916,6 +1078,8 @@ export class ObjectEntity extends DrawableEntity {
                 this.addChild(SplineEntity.FromJson(entity, root));
             } else if (entity.type === DxfEntityType.SOLID) {
                 this.addChild(SolidEntity.FromJson(entity, root));
+            } else if (entity.type === DxfEntityType.HATCH) {
+                this.addChild(HatchEntity.FromJson(entity, root, parentColor));
             } else if (entity.type === DxfEntityType.POINT) {
                 this.addChild(PointEntity.FromJson(entity, root));
             } else if (entity.type === DxfEntityType.INSERT) {
@@ -936,7 +1100,7 @@ export class InsertEntity extends DrawableEntity {
     constructor() {
         super();
 
-        this.type = DxfEntityType.CIRCLE;
+        this.type = DxfEntityType.INSERT;
 
         this.center = new THREE.Vector3();
         this.radius = 1;
@@ -951,10 +1115,14 @@ export class InsertEntity extends DrawableEntity {
         if (json?.type !== DxfEntityType.INSERT) {
             return;
         }
+        if (!root.blocks || !root.blocks[json.name]) {
+            return;
+        }
 
-        const object = ObjectEntity.FromJson(root.blocks[json.name], root, this._isFlat);
+        const insertColor = new THREE.Color(json.color ?? 0x000000);
+        const object = ObjectEntity.FromJson(root.blocks[json.name], root, insertColor);
         object.position.copy(new THREE.Vector3(json.position.x, json.position.y, json.position.z));
-        // TODO(mkelnar) rotation?
+        object.scale.set(json.xScale ?? 1, json.yScale ?? 1, json.zScale ?? 1);
         if (json.rotation) {
             object.rotation.z = THREE.Math.degToRad(json.rotation);
         }
@@ -1128,6 +1296,20 @@ export class DrawableArea extends ObjectEntity {
             }
             entity.update();
         }
+    }
+
+    getBoundingBox() {
+        // prefer DXF header $EXTMIN/$EXTMAX (set by the app) — setFromObject can be polluted by stray
+        // geometry far outside the real drawing (common in CAD exports), which would blow up camera fits
+        const e = this.worldExtent;
+        if (e && Number.isFinite(e.min?.x) && Number.isFinite(e.max?.x)) {
+            return new THREE.Box3(
+                new THREE.Vector3(e.min.x, e.min.y, e.min.z ?? 0),
+                new THREE.Vector3(e.max.x, e.max.y, e.max.z ?? 0)
+            );
+        }
+        this.updateMatrixWorld(true);
+        return new THREE.Box3().setFromObject(this);
     }
 
     fromJson(json) {
