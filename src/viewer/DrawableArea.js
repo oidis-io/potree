@@ -1248,6 +1248,7 @@ export class DrawableArea extends ObjectEntity {
         this.viewer = viewer;
         this.options = options || {};
         this.zOffset = 0.2;
+        this.frustumCulled = false;
 
         this.zPlane = new Plane();
         // this.addChild(this.zPlane);
@@ -1256,6 +1257,9 @@ export class DrawableArea extends ObjectEntity {
     addChild(child) {
         super.addChild(child);
         child.viewer = this.viewer;
+        child.traverse((n) => {
+            n.frustumCulled = false;
+        });
     }
 
     load(data, flat = false) {
