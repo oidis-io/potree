@@ -1291,15 +1291,32 @@ export class DrawableArea extends ObjectEntity {
     }
 
     update() {
-        // nothing to do now
         this.zPlane.position.x = this.viewer.scene.view.getPivot().x;
         this.zPlane.position.y = this.viewer.scene.view.getPivot().y;
-        for (const entity of this.entities) {
-            if (this.viewer.scene.pointclouds?.at(0)) {
-                this.position.z = this.viewer.scene.pointclouds[0].boundingSphere.center.z + this.zOffset;
-            }
-            entity.update();
+        if (this.viewer.scene.pointclouds?.at(0)) {
+            this.position.z = this.viewer.scene.pointclouds[0].boundingSphere.center.z + this.zOffset;
         }
+        for (const entity of this.entities) {
+            entity.update?.();
+        }
+    }
+
+    clearDrawables() {
+        for (let i = this.children.length - 1; i >= 0; i--) {
+            const child = this.children[i];
+            this.remove(child);
+            child.traverse?.((node) => {
+                node.geometry?.dispose?.();
+                const material = node.material;
+                if (Array.isArray(material)) {
+                    material.forEach((singleMaterial) => singleMaterial?.dispose?.());
+                } else {
+                    material?.dispose?.();
+                }
+            });
+        }
+        this.entities = [];
+        this.worldExtent = null;
     }
 
     getBoundingBox() {
@@ -1321,6 +1338,7 @@ export class DrawableArea extends ObjectEntity {
             throw new Error("Invalid drawable data, check DXF to JSON converter.");
         }
 
+        const mergeStartIndex = this.entities.length;
         super.fromJson(json, json);
 
         if (suppressDrawing) {
@@ -1349,7 +1367,132 @@ export class DrawableArea extends ObjectEntity {
                 }
             }
         } else {
+            this.mergeRenderables(mergeStartIndex);
             this.viewer.scene.scene.add(this);
+        }
+    }
+
+    mergeRenderables(startIndex) {
+        this.updateMatrixWorld(true);
+        const invDrawable = new THREE.Matrix4().copy(this.matrixWorld).invert();
+        const local = new THREE.Matrix4();
+        const vertex = new THREE.Vector3();
+        const lineBuckets = new Map();
+        const fillBuckets = new Map();
+        const keepTypes = new Set([DxfEntityType.TEXT, DxfEntityType.MTEXT]);
+        const removed = [];
+
+        const collectLeaf = (object) => {
+            if (object.isSprite || (!object.isLine && !object.isMesh)) {
+                return;
+            }
+            let geometry = object.geometry;
+            if (geometry && typeof geometry.getAttribute !== "function") {
+                geometry = typeof geometry.toBufferGeometry === "function" ? geometry.toBufferGeometry() : null;
+            }
+            const position = geometry?.getAttribute?.("position");
+            if (!position) {
+                return;
+            }
+            const color = object.material?.color ? object.material.color.getHex() : 0;
+            local.multiplyMatrices(invDrawable, object.matrixWorld);
+            if (object.isLine) {
+                let segments = lineBuckets.get(color);
+                if (!segments) {
+                    segments = [];
+                    lineBuckets.set(color, segments);
+                }
+                if (object.isLineSegments) {
+                    for (let i = 0; i < position.count; i++) {
+                        vertex.fromBufferAttribute(position, i).applyMatrix4(local);
+                        segments.push(vertex.x, vertex.y, vertex.z);
+                    }
+                } else {
+                    for (let i = 0; i < position.count - 1; i++) {
+                        vertex.fromBufferAttribute(position, i).applyMatrix4(local);
+                        segments.push(vertex.x, vertex.y, vertex.z);
+                        vertex.fromBufferAttribute(position, i + 1).applyMatrix4(local);
+                        segments.push(vertex.x, vertex.y, vertex.z);
+                    }
+                }
+            } else {
+                let fill = fillBuckets.get(color);
+                if (!fill) {
+                    fill = {
+                        positions  : [],
+                        opacity    : object.material?.opacity ?? 1,
+                        transparent: object.material?.transparent ?? false
+                    };
+                    fillBuckets.set(color, fill);
+                }
+                const index = geometry.getIndex();
+                if (index) {
+                    for (let i = 0; i < index.count; i++) {
+                        vertex.fromBufferAttribute(position, index.getX(i)).applyMatrix4(local);
+                        fill.positions.push(vertex.x, vertex.y, vertex.z);
+                    }
+                } else {
+                    for (let i = 0; i < position.count; i++) {
+                        vertex.fromBufferAttribute(position, i).applyMatrix4(local);
+                        fill.positions.push(vertex.x, vertex.y, vertex.z);
+                    }
+                }
+            }
+            removed.push(object);
+        };
+
+        const walk = (entity) => {
+            if (keepTypes.has(entity.type)) {
+                return;
+            }
+            if (Array.isArray(entity.entities)) {
+                for (const child of entity.entities) {
+                    walk(child);
+                }
+            }
+            for (const object of entity.children) {
+                collectLeaf(object);
+            }
+        };
+
+        for (let i = startIndex; i < this.entities.length; i++) {
+            walk(this.entities[i]);
+        }
+
+        for (const object of removed) {
+            if (object.parent) {
+                object.parent.remove(object);
+            }
+            object.geometry?.dispose?.();
+            object.material?.dispose?.();
+        }
+
+        for (const [color, segments] of lineBuckets) {
+            if (segments.length === 0) {
+                continue;
+            }
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute("position", new THREE.Float32BufferAttribute(segments, 3));
+            const merged = new THREE.LineSegments(geometry, new THREE.LineBasicMaterial({ color }));
+            merged.frustumCulled = false;
+            this.addChild(merged);
+        }
+
+        for (const [color, fill] of fillBuckets) {
+            if (fill.positions.length === 0) {
+                continue;
+            }
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute("position", new THREE.Float32BufferAttribute(fill.positions, 3));
+            const merged = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
+                color,
+                opacity    : fill.opacity,
+                transparent: fill.transparent,
+                side       : THREE.DoubleSide,
+                depthWrite : false
+            }));
+            merged.frustumCulled = false;
+            this.addChild(merged);
         }
     }
 }
