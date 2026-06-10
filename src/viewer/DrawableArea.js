@@ -1377,6 +1377,15 @@ export class DrawableArea extends ObjectEntity {
         const invDrawable = new THREE.Matrix4().copy(this.matrixWorld).invert();
         const local = new THREE.Matrix4();
         const vertex = new THREE.Vector3();
+        const origin = new THREE.Vector3();
+        let originSet = false;
+        const pushVertex = ($target) => {
+            if (!originSet) {
+                origin.copy(vertex);
+                originSet = true;
+            }
+            $target.push(vertex.x - origin.x, vertex.y - origin.y, vertex.z - origin.z);
+        };
         const lineBuckets = new Map();
         const fillBuckets = new Map();
         const keepTypes = new Set([DxfEntityType.TEXT, DxfEntityType.MTEXT]);
@@ -1405,14 +1414,14 @@ export class DrawableArea extends ObjectEntity {
                 if (object.isLineSegments) {
                     for (let i = 0; i < position.count; i++) {
                         vertex.fromBufferAttribute(position, i).applyMatrix4(local);
-                        segments.push(vertex.x, vertex.y, vertex.z);
+                        pushVertex(segments);
                     }
                 } else {
                     for (let i = 0; i < position.count - 1; i++) {
                         vertex.fromBufferAttribute(position, i).applyMatrix4(local);
-                        segments.push(vertex.x, vertex.y, vertex.z);
+                        pushVertex(segments);
                         vertex.fromBufferAttribute(position, i + 1).applyMatrix4(local);
-                        segments.push(vertex.x, vertex.y, vertex.z);
+                        pushVertex(segments);
                     }
                 }
             } else {
@@ -1429,12 +1438,12 @@ export class DrawableArea extends ObjectEntity {
                 if (index) {
                     for (let i = 0; i < index.count; i++) {
                         vertex.fromBufferAttribute(position, index.getX(i)).applyMatrix4(local);
-                        fill.positions.push(vertex.x, vertex.y, vertex.z);
+                        pushVertex(fill.positions);
                     }
                 } else {
                     for (let i = 0; i < position.count; i++) {
                         vertex.fromBufferAttribute(position, i).applyMatrix4(local);
-                        fill.positions.push(vertex.x, vertex.y, vertex.z);
+                        pushVertex(fill.positions);
                     }
                 }
             }
@@ -1474,6 +1483,7 @@ export class DrawableArea extends ObjectEntity {
             const geometry = new THREE.BufferGeometry();
             geometry.setAttribute("position", new THREE.Float32BufferAttribute(segments, 3));
             const merged = new THREE.LineSegments(geometry, new THREE.LineBasicMaterial({ color }));
+            merged.position.copy(origin);
             merged.frustumCulled = false;
             this.addChild(merged);
         }
@@ -1491,6 +1501,7 @@ export class DrawableArea extends ObjectEntity {
                 side       : THREE.DoubleSide,
                 depthWrite : false
             }));
+            merged.position.copy(origin);
             merged.frustumCulled = false;
             this.addChild(merged);
         }
