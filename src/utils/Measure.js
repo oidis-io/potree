@@ -69,6 +69,20 @@ function createAreaLabel() {
     return areaLabel;
 }
 
+function createTotalLabel() {
+    const totalLabel = new TextSprite("");
+
+    totalLabel.setTextColor({ r: 255, g: 255, b: 255, a: 1.0 });
+    totalLabel.setBorderColor({ r: 0, g: 0, b: 0, a: 1.0 });
+    totalLabel.setBackgroundColor({ r: 0, g: 0, b: 0, a: 1.0 });
+    totalLabel.fontsize = 16;
+    totalLabel.material.depthTest = false;
+    totalLabel.material.opacity = 1;
+    totalLabel.visible = false;
+
+    return totalLabel;
+}
+
 function createRectangle(color) {
     const rectObject = new THREE.Object3D();
 
@@ -315,6 +329,12 @@ export class Measure extends THREE.Object3D {
         this._showAzimuth = false;
         this._title = null;
         this.maxMarkers = Number.MAX_SAFE_INTEGER;
+        this.permanentLabelsVisible = true;
+        this.isHovered = false;
+        this.isListHovered = false;
+        this.isPinned = false;
+        this.isInserting = false;
+        this._hoverCount = 0;
 
         this.sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
         this.color = $args?.color ? $args.color : 0xff0000;
@@ -329,6 +349,7 @@ export class Measure extends THREE.Object3D {
         this.heightEdge = createHeightLine();
         this.heightLabel = createHeightLabel();
         this.areaLabel = createAreaLabel();
+        this.totalLabel = createTotalLabel();
         this.circleRadiusLabel = createCircleRadiusLabel();
         this.circleRadiusLine = createCircleRadiusLine(this.color);
         this.circleLine = createCircleLine(this.color);
@@ -340,6 +361,7 @@ export class Measure extends THREE.Object3D {
         this.add(this.heightEdge);
         this.add(this.heightLabel);
         this.add(this.areaLabel);
+        this.add(this.totalLabel);
         this.add(this.circleRadiusLabel);
         this.add(this.circleRadiusLine);
         this.add(this.circleLine);
@@ -357,6 +379,21 @@ export class Measure extends THREE.Object3D {
                 depthWrite: false
             }
         );
+    }
+
+    markHoverEnter() {
+        this._hoverCount++;
+        this.isHovered = true;
+    }
+
+    markHoverLeave() {
+        this._hoverCount = Math.max(0, this._hoverCount - 1);
+        this.isHovered = this._hoverCount > 0;
+    }
+
+    isRevealed() {
+        return this.isInserting === true || this.isHovered === true ||
+            this.isListHovered === true || this.isPinned === true;
     }
 
     addMarker(point) {
@@ -395,6 +432,7 @@ export class Measure extends THREE.Object3D {
             let actualEdge = null;
 
             let mouseover = (e) => {
+                this.markHoverEnter();
                 if (this.enabled === false) {
                     return;
                 }
@@ -403,6 +441,7 @@ export class Measure extends THREE.Object3D {
                 e.object.material.linewidth = 4;
             };
             let mouseleave = (e) => {
+                this.markHoverLeave();
                 e.object.material.color.set(this.color);
                 e.object.material.linewidth = 2;
             };
@@ -560,12 +599,16 @@ export class Measure extends THREE.Object3D {
             };
 
             let mouseover = (e) => {
+                this.markHoverEnter();
                 if (this.enabled === false) {
                     return;
                 }
                 e.object.material.emissive.setHex(0x888888);
             };
-            let mouseleave = (e) => e.object.material.emissive.setHex(0x000000);
+            let mouseleave = (e) => {
+                this.markHoverLeave();
+                e.object.material.emissive.setHex(0x000000);
+            };
 
             sphere.addEventListener("drag", drag);
             sphere.addEventListener("drop", drop);
@@ -811,6 +854,26 @@ export class Measure extends THREE.Object3D {
 
                 angleLabel.visible = this.showAngles && (index < lastIndex || this.closed) && this.points.length >= 3 && angle > 0;
             }
+        }
+
+        {
+            let totalLength = 0;
+            for (let i = 0; i < this.points.length; i++) {
+                let isClosing = (i === this.points.length - 1);
+                if (isClosing && !this.closed) {
+                    continue;
+                }
+                let next = (i + 1) % this.points.length;
+                totalLength += this.points[i].position.distanceTo(this.points[next].position);
+            }
+            let suffix = "";
+            if (this.lengthUnit != null && this.lengthUnitDisplay != null) {
+                totalLength = totalLength / this.lengthUnit.unitspermeter * this.lengthUnitDisplay.unitspermeter;
+                suffix = this.lengthUnitDisplay.code;
+            }
+            this.totalLabel.position.copy(centroid);
+            this.totalLabel.setText(`${Utils.addCommas(totalLength.toFixed(2))} ${suffix}`);
+            this.totalLabel.visible = this.showDistances && !this.showArea && this.points.length >= 2;
         }
 
         {
