@@ -34,6 +34,7 @@ export class CesiumRenderer {
 
         this._geoidOffset = 0;
         this._geoidOffsetDirty = false;
+        this._belowSurface = false;
         this._sceneListenersInstalled = false;
         this._renderErrorLog = { suppressed: 0, lastAt: 0, intervalMs: 5000 };
     }
@@ -379,6 +380,14 @@ export class CesiumRenderer {
 
             const isFiniteVec = (vec) => Number.isFinite(vec.x) && Number.isFinite(vec.y) && Number.isFinite(vec.z);
             if (!isFiniteVec(pPos) || !isFiniteVec(pTarget) || !isFiniteVec(pUpPoint)) {
+                return;
+            }
+
+            const surfaceShowDeadband = 1.0;
+            const cameraHeight = pPos.z + this._geoidOffset;
+            this._belowSurface = this._belowSurface ? cameraHeight <= surfaceShowDeadband : cameraHeight < 0;
+            if (this._belowSurface) {
+                this._element.style.display = "none";
                 return;
             }
 
