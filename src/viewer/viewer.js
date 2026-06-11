@@ -2088,6 +2088,10 @@ export class Viewer extends EventDispatcher {
     }
 
     renderDefault() {
+        if (this.renderArea.clientWidth === 0 || this.renderArea.clientHeight === 0) {
+            return;
+        }
+
         let pRenderer = this.getPRenderer();
 
         { // resize
