@@ -326,6 +326,7 @@ export class Measure extends THREE.Object3D {
         this._showRectangle = false;
         this._showHeight = false;
         this._showEdges = true;
+        this._showMarkers = true;
         this._showAzimuth = false;
         this._title = null;
         this.maxMarkers = Number.MAX_SAFE_INTEGER;
@@ -754,6 +755,7 @@ export class Measure extends THREE.Object3D {
             let point = this.points[0];
             let position = point.position;
             this.spheres[0].position.copy(position);
+            this.spheres[0].visible = this._showMarkers;
 
             {
                 let coordinateLabel = this.coordinateLabels[0];
@@ -791,6 +793,7 @@ export class Measure extends THREE.Object3D {
 
             sphere.position.copy(point.position);
             sphere.material.color = new THREE.Color(this.color);
+            sphere.visible = this._showMarkers;
 
             {
                 let edge = this.edges[index];
@@ -1050,10 +1053,12 @@ export class Measure extends THREE.Object3D {
     }
 
     raycast(raycaster, intersects) {
-        for (let i = 0; i < this.points.length; i++) {
-            let sphere = this.spheres[i];
+        if (this._showMarkers !== false) {
+            for (let i = 0; i < this.points.length; i++) {
+                let sphere = this.spheres[i];
 
-            sphere.raycast(raycaster, intersects);
+                sphere.raycast(raycaster, intersects);
+            }
         }
 
         // recalculate distances because they are not necessarily correct
@@ -1120,6 +1125,15 @@ export class Measure extends THREE.Object3D {
 
     set showEdges(value) {
         this._showEdges = value;
+        this.update();
+    }
+
+    get showMarkers() {
+        return this._showMarkers;
+    }
+
+    set showMarkers(value) {
+        this._showMarkers = value;
         this.update();
     }
 
