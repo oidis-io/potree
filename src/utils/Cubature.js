@@ -116,12 +116,10 @@ export class Cubature extends THREE.Object3D {
 
     markHoverEnter() {
         this._hoverCount++;
-        this.isHovered = true;
     }
 
     markHoverLeave() {
         this._hoverCount = Math.max(0, this._hoverCount - 1);
-        this.isHovered = this._hoverCount > 0;
     }
 
     setShowLabels(visible) {

@@ -396,6 +396,24 @@ export class MeasuringTool extends EventDispatcher {
             }
 
             {
+                let label = measure.totalLabel;
+                let distance = label.position.distanceTo(camera.position);
+                let pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
+
+                let scale = (70 / pr);
+                label.scale.set(scale, scale, scale);
+            }
+
+            {
+                let label = measure.circleDetailLabel;
+                let distance = label.position.distanceTo(camera.position);
+                let pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
+
+                let scale = (70 / pr);
+                label.scale.set(scale, scale, scale);
+            }
+
+            {
                 const materials = [
                     measure.circleRadiusLine.material,
                     ...measure.edges.map((e) => e.material),
@@ -413,6 +431,9 @@ export class MeasuringTool extends EventDispatcher {
             const anglesPrimary = measure.showDistances === false;
 
             const detailLabels = [...measure.edgeLabels];
+            if (measure.circleDetailLabel) {
+                detailLabels.push(measure.circleDetailLabel);
+            }
             if (!anglesPrimary) {
                 detailLabels.push(...measure.angleLabels);
             }
