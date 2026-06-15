@@ -85,7 +85,6 @@ export class Cubature extends THREE.Object3D {
         this.isHovered = false;
         this.isListHovered = false;
         this.isPinned = false;
-        this._hoverCount = 0;
 
         this.topColor = args.topColor !== undefined ? args.topColor : 0xff0000;
         this.bottomColor = args.bottomColor !== undefined ? args.bottomColor : 0x3399ff;
@@ -112,14 +111,6 @@ export class Cubature extends THREE.Object3D {
             depthTest: false,
             depthWrite: false
         });
-    }
-
-    markHoverEnter() {
-        this._hoverCount++;
-    }
-
-    markHoverLeave() {
-        this._hoverCount = Math.max(0, this._hoverCount - 1);
     }
 
     setShowLabels(visible) {
@@ -160,8 +151,6 @@ export class Cubature extends THREE.Object3D {
             side: THREE.DoubleSide
         });
         const mesh = new THREE.Mesh(geometry, material);
-        mesh.addEventListener("mouseover", () => this.markHoverEnter());
-        mesh.addEventListener("mouseleave", () => this.markHoverLeave());
         return mesh;
     }
 
@@ -215,14 +204,12 @@ export class Cubature extends THREE.Object3D {
 
     attachSphereHandlers(sphere, polygonId) {
         const mouseover = (e) => {
-            this.markHoverEnter();
             if (!this.enabled) {
                 return;
             }
             e.object.material.emissive.setHex(0x888888);
         };
         const mouseleave = (e) => {
-            this.markHoverLeave();
             e.object.material.emissive.setHex(0x000000);
         };
         const drag = (e) => {
