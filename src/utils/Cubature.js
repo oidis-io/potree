@@ -81,6 +81,10 @@ export class Cubature extends THREE.Object3D {
         this.bottomEdgeLabels = [];
         this.sideEdgeLabels = [];
         this.showEdgeLengths = true;
+        this.permanentLabelsVisible = true;
+        this.isHovered = false;
+        this.isListHovered = false;
+        this.isPinned = false;
 
         this.topColor = args.topColor !== undefined ? args.topColor : 0xff0000;
         this.bottomColor = args.bottomColor !== undefined ? args.bottomColor : 0x3399ff;
@@ -107,6 +111,18 @@ export class Cubature extends THREE.Object3D {
             depthTest: false,
             depthWrite: false
         });
+    }
+
+    setShowLabels(visible) {
+        this.permanentLabelsVisible = visible;
+    }
+
+    isRevealed() {
+        return this.isHovered === true || this.isListHovered === true || this.isPinned === true;
+    }
+
+    detailLabelsVisible() {
+        return this.phase === "insertion" || this.phase === "pushpull" || this.isRevealed();
     }
 
     createEdge(color, linewidth) {
@@ -662,7 +678,7 @@ export class Cubature extends THREE.Object3D {
             const length = Math.sqrt(dx * dx + dy * dy + dz * dz) * unitFactor;
             label.position.set((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2);
             label.setText(formatLengthCs(length, unitCode));
-            label.visible = this.showEdgeLengths;
+            label.visible = this.showEdgeLengths && this.detailLabelsVisible();
         };
 
         for (let i = 0; i < this.topEdgeLabels.length; i++) {
@@ -714,7 +730,8 @@ export class Cubature extends THREE.Object3D {
                 maximumFractionDigits: 2
             });
             this.volumeLabel.setText(formatted + " " + suffix + "³");
-            this.volumeLabel.visible = true;
+            this.volumeLabel.visible = this.phase === "pushpull" ||
+                this.permanentLabelsVisible !== false || this.isRevealed();
         }
     }
 

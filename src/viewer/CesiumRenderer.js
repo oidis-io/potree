@@ -30,10 +30,11 @@ export class CesiumRenderer {
         this._intentionalRelease = false;
         this._currentProviders = [];
 
-        proj4.defs("EPSG:5514", "+proj=krovak +lat_0=49.5 +lon_0=24.83333333333333 +alpha=30.2881397527778 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +towgs84=589,76,480,0,0,0,0 +units=m +no_defs");
+        proj4.defs("EPSG:5514", "+proj=krovak +lat_0=49.5 +lon_0=24.83333333333333 +alpha=30.2881397527778 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +towgs84=570.8,85.7,462.8,4.998,1.587,5.261,3.56 +units=m +no_defs");
 
         this._geoidOffset = 0;
         this._geoidOffsetDirty = false;
+        this._belowSurface = false;
         this._sceneListenersInstalled = false;
         this._renderErrorLog = { suppressed: 0, lastAt: 0, intervalMs: 5000 };
     }
@@ -382,6 +383,14 @@ export class CesiumRenderer {
                 return;
             }
 
+            const surfaceShowDeadband = 1.0;
+            const cameraHeight = pPos.z + this._geoidOffset;
+            this._belowSurface = this._belowSurface ? cameraHeight <= surfaceShowDeadband : cameraHeight < 0;
+            if (this._belowSurface) {
+                this._element.style.display = "none";
+                return;
+            }
+
             const toCes = (vec) => {
                 const xy = [vec.x, vec.y];
                 const height = vec.z + this._geoidOffset;
@@ -442,35 +451,44 @@ export class CesiumRenderer {
                 return;
             }
 
-            let nextFov = null;
-            if (activeCamera === scene.cameraP) {
-                const fovy = THREE.MathUtils.degToRad(activeCamera.fov);
-                nextFov = aspect < 1 ? fovy : Math.atan(Math.tan(0.5 * fovy) * aspect) * 2;
-            } else if (activeCamera === scene.cameraO) {
-                const cameraO = activeCamera;
-                const span = cameraO.top - cameraO.bottom;
-                const zoom = cameraO.zoom;
-                if (!Number.isFinite(span) || !Number.isFinite(zoom) || zoom === 0) {
-                    return;
-                }
-                const worldHeight = span / zoom;
-                const dist = Cesium.Cartesian3.distance(cPos, cTarget) || 1.0;
-                if (!Number.isFinite(worldHeight) || !Number.isFinite(dist)) {
-                    return;
-                }
-                const fovY = 2 * Math.atan(worldHeight / (2 * dist));
-                nextFov = aspect < 1 ? fovY : Math.atan(Math.tan(0.5 * fovY) * aspect) * 2;
-            }
-
-            if (nextFov === null || !Number.isFinite(nextFov) || nextFov <= 0 || nextFov >= Math.PI) {
-                return;
-            }
-
-            this.cesiumViewer.camera.frustum.fov = nextFov;
-            this.cesiumViewer.camera.frustum.aspectRatio = aspect;
             if (activeCamera === scene.cameraO) {
-                this.cesiumViewer.camera.frustum.near = 0.1;
-                this.cesiumViewer.camera.frustum.far = 10_000_000;
+                // potree renders the overlay with an orthographic camera in 2D; Cesium must use a matching
+                // orthographic frustum, otherwise a perspective approximation diverges from the flat overlay
+                // toward the view edges and with zoom, so the drawing appears to drift/float over the basemap
+                const cameraO = activeCamera;
+                const zoom = cameraO.zoom;
+                if (!Number.isFinite(zoom) || zoom === 0) {
+                    return;
+                }
+                const worldWidth = (cameraO.right - cameraO.left) / zoom;
+                const worldHeight = (cameraO.top - cameraO.bottom) / zoom;
+                if (!Number.isFinite(worldWidth) || worldWidth <= 0 || !Number.isFinite(worldHeight) || worldHeight <= 0) {
+                    return;
+                }
+                let frustum = this.cesiumViewer.camera.frustum;
+                if (!(frustum instanceof Cesium.OrthographicFrustum)) {
+                    frustum = new Cesium.OrthographicFrustum();
+                    this.cesiumViewer.camera.frustum = frustum;
+                }
+                frustum.width = worldWidth;
+                frustum.aspectRatio = worldWidth / worldHeight;
+                frustum.near = 0.1;
+                frustum.far = 10_000_000;
+            } else if (activeCamera === scene.cameraP) {
+                const fovy = THREE.MathUtils.degToRad(activeCamera.fov);
+                const nextFov = aspect < 1 ? fovy : Math.atan(Math.tan(0.5 * fovy) * aspect) * 2;
+                if (!Number.isFinite(nextFov) || nextFov <= 0 || nextFov >= Math.PI) {
+                    return;
+                }
+                let frustum = this.cesiumViewer.camera.frustum;
+                if (!(frustum instanceof Cesium.PerspectiveFrustum)) {
+                    frustum = new Cesium.PerspectiveFrustum();
+                    this.cesiumViewer.camera.frustum = frustum;
+                }
+                frustum.fov = nextFov;
+                frustum.aspectRatio = aspect;
+            } else {
+                return;
             }
 
             try {

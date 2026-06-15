@@ -992,6 +992,13 @@ export class Viewer extends EventDispatcher {
             }
         }
 
+        if (box.isEmpty() && this.drawableArea?.entities?.length > 0) {
+            const dxfBox = this.drawableArea.getBoundingBox();
+            if (dxfBox && !dxfBox.isEmpty()) {
+                box = dxfBox;
+            }
+        }
+
         return box;
     }
 
@@ -2081,6 +2088,10 @@ export class Viewer extends EventDispatcher {
     }
 
     renderDefault() {
+        if (this.renderArea.clientWidth === 0 || this.renderArea.clientHeight === 0) {
+            return;
+        }
+
         let pRenderer = this.getPRenderer();
 
         { // resize

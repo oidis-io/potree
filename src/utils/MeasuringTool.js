@@ -202,10 +202,12 @@ export class MeasuringTool extends EventDispatcher {
         measure.showCircle = pick(args.showCircle, false);
         measure.showAzimuth = pick(args.showAzimuth, false);
         measure.showEdges = pick(args.showEdges, true);
+        measure.showMarkers = pick(args.showMarkers, true);
         measure.closed = pick(args.closed, false);
         measure.maxMarkers = pick(args.maxMarkers, Infinity);
 
         measure.name = args.name || "Measurement";
+        measure.isInserting = true;
 
         this.scene.add(measure);
 
@@ -231,6 +233,7 @@ export class MeasuringTool extends EventDispatcher {
         };
 
         cancel.callback = e => {
+            measure.isInserting = false;
             if (cancel.removeLastMarker) {
                 measure.removeMarker(measure.points.length - 1);
             }
@@ -393,6 +396,24 @@ export class MeasuringTool extends EventDispatcher {
             }
 
             {
+                let label = measure.totalLabel;
+                let distance = label.position.distanceTo(camera.position);
+                let pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
+
+                let scale = (70 / pr);
+                label.scale.set(scale, scale, scale);
+            }
+
+            {
+                let label = measure.circleDetailLabel;
+                let distance = label.position.distanceTo(camera.position);
+                let pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
+
+                let scale = (70 / pr);
+                label.scale.set(scale, scale, scale);
+            }
+
+            {
                 const materials = [
                     measure.circleRadiusLine.material,
                     ...measure.edges.map((e) => e.material),
@@ -405,19 +426,43 @@ export class MeasuringTool extends EventDispatcher {
                 }
             }
 
-            if (!this.showLabels) {
-                const labels = [
-                    ...measure.sphereLabels,
-                    ...measure.edgeLabels,
-                    ...measure.angleLabels,
-                    ...measure.coordinateLabels,
-                    measure.heightLabel,
-                    measure.areaLabel,
-                    measure.circleRadiusLabel,
-                ];
+            const reveal = measure.isRevealed();
+            const primaryVisible = (measure.permanentLabelsVisible !== false) || reveal;
+            const anglesPrimary = measure.showDistances === false;
 
-                for (const label of labels) {
-                    label.visible = false;
+            const detailLabels = [...measure.edgeLabels];
+            if (measure.circleDetailLabel) {
+                detailLabels.push(measure.circleDetailLabel);
+            }
+            if (!anglesPrimary) {
+                detailLabels.push(...measure.angleLabels);
+            }
+            const primaryLabels = [
+                ...measure.coordinateLabels,
+                measure.heightLabel,
+                measure.areaLabel,
+                measure.totalLabel,
+                measure.circleRadiusLabel,
+            ];
+            if (anglesPrimary) {
+                primaryLabels.push(...measure.angleLabels);
+            }
+            if (measure.azimuth && measure.azimuth.label) {
+                primaryLabels.push(measure.azimuth.label);
+            }
+
+            if (!this.showLabels || !reveal) {
+                for (const label of detailLabels) {
+                    if (label) {
+                        label.visible = false;
+                    }
+                }
+            }
+            if (!this.showLabels || !primaryVisible) {
+                for (const label of primaryLabels) {
+                    if (label) {
+                        label.visible = false;
+                    }
                 }
             }
         }

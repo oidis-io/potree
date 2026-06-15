@@ -69,6 +69,20 @@ function createAreaLabel() {
     return areaLabel;
 }
 
+function createTotalLabel() {
+    const totalLabel = new TextSprite("");
+
+    totalLabel.setTextColor({ r: 255, g: 255, b: 255, a: 1.0 });
+    totalLabel.setBorderColor({ r: 0, g: 0, b: 0, a: 1.0 });
+    totalLabel.setBackgroundColor({ r: 0, g: 0, b: 0, a: 1.0 });
+    totalLabel.fontsize = 16;
+    totalLabel.material.depthTest = false;
+    totalLabel.material.opacity = 1;
+    totalLabel.visible = false;
+
+    return totalLabel;
+}
+
 function createRectangle(color) {
     const rectObject = new THREE.Object3D();
 
@@ -90,6 +104,20 @@ function createCircleRadiusLabel() {
     circleRadiusLabel.visible = false;
 
     return circleRadiusLabel;
+}
+
+function createCircleDetailLabel() {
+    const circleDetailLabel = new TextSprite("");
+
+    circleDetailLabel.setTextColor({ r: 140, g: 250, b: 140, a: 1.0 });
+    circleDetailLabel.setBorderColor({ r: 0, g: 0, b: 0, a: 1.0 });
+    circleDetailLabel.setBackgroundColor({ r: 0, g: 0, b: 0, a: 1.0 });
+    circleDetailLabel.fontsize = 16;
+    circleDetailLabel.material.depthTest = false;
+    circleDetailLabel.material.opacity = 1;
+    circleDetailLabel.visible = false;
+
+    return circleDetailLabel;
 }
 
 function createCircleRadiusLine($color) {
@@ -312,9 +340,16 @@ export class Measure extends THREE.Object3D {
         this._showRectangle = false;
         this._showHeight = false;
         this._showEdges = true;
+        this._showMarkers = true;
         this._showAzimuth = false;
         this._title = null;
         this.maxMarkers = Number.MAX_SAFE_INTEGER;
+        this.permanentLabelsVisible = true;
+        this.isHovered = false;
+        this.isListHovered = false;
+        this.isPinned = false;
+        this.isInserting = false;
+        this._hoverCount = 0;
 
         this.sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
         this.color = $args?.color ? $args.color : 0xff0000;
@@ -329,7 +364,9 @@ export class Measure extends THREE.Object3D {
         this.heightEdge = createHeightLine();
         this.heightLabel = createHeightLabel();
         this.areaLabel = createAreaLabel();
+        this.totalLabel = createTotalLabel();
         this.circleRadiusLabel = createCircleRadiusLabel();
+        this.circleDetailLabel = createCircleDetailLabel();
         this.circleRadiusLine = createCircleRadiusLine(this.color);
         this.circleLine = createCircleLine(this.color);
         this.circleCenter = createCircleCenter();
@@ -340,7 +377,9 @@ export class Measure extends THREE.Object3D {
         this.add(this.heightEdge);
         this.add(this.heightLabel);
         this.add(this.areaLabel);
+        this.add(this.totalLabel);
         this.add(this.circleRadiusLabel);
+        this.add(this.circleDetailLabel);
         this.add(this.circleRadiusLine);
         this.add(this.circleLine);
         this.add(this.circleCenter);
@@ -357,6 +396,21 @@ export class Measure extends THREE.Object3D {
                 depthWrite: false
             }
         );
+    }
+
+    markHoverEnter() {
+        this._hoverCount++;
+        this.isHovered = true;
+    }
+
+    markHoverLeave() {
+        this._hoverCount = Math.max(0, this._hoverCount - 1);
+        this.isHovered = this._hoverCount > 0;
+    }
+
+    isRevealed() {
+        return this.isInserting === true || this.isHovered === true ||
+            this.isListHovered === true || this.isPinned === true;
     }
 
     addMarker(point) {
@@ -395,6 +449,7 @@ export class Measure extends THREE.Object3D {
             let actualEdge = null;
 
             let mouseover = (e) => {
+                this.markHoverEnter();
                 if (this.enabled === false) {
                     return;
                 }
@@ -403,6 +458,7 @@ export class Measure extends THREE.Object3D {
                 e.object.material.linewidth = 4;
             };
             let mouseleave = (e) => {
+                this.markHoverLeave();
                 e.object.material.color.set(this.color);
                 e.object.material.linewidth = 2;
             };
@@ -560,12 +616,16 @@ export class Measure extends THREE.Object3D {
             };
 
             let mouseover = (e) => {
+                this.markHoverEnter();
                 if (this.enabled === false) {
                     return;
                 }
                 e.object.material.emissive.setHex(0x888888);
             };
-            let mouseleave = (e) => e.object.material.emissive.setHex(0x000000);
+            let mouseleave = (e) => {
+                this.markHoverLeave();
+                e.object.material.emissive.setHex(0x000000);
+            };
 
             sphere.addEventListener("drag", drag);
             sphere.addEventListener("drop", drop);
@@ -711,6 +771,7 @@ export class Measure extends THREE.Object3D {
             let point = this.points[0];
             let position = point.position;
             this.spheres[0].position.copy(position);
+            this.spheres[0].visible = this._showMarkers;
 
             {
                 let coordinateLabel = this.coordinateLabels[0];
@@ -748,6 +809,7 @@ export class Measure extends THREE.Object3D {
 
             sphere.position.copy(point.position);
             sphere.material.color = new THREE.Color(this.color);
+            sphere.visible = this._showMarkers;
 
             {
                 let edge = this.edges[index];
@@ -814,6 +876,26 @@ export class Measure extends THREE.Object3D {
         }
 
         {
+            let totalLength = 0;
+            for (let i = 0; i < this.points.length; i++) {
+                let isClosing = (i === this.points.length - 1);
+                if (isClosing && !this.closed) {
+                    continue;
+                }
+                let next = (i + 1) % this.points.length;
+                totalLength += this.points[i].position.distanceTo(this.points[next].position);
+            }
+            let suffix = "";
+            if (this.lengthUnit != null && this.lengthUnitDisplay != null) {
+                totalLength = totalLength / this.lengthUnit.unitspermeter * this.lengthUnitDisplay.unitspermeter;
+                suffix = this.lengthUnitDisplay.code;
+            }
+            this.totalLabel.position.copy(centroid);
+            this.totalLabel.setText(`${Utils.addCommas(totalLength.toFixed(2))} ${suffix}`);
+            this.totalLabel.visible = this.showDistances && !this.showArea && this.points.length >= 2;
+        }
+
+        {
             let heightEdge = this.heightEdge;
             heightEdge.visible = this.showHeight;
             this.heightLabel.visible = this.showHeight;
@@ -858,7 +940,14 @@ export class Measure extends THREE.Object3D {
         }
 
         {
+            if (this.showCircle) {
+                for (const coordinateLabel of this.coordinateLabels) {
+                    coordinateLabel.visible = false;
+                }
+            }
+
             const circleRadiusLabel = this.circleRadiusLabel;
+            const circleDetailLabel = this.circleDetailLabel;
             const circleRadiusLine = this.circleRadiusLine;
             const circleLine = this.circleLine;
             const circleCenter = this.circleCenter;
@@ -866,6 +955,7 @@ export class Measure extends THREE.Object3D {
             const circleOkay = this.points.length === 3;
 
             circleRadiusLabel.visible = this.showCircle && circleOkay;
+            circleDetailLabel.visible = this.showCircle && circleOkay;
             circleRadiusLine.visible = this.showCircle && circleOkay;
             circleLine.visible = this.showCircle && circleOkay;
             circleCenter.visible = this.showCircle && circleOkay;
@@ -882,6 +972,7 @@ export class Measure extends THREE.Object3D {
 
                 if (isNaN(center.x) || isNaN(center.y) || isNaN(center.z)) {
                     circleRadiusLabel.visible = false;
+                    circleDetailLabel.visible = false;
                     circleRadiusLine.visible = false;
                     circleLine.visible = false;
                     circleCenter.visible = false;
@@ -910,6 +1001,13 @@ export class Measure extends THREE.Object3D {
                     circleRadiusLabel.visible = true;
                     circleRadiusLabel.position.copy(center.clone().add(B).multiplyScalar(0.5));
                     circleRadiusLabel.setText(`${radius.toFixed(3)}`);
+
+                    const diameter = radius * 2;
+                    const circumference = Math.PI * diameter;
+                    const circleArea = Math.PI * radius * radius;
+                    circleDetailLabel.position.copy(center);
+                    circleDetailLabel.setText(
+                        `⌀ ${diameter.toFixed(3)}   obvod ${circumference.toFixed(3)}   ${circleArea.toFixed(2)} m²`);
                 }
             }
         }
@@ -980,17 +1078,18 @@ export class Measure extends THREE.Object3D {
                 const msg = `${txtArea} ${suffix}\u00B2`;
                 this.areaLabel.setText(msg);
             } else {
-                this.areaLabel.visible = false;
                 this.rectangle.visible = false;
             }
         }
     }
 
     raycast(raycaster, intersects) {
-        for (let i = 0; i < this.points.length; i++) {
-            let sphere = this.spheres[i];
+        if (this._showMarkers !== false) {
+            for (let i = 0; i < this.points.length; i++) {
+                let sphere = this.spheres[i];
 
-            sphere.raycast(raycaster, intersects);
+                sphere.raycast(raycaster, intersects);
+            }
         }
 
         // recalculate distances because they are not necessarily correct
@@ -1057,6 +1156,15 @@ export class Measure extends THREE.Object3D {
 
     set showEdges(value) {
         this._showEdges = value;
+        this.update();
+    }
+
+    get showMarkers() {
+        return this._showMarkers;
+    }
+
+    set showMarkers(value) {
+        this._showMarkers = value;
         this.update();
     }
 
