@@ -22,6 +22,7 @@ function updateAzimuth(viewer, measure) {
     const isOkay = measure.points.length === 2;
 
     azimuth.node.visible = isOkay && measure.showAzimuth;
+    azimuth.label.visible = azimuth.node.visible;
 
     if (!azimuth.node.visible) {
         return;
@@ -221,7 +222,17 @@ export class MeasuringTool extends EventDispatcher {
                 measure.addMarker(measure.points[measure.points.length - 1].position.clone());
 
                 if (measure.points.length >= measure.maxMarkers) {
-                    cancel.callback();
+                    if (cancel.removeLastMarker) {
+                        cancel.callback();
+                    } else {
+                        let lastSphere = measure.spheres[measure.spheres.length - 1];
+                        let finishOnDrop = () => {
+                            lastSphere.removeEventListener("drop", finishOnDrop);
+                            measure.isInserting = false;
+                        };
+                        lastSphere.addEventListener("drop", finishOnDrop);
+                        cancel.callback(null, true);
+                    }
                 }
 
                 this.viewer.inputHandler.startDragging(
@@ -232,8 +243,10 @@ export class MeasuringTool extends EventDispatcher {
             }
         };
 
-        cancel.callback = e => {
-            measure.isInserting = false;
+        cancel.callback = (e, $deferInserting) => {
+            if ($deferInserting !== true) {
+                measure.isInserting = false;
+            }
             if (cancel.removeLastMarker) {
                 measure.removeMarker(measure.points.length - 1);
             }
