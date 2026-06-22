@@ -447,10 +447,19 @@ export class Utils {
                 point: closestPoint
             };
         } else {
-            if (!viewer?.jgwImage?.mesh?.position.z) {
+            let planeZ = null;
+            if (viewer?.jgwImage?.mesh?.position?.z != null) {
+                planeZ = viewer.jgwImage.mesh.position.z;
+            } else if (viewer?.drawableArea?.entities?.length > 0) {
+                const drawableBox = viewer.drawableArea.getBoundingBox();
+                if (drawableBox && !drawableBox.isEmpty()) {
+                    planeZ = drawableBox.min.z;
+                }
+            }
+            if (planeZ == null) {
                 return null;
             }
-            const planeZ0 = new THREE.Plane(new THREE.Vector3(0, 0, 1), -viewer.jgwImage.mesh.position.z);
+            const planeZ0 = new THREE.Plane(new THREE.Vector3(0, 0, 1), -planeZ);
             const intersection = new THREE.Vector3();
             const hasIntersection = ray.intersectPlane(planeZ0, intersection);
             if (!hasIntersection) {
