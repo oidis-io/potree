@@ -781,7 +781,7 @@ export class Measure extends THREE.Object3D {
                 } else {
                     coordinateLabel.setText(this._title);
                 }
-                coordinateLabel.visible = this.showCoordinates;
+                coordinateLabel.visible = this.showCoordinates && this.isRevealed();
             }
 
             return;
