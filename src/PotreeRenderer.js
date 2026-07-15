@@ -926,10 +926,18 @@ export class Renderer {
 
                 let uFilterGPSTimeClipRange = material.uniforms.uFilterGPSTimeClipRange.value;
 
-                let normalizedClipRange = [
-                    (uFilterGPSTimeClipRange[0] - globalRange[0]) / globalRangeSize,
-                    (uFilterGPSTimeClipRange[1] - globalRange[0]) / globalRangeSize,
-                ];
+                let normalizedClipRange;
+                if (Number.isFinite(globalRange[0]) && Number.isFinite(globalRangeSize) && globalRangeSize > 0) {
+                    normalizedClipRange = [
+                        (uFilterGPSTimeClipRange[0] - globalRange[0]) / globalRangeSize,
+                        (uFilterGPSTimeClipRange[1] - globalRange[0]) / globalRangeSize,
+                    ];
+                } else {
+                    // gps-time range is unavailable (EPT clouds do not populate it), so the normalization above
+                    // produces NaN/Infinity uniforms. Firefox evaluates those comparisons as false, but Chromium
+                    // ANGLE-D3D11 treats them as "outside range" and discards every point. Clip nothing instead.
+                    normalizedClipRange = [-1e30, 1e30];
+                }
 
                 shader.setUniform2f("uFilterGPSTimeClipRange", normalizedClipRange);
             }
@@ -1116,19 +1124,29 @@ export class Renderer {
                 if (octree.pcoGeometry.root.isLoaded()) {
                     let attributes = octree.pcoGeometry.root.geometry.attributes;
 
-                    if (attributes["gps-time"]) {
+                    // Only enable an attribute clip-filter when its values expose a usable finite range. EPT
+                    // clouds often leave these ranges unset (NaN) or carry NaN gps-time values, so the shader
+                    // compares against NaN — which Firefox ignores but Chromium ANGLE-D3D11 treats as "outside
+                    // range", hiding the whole cloud. The check runs in JS where NaN semantics are reliable.
+                    const clipRangeUsable = (name) => {
+                        const attr = octree.getAttribute(name);
+                        return !!attr && !!attr.range && Number.isFinite(attr.range[0]) && Number.isFinite(attr.range[1]);
+                    };
+
+                    if (attributes["gps-time"] && clipRangeUsable("gps-time")) {
                         defines.push("#define clip_gps_enabled");
                     }
 
-                    if (attributes["return number"]) {
+                    if (attributes["return number"] && clipRangeUsable("return number")) {
                         defines.push("#define clip_return_number_enabled");
                     }
 
-                    if (attributes["number of returns"]) {
+                    if (attributes["number of returns"] && clipRangeUsable("number of returns")) {
                         defines.push("#define clip_number_of_returns_enabled");
                     }
 
-                    if (attributes["source id"] || attributes["point source id"]) {
+                    if ((attributes["source id"] || attributes["point source id"]) &&
+                        (clipRangeUsable("source id") || clipRangeUsable("point source id"))) {
                         defines.push("#define clip_point_source_id_enabled");
                     }
                 }
