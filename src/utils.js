@@ -881,53 +881,71 @@ export class Utils {
             // if there is a projection, transform coordinates to WGS84
             // and compute angle to north there
 
-            proj4.defs("pointcloud", projection);
-            const transform = proj4("pointcloud", "WGS84");
+            try {
+                let transform;
 
-            const llP1 = transform.forward(p1.toArray());
-            let llP2 = transform.forward([p1.x, p1.y + distance]);
-            const polarRadius = Math.sqrt((llP2[0] - llP1[0]) ** 2 + (llP2[1] - llP1[1]) ** 2);
-            llP2 = [llP1[0], llP1[1] + polarRadius];
+                if (projection.includes("EPSG")) {
+                    transform = proj4(projection, "WGS84");
+                } else {
+                    proj4.defs("pointcloud", projection);
+                    transform = proj4("pointcloud", "WGS84");
+                }
 
-            const northVec = transform.inverse(llP2);
+                const llP1 = transform.forward(p1.toArray());
+                let llP2 = transform.forward([p1.x, p1.y + distance]);
+                const polarRadius = Math.sqrt((llP2[0] - llP1[0]) ** 2 + (llP2[1] - llP1[1]) ** 2);
+                llP2 = [llP1[0], llP1[1] + polarRadius];
 
-            return new THREE.Vector3(...northVec, p1.z).sub(p1);
-        } else {
-            // if there is no projection, assume [0, 1, 0] as north direction
+                const northVec = transform.inverse(llP2);
 
-            return new THREE.Vector3(0, 1, 0).multiplyScalar(distance);
+                return new THREE.Vector3(...northVec, p1.z).sub(p1);
+            } catch (e) {
+                // projection not resolvable by proj4, fall back to the unprojected direction
+            }
         }
+
+        // if there is no usable projection, assume [0, 1, 0] as north direction
+
+        return new THREE.Vector3(0, 1, 0).multiplyScalar(distance);
     }
 
     static computeAzimuth(p1, p2, projection) {
         let azimuth = 0;
+        let dir = null;
 
         if (projection) {
             // if there is a projection, transform coordinates to WGS84
             // and compute angle to north there
 
-            let transform;
+            try {
+                let transform;
 
-            if (projection.includes("EPSG")) {
-                transform = proj4(projection, "WGS84");
-            } else {
-                proj4.defs("pointcloud", projection);
-                transform = proj4("pointcloud", "WGS84");
+                if (projection.includes("EPSG")) {
+                    transform = proj4(projection, "WGS84");
+                } else {
+                    proj4.defs("pointcloud", projection);
+                    transform = proj4("pointcloud", "WGS84");
+                }
+
+                const llP1 = transform.forward(p1.toArray());
+                const llP2 = transform.forward(p2.toArray());
+                dir = [
+                    llP2[0] - llP1[0],
+                    llP2[1] - llP1[1],
+                ];
+            } catch (e) {
+                // projection not resolvable by proj4, fall back to the unprojected direction
+                dir = null;
             }
-
-            const llP1 = transform.forward(p1.toArray());
-            const llP2 = transform.forward(p2.toArray());
-            const dir = [
-                llP2[0] - llP1[0],
-                llP2[1] - llP1[1],
-            ];
-            azimuth = Math.atan2(dir[1], dir[0]) - Math.PI / 2;
-        } else {
-            // if there is no projection, assume [0, 1, 0] as north direction
-
-            const dir = [p2.x - p1.x, p2.y - p1.y];
-            azimuth = Math.atan2(dir[1], dir[0]) - Math.PI / 2;
         }
+
+        if (dir === null) {
+            // if there is no usable projection, assume [0, 1, 0] as north direction
+
+            dir = [p2.x - p1.x, p2.y - p1.y];
+        }
+
+        azimuth = Math.atan2(dir[1], dir[0]) - Math.PI / 2;
 
         // make clockwise
         azimuth = -azimuth;
