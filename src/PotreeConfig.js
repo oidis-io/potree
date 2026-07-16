@@ -24,7 +24,7 @@ const PotreeConfig = {
     version: {
         major: 2026,
         minor: 2,
-        suffix: ".2"
+        suffix: ".3"
     },
     measureTimings: false,
     debug: {},
