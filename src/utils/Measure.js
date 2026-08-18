@@ -349,6 +349,7 @@ export class Measure extends THREE.Object3D {
         this.isListHovered = false;
         this.isPinned = false;
         this.isInserting = false;
+        this.isBeingDrawn = false;
         this._hoverCount = 0;
 
         this.sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
@@ -450,7 +451,7 @@ export class Measure extends THREE.Object3D {
 
             let mouseover = (e) => {
                 this.markHoverEnter();
-                if (this.enabled === false) {
+                if (this.enabled === false || this.isBeingDrawn === true) {
                     return;
                 }
                 actualEdge = e.object;
@@ -459,8 +460,8 @@ export class Measure extends THREE.Object3D {
             };
             let mouseleave = (e) => {
                 this.markHoverLeave();
-                e.object.material.color.set(this.color);
-                e.object.material.linewidth = 2;
+                e.object.material.color.set(e.object.isElementSelected === true ? 0xff8800 : this.color);
+                e.object.material.linewidth = e.object.isElementSelected === true ? 4 : 2;
             };
 
             let ghostLine = null;
@@ -617,14 +618,14 @@ export class Measure extends THREE.Object3D {
 
             let mouseover = (e) => {
                 this.markHoverEnter();
-                if (this.enabled === false) {
+                if (this.enabled === false || this.isBeingDrawn === true) {
                     return;
                 }
                 e.object.material.emissive.setHex(0x888888);
             };
             let mouseleave = (e) => {
                 this.markHoverLeave();
-                e.object.material.emissive.setHex(0x000000);
+                e.object.material.emissive.setHex(e.object.isElementSelected === true ? 0x888888 : 0x000000);
             };
 
             sphere.addEventListener("drag", drag);

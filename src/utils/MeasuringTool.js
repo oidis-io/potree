@@ -209,6 +209,7 @@ export class MeasuringTool extends EventDispatcher {
 
         measure.name = args.name || "Measurement";
         measure.isInserting = true;
+        measure.isBeingDrawn = true;
 
         this.scene.add(measure);
 
@@ -229,6 +230,7 @@ export class MeasuringTool extends EventDispatcher {
                         let finishOnDrop = () => {
                             lastSphere.removeEventListener("drop", finishOnDrop);
                             measure.isInserting = false;
+                            measure.isBeingDrawn = false;
                         };
                         lastSphere.addEventListener("drop", finishOnDrop);
                         cancel.callback(null, true);
@@ -246,6 +248,8 @@ export class MeasuringTool extends EventDispatcher {
         cancel.callback = (e, $deferInserting) => {
             if ($deferInserting !== true) {
                 measure.isInserting = false;
+                measure.isBeingDrawn = false;
+                this.viewer.inputHandler.drag = null;
             }
             if (cancel.removeLastMarker) {
                 measure.removeMarker(measure.points.length - 1);
