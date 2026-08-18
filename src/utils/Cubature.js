@@ -210,7 +210,7 @@ export class Cubature extends THREE.Object3D {
             e.object.material.emissive.setHex(0x888888);
         };
         const mouseleave = (e) => {
-            e.object.material.emissive.setHex(0x000000);
+            e.object.material.emissive.setHex(e.object.isElementSelected === true ? 0x888888 : 0x000000);
         };
         const drag = (e) => {
             if (!this.enabled || this.phase === "pushpull") {

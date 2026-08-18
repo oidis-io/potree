@@ -64,6 +64,7 @@ export class ProfileTool extends EventDispatcher {
 
         let profile = new Profile();
         profile.name = args.name || "Profile";
+        profile.isBeingDrawn = true;
 
         this.dispatchEvent({
             type: "start_inserting_profile",
@@ -98,6 +99,8 @@ export class ProfileTool extends EventDispatcher {
         };
 
         cancel.callback = e => {
+            profile.isBeingDrawn = false;
+            this.viewer.inputHandler.drag = null;
             profile.removeMarker(profile.points.length - 1);
             domElement.removeEventListener("mouseup", insertionCallback, false);
             this.viewer.removeEventListener("cancel_insertions", cancel.callback);

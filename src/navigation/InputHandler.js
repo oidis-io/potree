@@ -36,6 +36,7 @@ export class InputHandler extends EventDispatcher {
         this.blacklist = new Set();
 
         this.drag = null;
+        this.objectDragThreshold = 5;
         this.mouse = new THREE.Vector2(0, 0);
 
         this.selection = [];
@@ -435,14 +436,17 @@ export class InputHandler extends EventDispatcher {
             this.drag.end.set(x, y);
 
             if (this.drag.object) {
-                if (this.logMessages) {
-                    console.log(this.constructor.name + ": drag: " + this.drag.object.name);
+                let dragDistance = new THREE.Vector2().subVectors(this.drag.end, this.drag.start).length();
+                if (dragDistance >= this.objectDragThreshold) {
+                    if (this.logMessages) {
+                        console.log(this.constructor.name + ": drag: " + this.drag.object.name);
+                    }
+                    this.drag.object.dispatchEvent({
+                        type: "drag",
+                        drag: this.drag,
+                        viewer: this.viewer
+                    });
                 }
-                this.drag.object.dispatchEvent({
-                    type: "drag",
-                    drag: this.drag,
-                    viewer: this.viewer
-                });
             } else {
                 if (this.logMessages) {
                     console.log(this.constructor.name + ": drag: ");

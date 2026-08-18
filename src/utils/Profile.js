@@ -29,6 +29,7 @@ export class Profile extends THREE.Object3D {
 
         this.sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
         this.color = 0xff0000;
+        this.isBeingDrawn = false;
     }
 
     createSphereMaterial() {
@@ -145,8 +146,13 @@ export class Profile extends THREE.Object3D {
                 }
             };
 
-            let mouseover = (e) => e.object.material.emissive.setHex(0x888888);
-            let mouseleave = (e) => e.object.material.emissive.setHex(0x000000);
+            let mouseover = (e) => {
+                if (this.isBeingDrawn === true) {
+                    return;
+                }
+                e.object.material.emissive.setHex(0x888888);
+            };
+            let mouseleave = (e) => e.object.material.emissive.setHex(e.object.isElementSelected === true ? 0x888888 : 0x000000);
 
             sphere.addEventListener("drag", drag);
             sphere.addEventListener("drop", drop);
