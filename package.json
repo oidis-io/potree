@@ -17,7 +17,8 @@
     "postinstall": "npm run build",
     "lint": "eslint .",
     "lint-fix": "eslint . --fix",
-    "release": "npm run lint && gulp release"
+    "release": "npm run lint && gulp release",
+    "test": "node --import ./tests/bootstrap.mjs --test \"tests/*.test.mjs\""
   },
   "dependencies": {
     "gulp": "^5.0.1",

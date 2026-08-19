@@ -14,7 +14,9 @@ import { Utils } from "../utils.js";
 import { Line2 } from "../../libs/three.js/lines/Line2.js";
 import { LineGeometry } from "../../libs/three.js/lines/LineGeometry.js";
 import { LineMaterial } from "../../libs/three.js/lines/LineMaterial.js";
-import { bestFitPlane, projectOntoPlane, prismVolume, computeCentroid } from "./CubatureMath.js";
+import { prismVolume, computeCentroid, shadeColor } from "./CubatureMath.js";
+import { buildSurfaceMeshData } from "./TerrainGridMath.js";
+import { intersectDragWithLockPlane, lockPlaneZAt, refreshHeightLockVisual } from "./HeightLockPlane.js";
 
 function isValidPosition(p) {
     return p
@@ -68,8 +70,22 @@ export class Cubature extends THREE.Object3D {
         this.topControlPoints = [];
         this.bottomControlPoints = [];
 
-        this.topPlane = null;
-        this.bottomPlane = null;
+        this.autoMode = false;
+        this.heightLock = null;
+        this.heightLockVisual = null;
+        this.autoOptions = null;
+        this.autoStale = false;
+        this.computationState = "idle";
+        this.computationProgress = null;
+        this.computedVolume = null;
+        this.computedQuality = null;
+        this.computedStats = null;
+        this.computedInputHash = null;
+        this.detectedSurfaceMesh = null;
+        this._suppressAutoStale = false;
+        this._loadingFromDb = false;
+        this._autoRecomputeWired = false;
+        this._autoRecomputeTimer = null;
 
         this.topSpheres = [];
         this.bottomSpheres = [];
@@ -86,10 +102,11 @@ export class Cubature extends THREE.Object3D {
         this.isListHovered = false;
         this.isPinned = false;
 
-        this.topColor = args.topColor !== undefined ? args.topColor : 0xff0000;
-        this.bottomColor = args.bottomColor !== undefined ? args.bottomColor : 0x3399ff;
-        this.sideColor = args.sideColor !== undefined ? args.sideColor : 0xffaa00;
-        this.sideMeshColor = args.sideMeshColor !== undefined ? args.sideMeshColor : 0xffdd66;
+        this.baseColor = args.color !== undefined ? args.color : 0xff0000;
+        this.topColor = args.topColor !== undefined ? args.topColor : shadeColor(this.baseColor, -0.35);
+        this.bottomColor = args.bottomColor !== undefined ? args.bottomColor : shadeColor(this.baseColor, 0.5);
+        this.sideColor = args.sideColor !== undefined ? args.sideColor : this.baseColor;
+        this.sideMeshColor = args.sideMeshColor !== undefined ? args.sideMeshColor : shadeColor(this.baseColor, 0.5);
 
         this.sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
 
@@ -213,7 +230,7 @@ export class Cubature extends THREE.Object3D {
             e.object.material.emissive.setHex(e.object.isElementSelected === true ? 0x888888 : 0x000000);
         };
         const drag = (e) => {
-            if (!this.enabled || this.phase === "pushpull") {
+            if (!this.enabled || this.phase === "pushpull" || this.phase === "computing") {
                 return;
             }
             const list = polygonId === "top" ? this.topSpheres : this.bottomSpheres;
@@ -221,6 +238,7 @@ export class Cubature extends THREE.Object3D {
             if (index === -1) {
                 return;
             }
+            const lockActive = this.heightLock !== null && polygonId === "top";
             const intersection = Utils.getMousePointCloudIntersection(
                 e.drag.end,
                 e.viewer.scene.getActiveCamera(),
@@ -230,7 +248,12 @@ export class Cubature extends THREE.Object3D {
             );
             let target = null;
             if (intersection && intersection.distance !== null) {
-                target = intersection.location;
+                target = intersection.location.clone();
+                if (lockActive) {
+                    target.z = lockPlaneZAt(this.heightLock, target.x, target.y);
+                }
+            } else if (lockActive) {
+                target = intersectDragWithLockPlane(e.drag.end, e.viewer, this.heightLock);
             } else {
                 const camera = e.viewer.scene.getActiveCamera();
                 const renderer = e.viewer.renderer;
@@ -386,6 +409,7 @@ export class Cubature extends THREE.Object3D {
             return;
         }
         this.topControlPoints[index].copy(newPosition);
+        this.markAutoStale();
         this.update();
         this.dispatchEvent({ type: "marker_moved", cubature: this, polygonId: "top", index: index });
     }
@@ -398,8 +422,56 @@ export class Cubature extends THREE.Object3D {
             return;
         }
         this.bottomControlPoints[index].copy(newPosition);
+        this.markAutoStale();
         this.update();
         this.dispatchEvent({ type: "marker_moved", cubature: this, polygonId: "bottom", index: index });
+    }
+
+    applyHeightLock(lock) {
+        this.heightLock = lock;
+        refreshHeightLockVisual(this, lock, this.topControlPoints);
+        this.dispatchEvent({ type: "height_lock_changed", cubature: this, lock });
+    }
+
+    markAutoStale() {
+        if (!this.autoMode || this._suppressAutoStale || this._loadingFromDb || this.autoStale) {
+            return;
+        }
+        if (this.phase !== "edit") {
+            return;
+        }
+        this.autoStale = true;
+        this.dispatchEvent({ type: "stale_changed", cubature: this, stale: true });
+    }
+
+    beginComputing() {
+        this.phase = "computing";
+        this.computationState = "computing";
+        this.computationProgress = null;
+        this.update();
+        this.dispatchEvent({ type: "phase_changed", cubature: this, phase: this.phase });
+        this.dispatchEvent({ type: "computation_started", cubature: this });
+    }
+
+    applyComputedResult(result) {
+        this._suppressAutoStale = true;
+        for (let i = 0; i < this.topControlPoints.length; i++) {
+            const top = this.topControlPoints[i];
+            const bottom = this.bottomControlPoints[i];
+            bottom.x = top.x;
+            bottom.y = top.y;
+            bottom.z = result.bottomZByIndex[i];
+        }
+        this.applyDetectedSurface(result.surface);
+        this.computedVolume = result.volume;
+        this.computedQuality = result.quality;
+        this.computedStats = result.stats;
+        this.computedInputHash = result.inputHash;
+        this.computationState = "done";
+        this.computationProgress = null;
+        this.autoStale = false;
+        this.update();
+        this._suppressAutoStale = false;
     }
 
     insertVertexAt(polygonId, edgeIndex, position) {
@@ -480,6 +552,7 @@ export class Cubature extends THREE.Object3D {
         this.add(newSideLabel);
         this.sideEdgeLabels.splice(insertIndex, 0, newSideLabel);
 
+        this.markAutoStale();
         this.update();
         this.dispatchEvent({ type: "vertex_inserted", cubature: this, polygonId: polygonId, index: insertIndex });
         return true;
@@ -519,36 +592,48 @@ export class Cubature extends THREE.Object3D {
         this.remove(this.bottomEdgeLabels.splice(index, 1)[0]);
         this.remove(this.sideEdgeLabels.splice(index, 1)[0]);
 
+        this.markAutoStale();
         this.update();
         this.dispatchEvent({ type: "vertex_removed", cubature: this, index: index });
         return true;
     }
 
-    getProjectedTop() {
-        if (!this.topPlane || this.topControlPoints.length < 3) {
-            return this.topControlPoints.map(p => p.clone());
-        }
-        return this.topControlPoints.map(p => {
-            const projected = projectOntoPlane(p, this.topPlane);
-            return new THREE.Vector3(projected.x, projected.y, projected.z);
-        });
-    }
-
-    getProjectedBottom() {
-        if (!this.bottomPlane || this.bottomControlPoints.length < 3) {
-            return this.bottomControlPoints.map(p => p.clone());
-        }
-        return this.bottomControlPoints.map(p => {
-            const projected = projectOntoPlane(p, this.bottomPlane);
-            return new THREE.Vector3(projected.x, projected.y, projected.z);
-        });
-    }
-
     computeVolume() {
+        if (this.autoMode && this.computedVolume !== null) {
+            return this.computedVolume;
+        }
         if (this.topControlPoints.length < 3 || this.bottomControlPoints.length < 3) {
             return 0;
         }
         return prismVolume(this.topControlPoints, this.bottomControlPoints);
+    }
+
+    dispose() {
+        for (const sphere of [...this.topSpheres, ...this.bottomSpheres]) {
+            sphere.material.dispose();
+        }
+        this.sphereGeometry.dispose();
+        for (const edge of [...this.topEdges, ...this.bottomEdges, ...this.sideEdges]) {
+            edge.geometry.dispose();
+            edge.material.dispose();
+        }
+        for (const mesh of [...this.sideMeshes, this.topMesh, this.bottomMesh]) {
+            mesh.geometry.dispose();
+            mesh.material.dispose();
+        }
+        if (this.detectedSurfaceMesh !== null) {
+            this.detectedSurfaceMesh.geometry.dispose();
+            this.detectedSurfaceMesh.material.dispose();
+        }
+        const labels = [
+            ...this.topEdgeLabels, ...this.bottomEdgeLabels, ...this.sideEdgeLabels, this.volumeLabel
+        ];
+        for (const label of labels) {
+            if (label.material.map) {
+                label.material.map.dispose();
+            }
+            label.material.dispose();
+        }
     }
 
     update() {
@@ -644,17 +729,16 @@ export class Cubature extends THREE.Object3D {
         }
 
         if (N >= 3) {
-            this.topPlane = bestFitPlane(this.topControlPoints);
             this.updatePolygonMesh(this.topMesh, this.topControlPoints);
         } else {
-            this.topPlane = null;
             this.topMesh.visible = false;
         }
         if (M >= 3) {
-            this.bottomPlane = bestFitPlane(this.bottomControlPoints);
             this.updatePolygonMesh(this.bottomMesh, this.bottomControlPoints);
         } else {
-            this.bottomPlane = null;
+            this.bottomMesh.visible = false;
+        }
+        if (this.detectedSurfaceMesh !== null) {
             this.bottomMesh.visible = false;
         }
 
@@ -719,20 +803,83 @@ export class Cubature extends THREE.Object3D {
             );
             this.volumeLabel.position.copy(labelPos);
 
-            let volume = this.computeVolume();
-            let suffix = "m";
-            if (this.lengthUnit && this.lengthUnitDisplay) {
-                volume = volume / Math.pow(this.lengthUnit.unitspermeter, 3) * Math.pow(this.lengthUnitDisplay.unitspermeter, 3);
-                suffix = this.lengthUnitDisplay.code;
-            }
-            const formatted = volume.toLocaleString("cs-CZ", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
-            this.volumeLabel.setText(formatted + " " + suffix + "³");
-            this.volumeLabel.visible = this.phase === "pushpull" ||
+            this.volumeLabel.setText(this.buildVolumeLabelText());
+            this.volumeLabel.visible = this.phase === "pushpull" || this.phase === "computing" ||
                 this.permanentLabelsVisible !== false || this.isRevealed();
         }
+    }
+
+    applyDetectedSurface(surface) {
+        if (this.detectedSurfaceMesh !== null) {
+            this.remove(this.detectedSurfaceMesh);
+            this.detectedSurfaceMesh.geometry.dispose();
+            this.detectedSurfaceMesh.material.dispose();
+            this.detectedSurfaceMesh = null;
+        }
+        if (!surface) {
+            return;
+        }
+        const data = buildSurfaceMeshData(surface);
+        if (data.indices.length === 0) {
+            return;
+        }
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute("position", new THREE.BufferAttribute(data.positions, 3));
+        geometry.setIndex(new THREE.BufferAttribute(data.indices, 1));
+        geometry.computeBoundingSphere();
+        const material = new THREE.MeshBasicMaterial({
+            color: this.bottomColor,
+            transparent: true,
+            opacity: 0.28,
+            depthTest: true,
+            depthWrite: false,
+            side: THREE.DoubleSide
+        });
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.position.set(surface.originX, surface.originY, 0);
+        this.add(mesh);
+        this.detectedSurfaceMesh = mesh;
+    }
+
+    formatVolume(volume) {
+        let value = volume;
+        let suffix = "m";
+        if (this.lengthUnit && this.lengthUnitDisplay) {
+            value = value / Math.pow(this.lengthUnit.unitspermeter, 3) * Math.pow(this.lengthUnitDisplay.unitspermeter, 3);
+            suffix = this.lengthUnitDisplay.code;
+        }
+        const formatted = value.toLocaleString("cs-CZ", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+        return formatted + " " + suffix + "³";
+    }
+
+    buildVolumeLabelText() {
+        if (!this.autoMode) {
+            return this.formatVolume(this.computeVolume());
+        }
+        if (this.computationState === "computing") {
+            const progress = this.computationProgress;
+            if (progress && progress.pointsAccepted > 0) {
+                return "Počítám… (" + progress.pointsAccepted.toLocaleString("cs-CZ") + " bodů)";
+            }
+            return "Počítám…";
+        }
+        if (this.computationState === "failed") {
+            return "Výpočet selhal";
+        }
+        if (this.computedVolume === null) {
+            return this.formatVolume(this.computeVolume());
+        }
+        let text = this.formatVolume(this.computedVolume);
+        if (this.computedQuality && this.computedQuality.approximate) {
+            text += " (orientační)";
+        }
+        if (this.autoStale) {
+            text += " (neaktuální)";
+        }
+        return text;
     }
 
     findOctreeNodeMinZAt(viewer, x, y) {
@@ -774,33 +921,6 @@ export class Cubature extends THREE.Object3D {
             }
         }
         return result;
-    }
-
-    pickPointCloudAt(viewer, worldPos) {
-        const camera = viewer.scene.getActiveCamera();
-        const renderer = viewer.renderer;
-        if (!renderer || !renderer.domElement) {
-            return null;
-        }
-        const projected = worldPos.clone().project(camera);
-        if (!Number.isFinite(projected.x) || !Number.isFinite(projected.y)) {
-            return null;
-        }
-        const pixel = new THREE.Vector2(
-            (projected.x + 1) * renderer.domElement.clientWidth / 2,
-            (-projected.y + 1) * renderer.domElement.clientHeight / 2
-        );
-        const intersection = Utils.getMousePointCloudIntersection(
-            pixel,
-            camera,
-            viewer,
-            viewer.scene.pointclouds,
-            { pickClipped: true }
-        );
-        if (intersection && intersection.distance !== null && intersection.location) {
-            return intersection.location;
-        }
-        return null;
     }
 
     findClosestPointcloudPointToLine(viewer, lineStart, lineEnd, callerVertex, xyThreshold) {
@@ -884,6 +1004,7 @@ export class Cubature extends THREE.Object3D {
         const picked = this.findClosestPointcloudPointToLine(viewer, top, bottom, callerVertex, xyThreshold);
         if (picked) {
             target.z = picked.z;
+            this.markAutoStale();
             this.update();
             this.dispatchEvent({ type: "snapped_to_terrain", cubature: this, polygonId: polygonId, index: index });
             return true;
@@ -892,6 +1013,7 @@ export class Cubature extends THREE.Object3D {
             const nodeZ = this.findOctreeNodeMinZAt(viewer, top.x, top.y);
             if (nodeZ !== null && nodeZ < top.z) {
                 target.z = nodeZ;
+                this.markAutoStale();
                 this.update();
                 this.dispatchEvent({ type: "snapped_to_terrain", cubature: this, polygonId: polygonId, index: index });
                 return true;
@@ -916,22 +1038,6 @@ export class Cubature extends THREE.Object3D {
         return anySnapped;
     }
 
-    snapTopToTerrain(viewer) {
-        if (this.phase === "insertion") {
-            return false;
-        }
-        if (this.topControlPoints.length < 3 || this.bottomControlPoints.length < 3) {
-            return false;
-        }
-        let anySnapped = false;
-        for (let i = 0; i < this.topControlPoints.length; i++) {
-            if (this.snapVertexToTerrain(viewer, "top", i)) {
-                anySnapped = true;
-            }
-        }
-        return anySnapped;
-    }
-
     computeSnapThreshold(viewer) {
         let maxSpacing = 0;
         for (const pc of viewer.scene.pointclouds) {
@@ -943,30 +1049,6 @@ export class Cubature extends THREE.Object3D {
         }
         const dynamic = maxSpacing > 0 ? maxSpacing * 4 : 0.5;
         return Math.max(0.5, Math.min(5, dynamic));
-    }
-
-    computeSnapPreviewPositions(viewer) {
-        if (this.topControlPoints.length < 3 || this.bottomControlPoints.length < 3) {
-            return [];
-        }
-        const xyThreshold = this.computeSnapThreshold(viewer);
-        const result = [];
-        for (let i = 0; i < this.topControlPoints.length; i++) {
-            const top = this.topControlPoints[i];
-            const bottom = this.bottomControlPoints[i];
-            const picked = this.findClosestPointcloudPointToLine(viewer, top, bottom, bottom, xyThreshold);
-            if (picked) {
-                result.push(picked);
-                continue;
-            }
-            const nodeZ = this.findOctreeNodeMinZAt(viewer, top.x, top.y);
-            if (nodeZ !== null && nodeZ < top.z) {
-                result.push(new THREE.Vector3(top.x, top.y, nodeZ));
-                continue;
-            }
-            result.push(null);
-        }
-        return result;
     }
 
     raycast(raycaster, intersects) {

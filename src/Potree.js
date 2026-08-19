@@ -39,7 +39,11 @@ import { Annotation } from "./Annotation.js";
 import { BoxVolume, Volume } from "./utils/Volume.js";
 import { Cubature } from "./utils/Cubature.js";
 import { CubatureTool } from "./utils/CubatureTool.js";
-import { bestFitPlane, projectOntoPlane, prismVolume } from "./utils/CubatureMath.js";
+import { computeCentroid, prismVolume } from "./utils/CubatureMath.js";
+import { AUTO_CUBATURE_DEFAULTS, computeAutoCubatureInputHash } from "./utils/AutoCubatureComputation.js";
+import { Embankment } from "./utils/Embankment.js";
+import { EmbankmentTool } from "./utils/EmbankmentTool.js";
+import { EMBANKMENT_DEFAULTS } from "./utils/EmbankmentComputation.js";
 import { Scene } from "./viewer/Scene.js";
 import { Images360Loader } from "./modules/Images360/Images360.js";
 import { AnimationPath } from "./AnimationPath.js";
@@ -80,7 +84,11 @@ const Potree = {
     Volume,
     Cubature,
     CubatureTool,
-    CubatureMath: { bestFitPlane, projectOntoPlane, prismVolume },
+    CubatureMath: { computeCentroid, prismVolume },
+    AutoCubature: { DEFAULTS: AUTO_CUBATURE_DEFAULTS, computeInputHash: computeAutoCubatureInputHash },
+    Embankment,
+    EmbankmentTool,
+    EmbankmentConfig: { DEFAULTS: EMBANKMENT_DEFAULTS },
     pointBudget: PotreeConfig.pointBudget,
     framenumber: PotreeConfig.framenumber,
     numNodesLoading: PotreeConfig.numNodesLoading,
