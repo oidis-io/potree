@@ -508,8 +508,8 @@ export class Measure extends THREE.Object3D {
                     isDragging = false;
                 }
                 if (actualEdge) {
-                    actualEdge.material.color.set(this.color);
-                    actualEdge.material.linewidth = 2;
+                    actualEdge.material.color.set(actualEdge.isElementSelected === true ? 0xff8800 : this.color);
+                    actualEdge.material.linewidth = actualEdge.isElementSelected === true ? 4 : 2;
                 }
                 if (ghostLine) {
                     const start = new THREE.Vector3().fromBufferAttribute(ghostLine.geometry.attributes.instanceStart, 0).applyMatrix4(ghostLine.matrixWorld);
