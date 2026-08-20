@@ -468,6 +468,15 @@ export class InputHandler extends EventDispatcher {
                     }
                 }
             }
+
+            let curr = hoveredElements.map(a => a.object).find(a => true);
+            let prev = this.hoveredElements.map(a => a.object).find(a => true);
+            if (curr !== prev && prev) {
+                prev.dispatchEvent({
+                    type: "mouseleave",
+                    object: prev
+                });
+            }
         } else {
             let curr = hoveredElements.map(a => a.object).find(a => true);
             let prev = this.hoveredElements.map(a => a.object).find(a => true);
