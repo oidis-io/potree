@@ -18,6 +18,7 @@ import { computeCentroid, shadeColor } from "./CubatureMath.js";
 import { resolveEmbankmentMode } from "./EmbankmentComputation.js";
 import { intersectDragWithLockPlane, lockPlaneZAt, refreshHeightLockVisual } from "./HeightLockPlane.js";
 import { buildSurfaceMeshData } from "./TerrainGridMath.js";
+import { encodeSurfaceGrid, decodeSurfaceGrid } from "./SurfaceGridCodec.js";
 
 function isValidPosition(p) {
     return p && Number.isFinite(p.x) && Number.isFinite(p.y) && Number.isFinite(p.z);
@@ -39,6 +40,10 @@ function formatCubicMeters(value) {
     return value.toLocaleString("cs-CZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " m³";
 }
 
+function formatMeters(value) {
+    return value.toLocaleString("cs-CZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " m";
+}
+
 export class Embankment extends THREE.Object3D {
     constructor(args = {}) {
         super();
@@ -58,6 +63,8 @@ export class Embankment extends THREE.Object3D {
         this.slopeDeg = 45;
         this.autoOptions = {};
         this.probe = null;
+        this.displaySurface = null;
+        this.displayCrownSurface = null;
 
         this.autoStale = false;
         this.computationState = "idle";
@@ -83,6 +90,8 @@ export class Embankment extends THREE.Object3D {
         this.baseEdges = [];
         this.crownEdges = [];
         this.cornerEdges = [];
+        this.baseEdgeLabels = [];
+        this.heightLabels = [];
         this.meshes = [];
 
         this.permanentLabelsVisible = true;
@@ -128,6 +137,12 @@ export class Embankment extends THREE.Object3D {
         // A drag listener makes InputHandler route pointer presses to the handle instead of the camera.
         handle.addEventListener("drag", () => undefined);
         return handle;
+    }
+
+    addDetailLabel() {
+        const label = createLabel(13, { r: 210, g: 230, b: 255, a: 1.0 });
+        this.add(label);
+        return label;
     }
 
     pickSettingsHandle(raycaster) {
@@ -206,6 +221,7 @@ export class Embankment extends THREE.Object3D {
         if (this.controlPoints.length >= 2) {
             this.baseEdges.push(this.createEdge(this.baseColor, 2));
             this.add(this.baseEdges[this.baseEdges.length - 1]);
+            this.baseEdgeLabels.push(this.addDetailLabel());
         }
         this.update();
         this.dispatchEvent({ type: "marker_added", embankment: this });
@@ -225,6 +241,14 @@ export class Embankment extends THREE.Object3D {
             this.remove(edge);
             edge.geometry.dispose();
             edge.material.dispose();
+        }
+        if (this.baseEdgeLabels.length > 0) {
+            const label = this.baseEdgeLabels.pop();
+            this.remove(label);
+            if (label.material.map) {
+                label.material.map.dispose();
+            }
+            label.material.dispose();
         }
         this.update();
         this.dispatchEvent({ type: "marker_removed", embankment: this });
@@ -261,7 +285,7 @@ export class Embankment extends THREE.Object3D {
             edge.geometry.dispose();
             edge.material.dispose();
         }
-        for (const label of [this.volumeLabel, this.breakdownLabel]) {
+        for (const label of [this.volumeLabel, this.breakdownLabel, ...this.baseEdgeLabels, ...this.heightLabels]) {
             if (label.material.map) {
                 label.material.map.dispose();
             }
@@ -283,6 +307,7 @@ export class Embankment extends THREE.Object3D {
         }
         this.baseEdges.push(this.createEdge(this.baseColor, 2));
         this.add(this.baseEdges[this.baseEdges.length - 1]);
+        this.baseEdgeLabels.push(this.addDetailLabel());
         if (this.mode !== "pile") {
             for (let i = 0; i < this.controlPoints.length; i++) {
                 const crownEdge = this.createEdge(this.darkColor, 2);
@@ -291,6 +316,7 @@ export class Embankment extends THREE.Object3D {
                 const cornerEdge = this.createEdge(this.lightColor, 1);
                 this.add(cornerEdge);
                 this.cornerEdges.push(cornerEdge);
+                this.heightLabels.push(this.addDetailLabel());
             }
         }
         this.update();
@@ -335,13 +361,47 @@ export class Embankment extends THREE.Object3D {
         this.computedInputHash = result.inputHash;
         this.computationState = "done";
         this.autoStale = false;
-        this.disposeMeshes();
-        if (result.surface) {
-            this.createSurfaceMesh(result.surface, this.baseColor, 0.25);
-        }
-        this.createRingMesh(this.controlPoints, this.lightColor, 0.15);
+        this.buildPileMeshes(result.surface || null);
         this.update();
         this._suppressAutoStale = false;
+    }
+
+    buildPileMeshes(surface) {
+        this.disposeMeshes();
+        this.displaySurface = surface;
+        this.displayCrownSurface = null;
+        if (surface) {
+            this.createSurfaceMesh(surface, this.baseColor, 0.25);
+        }
+        this.createRingMesh(this.controlPoints, this.lightColor, 0.15);
+    }
+
+    serializeDisplaySurface() {
+        return encodeSurfaceGrid(this.displaySurface);
+    }
+
+    serializeDisplayCrownSurface() {
+        return encodeSurfaceGrid(this.displayCrownSurface);
+    }
+
+    restoreDisplaySurfaces(surfacePayload, crownPayload) {
+        const surface = decodeSurfaceGrid(surfacePayload);
+        const crownSurface = this.bevelEnabled ? decodeSurfaceGrid(crownPayload) : null;
+        if (surface === null && crownSurface === null) {
+            return false;
+        }
+        this.displaySurface = surface;
+        this.displayCrownSurface = crownSurface;
+        this.rebuildDisplayMeshes();
+        return true;
+    }
+
+    rebuildDisplayMeshes() {
+        if (this.mode === "pile") {
+            this.buildPileMeshes(this.displaySurface);
+            return;
+        }
+        this.rebuildMeshes({ surface: this.displaySurface, crownSurface: this.displayCrownSurface });
     }
 
     applyComputedVolumes(result) {
@@ -485,6 +545,8 @@ export class Embankment extends THREE.Object3D {
 
     rebuildMeshes(result) {
         this.disposeMeshes();
+        this.displaySurface = result.surface || null;
+        this.displayCrownSurface = result.crownSurface || null;
         if (result.surface) {
             this.createSurfaceMesh(result.surface, this.lightColor, 0.28);
         }
@@ -550,23 +612,41 @@ export class Embankment extends THREE.Object3D {
         };
         const temporaryA = new THREE.Vector3();
         const temporaryB = new THREE.Vector3();
+        const detailVisible = this.phase === "insertion" || this.phase === "height" || this.isRevealed();
+        const updateDetailLabel = (label, a, b, text, visible) => {
+            if (!label) {
+                return;
+            }
+            if (!visible || !a || !b) {
+                label.visible = false;
+                return;
+            }
+            label.position.set((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2);
+            label.setText(text);
+            label.visible = detailVisible;
+        };
 
         for (let i = 0; i < this.baseEdges.length; i++) {
-            if (n < 2) {
+            if (n < 2 || i >= n) {
                 this.baseEdges[i].visible = false;
+                updateDetailLabel(this.baseEdgeLabels[i], null, null, "", false);
                 continue;
             }
             const next = (i + 1) % n;
             const isClosing = (i === n - 1);
             if (isClosing && this.phase === "insertion") {
                 this.baseEdges[i].visible = false;
+                updateDetailLabel(this.baseEdgeLabels[i], null, null, "", false);
                 continue;
             }
-            setEdge(this.baseEdges[i], this.controlPoints[i], this.controlPoints[next]);
+            const from = this.controlPoints[i];
+            const to = this.controlPoints[next];
+            setEdge(this.baseEdges[i], from, to);
+            updateDetailLabel(this.baseEdgeLabels[i], from, to,
+                formatMeters(Math.hypot(to.x - from.x, to.y - from.y, to.z - from.z)), true);
         }
-        const hideFrame = this.bevelEnabled && this.phase === "edit";
         for (let i = 0; i < this.crownEdges.length; i++) {
-            if (i >= n || hideFrame) {
+            if (i >= n) {
                 this.crownEdges[i].visible = false;
                 continue;
             }
@@ -576,13 +656,16 @@ export class Embankment extends THREE.Object3D {
             setEdge(this.crownEdges[i], temporaryA, temporaryB);
         }
         for (let i = 0; i < this.cornerEdges.length; i++) {
-            if (i >= n || hideFrame) {
+            if (i >= n) {
                 this.cornerEdges[i].visible = false;
+                updateDetailLabel(this.heightLabels[i], null, null, "", false);
                 continue;
             }
             temporaryA.copy(this.controlPoints[i]);
             temporaryB.copy(this.controlPoints[i]).setZ(this.controlPoints[i].z + this.heightM);
             setEdge(this.cornerEdges[i], temporaryA, temporaryB);
+            updateDetailLabel(this.heightLabels[i], temporaryA, temporaryB,
+                "v " + formatMeters(this.heightM), this.heightM > 0);
         }
 
         if (n >= 3 && this.phase !== "insertion") {
@@ -602,7 +685,7 @@ export class Embankment extends THREE.Object3D {
                     ? "objem hromady · nejistota podkladu ±" + this.computedUncertaintyPct + " %"
                     : "dosypání " + formatCubicMeters(this.computedBelowOutlineVolume) +
                       " · navážka " + formatCubicMeters(this.computedAboveOutlineVolume));
-                this.breakdownLabel.visible = mainVisible;
+                this.breakdownLabel.visible = mainVisible && detailVisible;
             } else {
                 this.breakdownLabel.visible = false;
             }
@@ -610,6 +693,11 @@ export class Embankment extends THREE.Object3D {
             this.settingsHandle.visible = false;
             this.volumeLabel.visible = false;
             this.breakdownLabel.visible = false;
+        }
+        if (!detailVisible) {
+            for (const label of [...this.baseEdgeLabels, ...this.heightLabels]) {
+                label.visible = false;
+            }
         }
     }
 

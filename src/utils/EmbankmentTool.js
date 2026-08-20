@@ -36,6 +36,8 @@ export class EmbankmentTool extends EventDispatcher {
         this.heightDragStartY = 0;
         this.heightDragScale = 1;
         this.contextMenu = new ToolContextMenu(() => this.cancelInputHandlerDrag());
+        this.onRequestDelete = null;
+        this.isMenuAllowed = null;
 
         this.onAdd = (e) => {
             this.scene.add(e.embankment);
@@ -78,7 +80,7 @@ export class EmbankmentTool extends EventDispatcher {
 
         viewer.inputHandler.addEventListener("delete", (e) => {
             const embankments = e.selection.filter((x) => x instanceof Embankment);
-            embankments.forEach((embankment) => viewer.scene.removeEmbankment(embankment));
+            embankments.forEach((embankment) => this.requestDelete(embankment));
         });
 
         this.addEventListener("start_inserting_embankment", () => {
@@ -174,13 +176,16 @@ export class EmbankmentTool extends EventDispatcher {
         if (target === null) {
             return;
         }
-        if (!target.settingsHit && e.button !== THREE.MOUSE.RIGHT) {
+        if (!target.settingsHit || e.button === THREE.MOUSE.RIGHT) {
+            return;
+        }
+        if (typeof this.isMenuAllowed === "function" && !this.isMenuAllowed(target.embankment)) {
             return;
         }
         e.preventDefault();
         e.stopImmediatePropagation();
-        const markerIndex = target.markerHit === null ? null : target.markerHit.index;
-        this.showContextMenu(e.clientX, e.clientY, this.buildEditMenuItems(target.embankment, markerIndex));
+        this.showContextMenu(e.clientX, e.clientY,
+            this.buildEditMenuItems(target.embankment, this.selectedVertexIndex(target.embankment)));
     }
 
     handleEditKeyDown(e) {
@@ -331,46 +336,54 @@ export class EmbankmentTool extends EventDispatcher {
         this.renderer.domElement.style.cursor = "progress";
         embankment.beginComputing();
 
-        const computation = new EmbankmentComputation(this.viewer, {
-            outlinePoints: embankment.controlPoints,
-            mode: embankment.mode,
-            options: { slopeDeg: embankment.slopeDeg, ...embankment.autoOptions }
-        }, {
-            onProgress: (progress) => {
-                embankment.computationProgress = progress;
-                embankment.update();
-            },
-            onReady: (probe) => {
-                this.activeComputation = null;
-                embankment.probe = probe;
-                if (behavior.enterHeight) {
-                    this.enterHeightPhase(embankment);
-                } else {
-                    this.applyVolumes(embankment);
+        const reportFailure = (error) => {
+            this.activeComputation = null;
+            embankment.computationState = "failed";
+            console.error("Embankment computation failed:", error);
+            embankment.dispatchEvent({ type: "computation_failed", embankment, reason: error.message });
+            if (behavior.removeOnCancel && embankment.computedTotal === null) {
+                this.cancelEmbankment(embankment);
+                return;
+            }
+            this.finishInteraction(embankment);
+        };
+
+        let computation;
+        try {
+            computation = new EmbankmentComputation(this.viewer, {
+                outlinePoints: embankment.controlPoints,
+                mode: embankment.mode,
+                options: { slopeDeg: embankment.slopeDeg, ...embankment.autoOptions }
+            }, {
+                onProgress: (progress) => {
+                    embankment.computationProgress = progress;
+                    embankment.update();
+                },
+                onReady: (probe) => {
+                    this.activeComputation = null;
+                    embankment.probe = probe;
+                    if (behavior.enterHeight) {
+                        this.enterHeightPhase(embankment);
+                    } else {
+                        this.applyVolumes(embankment);
+                        this.finishInteraction(embankment);
+                    }
+                },
+                onFailed: reportFailure,
+                onCanceled: () => {
+                    this.activeComputation = null;
+                    if (behavior.removeOnCancel) {
+                        this.cancelEmbankment(embankment);
+                        return;
+                    }
+                    embankment.computationState = embankment.computedTotal === null ? "idle" : "done";
                     this.finishInteraction(embankment);
                 }
-            },
-            onFailed: (error) => {
-                this.activeComputation = null;
-                embankment.computationState = "failed";
-                console.error("Embankment computation failed:", error);
-                embankment.dispatchEvent({ type: "computation_failed", embankment, reason: error.message });
-                if (behavior.removeOnCancel && embankment.computedTotal === null) {
-                    this.cancelEmbankment(embankment);
-                    return;
-                }
-                this.finishInteraction(embankment);
-            },
-            onCanceled: () => {
-                this.activeComputation = null;
-                if (behavior.removeOnCancel) {
-                    this.cancelEmbankment(embankment);
-                    return;
-                }
-                embankment.computationState = embankment.computedTotal === null ? "idle" : "done";
-                this.finishInteraction(embankment);
-            }
-        });
+            });
+        } catch (error) {
+            reportFailure(error);
+            return;
+        }
 
         computation.owner = embankment;
         this.activeComputation = computation;
@@ -404,29 +417,7 @@ export class EmbankmentTool extends EventDispatcher {
                 this.activeComputation.cancel();
             }
         };
-        const onMouseDown = (e) => {
-            if (e.button === THREE.MOUSE.RIGHT) {
-                e.preventDefault();
-                e.stopPropagation();
-                this.showContextMenu(e.clientX, e.clientY, [
-                    {
-                        label: "Zrušit výpočet",
-                        action: () => {
-                            if (this.activeComputation !== null) {
-                                this.activeComputation.cancel();
-                            }
-                        }
-                    }
-                ]);
-            }
-        };
-        const onContextMenu = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-        };
         this.attach("keydown", onKeyDown);
-        this.attach("mousedown", onMouseDown);
-        this.attach("contextmenu", onContextMenu);
     }
 
     enterHeightPhase(embankment) {
@@ -452,26 +443,7 @@ export class EmbankmentTool extends EventDispatcher {
             if (e.button === THREE.MOUSE.LEFT) {
                 e.preventDefault();
                 this.commitHeight(embankment);
-            } else if (e.button === THREE.MOUSE.RIGHT) {
-                e.preventDefault();
-                e.stopPropagation();
-                this.showContextMenu(e.clientX, e.clientY, [
-                    { label: "Potvrdit výšku", action: () => this.commitHeight(embankment) },
-                    { label: "Zadat výšku číselně", action: () => this.openHeightInput(embankment) },
-                    {
-                        label: embankment.bevelEnabled
-                            ? "Vypnout zkosení hran"
-                            : `Zkosit hrany (${embankment.slopeDeg}°)`,
-                        action: () => this.toggleBevel(embankment)
-                    },
-                    { label: "Úhel zkosení…", action: () => this.openSlopeInput(embankment) },
-                    { label: "Zrušit násep", action: () => this.cancelEmbankment(embankment) }
-                ]);
             }
-        };
-        const onContextMenu = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
         };
         const onKeyDown = (e) => {
             if (e.keyCode === 27) {
@@ -482,7 +454,6 @@ export class EmbankmentTool extends EventDispatcher {
         };
         this.attach("mousemove", onMouseMove);
         this.attach("mousedown", onMouseDown);
-        this.attach("contextmenu", onContextMenu);
         this.attach("keydown", onKeyDown);
     }
 
@@ -555,7 +526,19 @@ export class EmbankmentTool extends EventDispatcher {
         }
     }
 
-    buildEditMenuItems(embankment, markerIndex) {
+    selectedVertexIndex(embankment) {
+        return (embankment.spheres || []).findIndex(($sphere) => $sphere.isElementSelected === true);
+    }
+
+    requestDelete(embankment) {
+        if (typeof this.onRequestDelete === "function") {
+            this.onRequestDelete(embankment);
+            return;
+        }
+        this.viewer.scene.removeEmbankment(embankment);
+    }
+
+    buildEditMenuItems(embankment, markerIndex, options = {}) {
         const items = [];
         if (embankment.mode !== "pile") {
             items.push(
@@ -570,23 +553,31 @@ export class EmbankmentTool extends EventDispatcher {
                 { label: "Úhel zkosení…", action: () => this.openSlopeInput(embankment) }
             );
         }
-        if (markerIndex !== null) {
+        if (markerIndex !== null && markerIndex >= 0) {
             items.push(
                 {
                     label: embankment.heightLock === null
-                        ? "Držet výšku tohoto vrcholu (řez)"
+                        ? "Držet výšku vybraného vrcholu (řez)"
                         : "Vypnout držení výšky",
                     action: () => this.toggleHeightLock(embankment, markerIndex)
                 },
-                { label: "Srovnat výšku vrcholu podle sousedů", action: () => this.levelVertexWithNeighbors(embankment, markerIndex) },
-                { label: "Srovnat všechny vrcholy na tuto výšku (řez)", action: () => this.levelAllVerticesTo(embankment, markerIndex) },
-                { label: "Zadat výšku vrcholu…", action: () => this.openVertexHeightInput(embankment, markerIndex) }
+                {
+                    label: "Srovnat vybraný vrchol podle sousedů",
+                    action: () => this.levelVertexWithNeighbors(embankment, markerIndex)
+                },
+                {
+                    label: "Srovnat všechny vrcholy na tuto výšku (řez)",
+                    action: () => this.levelAllVerticesTo(embankment, markerIndex)
+                },
+                { label: "Zadat výšku vybraného vrcholu…", action: () => this.openVertexHeightInput(embankment, markerIndex) }
             );
+        } else if (embankment.heightLock !== null) {
+            items.push({ label: "Vypnout držení výšky", action: () => embankment.applyHeightLock(null) });
         }
-        items.push(
-            { label: "Přepočítat objem", action: () => this.recompute(embankment) },
-            { label: "Smazat násep", action: () => this.viewer.scene.removeEmbankment(embankment) }
-        );
+        items.push({ label: "Přepočítat objem", action: () => this.recompute(embankment) });
+        if (options.includeDelete !== false) {
+            items.push({ label: "Smazat násep", action: () => this.requestDelete(embankment) });
+        }
         return items;
     }
 
@@ -719,6 +710,15 @@ export class EmbankmentTool extends EventDispatcher {
                 const distance = label.position.distanceTo(camera.position);
                 const pr = Utils.projectedRadius(1, camera, distance, renderAreaSize.width, renderAreaSize.height);
                 const scale = ((label === embankment.volumeLabel ? 70 : 50) / pr);
+                label.scale.set(scale, scale, scale);
+            }
+            for (const label of [...embankment.baseEdgeLabels, ...embankment.heightLabels]) {
+                if (!label || !label.visible) {
+                    continue;
+                }
+                const distance = label.position.distanceTo(camera.position);
+                const pr = Utils.projectedRadius(1, camera, distance, renderAreaSize.width, renderAreaSize.height);
+                const scale = (55 / pr);
                 label.scale.set(scale, scale, scale);
             }
             for (const edge of [...embankment.baseEdges, ...embankment.crownEdges, ...embankment.cornerEdges]) {

@@ -16,6 +16,7 @@ import { LineGeometry } from "../../libs/three.js/lines/LineGeometry.js";
 import { LineMaterial } from "../../libs/three.js/lines/LineMaterial.js";
 import { prismVolume, computeCentroid, shadeColor } from "./CubatureMath.js";
 import { buildSurfaceMeshData } from "./TerrainGridMath.js";
+import { encodeSurfaceGrid, decodeSurfaceGrid } from "./SurfaceGridCodec.js";
 import { intersectDragWithLockPlane, lockPlaneZAt, refreshHeightLockVisual } from "./HeightLockPlane.js";
 
 function isValidPosition(p) {
@@ -62,7 +63,7 @@ export class Cubature extends THREE.Object3D {
         super();
 
         this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
-        this.name = "Cubature_" + this.constructor.counter;
+        this.name = args.name !== undefined ? args.name : "Cubature_" + this.constructor.counter;
 
         this.phase = "insertion";
         this.enabled = true;
@@ -81,6 +82,7 @@ export class Cubature extends THREE.Object3D {
         this.computedQuality = null;
         this.computedStats = null;
         this.computedInputHash = null;
+        this.detectedSurface = null;
         this.detectedSurfaceMesh = null;
         this._suppressAutoStale = false;
         this._loadingFromDb = false;
@@ -109,6 +111,8 @@ export class Cubature extends THREE.Object3D {
         this.sideMeshColor = args.sideMeshColor !== undefined ? args.sideMeshColor : shadeColor(this.baseColor, 0.5);
 
         this.sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
+        this.settingsHandle = this.createSettingsHandle();
+        this.add(this.settingsHandle);
 
         this.topMesh = this.createPolygonMesh(this.topColor);
         this.bottomMesh = this.createPolygonMesh(this.bottomColor);
@@ -128,6 +132,34 @@ export class Cubature extends THREE.Object3D {
             depthTest: false,
             depthWrite: false
         });
+    }
+
+    createSettingsHandle() {
+        const handle = new THREE.Mesh(this.sphereGeometry, new THREE.MeshLambertMaterial({
+            color: 0xffffff, depthTest: false, depthWrite: false
+        }));
+        handle.name = "cubature_settings_handle";
+        handle.visible = false;
+        handle.addEventListener("mouseover", () => {
+            if (this.enabled) {
+                handle.material.emissive.setHex(0x888888);
+            }
+        });
+        handle.addEventListener("mouseleave", () => {
+            handle.material.emissive.setHex(handle.isElementSelected === true ? 0x888888 : 0x000000);
+        });
+        // A drag listener makes InputHandler route pointer presses to the handle instead of the camera.
+        handle.addEventListener("drag", () => undefined);
+        return handle;
+    }
+
+    pickSettingsHandle(raycaster) {
+        if (!this.settingsHandle.visible) {
+            return false;
+        }
+        const intersects = [];
+        this.settingsHandle.raycast(raycaster, intersects);
+        return intersects.length > 0;
     }
 
     setShowLabels(visible) {
@@ -612,6 +644,7 @@ export class Cubature extends THREE.Object3D {
         for (const sphere of [...this.topSpheres, ...this.bottomSpheres]) {
             sphere.material.dispose();
         }
+        this.settingsHandle.material.dispose();
         this.sphereGeometry.dispose();
         for (const edge of [...this.topEdges, ...this.bottomEdges, ...this.sideEdges]) {
             edge.geometry.dispose();
@@ -793,8 +826,11 @@ export class Cubature extends THREE.Object3D {
 
         if (this.phase === "insertion" || N < 3 || M < 3) {
             this.volumeLabel.visible = false;
+            this.settingsHandle.visible = false;
         } else {
             const topCentroid = computeCentroid(this.topControlPoints);
+            this.settingsHandle.position.set(topCentroid.x, topCentroid.y, topCentroid.z + 0.5);
+            this.settingsHandle.visible = this.enabled && this.phase === "edit";
             const bottomCentroid = computeCentroid(this.bottomControlPoints);
             const labelPos = new THREE.Vector3(
                 (topCentroid.x + bottomCentroid.x) / 2,
@@ -816,6 +852,7 @@ export class Cubature extends THREE.Object3D {
             this.detectedSurfaceMesh.material.dispose();
             this.detectedSurfaceMesh = null;
         }
+        this.detectedSurface = surface || null;
         if (!surface) {
             return;
         }
@@ -839,6 +876,19 @@ export class Cubature extends THREE.Object3D {
         mesh.position.set(surface.originX, surface.originY, 0);
         this.add(mesh);
         this.detectedSurfaceMesh = mesh;
+    }
+
+    serializeDisplaySurface() {
+        return encodeSurfaceGrid(this.detectedSurface);
+    }
+
+    restoreDisplaySurface(payload) {
+        const surface = decodeSurfaceGrid(payload);
+        if (surface === null) {
+            return false;
+        }
+        this.applyDetectedSurface(surface);
+        return true;
     }
 
     formatVolume(volume) {
@@ -1062,83 +1112,6 @@ export class Cubature extends THREE.Object3D {
             intersects[i].distance = raycaster.ray.origin.distanceTo(intersects[i].point);
         }
         intersects.sort((a, b) => a.distance - b.distance);
-    }
-
-    pickEdge(raycaster, threshold) {
-        const limit = threshold !== undefined ? threshold : 0.5;
-        const ray = raycaster.ray;
-        const ro = ray.origin;
-        const rd = ray.direction;
-        let bestHit = null;
-        let bestDist = Infinity;
-
-        const processEdges = (controlPoints, edges, polygonId) => {
-            const N = controlPoints.length;
-            for (let i = 0; i < edges.length; i++) {
-                if (!edges[i].visible) {
-                    continue;
-                }
-                const next = (i + 1) % N;
-                if (next >= controlPoints.length) {
-                    continue;
-                }
-                const a = controlPoints[i];
-                const b = controlPoints[next];
-                const sx = b.x - a.x;
-                const sy = b.y - a.y;
-                const sz = b.z - a.z;
-                const segLen2 = sx * sx + sy * sy + sz * sz;
-                if (segLen2 < 1e-12) {
-                    continue;
-                }
-                const wx = ro.x - a.x;
-                const wy = ro.y - a.y;
-                const wz = ro.z - a.z;
-                const aDot = rd.x * rd.x + rd.y * rd.y + rd.z * rd.z;
-                const bDot = rd.x * sx + rd.y * sy + rd.z * sz;
-                const cDot = segLen2;
-                const dDot = rd.x * wx + rd.y * wy + rd.z * wz;
-                const eDot = sx * wx + sy * wy + sz * wz;
-                const denom = aDot * cDot - bDot * bDot;
-                let tRay;
-                let tParam;
-                if (Math.abs(denom) < 1e-9) {
-                    tRay = 0;
-                    tParam = eDot / cDot;
-                } else {
-                    tRay = (bDot * eDot - cDot * dDot) / denom;
-                    tParam = (aDot * eDot - bDot * dDot) / denom;
-                }
-                if (tRay < 0) {
-                    continue;
-                }
-                tParam = Math.max(0, Math.min(1, tParam));
-                const closestSegX = a.x + sx * tParam;
-                const closestSegY = a.y + sy * tParam;
-                const closestSegZ = a.z + sz * tParam;
-                const closestRayX = ro.x + rd.x * tRay;
-                const closestRayY = ro.y + rd.y * tRay;
-                const closestRayZ = ro.z + rd.z * tRay;
-                const ddx = closestSegX - closestRayX;
-                const ddy = closestSegY - closestRayY;
-                const ddz = closestSegZ - closestRayZ;
-                const distance = Math.sqrt(ddx * ddx + ddy * ddy + ddz * ddz);
-                if (distance <= limit && distance < bestDist) {
-                    bestDist = distance;
-                    bestHit = {
-                        polygonId,
-                        edgeIndex: i,
-                        point: new THREE.Vector3(closestSegX, closestSegY, closestSegZ),
-                        distance
-                    };
-                }
-            }
-        };
-
-        processEdges(this.topControlPoints, this.topEdges, "top");
-        processEdges(this.bottomControlPoints, this.bottomEdges, "bottom");
-
-        return bestHit;
     }
 
     pickMarker(raycaster) {

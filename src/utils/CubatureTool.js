@@ -34,7 +34,6 @@ export class CubatureTool extends EventDispatcher {
         this.activeListeners = [];
         this.activeCubature = null;
         this.hoveredMarker = null;
-        this.hoveredEdge = null;
 
         this.pushPullStartY = 0;
         this.pushPullScale = 1;
@@ -42,6 +41,8 @@ export class CubatureTool extends EventDispatcher {
         this.activeComputation = null;
 
         this.contextMenu = new ToolContextMenu(() => this.cancelInputHandlerDrag());
+        this.onRequestDelete = null;
+        this.isMenuAllowed = null;
 
         this.globalContextMenuHandler = (e) => {
             const canvas = this.viewer.renderer.domElement;
@@ -94,7 +95,7 @@ export class CubatureTool extends EventDispatcher {
 
         viewer.inputHandler.addEventListener("delete", (e) => {
             const cubatures = e.selection.filter(x => x instanceof Cubature);
-            cubatures.forEach(c => viewer.scene.removeCubature(c));
+            cubatures.forEach(c => this.requestDelete(c));
         });
 
         this.addEventListener("start_inserting_cubature", () => {
@@ -116,7 +117,6 @@ export class CubatureTool extends EventDispatcher {
         viewer.renderer.domElement.addEventListener("keydown", this.globalKeyHandler);
 
         this.hoveredMarker = null;
-        this.hoveredEdge = null;
         this.editCursorApplied = false;
         this.editMouseMove = () => this.handleEditMouseMove();
         this.editMouseDown = (e) => this.handleEditMouseDown(e);
@@ -142,15 +142,14 @@ export class CubatureTool extends EventDispatcher {
         const raycaster = this.getRaycaster();
         const candidates = this.editCubatures();
         for (const cubature of candidates) {
-            const markerHit = cubature.pickMarker(raycaster);
-            if (markerHit) {
-                return { cubature, markerHit, edgeHit: null };
+            if (cubature.pickSettingsHandle(raycaster)) {
+                return { cubature, settingsHit: true, markerHit: null };
             }
         }
         for (const cubature of candidates) {
-            const edgeHit = cubature.pickEdge(raycaster, this.computePickThreshold(cubature));
-            if (edgeHit) {
-                return { cubature, markerHit: null, edgeHit };
+            const markerHit = cubature.pickMarker(raycaster);
+            if (markerHit) {
+                return { cubature, settingsHit: false, markerHit };
             }
         }
         return null;
@@ -199,26 +198,6 @@ export class CubatureTool extends EventDispatcher {
         const raycaster = new THREE.Raycaster();
         raycaster.setFromCamera(this.getMouseNDC(), this.viewer.scene.getActiveCamera());
         return raycaster;
-    }
-
-    computePickThreshold(cubature) {
-        const camera = this.viewer.scene.getActiveCamera();
-        let centroidX = 0, centroidY = 0, centroidZ = 0;
-        const all = [...cubature.topControlPoints, ...cubature.bottomControlPoints];
-        if (all.length === 0) {
-            return 0.5;
-        }
-        for (const p of all) {
-            centroidX += p.x;
-            centroidY += p.y;
-            centroidZ += p.z;
-        }
-        centroidX /= all.length;
-        centroidY /= all.length;
-        centroidZ /= all.length;
-        const dist = camera.position.distanceTo(new THREE.Vector3(centroidX, centroidY, centroidZ));
-        const viewHeight = this.viewer.renderer.domElement.clientHeight || 1;
-        return Math.max(0.1, Math.min(20, (dist / viewHeight) * 30));
     }
 
     startInsertion(args = {}) {
@@ -377,37 +356,45 @@ export class CubatureTool extends EventDispatcher {
         this.renderer.domElement.style.cursor = "progress";
         cubature.beginComputing();
 
-        const computation = new AutoCubatureComputation(this.viewer, {
-            topControlPoints: cubature.topControlPoints,
-            options: cubature.autoOptions
-        }, {
-            onProgress: (progress) => {
-                cubature.computationProgress = progress;
-                cubature.update();
-            },
-            onCompleted: (result) => {
-                this.activeComputation = null;
-                cubature.applyComputedResult(result);
-                this.finishComputationInteraction(cubature);
-                cubature.dispatchEvent({ type: "volume_computed", cubature: cubature, result: result });
-            },
-            onFailed: (error) => {
-                this.activeComputation = null;
-                cubature.computationState = "failed";
-                console.error("Auto cubature computation failed:", error);
-                this.finishComputationInteraction(cubature);
-                cubature.dispatchEvent({ type: "computation_failed", cubature: cubature, reason: error.message });
-            },
-            onCanceled: () => {
-                this.activeComputation = null;
-                if (behavior.removeOnCancel) {
-                    this.cancelCubature(cubature);
-                    return;
+        const reportFailure = (error) => {
+            this.activeComputation = null;
+            cubature.computationState = "failed";
+            console.error("Auto cubature computation failed:", error);
+            this.finishComputationInteraction(cubature);
+            cubature.dispatchEvent({ type: "computation_failed", cubature: cubature, reason: error.message });
+        };
+
+        let computation;
+        try {
+            computation = new AutoCubatureComputation(this.viewer, {
+                topControlPoints: cubature.topControlPoints,
+                options: cubature.autoOptions
+            }, {
+                onProgress: (progress) => {
+                    cubature.computationProgress = progress;
+                    cubature.update();
+                },
+                onCompleted: (result) => {
+                    this.activeComputation = null;
+                    cubature.applyComputedResult(result);
+                    this.finishComputationInteraction(cubature);
+                    cubature.dispatchEvent({ type: "volume_computed", cubature: cubature, result: result });
+                },
+                onFailed: reportFailure,
+                onCanceled: () => {
+                    this.activeComputation = null;
+                    if (behavior.removeOnCancel) {
+                        this.cancelCubature(cubature);
+                        return;
+                    }
+                    cubature.computationState = cubature.computedVolume === null ? "idle" : "done";
+                    this.finishComputationInteraction(cubature);
                 }
-                cubature.computationState = cubature.computedVolume === null ? "idle" : "done";
-                this.finishComputationInteraction(cubature);
-            }
-        });
+            });
+        } catch (error) {
+            reportFailure(error);
+            return;
+        }
 
         computation.owner = cubature;
         this.activeComputation = computation;
@@ -434,25 +421,7 @@ export class CubatureTool extends EventDispatcher {
                 this.cancelActiveComputation();
             }
         };
-        const onMouseDown = (e) => {
-            if (e.button === THREE.MOUSE.RIGHT) {
-                e.preventDefault();
-                e.stopPropagation();
-                this.showContextMenu(e.clientX, e.clientY, [
-                    {
-                        label: "Zrušit výpočet",
-                        action: () => this.cancelActiveComputation()
-                    }
-                ]);
-            }
-        };
-        const onContextMenu = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-        };
         this.attach("keydown", onKeyDown);
-        this.attach("mousedown", onMouseDown);
-        this.attach("contextmenu", onContextMenu);
     }
 
     cancelActiveComputation() {
@@ -498,29 +467,6 @@ export class CubatureTool extends EventDispatcher {
             if (e.button === THREE.MOUSE.LEFT) {
                 e.preventDefault();
                 this.commitPushPull(cubature);
-            } else if (e.button === THREE.MOUSE.RIGHT) {
-                e.preventDefault();
-                e.stopPropagation();
-                this.showContextMenu(e.clientX, e.clientY, [
-                    {
-                        label: "Přichytit dno k terénu",
-                        action: () => {
-                            cubature.snapBottomToTerrain(this.viewer);
-                        }
-                    },
-                    {
-                        label: "Potvrdit hloubku",
-                        action: () => this.commitPushPull(cubature)
-                    },
-                    {
-                        label: "Zadat hloubku číselně",
-                        action: () => this.openNumericInput(cubature)
-                    },
-                    {
-                        label: "Zrušit kubaturu",
-                        action: () => this.cancelCubature(cubature)
-                    }
-                ]);
             }
         };
         const onContextMenu = (e) => {
@@ -585,12 +531,11 @@ export class CubatureTool extends EventDispatcher {
         this.hoveredMarker = target !== null && target.markerHit !== null
             ? { cubature: target.cubature, ...target.markerHit }
             : null;
-        this.hoveredEdge = target !== null ? target.edgeHit : null;
-        if (this.hoveredMarker) {
-            this.renderer.domElement.style.cursor = "move";
+        if (target !== null && target.settingsHit) {
+            this.renderer.domElement.style.cursor = "pointer";
             this.editCursorApplied = true;
-        } else if (this.hoveredEdge) {
-            this.renderer.domElement.style.cursor = "crosshair";
+        } else if (this.hoveredMarker) {
+            this.renderer.domElement.style.cursor = "move";
             this.editCursorApplied = true;
         } else if (this.editCursorApplied) {
             this.renderer.domElement.style.cursor = "";
@@ -598,32 +543,34 @@ export class CubatureTool extends EventDispatcher {
         }
     }
 
-    handleEditMouseDown(e) {
-        if (this.anyInsertionActive() || e.button !== THREE.MOUSE.RIGHT) {
+    selectedVertexIndex(cubature) {
+        return (cubature.topSpheres || []).findIndex(($sphere) => $sphere.isElementSelected === true);
+    }
+
+    requestDelete(cubature) {
+        if (typeof this.onRequestDelete === "function") {
+            this.onRequestDelete(cubature);
             return;
         }
-        const target = this.pickEditTarget();
-        if (target === null) {
-            return;
+        this.viewer.scene.removeCubature(cubature);
+    }
+
+    buildEditMenuItems(cubature, options = {}) {
+        const items = [];
+        if (cubature.autoMode) {
+            items.push({ label: "Přepočítat objem", action: () => this.recompute(cubature) });
         }
-        const cubature = target.cubature;
-        const markerHit = target.markerHit;
-        const edgeHit = target.edgeHit;
-        if (markerHit) {
-            e.preventDefault();
-            e.stopImmediatePropagation();
-            const isBottom = markerHit.polygonId === "bottom";
-            const snapLabel = isBottom
-                ? "Přichytit tento bod ke dnu"
-                : "Přichytit tento bod k povrchu";
-            const markerItems = [
+        items.push({ label: "Přichytit dno k terénu", action: () => cubature.snapBottomToTerrain(this.viewer) });
+        const index = this.selectedVertexIndex(cubature);
+        if (index !== -1) {
+            items.push(
                 {
                     label: cubature.heightLock === null
-                        ? "Držet výšku tohoto vrcholu (řez)"
+                        ? "Držet výšku vybraného vrcholu (řez)"
                         : "Vypnout držení výšky",
                     action: () => {
                         if (cubature.heightLock === null) {
-                            const vertex = cubature.topControlPoints[markerHit.index];
+                            const vertex = cubature.topControlPoints[index];
                             cubature.applyHeightLock({ x0: vertex.x, y0: vertex.y, z0: vertex.z, gx: 0, gy: 0 });
                         } else {
                             cubature.applyHeightLock(null);
@@ -631,56 +578,35 @@ export class CubatureTool extends EventDispatcher {
                     }
                 },
                 {
-                    label: snapLabel,
-                    action: () => cubature.snapVertexToTerrain(this.viewer, markerHit.polygonId, markerHit.index)
+                    label: "Přichytit vybraný bod k povrchu",
+                    action: () => cubature.snapVertexToTerrain(this.viewer, "top", index)
                 },
-                {
-                    label: "Smazat vrchol",
-                    action: () => cubature.removeVertex(markerHit.index)
-                },
-                {
-                    label: "Vložit vrchol před",
-                    action: () => {
-                        const N = cubature.topControlPoints.length;
-                        const prev = (markerHit.index - 1 + N) % N;
-                        cubature.insertVertexAt(markerHit.polygonId, prev);
-                    }
-                },
-                {
-                    label: "Vložit vrchol za",
-                    action: () => cubature.insertVertexAt(markerHit.polygonId, markerHit.index)
-                }
-            ];
-            if (cubature.autoMode) {
-                markerItems.push({
-                    label: "Přepočítat objem",
-                    action: () => this.recompute(cubature)
-                });
-            }
-            this.showContextMenu(e.clientX, e.clientY, markerItems);
+                { label: "Vložit vrchol za vybraný", action: () => cubature.insertVertexAt("top", index) },
+                { label: "Smazat vybraný vrchol", action: () => cubature.removeVertex(index) }
+            );
+        } else if (cubature.heightLock !== null) {
+            items.push({ label: "Vypnout držení výšky", action: () => cubature.applyHeightLock(null) });
+        }
+        if (options.includeDelete !== false) {
+            items.push({ label: "Smazat kubaturu", action: () => this.requestDelete(cubature) });
+        }
+        return items;
+    }
+
+    handleEditMouseDown(e) {
+        if (this.anyInsertionActive() || e.button === THREE.MOUSE.RIGHT) {
             return;
         }
-        if (edgeHit) {
-            e.preventDefault();
-            e.stopImmediatePropagation();
-            const edgeItems = [
-                {
-                    label: "Vložit vrchol zde",
-                    action: () => cubature.insertVertexAt(edgeHit.polygonId, edgeHit.edgeIndex, edgeHit.point)
-                },
-                {
-                    label: "Přichytit dno k terénu (S)",
-                    action: () => cubature.snapBottomToTerrain(this.viewer)
-                }
-            ];
-            if (cubature.autoMode) {
-                edgeItems.push({
-                    label: "Přepočítat objem",
-                    action: () => this.recompute(cubature)
-                });
-            }
-            this.showContextMenu(e.clientX, e.clientY, edgeItems);
+        const target = this.pickEditTarget();
+        if (target === null || !target.settingsHit) {
+            return;
         }
+        if (typeof this.isMenuAllowed === "function" && !this.isMenuAllowed(target.cubature)) {
+            return;
+        }
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        this.showContextMenu(e.clientX, e.clientY, this.buildEditMenuItems(target.cubature));
     }
 
     handleEditKeyDown(e) {
@@ -760,6 +686,14 @@ export class CubatureTool extends EventDispatcher {
                 const pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
                 const scale = (15 / pr);
                 sphere.scale.set(scale, scale, scale);
+            }
+
+            if (cubature.settingsHandle.visible) {
+                const handleDistance = camera.position.distanceTo(
+                    cubature.settingsHandle.getWorldPosition(new THREE.Vector3()));
+                const pr = Utils.projectedRadius(1, camera, handleDistance, clientWidth, clientHeight);
+                const scale = (20 / pr);
+                cubature.settingsHandle.scale.set(scale, scale, scale);
             }
 
             const label = cubature.volumeLabel;
