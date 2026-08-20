@@ -117,7 +117,7 @@ export class Embankment extends THREE.Object3D {
     }
 
     createSphereMaterial() {
-        return new THREE.MeshLambertMaterial({ color: 0xff0000, depthTest: false, depthWrite: false });
+        return new THREE.MeshLambertMaterial({ color: this.baseColor, depthTest: false, depthWrite: false });
     }
 
     createSettingsHandle() {
