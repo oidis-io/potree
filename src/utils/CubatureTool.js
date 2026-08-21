@@ -332,7 +332,6 @@ export class CubatureTool extends EventDispatcher {
             }
         }
         if (!cubature.closeTopPolygon()) {
-            this.cancelCubature(cubature);
             return;
         }
         cubature.applyHeightLock(null);

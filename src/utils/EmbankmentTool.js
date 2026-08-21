@@ -317,7 +317,6 @@ export class EmbankmentTool extends EventDispatcher {
             }
         }
         if (!embankment.closeOutline()) {
-            this.cancelEmbankment(embankment);
             return;
         }
         embankment.applyHeightLock(null);

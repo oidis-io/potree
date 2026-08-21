@@ -351,15 +351,35 @@ export class Viewer extends EventDispatcher {
             this.drawingTool = new DrawingTool(this);
             this.drawableArea = new DrawableArea(this);
 
-            this.addEventListener("line_dropped", (e) => {
-                const clone = new Measure(e.measurement.color);
-                clone.showDistances = true;
-                clone.showArea = false;
-                clone.closed = false;
-                clone.addMarker(e.start);
-                clone.addMarker(e.end);
-                clone.clonedFrom = e.measurement.uuid;
+            window.addEventListener("keydown", (e) => {
+                if (e.keyCode === 27) {
+                    this.dispatchEvent({ type: "cancel_insertions" });
+                }
+            });
+
+            this.addEventListener("measurement_duplicate", (e) => {
+                const source = e.measurement;
+                const clone = new Measure({ color: source.color });
+                clone.showDistances = source.showDistances;
+                clone.showCoordinates = source.showCoordinates;
+                clone.showArea = source.showArea;
+                clone.showAngles = source.showAngles;
+                clone.showHeight = source.showHeight;
+                clone.showCircle = source.showCircle;
+                clone.showAzimuth = source.showAzimuth;
+                clone.showEdges = source.showEdges;
+                clone.showMarkers = source.showMarkers;
+                clone.closed = source.closed;
+                clone.maxMarkers = source.maxMarkers;
+                clone.name = source.name;
+                clone.isInserting = false;
+                clone.isBeingDrawn = false;
+                for (const point of source.points) {
+                    clone.addMarker(point.position.clone().add(e.offset));
+                }
+                clone.duplicateSourceUuid = source.uuid;
                 this.scene.addMeasurement(clone);
+                this.dispatchEvent({ type: "measurement_duplicated", source: source, clone: clone });
             });
         } catch (e) {
             this.onCrash(e);
