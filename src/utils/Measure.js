@@ -12,6 +12,7 @@
 import * as THREE from "../../libs/three.js/build/three.module.js";
 import { TextSprite } from "../TextSprite.js";
 import { Utils } from "../utils.js";
+import { bindDuplicateDrag } from "./DuplicateDrag.js";
 import { Line2 } from "../../libs/three.js/lines/Line2.js";
 import { LineGeometry } from "../../libs/three.js/lines/LineGeometry.js";
 import { LineMaterial } from "../../libs/three.js/lines/LineMaterial.js";
@@ -387,6 +388,10 @@ export class Measure extends THREE.Object3D {
         this.add(this.rectangle);
 
         this.add(this.azimuth.node);
+
+        this.attachDuplicateDrag(this.circleLine);
+        this.attachDuplicateDrag(this.azimuth.circle);
+        this.attachDuplicateDrag(this.azimuth.centerToTarget);
     }
 
     createSphereMaterial() {
@@ -397,6 +402,55 @@ export class Measure extends THREE.Object3D {
                 depthWrite: false
             }
         );
+    }
+
+    createDuplicatePreview() {
+        let group = new THREE.Group();
+        group.renderOrder = 9999;
+        let sources = this.edges.slice();
+        if (this.circleLine && this.circleLine.visible) {
+            sources.push(this.circleLine);
+        }
+        for (let source of sources) {
+            let clone = source.clone();
+            clone.material = source.material.clone();
+            clone.material.color.set(0x00ffff);
+            clone.material.transparent = true;
+            clone.material.opacity = 0.6;
+            clone.material.depthTest = false;
+            clone.renderOrder = 9999;
+            group.add(clone);
+        }
+        if (this.showAzimuth && this.azimuth && this.azimuth.node && this.azimuth.node.visible) {
+            let azimuthClone = this.azimuth.node.clone();
+            azimuthClone.traverse((child) => {
+                if (child.isSprite === true || (child.material && child.material.map)) {
+                    child.visible = false;
+                    return;
+                }
+                if (child.material) {
+                    child.material = child.material.clone();
+                    if (child.material.color) {
+                        child.material.color.set(0x00ffff);
+                    }
+                    child.material.transparent = true;
+                    child.material.opacity = 0.6;
+                    child.material.depthTest = false;
+                }
+                child.renderOrder = 9999;
+            });
+            group.add(azimuthClone);
+        }
+        return group;
+    }
+
+    attachDuplicateDrag(target) {
+        bindDuplicateDrag(this, target, {
+            eventType: "measurement_duplicate",
+            payloadKey: "measurement",
+            useGroundFallback: false,
+            checkEnabled: true
+        });
     }
 
     markHoverEnter() {
@@ -447,14 +501,12 @@ export class Measure extends THREE.Object3D {
 
             this.add(edge);
             this.edges.push(edge);
-            let actualEdge = null;
 
             let mouseover = (e) => {
                 this.markHoverEnter();
                 if (this.enabled === false || this.isBeingDrawn === true) {
                     return;
                 }
-                actualEdge = e.object;
                 e.object.material.color.set(0xff8800);
                 e.object.material.linewidth = 4;
             };
@@ -464,73 +516,7 @@ export class Measure extends THREE.Object3D {
                 e.object.material.linewidth = e.object.isElementSelected === true ? 4 : 2;
             };
 
-            let ghostLine = null;
-            let dragOffset = null;
-            let isDragging = false;
-
-            let drag = (e) => {
-                if (this.enabled === false) {
-                    return;
-                }
-
-                const I = Utils.getMousePointCloudIntersection(
-                    e.drag.end,
-                    e.viewer.scene.getActiveCamera(),
-                    e.viewer,
-                    e.viewer.scene.pointclouds,
-                    { pickClipped: true }
-                );
-                if (!I) {
-                    return;
-                }
-                if (!isDragging) {
-                    isDragging = true;
-                    const localMousePos = e.drag.object.parent.worldToLocal(I.location.clone());
-                    dragOffset = new THREE.Vector3().subVectors(localMousePos, e.drag.object.position);
-                    ghostLine = e.drag.object.clone();
-                    ghostLine.material = e.drag.object.material.clone();
-                    ghostLine.material.color.set(0x00ffff);
-                    ghostLine.material.transparent = true;
-                    ghostLine.material.opacity = 0.6;
-                    ghostLine.renderOrder = 9999;
-                    ghostLine.material.depthTest = false;
-                    this.add(ghostLine);
-                }
-
-                if (ghostLine) {
-                    const localMousePos = e.drag.object.parent.worldToLocal(I.location.clone());
-                    ghostLine.position.copy(localMousePos.sub(dragOffset));
-                }
-            };
-
-            let drop = (e) => {
-                if (isDragging) {
-                    isDragging = false;
-                }
-                if (actualEdge) {
-                    actualEdge.material.color.set(actualEdge.isElementSelected === true ? 0xff8800 : this.color);
-                    actualEdge.material.linewidth = actualEdge.isElementSelected === true ? 4 : 2;
-                }
-                if (ghostLine) {
-                    const start = new THREE.Vector3().fromBufferAttribute(ghostLine.geometry.attributes.instanceStart, 0).applyMatrix4(ghostLine.matrixWorld);
-                    const end = new THREE.Vector3().fromBufferAttribute(ghostLine.geometry.attributes.instanceEnd, 0).applyMatrix4(ghostLine.matrixWorld);
-
-                    this.remove(ghostLine);
-                    ghostLine.geometry.dispose();
-                    ghostLine.material.dispose();
-                    ghostLine = null;
-
-                    e.viewer.dispatchEvent({
-                        "type": "line_dropped",
-                        "measurement": this,
-                        "start": start,
-                        "end": end
-                    });
-                }
-            };
-
-            edge.addEventListener("drag", drag);
-            edge.addEventListener("drop", drop);
+            this.attachDuplicateDrag(edge);
             edge.addEventListener("mouseover", mouseover);
             edge.addEventListener("mouseleave", mouseleave);
         }

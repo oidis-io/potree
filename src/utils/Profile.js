@@ -11,6 +11,7 @@
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
 import { Utils } from "../utils.js";
+import { bindDuplicateDrag } from "./DuplicateDrag.js";
 
 export class Profile extends THREE.Object3D {
     constructor() {
@@ -41,6 +42,33 @@ export class Profile extends THREE.Object3D {
         );
 
         return sphereMaterial;
+    }
+
+    createDuplicatePreview() {
+        const group = new THREE.Group();
+        group.renderOrder = 9999;
+        for (const edge of this.edges) {
+            const clone = edge.clone();
+            clone.material = new THREE.LineBasicMaterial({
+                color: 0x00ffff,
+                transparent: true,
+                opacity: 0.8,
+                depthTest: false
+            });
+            clone.visible = true;
+            clone.renderOrder = 9999;
+            group.add(clone);
+        }
+        return group;
+    }
+
+    attachDuplicateDrag(target) {
+        bindDuplicateDrag(this, target, {
+            eventType: "profile_duplicate",
+            payloadKey: "profile",
+            useGroundFallback: true,
+            getReferenceZ: () => this.points.length > 0 ? this.points[0].z : 0
+        });
     }
 
     getSegments() {
@@ -105,10 +133,11 @@ export class Profile extends THREE.Object3D {
             });
             lineMaterial.depthTest = false;
             let edge = new THREE.Line(lineGeometry, lineMaterial);
-            edge.visible = false;
+            edge.visible = true;
 
             this.add(edge);
             this.edges.push(edge);
+            this.attachDuplicateDrag(edge);
 
             let boxGeometry = new THREE.BoxGeometry(1, 1, 1);
             let boxMaterial = new THREE.MeshBasicMaterial({ color: this.color, transparent: true, opacity: 0.2 });

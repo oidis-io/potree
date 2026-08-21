@@ -93,8 +93,6 @@ export class ProfileTool extends EventDispatcher {
 
                 this.viewer.inputHandler.startDragging(
                     profile.spheres[profile.spheres.length - 1]);
-            } else if (e.button === THREE.MOUSE.RIGHT) {
-                cancel.callback();
             }
         };
 

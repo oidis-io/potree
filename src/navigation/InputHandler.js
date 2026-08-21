@@ -349,15 +349,32 @@ export class InputHandler extends EventDispatcher {
 
         if (this.drag) {
             if (this.drag.object) {
-                if (this.logMessages) {
-                    console.log(`${this.constructor.name}: drop ${this.drag.object.name}`);
-                }
-                this.drag.object.dispatchEvent({
-                    type: "drop",
-                    drag: this.drag,
-                    viewer: this.viewer
+                if (e.button === THREE.MOUSE.LEFT) {
+                    if (this.logMessages) {
+                        console.log(`${this.constructor.name}: drop ${this.drag.object.name}`);
+                    }
+                    this.drag.object.dispatchEvent({
+                        type: "drop",
+                        drag: this.drag,
+                        viewer: this.viewer
 
-                });
+                    });
+
+                    // check for a click
+                    let clicked = this.hoveredElements.map(h => h.object).find(v => v === this.drag.object) !== undefined;
+                    if (clicked) {
+                        if (this.logMessages) {
+                            console.log(`${this.constructor.name}: click ${this.drag.object.name}`);
+                        }
+                        this.drag.object.dispatchEvent({
+                            type: "click",
+                            viewer: this.viewer,
+                            consume: consume,
+                        });
+                    }
+
+                    this.drag = null;
+                }
             } else {
                 for (let inputListener of this.getSortedListeners()) {
                     inputListener.dispatchEvent({
@@ -366,22 +383,9 @@ export class InputHandler extends EventDispatcher {
                         viewer: this.viewer
                     });
                 }
-            }
 
-            // check for a click
-            let clicked = this.hoveredElements.map(h => h.object).find(v => v === this.drag.object) !== undefined;
-            if (clicked) {
-                if (this.logMessages) {
-                    console.log(`${this.constructor.name}: click ${this.drag.object.name}`);
-                }
-                this.drag.object.dispatchEvent({
-                    type: "click",
-                    viewer: this.viewer,
-                    consume: consume,
-                });
+                this.drag = null;
             }
-
-            this.drag = null;
         }
 
         if (!consumed) {

@@ -11,6 +11,7 @@
 import * as THREE from "../../libs/three.js/build/three.module.js";
 import { TextSprite } from "../TextSprite.js";
 import { Utils } from "../utils.js";
+import { bindDuplicateDrag } from "./DuplicateDrag.js";
 import { Line2 } from "../../libs/three.js/lines/Line2.js";
 import { LineGeometry } from "../../libs/three.js/lines/LineGeometry.js";
 import { LineMaterial } from "../../libs/three.js/lines/LineMaterial.js";
@@ -163,7 +164,38 @@ export class Embankment extends THREE.Object3D {
             resolution: new THREE.Vector2(1000, 1000)
         });
         material.depthTest = false;
-        return new Line2(geometry, material);
+        const edge = new Line2(geometry, material);
+        this.attachDuplicateDrag(edge);
+        return edge;
+    }
+
+    createDuplicatePreview() {
+        const group = new THREE.Group();
+        group.renderOrder = 9999;
+        const allEdges = [...this.baseEdges, ...this.crownEdges, ...this.cornerEdges];
+        for (const edge of allEdges) {
+            if (edge.visible === false) {
+                continue;
+            }
+            const clone = edge.clone();
+            clone.material = edge.material.clone();
+            clone.material.color.set(0x00ffff);
+            clone.material.transparent = true;
+            clone.material.opacity = 0.6;
+            clone.material.depthTest = false;
+            clone.renderOrder = 9999;
+            group.add(clone);
+        }
+        return group;
+    }
+
+    attachDuplicateDrag(target) {
+        bindDuplicateDrag(this, target, {
+            eventType: "embankment_duplicate",
+            payloadKey: "embankment",
+            useGroundFallback: true,
+            getReferenceZ: () => this.controlPoints.length > 0 ? this.controlPoints[0].z : 0
+        });
     }
 
     attachSphereHandlers(sphere) {

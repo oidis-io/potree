@@ -227,21 +227,32 @@ export class MeasuringTool extends EventDispatcher {
                         cancel.callback();
                     } else {
                         let lastSphere = measure.spheres[measure.spheres.length - 1];
-                        let finishOnDrop = () => {
+                        let finishOnDrop = null;
+                        let cancelInsertion = null;
+                        let stopInsertion = () => {
                             lastSphere.removeEventListener("drop", finishOnDrop);
+                            this.viewer.removeEventListener("cancel_insertions", cancelInsertion);
                             measure.isInserting = false;
                             measure.isBeingDrawn = false;
                         };
+                        finishOnDrop = () => {
+                            stopInsertion();
+                            measure.dispatchEvent({ type: "insertion_finished" });
+                        };
+                        cancelInsertion = () => {
+                            stopInsertion();
+                            this.viewer.inputHandler.drag = null;
+                            this.viewer.dispatchEvent({ type: "measurement_insertion_cancelled", measurement: measure });
+                            this.viewer.scene.removeMeasurement(measure);
+                        };
                         lastSphere.addEventListener("drop", finishOnDrop);
+                        this.viewer.addEventListener("cancel_insertions", cancelInsertion);
                         cancel.callback(null, true);
                     }
                 }
 
                 this.viewer.inputHandler.startDragging(
                     measure.spheres[measure.spheres.length - 1]);
-            } else if (e.button === THREE.MOUSE.RIGHT) {
-                // TODO(mkelnar) handle also escape to finish insertions
-                cancel.callback();
             }
         };
 
@@ -255,19 +266,21 @@ export class MeasuringTool extends EventDispatcher {
                 measure.removeMarker(measure.points.length - 1);
             }
             domElement.removeEventListener("mouseup", insertionCallback, false);
-            domElement.removeEventListener("keydown", cancel.esc, false);
             this.viewer.removeEventListener("cancel_insertions", cancel.callback);
-        };
-        cancel.esc = e => {
-            if (e.keyCode === 27) {
-                cancel.callback();
+
+            if ($deferInserting !== true) {
+                let requiredPoints = measure.showArea ? 3 : (measure.maxMarkers === Infinity ? 2 : measure.maxMarkers);
+                if (measure.points.length < requiredPoints) {
+                    this.viewer.scene.removeMeasurement(measure);
+                } else {
+                    measure.dispatchEvent({ type: "insertion_finished" });
+                }
             }
         };
 
         if (measure.maxMarkers > 1) {
             this.viewer.addEventListener("cancel_insertions", cancel.callback);
             domElement.addEventListener("mouseup", insertionCallback, false);
-            domElement.addEventListener("keydown", cancel.esc, false);
         }
 
         measure.addMarker(new THREE.Vector3(0, 0, 0));
