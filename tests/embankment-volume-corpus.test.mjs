@@ -100,8 +100,8 @@ test("embankment corpus: bevel cuts the top edges inward, matching the analytic 
     assert.ok(result.crownSurface !== null);
     assert.equal(result.bevelCapM, null, "a fitting bevel must not report a ridge cap");
     assert.equal(result.quality.approximate, false);
-    assert.throws(() => computeEmbankmentVolumes(probe, { heightM: h, bevelEnabled: true, slopeDeg: 80 }),
-        /mezi 10° a 60°/);
+    assert.throws(() => computeEmbankmentVolumes(probe, { heightM: h, bevelEnabled: true, slopeDeg: 95 }),
+        /mezi 10° a 90°/);
 });
 
 test("embankment corpus: tiny outline with bevel reports the ridge cap instead of the full height", async () => {

@@ -19,6 +19,7 @@ import { prismVolume, computeCentroid, shadeColor } from "./CubatureMath.js";
 import { buildSurfaceMeshData } from "./TerrainGridMath.js";
 import { encodeSurfaceGrid, decodeSurfaceGrid } from "./SurfaceGridCodec.js";
 import { intersectDragWithLockPlane, lockPlaneZAt, refreshHeightLockVisual } from "./HeightLockPlane.js";
+import { sphereHoverEmissive, sphereRestEmissive } from "./VertexSelection.js";
 
 function isValidPosition(p) {
     return p
@@ -287,10 +288,10 @@ export class Cubature extends THREE.Object3D {
             if (!this.enabled) {
                 return;
             }
-            e.object.material.emissive.setHex(0x888888);
+            e.object.material.emissive.setHex(sphereHoverEmissive(e.object));
         };
         const mouseleave = (e) => {
-            e.object.material.emissive.setHex(e.object.isElementSelected === true ? 0x888888 : 0x000000);
+            e.object.material.emissive.setHex(sphereRestEmissive(e.object));
         };
         const drag = (e) => {
             if (!this.enabled || this.phase === "pushpull" || this.phase === "computing") {

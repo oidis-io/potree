@@ -16,6 +16,11 @@ import { EventDispatcher } from "../EventDispatcher.js";
 import { computeCentroid } from "./CubatureMath.js";
 import { computeLockPlane, lockPlaneZAt } from "./HeightLockPlane.js";
 import { ToolContextMenu } from "./ToolContextMenu.js";
+import { applySelectedVertexLook, createVertexClickTracker, selectedSphereIndex } from "./VertexSelection.js";
+import { isTextInputTarget } from "./InsertionKeyboard.js";
+
+// A design embankment is only meaningful with a height, so the height phase cannot be confirmed at zero.
+const MIN_EMBANKMENT_HEIGHT_M = 0.01;
 
 export class EmbankmentTool extends EventDispatcher {
     constructor(viewer) {
@@ -102,11 +107,14 @@ export class EmbankmentTool extends EventDispatcher {
         viewer.renderer.domElement.addEventListener("keydown", this.globalKeyHandler);
 
         this.editCursorApplied = false;
+        this.vertexClicks = createVertexClickTracker();
         this.editMouseMove = () => this.handleEditMouseMove();
         this.editMouseDown = (e) => this.handleEditMouseDown(e);
+        this.editMouseUp = (e) => this.handleEditMouseUp(e);
         this.editKeyDown = (e) => this.handleEditKeyDown(e);
         viewer.renderer.domElement.addEventListener("mousemove", this.editMouseMove);
         viewer.renderer.domElement.addEventListener("mousedown", this.editMouseDown);
+        viewer.renderer.domElement.addEventListener("mouseup", this.editMouseUp);
         viewer.renderer.domElement.addEventListener("keydown", this.editKeyDown);
     }
 
@@ -175,6 +183,9 @@ export class EmbankmentTool extends EventDispatcher {
             return;
         }
         const target = this.pickEditTarget();
+        if (e.button === THREE.MOUSE.LEFT) {
+            this.vertexClicks.press(e, this.vertexClickHit(target));
+        }
         if (target === null) {
             return;
         }
@@ -188,6 +199,22 @@ export class EmbankmentTool extends EventDispatcher {
         e.stopImmediatePropagation();
         this.showContextMenu(e.clientX, e.clientY,
             this.buildEditMenuItems(target.embankment, this.selectedVertexIndex(target.embankment)));
+    }
+
+    handleEditMouseUp(e) {
+        if (e.button === THREE.MOUSE.LEFT) {
+            this.vertexClicks.release(e);
+        }
+    }
+
+    vertexClickHit(target) {
+        if (target === null) {
+            return null;
+        }
+        if (target.markerHit !== null) {
+            return { sphere: target.embankment.spheres[target.markerHit.index] };
+        }
+        return target.settingsHit ? { keep: true } : null;
     }
 
     handleEditKeyDown(e) {
@@ -205,15 +232,14 @@ export class EmbankmentTool extends EventDispatcher {
         }
     }
 
-    attach(eventType, handler) {
-        const el = this.viewer.renderer.domElement;
-        el.addEventListener(eventType, handler);
-        this.activeListeners.push({ event: eventType, handler, target: el });
+    attach(eventType, handler, target = this.viewer.renderer.domElement, capture = false) {
+        target.addEventListener(eventType, handler, capture);
+        this.activeListeners.push({ event: eventType, handler, target, capture });
     }
 
     detachAll() {
         for (const listener of this.activeListeners) {
-            listener.target.removeEventListener(listener.event, listener.handler);
+            listener.target.removeEventListener(listener.event, listener.handler, listener.capture);
         }
         this.activeListeners = [];
     }
@@ -272,12 +298,12 @@ export class EmbankmentTool extends EventDispatcher {
             }
         };
         const onKeyDown = (e) => {
-            if (e.keyCode === 13) {
-                const rect = this.viewer.renderer.domElement.getBoundingClientRect();
-                this.heightDragStartY = rect.top + this.viewer.inputHandler.mouse.y;
-                this.finishInsertion(embankment);
-            } else if (e.keyCode === 27) {
-                this.cancelEmbankment(embankment);
+            if (isTextInputTarget(e)) {
+                return;
+            }
+            if (e.keyCode === 27) {
+                e.stopPropagation();
+                this.endInsertion(embankment);
             } else if (e.keyCode === 8) {
                 if (embankment.controlPoints.length > 1) {
                     embankment.removeMarkerAt(embankment.controlPoints.length - 2);
@@ -293,7 +319,7 @@ export class EmbankmentTool extends EventDispatcher {
             }
         };
         this.attach("mouseup", onMouseUp);
-        this.attach("keydown", onKeyDown);
+        this.attach("keydown", onKeyDown, document, true);
     }
 
     snapPendingMarkerToLock(embankment) {
@@ -316,12 +342,19 @@ export class EmbankmentTool extends EventDispatcher {
             }
         }
         if (!embankment.closeOutline()) {
-            return;
+            return false;
         }
         embankment.applyHeightLock(null);
         this.detachAll();
         this.cancelInputHandlerDrag();
         this.beginProbe(embankment, { removeOnCancel: true, enterHeight: embankment.mode !== "pile" });
+        return true;
+    }
+
+    endInsertion(embankment) {
+        if (!this.finishInsertion(embankment)) {
+            this.cancelEmbankment(embankment);
+        }
     }
 
     beginProbe(embankment, behavior) {
@@ -440,19 +473,29 @@ export class EmbankmentTool extends EventDispatcher {
         const onMouseDown = (e) => {
             if (e.button === THREE.MOUSE.LEFT) {
                 e.preventDefault();
-                this.commitHeight(embankment);
+                if (embankment.heightM >= MIN_EMBANKMENT_HEIGHT_M) {
+                    this.commitHeight(embankment);
+                }
             }
         };
         const onKeyDown = (e) => {
+            if (isTextInputTarget(e)) {
+                return;
+            }
             if (e.keyCode === 27) {
-                this.cancelEmbankment(embankment);
+                e.stopPropagation();
+                if (embankment.heightM >= MIN_EMBANKMENT_HEIGHT_M) {
+                    this.commitHeight(embankment);
+                } else {
+                    this.cancelEmbankment(embankment);
+                }
             } else if (e.keyCode === 84) {
                 this.openHeightInput(embankment);
             }
         };
         this.attach("mousemove", onMouseMove);
         this.attach("mousedown", onMouseDown);
-        this.attach("keydown", onKeyDown);
+        this.attach("keydown", onKeyDown, document, true);
     }
 
     commitHeight(embankment) {
@@ -515,8 +558,8 @@ export class EmbankmentTool extends EventDispatcher {
     }
 
     applyBevel(embankment, enabled, slopeDeg) {
-        if (!(slopeDeg >= 10 && slopeDeg <= 60)) {
-            throw new Error("Úhel zkosení musí být mezi 10° a 60°.");
+        if (!(slopeDeg >= 10 && slopeDeg <= 90)) {
+            throw new Error("Úhel zkosení musí být mezi 10° a 90°.");
         }
         embankment.slopeDeg = slopeDeg;
         embankment.bevelEnabled = enabled;
@@ -526,7 +569,7 @@ export class EmbankmentTool extends EventDispatcher {
     }
 
     selectedVertexIndex(embankment) {
-        return (embankment.spheres || []).findIndex(($sphere) => $sphere.isElementSelected === true);
+        return selectedSphereIndex(embankment.spheres || []);
     }
 
     requestDelete(embankment) {
@@ -692,8 +735,7 @@ export class EmbankmentTool extends EventDispatcher {
             for (const sphere of embankment.spheres) {
                 const distance = camera.position.distanceTo(sphere.getWorldPosition(new THREE.Vector3()));
                 const pr = Utils.projectedRadius(1, camera, distance, renderAreaSize.width, renderAreaSize.height);
-                const scale = (15 / pr);
-                sphere.scale.set(scale, scale, scale);
+                applySelectedVertexLook(sphere, 15 / pr);
             }
             if (embankment.settingsHandle.visible) {
                 const handleDistance = camera.position.distanceTo(

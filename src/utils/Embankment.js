@@ -20,6 +20,7 @@ import { resolveEmbankmentMode } from "./EmbankmentComputation.js";
 import { intersectDragWithLockPlane, lockPlaneZAt, refreshHeightLockVisual } from "./HeightLockPlane.js";
 import { buildSurfaceMeshData } from "./TerrainGridMath.js";
 import { encodeSurfaceGrid, decodeSurfaceGrid } from "./SurfaceGridCodec.js";
+import { sphereHoverEmissive, sphereRestEmissive } from "./VertexSelection.js";
 
 function isValidPosition(p) {
     return p && Number.isFinite(p.x) && Number.isFinite(p.y) && Number.isFinite(p.z);
@@ -201,11 +202,11 @@ export class Embankment extends THREE.Object3D {
     attachSphereHandlers(sphere) {
         const mouseover = (e) => {
             if (this.enabled && this.phase === "edit") {
-                e.object.material.emissive.setHex(0x888888);
+                e.object.material.emissive.setHex(sphereHoverEmissive(e.object));
             }
         };
         const mouseleave = (e) => {
-            e.object.material.emissive.setHex(e.object.isElementSelected === true ? 0x888888 : 0x000000);
+            e.object.material.emissive.setHex(sphereRestEmissive(e.object));
         };
         const drag = (e) => {
             if (!this.enabled || this.phase !== "edit" && this.phase !== "insertion") {

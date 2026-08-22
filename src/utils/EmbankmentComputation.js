@@ -74,8 +74,8 @@ export function computeEmbankmentVolumes(probe, settings) {
     const options = probe.options;
     let capZ = null;
     if (bevelEnabled) {
-        if (!(slopeDeg >= 10 && slopeDeg <= 60)) {
-            throw new Error("Úhel zkosení musí být mezi 10° a 60°.");
+        if (!(slopeDeg >= 10 && slopeDeg <= 90)) {
+            throw new Error("Úhel zkosení musí být mezi 10° a 90°.");
         }
         const tanAlpha = Math.tan((slopeDeg * Math.PI) / 180);
         capZ = computeBevelCapZ(probe.grid, probe.outlinePoints, heightM, tanAlpha);
