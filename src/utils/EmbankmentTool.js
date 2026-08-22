@@ -37,6 +37,8 @@ export class EmbankmentTool extends EventDispatcher {
         this.heightDragScale = 1;
         this.contextMenu = new ToolContextMenu(() => this.cancelInputHandlerDrag());
         this.onRequestDelete = null;
+        this.onRequestNumber = null;
+        this.onRequestEdit = null;
         this.isMenuAllowed = null;
 
         this.onAdd = (e) => {
@@ -267,9 +269,6 @@ export class EmbankmentTool extends EventDispatcher {
                     embankment.addMarker(last.clone());
                     this.viewer.inputHandler.startDragging(embankment.spheres[embankment.spheres.length - 1]);
                 }
-            } else if (e.button === THREE.MOUSE.RIGHT) {
-                this.heightDragStartY = e.clientY;
-                this.finishInsertion(embankment);
             }
         };
         const onKeyDown = (e) => {
@@ -476,28 +475,38 @@ export class EmbankmentTool extends EventDispatcher {
         }
     }
 
-    promptNumber(message, initialValue, isValid) {
+    requestNumber(request, apply) {
+        if (typeof this.onRequestNumber === "function") {
+            this.onRequestNumber(request, apply);
+            return;
+        }
         let hint = "";
         for (;;) {
-            const value = window.prompt(hint + message, initialValue);
+            const value = window.prompt(hint + request.label, String(request.value));
             if (value === null) {
-                return null;
+                return;
             }
             const parsed = parseFloat(value.replace(",", "."));
-            if (Number.isFinite(parsed) && isValid(parsed)) {
-                return parsed;
+            if (Number.isFinite(parsed) && (request.min === null || parsed >= request.min) && (request.max === null || parsed <= request.max)) {
+                apply(parsed);
+                return;
             }
             hint = "Neplatná hodnota. ";
         }
     }
 
     openHeightInput(embankment) {
-        const parsed = this.promptNumber(
-            "Výška náspu (m):", embankment.heightM.toFixed(2), (v) => v >= 0);
-        if (parsed === null) {
-            return;
-        }
-        embankment.setHeightPreview(parsed);
+        this.requestNumber({
+            kind: "embankmentHeight",
+            label: "Výška náspu (m):",
+            value: embankment.heightM.toFixed(2),
+            min: 0,
+            max: null
+        }, (parsed) => this.applyHeight(embankment, parsed));
+    }
+
+    applyHeight(embankment, heightM) {
+        embankment.setHeightPreview(heightM);
         if (embankment.phase === "height") {
             this.commitHeight(embankment);
         } else {
@@ -505,21 +514,12 @@ export class EmbankmentTool extends EventDispatcher {
         }
     }
 
-    openSlopeInput(embankment) {
-        const parsed = this.promptNumber(
-            "Úhel zkosení hran (10–60°):", String(embankment.slopeDeg), (v) => v >= 10 && v <= 60);
-        if (parsed === null) {
-            return;
+    applyBevel(embankment, enabled, slopeDeg) {
+        if (!(slopeDeg >= 10 && slopeDeg <= 60)) {
+            throw new Error("Úhel zkosení musí být mezi 10° a 60°.");
         }
-        embankment.slopeDeg = parsed;
-        embankment.bevelEnabled = true;
-        if (embankment.phase === "edit") {
-            this.applyVolumes(embankment);
-        }
-    }
-
-    toggleBevel(embankment) {
-        embankment.bevelEnabled = !embankment.bevelEnabled;
+        embankment.slopeDeg = slopeDeg;
+        embankment.bevelEnabled = enabled;
         if (embankment.phase === "edit") {
             this.applyVolumes(embankment);
         }
@@ -540,17 +540,7 @@ export class EmbankmentTool extends EventDispatcher {
     buildEditMenuItems(embankment, markerIndex, options = {}) {
         const items = [];
         if (embankment.mode !== "pile") {
-            items.push(
-                { label: "Upravit výšku tažením", action: () => this.enterHeightPhase(embankment) },
-                { label: "Zadat výšku číselně", action: () => this.openHeightInput(embankment) },
-                {
-                    label: embankment.bevelEnabled
-                        ? "Vypnout zkosení hran"
-                        : `Zkosit hrany (${embankment.slopeDeg}°)`,
-                    action: () => this.toggleBevel(embankment)
-                },
-                { label: "Úhel zkosení…", action: () => this.openSlopeInput(embankment) }
-            );
+            items.push({ label: "Upravit výšku tažením", action: () => this.enterHeightPhase(embankment) });
         }
         if (markerIndex !== null && markerIndex >= 0) {
             items.push(
@@ -574,8 +564,14 @@ export class EmbankmentTool extends EventDispatcher {
             items.push({ label: "Vypnout držení výšky", action: () => embankment.applyHeightLock(null) });
         }
         items.push({ label: "Přepočítat objem", action: () => this.recompute(embankment) });
+        if (typeof this.onRequestEdit === "function" && options.includeEdit !== false) {
+            items.push({ label: "Upravit…", action: () => this.onRequestEdit(embankment) });
+        }
         if (options.includeDelete !== false) {
-            items.push({ label: "Smazat násep", action: () => this.requestDelete(embankment) });
+            items.push({
+                label: embankment.mode === "pile" ? "Smazat haldu" : "Smazat násep",
+                action: () => this.requestDelete(embankment)
+            });
         }
         return items;
     }
@@ -612,13 +608,17 @@ export class EmbankmentTool extends EventDispatcher {
 
     openVertexHeightInput(embankment, index) {
         const current = embankment.controlPoints[index];
-        const parsed = this.promptNumber("Výška vrcholu (m n. m.):", current.z.toFixed(2), () => true);
-        if (parsed === null) {
-            return;
-        }
-        const target = current.clone();
-        target.z = parsed;
-        embankment.setControlPoint(index, target);
+        this.requestNumber({
+            kind: "vertexHeight",
+            label: "Výška vrcholu (m n. m.):",
+            value: current.z.toFixed(2),
+            min: null,
+            max: null
+        }, (parsed) => {
+            const target = current.clone();
+            target.z = parsed;
+            embankment.setControlPoint(index, target);
+        });
     }
 
     recompute(embankment) {

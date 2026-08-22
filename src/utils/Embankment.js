@@ -714,7 +714,7 @@ export class Embankment extends THREE.Object3D {
             if (this.computedTotal !== null && this.phase === "edit") {
                 this.breakdownLabel.position.set(centroid.x, centroid.y, centroid.z + this.heightM + 0.2);
                 this.breakdownLabel.setText(this.mode === "pile"
-                    ? "objem hromady · nejistota podkladu ±" + this.computedUncertaintyPct + " %"
+                    ? "objem haldy · nejistota podkladu ±" + this.computedUncertaintyPct + " %"
                     : "dosypání " + formatCubicMeters(this.computedBelowOutlineVolume) +
                       " · navážka " + formatCubicMeters(this.computedAboveOutlineVolume));
                 this.breakdownLabel.visible = mainVisible && detailVisible;

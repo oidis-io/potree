@@ -42,6 +42,8 @@ export class CubatureTool extends EventDispatcher {
 
         this.contextMenu = new ToolContextMenu(() => this.cancelInputHandlerDrag());
         this.onRequestDelete = null;
+        this.onRequestNumber = null;
+        this.onRequestEdit = null;
         this.isMenuAllowed = null;
 
         this.globalContextMenuHandler = (e) => {
@@ -277,9 +279,6 @@ export class CubatureTool extends EventDispatcher {
                     cubature.addTopMarker(last.clone());
                     this.viewer.inputHandler.startDragging(cubature.topSpheres[cubature.topSpheres.length - 1]);
                 }
-            } else if (e.button === THREE.MOUSE.RIGHT) {
-                this.pushPullStartY = e.clientY;
-                this.finishInsertion(cubature);
             }
         };
         const onKeyDown = (e) => {
@@ -586,6 +585,9 @@ export class CubatureTool extends EventDispatcher {
         } else if (cubature.heightLock !== null) {
             items.push({ label: "Vypnout držení výšky", action: () => cubature.applyHeightLock(null) });
         }
+        if (typeof this.onRequestEdit === "function" && options.includeEdit !== false) {
+            items.push({ label: "Upravit…", action: () => this.onRequestEdit(cubature) });
+        }
         if (options.includeDelete !== false) {
             items.push({ label: "Smazat kubaturu", action: () => this.requestDelete(cubature) });
         }
@@ -637,16 +639,31 @@ export class CubatureTool extends EventDispatcher {
     }
 
     openNumericInput(cubature) {
-        const value = window.prompt("Hloubka výkopu (m, záporná hodnota = dolů):", "-1.0");
+        this.requestNumber({
+            kind: "pitDepth",
+            label: "Hloubka výkopu (m, záporná hodnota = dolů):",
+            value: "-1.0",
+            min: null,
+            max: null
+        }, (parsed) => {
+            cubature.setPushPullOffset(parsed);
+            this.commitPushPull(cubature);
+        });
+    }
+
+    requestNumber(request, apply) {
+        if (typeof this.onRequestNumber === "function") {
+            this.onRequestNumber(request, apply);
+            return;
+        }
+        const value = window.prompt(request.label, String(request.value));
         if (value === null) {
             return;
         }
-        const parsed = parseFloat(value);
-        if (!Number.isFinite(parsed)) {
-            return;
+        const parsed = parseFloat(value.replace(",", "."));
+        if (Number.isFinite(parsed) && (request.min === null || parsed >= request.min) && (request.max === null || parsed <= request.max)) {
+            apply(parsed);
         }
-        cubature.setPushPullOffset(parsed);
-        this.commitPushPull(cubature);
     }
 
     showContextMenu(x, y, items) {

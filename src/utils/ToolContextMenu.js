@@ -26,6 +26,11 @@ export class ToolContextMenu {
             "user-select: none",
             "min-width: 160px"
         ].join("; ");
+        this.onOutside = (e) => {
+            if (!this.el.contains(e.target)) {
+                this.hide();
+            }
+        };
         document.body.appendChild(this.el);
     }
 
@@ -61,19 +66,20 @@ export class ToolContextMenu {
         el.style.left = clampedX + "px";
         el.style.top = clampedY + "px";
         el.style.visibility = "";
-
-        const onOutside = (e) => {
-            if (!el.contains(e.target)) {
-                this.hide();
-                document.removeEventListener("mousedown", onOutside, true);
-            }
-        };
         setTimeout(() => {
-            document.addEventListener("mousedown", onOutside, true);
+            document.addEventListener("mousedown", this.onOutside, true);
         }, 0);
     }
 
     hide() {
         this.el.style.display = "none";
+        document.removeEventListener("mousedown", this.onOutside, true);
+    }
+
+    dispose() {
+        this.hide();
+        if (this.el.parentNode) {
+            this.el.parentNode.removeChild(this.el);
+        }
     }
 }
