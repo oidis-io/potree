@@ -102,7 +102,7 @@ export class Embankment extends THREE.Object3D {
         this.isPinned = false;
 
         this.sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
-        this.volumeLabel = createLabel(16, { r: 255, g: 220, b: 100, a: 1.0 });
+        this.volumeLabel = createLabel(16, { r: 140, g: 250, b: 140, a: 1.0 });
         this.add(this.volumeLabel);
         this.breakdownLabel = createLabel(13, { r: 230, g: 230, b: 230, a: 1.0 });
         this.add(this.breakdownLabel);

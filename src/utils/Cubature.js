@@ -30,7 +30,7 @@ function isValidPosition(p) {
 
 function createVolumeLabel() {
     const label = new TextSprite("");
-    label.setTextColor({ r: 255, g: 220, b: 100, a: 1.0 });
+    label.setTextColor({ r: 140, g: 250, b: 140, a: 1.0 });
     label.setBorderColor({ r: 0, g: 0, b: 0, a: 1.0 });
     label.setBackgroundColor({ r: 0, g: 0, b: 0, a: 1.0 });
     label.fontsize = 16;

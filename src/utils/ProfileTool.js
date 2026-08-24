@@ -61,6 +61,7 @@ export class ProfileTool extends EventDispatcher {
 
     startInsertion(args = {}) {
         let domElement = this.viewer.renderer.domElement;
+        domElement.style.cursor = "crosshair";
 
         let profile = new Profile();
         profile.name = args.name || "Profile";
@@ -102,6 +103,7 @@ export class ProfileTool extends EventDispatcher {
             profile.removeMarker(profile.points.length - 1);
             domElement.removeEventListener("mouseup", insertionCallback, false);
             this.viewer.removeEventListener("cancel_insertions", cancel.callback);
+            domElement.style.cursor = "";
         };
 
         this.viewer.addEventListener("cancel_insertions", cancel.callback);

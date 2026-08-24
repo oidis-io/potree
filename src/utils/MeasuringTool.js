@@ -177,6 +177,7 @@ export class MeasuringTool extends EventDispatcher {
 
     startInsertion(args = {}) {
         let domElement = this.viewer.renderer.domElement;
+        domElement.style.cursor = "crosshair";
 
         const pick = (defaul, alternative) => {
             if (defaul != null) {
@@ -234,6 +235,7 @@ export class MeasuringTool extends EventDispatcher {
                             this.viewer.removeEventListener("cancel_insertions", cancelInsertion);
                             measure.isInserting = false;
                             measure.isBeingDrawn = false;
+                            domElement.style.cursor = "";
                         };
                         finishOnDrop = () => {
                             stopInsertion();
@@ -261,6 +263,7 @@ export class MeasuringTool extends EventDispatcher {
                 measure.isInserting = false;
                 measure.isBeingDrawn = false;
                 this.viewer.inputHandler.drag = null;
+                domElement.style.cursor = "";
             }
             if (cancel.removeLastMarker) {
                 measure.removeMarker(measure.points.length - 1);
@@ -314,6 +317,13 @@ export class MeasuringTool extends EventDispatcher {
                 let pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
                 let scale = (15 / pr);
                 sphere.scale.set(scale, scale, scale);
+            }
+
+            if (measure.circleCenter && measure.circleCenter.visible) {
+                let distance = camera.position.distanceTo(measure.circleCenter.getWorldPosition(new THREE.Vector3()));
+                let pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
+                let scale = (15 / pr);
+                measure.circleCenter.scale.set(scale, scale, scale);
             }
 
             let labels = measure.edgeLabels.concat(measure.angleLabels);
@@ -458,9 +468,15 @@ export class MeasuringTool extends EventDispatcher {
 
             const reveal = measure.isRevealed();
             const primaryVisible = (measure.permanentLabelsVisible !== false) || reveal;
-            const detailLabels = [...measure.edgeLabels, ...measure.angleLabels];
+            // The angle tool (no distances) shows its angle permanently like area/height; on area/distance the same
+            // angle labels stay secondary detail that only appears on hover/selection.
+            const anglesPrimary = measure.showDistances === false;
+            const detailLabels = [...measure.edgeLabels];
             if (measure.circleDetailLabel) {
                 detailLabels.push(measure.circleDetailLabel);
+            }
+            if (!anglesPrimary) {
+                detailLabels.push(...measure.angleLabels);
             }
             const primaryLabels = [
                 ...measure.coordinateLabels,
@@ -469,6 +485,9 @@ export class MeasuringTool extends EventDispatcher {
                 measure.totalLabel,
                 measure.circleRadiusLabel,
             ];
+            if (anglesPrimary) {
+                primaryLabels.push(...measure.angleLabels);
+            }
             if (measure.azimuth && measure.azimuth.label) {
                 primaryLabels.push(measure.azimuth.label);
             }

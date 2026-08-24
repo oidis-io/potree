@@ -192,8 +192,8 @@ function createCircleLine($color) {
 }
 
 function createCircleCenter() {
-    const sg = new THREE.SphereGeometry(1, 32, 32);
-    const sm = new THREE.MeshNormalMaterial();
+    const sg = new THREE.SphereGeometry(0.4, 10, 10);
+    const sm = new THREE.MeshLambertMaterial({ color: 0xff0000, depthTest: false, depthWrite: false });
 
     const circleCenter = new THREE.Mesh(sg, sm);
     circleCenter.visible = false;
@@ -534,6 +534,7 @@ export class Measure extends THREE.Object3D {
 
         {
             let angleLabel = new TextSprite();
+            angleLabel.setTextColor({ r: 140, g: 250, b: 140, a: 1.0 });
             angleLabel.setBorderColor({ r: 0, g: 0, b: 0, a: 1.0 });
             angleLabel.setBackgroundColor({ r: 0, g: 0, b: 0, a: 1.0 });
             angleLabel.fontsize = 16;
@@ -758,7 +759,8 @@ export class Measure extends THREE.Object3D {
             let point = this.points[0];
             let position = point.position;
             this.spheres[0].position.copy(position);
-            this.spheres[0].visible = this._showMarkers;
+            // The marker under the cursor while inserting stays hidden; only clicked-down points get a sphere.
+            this.spheres[0].visible = this._showMarkers && this.isBeingDrawn !== true;
 
             {
                 let coordinateLabel = this.coordinateLabels[0];
@@ -796,7 +798,8 @@ export class Measure extends THREE.Object3D {
 
             sphere.position.copy(point.position);
             sphere.material.color = new THREE.Color(this.color);
-            sphere.visible = this._showMarkers;
+            // Hide the trailing marker that follows the cursor mid-insertion; it becomes visible once clicked down.
+            sphere.visible = this._showMarkers && !(this.isBeingDrawn === true && index === lastIndex);
 
             {
                 let edge = this.edges[index];
@@ -966,9 +969,8 @@ export class Measure extends THREE.Object3D {
                 } else {
                     const radius = center.distanceTo(A);
 
-                    const scale = radius / 20;
                     circleCenter.position.copy(center);
-                    circleCenter.scale.set(scale, scale, scale);
+                    circleCenter.material.color = new THREE.Color(this.color);
 
                     circleRadiusLine.geometry.setPositions([
                         0, 0, 0,
