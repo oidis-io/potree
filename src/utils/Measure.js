@@ -12,6 +12,7 @@
 import * as THREE from "../../libs/three.js/build/three.module.js";
 import { TextSprite } from "../TextSprite.js";
 import { Utils } from "../utils.js";
+import { bindDuplicateDrag } from "./DuplicateDrag.js";
 import { Line2 } from "../../libs/three.js/lines/Line2.js";
 import { LineGeometry } from "../../libs/three.js/lines/LineGeometry.js";
 import { LineMaterial } from "../../libs/three.js/lines/LineMaterial.js";
@@ -191,8 +192,8 @@ function createCircleLine($color) {
 }
 
 function createCircleCenter() {
-    const sg = new THREE.SphereGeometry(1, 32, 32);
-    const sm = new THREE.MeshNormalMaterial();
+    const sg = new THREE.SphereGeometry(0.4, 10, 10);
+    const sm = new THREE.MeshLambertMaterial({ color: 0xff0000, depthTest: false, depthWrite: false });
 
     const circleCenter = new THREE.Mesh(sg, sm);
     circleCenter.visible = false;
@@ -349,6 +350,7 @@ export class Measure extends THREE.Object3D {
         this.isListHovered = false;
         this.isPinned = false;
         this.isInserting = false;
+        this.isBeingDrawn = false;
         this._hoverCount = 0;
 
         this.sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
@@ -386,6 +388,10 @@ export class Measure extends THREE.Object3D {
         this.add(this.rectangle);
 
         this.add(this.azimuth.node);
+
+        this.attachDuplicateDrag(this.circleLine);
+        this.attachDuplicateDrag(this.azimuth.circle);
+        this.attachDuplicateDrag(this.azimuth.centerToTarget);
     }
 
     createSphereMaterial() {
@@ -396,6 +402,55 @@ export class Measure extends THREE.Object3D {
                 depthWrite: false
             }
         );
+    }
+
+    createDuplicatePreview() {
+        let group = new THREE.Group();
+        group.renderOrder = 9999;
+        let sources = this.edges.slice();
+        if (this.circleLine && this.circleLine.visible) {
+            sources.push(this.circleLine);
+        }
+        for (let source of sources) {
+            let clone = source.clone();
+            clone.material = source.material.clone();
+            clone.material.color.set(0x00ffff);
+            clone.material.transparent = true;
+            clone.material.opacity = 0.6;
+            clone.material.depthTest = false;
+            clone.renderOrder = 9999;
+            group.add(clone);
+        }
+        if (this.showAzimuth && this.azimuth && this.azimuth.node && this.azimuth.node.visible) {
+            let azimuthClone = this.azimuth.node.clone();
+            azimuthClone.traverse((child) => {
+                if (child.isSprite === true || (child.material && child.material.map)) {
+                    child.visible = false;
+                    return;
+                }
+                if (child.material) {
+                    child.material = child.material.clone();
+                    if (child.material.color) {
+                        child.material.color.set(0x00ffff);
+                    }
+                    child.material.transparent = true;
+                    child.material.opacity = 0.6;
+                    child.material.depthTest = false;
+                }
+                child.renderOrder = 9999;
+            });
+            group.add(azimuthClone);
+        }
+        return group;
+    }
+
+    attachDuplicateDrag(target) {
+        bindDuplicateDrag(this, target, {
+            eventType: "measurement_duplicate",
+            payloadKey: "measurement",
+            useGroundFallback: false,
+            checkEnabled: true
+        });
     }
 
     markHoverEnter() {
@@ -446,90 +501,22 @@ export class Measure extends THREE.Object3D {
 
             this.add(edge);
             this.edges.push(edge);
-            let actualEdge = null;
 
             let mouseover = (e) => {
                 this.markHoverEnter();
-                if (this.enabled === false) {
+                if (this.enabled === false || this.isBeingDrawn === true) {
                     return;
                 }
-                actualEdge = e.object;
                 e.object.material.color.set(0xff8800);
                 e.object.material.linewidth = 4;
             };
             let mouseleave = (e) => {
                 this.markHoverLeave();
-                e.object.material.color.set(this.color);
-                e.object.material.linewidth = 2;
+                e.object.material.color.set(e.object.isElementSelected === true ? 0xff8800 : this.color);
+                e.object.material.linewidth = e.object.isElementSelected === true ? 4 : 2;
             };
 
-            let ghostLine = null;
-            let dragOffset = null;
-            let isDragging = false;
-
-            let drag = (e) => {
-                if (this.enabled === false) {
-                    return;
-                }
-
-                const I = Utils.getMousePointCloudIntersection(
-                    e.drag.end,
-                    e.viewer.scene.getActiveCamera(),
-                    e.viewer,
-                    e.viewer.scene.pointclouds,
-                    { pickClipped: true }
-                );
-                if (!I) {
-                    return;
-                }
-                if (!isDragging) {
-                    isDragging = true;
-                    const localMousePos = e.drag.object.parent.worldToLocal(I.location.clone());
-                    dragOffset = new THREE.Vector3().subVectors(localMousePos, e.drag.object.position);
-                    ghostLine = e.drag.object.clone();
-                    ghostLine.material = e.drag.object.material.clone();
-                    ghostLine.material.color.set(0x00ffff);
-                    ghostLine.material.transparent = true;
-                    ghostLine.material.opacity = 0.6;
-                    ghostLine.renderOrder = 9999;
-                    ghostLine.material.depthTest = false;
-                    this.add(ghostLine);
-                }
-
-                if (ghostLine) {
-                    const localMousePos = e.drag.object.parent.worldToLocal(I.location.clone());
-                    ghostLine.position.copy(localMousePos.sub(dragOffset));
-                }
-            };
-
-            let drop = (e) => {
-                if (isDragging) {
-                    isDragging = false;
-                }
-                if (actualEdge) {
-                    actualEdge.material.color.set(this.color);
-                    actualEdge.material.linewidth = 2;
-                }
-                if (ghostLine) {
-                    const start = new THREE.Vector3().fromBufferAttribute(ghostLine.geometry.attributes.instanceStart, 0).applyMatrix4(ghostLine.matrixWorld);
-                    const end = new THREE.Vector3().fromBufferAttribute(ghostLine.geometry.attributes.instanceEnd, 0).applyMatrix4(ghostLine.matrixWorld);
-
-                    this.remove(ghostLine);
-                    ghostLine.geometry.dispose();
-                    ghostLine.material.dispose();
-                    ghostLine = null;
-
-                    e.viewer.dispatchEvent({
-                        "type": "line_dropped",
-                        "measurement": this,
-                        "start": start,
-                        "end": end
-                    });
-                }
-            };
-
-            edge.addEventListener("drag", drag);
-            edge.addEventListener("drop", drop);
+            this.attachDuplicateDrag(edge);
             edge.addEventListener("mouseover", mouseover);
             edge.addEventListener("mouseleave", mouseleave);
         }
@@ -547,6 +534,7 @@ export class Measure extends THREE.Object3D {
 
         {
             let angleLabel = new TextSprite();
+            angleLabel.setTextColor({ r: 140, g: 250, b: 140, a: 1.0 });
             angleLabel.setBorderColor({ r: 0, g: 0, b: 0, a: 1.0 });
             angleLabel.setBackgroundColor({ r: 0, g: 0, b: 0, a: 1.0 });
             angleLabel.fontsize = 16;
@@ -617,14 +605,14 @@ export class Measure extends THREE.Object3D {
 
             let mouseover = (e) => {
                 this.markHoverEnter();
-                if (this.enabled === false) {
+                if (this.enabled === false || this.isBeingDrawn === true) {
                     return;
                 }
                 e.object.material.emissive.setHex(0x888888);
             };
             let mouseleave = (e) => {
                 this.markHoverLeave();
-                e.object.material.emissive.setHex(0x000000);
+                e.object.material.emissive.setHex(e.object.isElementSelected === true ? 0x888888 : 0x000000);
             };
 
             sphere.addEventListener("drag", drag);
@@ -771,7 +759,8 @@ export class Measure extends THREE.Object3D {
             let point = this.points[0];
             let position = point.position;
             this.spheres[0].position.copy(position);
-            this.spheres[0].visible = this._showMarkers;
+            // The marker under the cursor while inserting stays hidden; only clicked-down points get a sphere.
+            this.spheres[0].visible = this._showMarkers && this.isBeingDrawn !== true;
 
             {
                 let coordinateLabel = this.coordinateLabels[0];
@@ -809,7 +798,8 @@ export class Measure extends THREE.Object3D {
 
             sphere.position.copy(point.position);
             sphere.material.color = new THREE.Color(this.color);
-            sphere.visible = this._showMarkers;
+            // Hide the trailing marker that follows the cursor mid-insertion; it becomes visible once clicked down.
+            sphere.visible = this._showMarkers && !(this.isBeingDrawn === true && index === lastIndex);
 
             {
                 let edge = this.edges[index];
@@ -871,7 +861,7 @@ export class Measure extends THREE.Object3D {
                 let msg = Utils.addCommas((angle * (180.0 / Math.PI)).toFixed(1)) + "\u00B0";
                 angleLabel.setText(msg);
 
-                angleLabel.visible = this.showAngles && (index < lastIndex || this.closed) && this.points.length >= 3 && angle > 0;
+                angleLabel.visible = this.showAngles && ((index > 0 && index < lastIndex) || this.closed) && this.points.length >= 3 && angle > 0;
             }
         }
 
@@ -979,9 +969,8 @@ export class Measure extends THREE.Object3D {
                 } else {
                     const radius = center.distanceTo(A);
 
-                    const scale = radius / 20;
                     circleCenter.position.copy(center);
-                    circleCenter.scale.set(scale, scale, scale);
+                    circleCenter.material.color = new THREE.Color(this.color);
 
                     circleRadiusLine.geometry.setPositions([
                         0, 0, 0,

@@ -2,7 +2,7 @@
   "name": "@oidis-io/potree",
   "repository": "https://github.com/oidis-io/potree.git",
   "private": false,
-  "version": "2026.2.2",
+  "version": "2026.2.4",
   "description": "WebGL point cloud viewer for large datasets - enhanced by Oidis",
   "keywords": [
     "oidis",
@@ -17,7 +17,8 @@
     "postinstall": "npm run build",
     "lint": "eslint .",
     "lint-fix": "eslint . --fix",
-    "release": "npm run lint && gulp release"
+    "release": "npm run lint && gulp release",
+    "test": "node --import ./tests/bootstrap.mjs --test \"tests/*.test.mjs\""
   },
   "dependencies": {
     "gulp": "^5.0.1",

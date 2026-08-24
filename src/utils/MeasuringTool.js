@@ -177,6 +177,7 @@ export class MeasuringTool extends EventDispatcher {
 
     startInsertion(args = {}) {
         let domElement = this.viewer.renderer.domElement;
+        domElement.style.cursor = "crosshair";
 
         const pick = (defaul, alternative) => {
             if (defaul != null) {
@@ -209,6 +210,7 @@ export class MeasuringTool extends EventDispatcher {
 
         measure.name = args.name || "Measurement";
         measure.isInserting = true;
+        measure.isBeingDrawn = true;
 
         this.scene.add(measure);
 
@@ -226,44 +228,62 @@ export class MeasuringTool extends EventDispatcher {
                         cancel.callback();
                     } else {
                         let lastSphere = measure.spheres[measure.spheres.length - 1];
-                        let finishOnDrop = () => {
+                        let finishOnDrop = null;
+                        let cancelInsertion = null;
+                        let stopInsertion = () => {
                             lastSphere.removeEventListener("drop", finishOnDrop);
+                            this.viewer.removeEventListener("cancel_insertions", cancelInsertion);
                             measure.isInserting = false;
+                            measure.isBeingDrawn = false;
+                            domElement.style.cursor = "";
+                        };
+                        finishOnDrop = () => {
+                            stopInsertion();
+                            measure.dispatchEvent({ type: "insertion_finished" });
+                        };
+                        cancelInsertion = () => {
+                            stopInsertion();
+                            this.viewer.inputHandler.drag = null;
+                            this.viewer.dispatchEvent({ type: "measurement_insertion_cancelled", measurement: measure });
+                            this.viewer.scene.removeMeasurement(measure);
                         };
                         lastSphere.addEventListener("drop", finishOnDrop);
+                        this.viewer.addEventListener("cancel_insertions", cancelInsertion);
                         cancel.callback(null, true);
                     }
                 }
 
                 this.viewer.inputHandler.startDragging(
                     measure.spheres[measure.spheres.length - 1]);
-            } else if (e.button === THREE.MOUSE.RIGHT) {
-                // TODO(mkelnar) handle also escape to finish insertions
-                cancel.callback();
             }
         };
 
         cancel.callback = (e, $deferInserting) => {
             if ($deferInserting !== true) {
                 measure.isInserting = false;
+                measure.isBeingDrawn = false;
+                this.viewer.inputHandler.drag = null;
+                domElement.style.cursor = "";
             }
             if (cancel.removeLastMarker) {
                 measure.removeMarker(measure.points.length - 1);
             }
             domElement.removeEventListener("mouseup", insertionCallback, false);
-            domElement.removeEventListener("keydown", cancel.esc, false);
             this.viewer.removeEventListener("cancel_insertions", cancel.callback);
-        };
-        cancel.esc = e => {
-            if (e.keyCode === 27) {
-                cancel.callback();
+
+            if ($deferInserting !== true) {
+                let requiredPoints = (measure.showArea || measure.showAngles) ? 3 : (measure.maxMarkers === Infinity ? 2 : measure.maxMarkers);
+                if (measure.points.length < requiredPoints) {
+                    this.viewer.scene.removeMeasurement(measure);
+                } else {
+                    measure.dispatchEvent({ type: "insertion_finished" });
+                }
             }
         };
 
         if (measure.maxMarkers > 1) {
             this.viewer.addEventListener("cancel_insertions", cancel.callback);
             domElement.addEventListener("mouseup", insertionCallback, false);
-            domElement.addEventListener("keydown", cancel.esc, false);
         }
 
         measure.addMarker(new THREE.Vector3(0, 0, 0));
@@ -297,6 +317,13 @@ export class MeasuringTool extends EventDispatcher {
                 let pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
                 let scale = (15 / pr);
                 sphere.scale.set(scale, scale, scale);
+            }
+
+            if (measure.circleCenter && measure.circleCenter.visible) {
+                let distance = camera.position.distanceTo(measure.circleCenter.getWorldPosition(new THREE.Vector3()));
+                let pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
+                let scale = (15 / pr);
+                measure.circleCenter.scale.set(scale, scale, scale);
             }
 
             let labels = measure.edgeLabels.concat(measure.angleLabels);
@@ -441,8 +468,9 @@ export class MeasuringTool extends EventDispatcher {
 
             const reveal = measure.isRevealed();
             const primaryVisible = (measure.permanentLabelsVisible !== false) || reveal;
+            // The angle tool (no distances) shows its angle permanently like area/height; on area/distance the same
+            // angle labels stay secondary detail that only appears on hover/selection.
             const anglesPrimary = measure.showDistances === false;
-
             const detailLabels = [...measure.edgeLabels];
             if (measure.circleDetailLabel) {
                 detailLabels.push(measure.circleDetailLabel);

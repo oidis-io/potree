@@ -10,71 +10,6 @@
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
 
-export function bestFitPlane(points) {
-    if (!points || points.length < 3) {
-        return {
-            normal: { x: 0, y: 0, z: 1 },
-            point: { x: 0, y: 0, z: 0 }
-        };
-    }
-
-    const n = points.length;
-    let sx = 0, sy = 0, sz = 0;
-    for (let i = 0; i < n; i++) {
-        sx += points[i].x;
-        sy += points[i].y;
-        sz += points[i].z;
-    }
-    const cx = sx / n;
-    const cy = sy / n;
-    const cz = sz / n;
-
-    let xx = 0, xy = 0, yy = 0, xz = 0, yz = 0;
-    for (let i = 0; i < n; i++) {
-        const dx = points[i].x - cx;
-        const dy = points[i].y - cy;
-        const dz = points[i].z - cz;
-        xx += dx * dx;
-        xy += dx * dy;
-        yy += dy * dy;
-        xz += dx * dz;
-        yz += dy * dz;
-    }
-
-    const det = xx * yy - xy * xy;
-    if (Math.abs(det) < 1e-12) {
-        return {
-            normal: { x: 0, y: 0, z: 1 },
-            point: { x: cx, y: cy, z: cz }
-        };
-    }
-
-    const a = (yy * xz - xy * yz) / det;
-    const b = (xx * yz - xy * xz) / det;
-
-    const nx = a;
-    const ny = b;
-    const nz = -1;
-    const len = Math.sqrt(nx * nx + ny * ny + nz * nz);
-
-    return {
-        normal: { x: nx / len, y: ny / len, z: nz / len },
-        point: { x: cx, y: cy, z: cz }
-    };
-}
-
-export function projectOntoPlane(p, plane) {
-    const dx = p.x - plane.point.x;
-    const dy = p.y - plane.point.y;
-    const dz = p.z - plane.point.z;
-    const dot = dx * plane.normal.x + dy * plane.normal.y + dz * plane.normal.z;
-    return {
-        x: p.x - plane.normal.x * dot,
-        y: p.y - plane.normal.y * dot,
-        z: p.z - plane.normal.z * dot
-    };
-}
-
 export function prismVolume(topVerts, bottomVerts) {
     const n = topVerts.length;
     if (n < 3 || bottomVerts.length !== n) {
@@ -139,6 +74,12 @@ export function prismVolume(topVerts, bottomVerts) {
         volume += p1.x * crX + p1.y * crY + p1.z * crZ;
     }
     return Math.abs(volume / 6);
+}
+
+export function shadeColor(color, amount) {
+    const base = new THREE.Color(color);
+    const target = new THREE.Color(amount < 0 ? 0x000000 : 0xffffff);
+    return base.lerp(target, Math.abs(amount)).getHex();
 }
 
 export function computeCentroid(points) {

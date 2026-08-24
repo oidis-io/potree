@@ -1,0 +1,245 @@
+<!--
+
+ Copyright 2026 Oidis
+
+ SPDX-License-Identifier: BSD-2-Clause
+ The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
+ or at https://spdx.org/licenses/BSD-2-Clause.html#licenseText
+
+ Auto-cubature demo (deterministic terrain snapping via PolygonPointQuery).
+ Default cloud: lion_takanawa_ept_laz (in-repo EPT/LAZ); ?data=mohelnice loads examples/data/mohelnice/ept.
+ Press A to start an auto cubature (draw the top outline, right click closes it and the computation runs).
+ Press K for the classic manual cubature.
+
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Potree — Auto cubature demo</title>
+
+    <link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
+    <link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
+    <link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
+    <link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
+    <link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
+</head>
+
+<body>
+    <script src="../libs/jquery/jquery-3.1.1.min.js"></script>
+    <script src="../libs/spectrum/spectrum.js"></script>
+    <script src="../libs/jquery-ui/jquery-ui.min.js"></script>
+    <script src="../libs/other/BinaryHeap.js"></script>
+    <script src="../libs/tween/tween.min.js"></script>
+    <script src="../libs/d3/d3.js"></script>
+    <script src="../libs/proj4/proj4.js"></script>
+    <script src="../libs/openlayers3/ol.js"></script>
+    <script src="../libs/i18next/i18next.js"></script>
+    <script src="../libs/jstree/jstree.js"></script>
+    <script src="../build/potree/potree.js"></script>
+    <script src="../libs/plasio/js/laslaz.js"></script>
+    <script src="../libs/copc/index.js"></script>
+
+    <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px;">
+        <div id="potree_render_area" style="background-image: url('../build/potree/resources/images/background.jpg');"></div>
+        <div id="potree_sidebar_container"></div>
+    </div>
+
+    <div id="auto_cubature_status" style="position: absolute; right: 8px; top: 8px; z-index: 10000;
+        background: rgba(0,0,0,0.75); color: #fff; font: 13px/1.5 monospace; padding: 8px 12px;
+        border-radius: 6px; min-width: 260px; white-space: pre-line;">auto-cubature: ready</div>
+
+    <script type="module">
+        import * as THREE from "../libs/three.js/build/three.module.js";
+
+        window.potreeViewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+        potreeViewer.setEDLEnabled(true);
+        potreeViewer.setFOV(60);
+        potreeViewer.setPointBudget(2_000_000);
+        potreeViewer.setMinNodeSize(50);
+        potreeViewer.loadSettingsFromURL();
+        potreeViewer.setBackground("gradient");
+        potreeViewer.useHQ = true;
+
+        potreeViewer.setDescription(`
+            <b>Auto-kubatura + N&aacute;sep demo</b> &mdash; deterministick&eacute; p&rcaron;ichycen&iacute; k mra&ccaron;nu.<br>
+            <ol style="margin: 4px 0 0 14px; padding: 0; line-height: 1.4em;">
+              <li><b>A</b> = auto-kubatura (j&aacute;ma): naklikat horn&iacute; obrys, <b>Esc</b> uzav&rcaron;e &mdash; dno se p&rcaron;ichyt&iacute; samo. Menu pak p&rcaron;es <b>b&iacute;lou te&ccaron;ku</b> nad t&ecaron;lesem (lev&yacute; klik).</li>
+              <li><b>N</b> = n&aacute;sep: naklikat obrys na ter&eacute;nu, <b>Esc</b> uzav&rcaron;e, po v&yacute;po&ccaron;tu t&aacute;hnout <b>v&yacute;&scaron;ku nahoru</b>, lev&yacute;m klikem nebo Esc potvrdit (nulovou v&yacute;&scaron;ku nelze potvrdit &mdash; klik nic neud&ecaron;l&aacute;, Esc n&aacute;vrh zahod&iacute;). Po dokon&ccaron;en&iacute; lev&yacute; klik na <b>b&iacute;lou te&ccaron;ku</b> na vr&scaron;ku t&ecaron;lesa = menu (v&yacute;&scaron;ka ta&zcaron;en&iacute;m, p&rcaron;epo&ccaron;et, smaz&aacute;n&iacute;; v hostitelsk&eacute; aplikaci nav&iacute;c <b>Upravit&hellip;</b> = v&yacute;&scaron;ka &ccaron;&iacute;seln&ecaron;, zkosen&iacute; hran a &uacute;hel v modalu); po v&yacute;b&ecaron;ru vrcholu (lev&yacute; klik na kuli&ccaron;ku bez tahu &mdash; zv&yacute;razn&iacute; se oran&zcaron;ov&ecaron;; klik do pr&aacute;zdna v&yacute;b&ecaron;r zru&scaron;&iacute;) p&rcaron;ibudou i &uacute;pravy vrcholu. <b>Prav&eacute; tla&ccaron;&iacute;tko slou&zcaron;&iacute; jen k ovl&aacute;d&aacute;n&iacute; kamery.</b> P&rcaron;i najet&iacute; na t&ecaron;leso se uk&aacute;&zcaron;ou v&scaron;echny hodnoty (d&eacute;lky hran, v&yacute;&scaron;ka, rozpad objemu). Zkosen&iacute; se&rcaron;&iacute;zne horn&iacute; hrany <b>dovnit&rcaron;</b>: p&uring;dorys z&uring;stane p&rcaron;esn&ecaron; podle nakreslen&eacute;ho obrysu, svah stoup&aacute; od hrany obrysu pod zvolen&yacute;m &uacute;hlem (<b>10&ndash;90&deg;</b>, 90&deg; = svisl&aacute; st&ecaron;na); je &ccaron;ist&ecaron; geometrick&eacute; a jde zapnout i v menu b&ecaron;hem tahu v&yacute;&scaron;ky.</li>
+              <li><b>H</b> = hromada: obkreslit <b>patu</b> existuj&iacute;c&iacute; hromady &mdash; podklad se dopo&ccaron;te, povrch se vezme z mra&ccaron;na, v&yacute;sledek s &plusmn;nejistotou podkladu.</li>
+              <li><b>Z</b> b&ecaron;hem kreslen&iacute; (kubatura i n&aacute;sep/hromada) = <b>z&aacute;mek v&yacute;&scaron;ky (osa Z)</b>: uk&aacute;&zcaron;e se <b>modr&aacute; m&rcaron;&iacute;&zcaron;ka</b>, bod d&aacute;l sleduje mra&ccaron;no pod kurzorem v XY a <b>v&yacute;&scaron;ku p&rcaron;eb&iacute;r&aacute; z m&rcaron;&iacute;&zcaron;ky</b>; kde <b>&zcaron;&aacute;dn&eacute; mra&ccaron;no nen&iacute;</b>, jede bod p&rcaron;&iacute;mo po m&rcaron;&iacute;&zcaron;ce. Rovina se bere z u&zcaron; naklikan&yacute;ch bod&uring;: 1 bod = vodorovn&aacute;, 2 body = &scaron;ikm&aacute; linie do stran, 3+ = vyrovn&aacute;vac&iacute; rovina. Z = vypnout; po uzav&rcaron;en&iacute; obrysu se dr&zcaron;en&iacute; samo vypne a m&rcaron;&iacute;&zcaron;ka zmiz&iacute;. V editaci: vybrat vrchol lev&yacute;m klikem a v menu b&iacute;l&eacute; te&ccaron;ky zvolit dr&zcaron;en&iacute; v&yacute;&scaron;ky. <b>Shift+Z</b> = vypnout dr&zcaron;en&iacute; v&yacute;&scaron;ky u <b>v&scaron;ech</b> objekt&uring; najednou.</li>
+              <li>Ta&zcaron;en&iacute; vrcholu &rarr; <b>automatick&yacute; p&rcaron;epo&ccaron;et</b> (~0,6 s po pu&scaron;t&ecaron;n&iacute;).</li>
+              <li><b>K</b> = klasick&aacute; ru&ccaron;n&iacute; kubatura (beze zm&ecaron;ny). P&rcaron;i kreslen&iacute;: <b>Backspace</b> = smazat posledn&iacute; bod, <b>Esc</b> = ukon&ccaron;it kreslen&iacute; (od 3 bod&uring; uzav&rcaron;e obrys, s m&eacute;n&ecaron; body ho zahod&iacute;; stejn&ecaron; jako u m&ecaron;&rcaron;en&iacute;), prav&eacute; tla&ccaron;&iacute;tko jen kamera.</li>
+            </ol>
+            URL parametr <b>?data=mohelnice-behem</b> apod. na&ccaron;te re&aacute;ln&yacute; ter&eacute;n z examples/data.`);
+
+        potreeViewer.loadGUI(() => {
+            potreeViewer.setLanguage("en");
+            $("#menu_appearance").next().show();
+            $("#menu_tools").next().show();
+            $("#menu_scene").next().show();
+            potreeViewer.toggleSidebar();
+        });
+
+        const statusEl = document.getElementById("auto_cubature_status");
+        const setStatus = (text) => {
+            statusEl.textContent = text;
+        };
+        window.autoCubatureLog = [];
+
+        const params = new URLSearchParams(window.location.search);
+        const requested = (params.get("data") || "").replace(/[^a-zA-Z0-9_-]/g, "");
+        const dataset = requested !== ""
+            ? { url: `./data/${requested}/ept/ept.json`, name: requested }
+            : { url: "../pointclouds/lion_takanawa_ept_laz/ept.json", name: "lion_takanawa" };
+
+        Potree.loadPointCloud(dataset.url, dataset.name, function (e) {
+            const scene = potreeViewer.scene;
+            scene.addPointCloud(e.pointcloud);
+
+            const bb = e.pointcloud.boundingBox;
+            const center = bb.getCenter(new THREE.Vector3());
+            const sizeMax = Math.max(bb.max.x - bb.min.x, bb.max.y - bb.min.y, bb.max.z - bb.min.z);
+            const dist = sizeMax * 1.8;
+            scene.view.setView(
+                [center.x + dist * 0.5, center.y - dist * 0.5, center.z + dist * 0.35],
+                [center.x, center.y, center.z]
+            );
+
+            const material = e.pointcloud.material;
+            material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+            material.size = 0.8;
+            material.elevationRange = [bb.min.z, bb.max.z];
+            material.activeAttributeName = "rgba";
+            setStatus(`auto-cubature: ready (${dataset.name})`);
+        });
+
+        const wireCubature = (cubature) => {
+            let startedAt = 0;
+            cubature.addEventListener("computation_started", () => {
+                startedAt = performance.now();
+                setStatus("computing…");
+            });
+            cubature.addEventListener("volume_computed", (event) => {
+                const durationMs = Math.round(performance.now() - startedAt);
+                const r = event.result;
+                const entry = {
+                    volume: r.volume,
+                    durationMs,
+                    points: r.stats.totalPoints,
+                    coveragePct: r.stats.coveragePct,
+                    filledPct: r.stats.filledPct,
+                    medianPointsPerCell: r.stats.medianPointsPerCell,
+                    approximate: r.quality.approximate,
+                    reasons: r.quality.reasons,
+                    inputHash: r.inputHash
+                };
+                window.autoCubatureLog.push(entry);
+                setStatus([
+                    `volume: ${r.volume.toFixed(3)} m³`,
+                    `duration: ${durationMs} ms`,
+                    `points: ${r.stats.totalPoints}`,
+                    `coverage: ${r.stats.coveragePct.toFixed(1)} %`,
+                    `filled: ${r.stats.filledPct.toFixed(1)} %`,
+                    `median pts/cell: ${r.stats.medianPointsPerCell}`,
+                    `quality: ${r.quality.approximate ? "ORIENTAČNÍ" : "ok"}`,
+                    `hash: ${r.inputHash}`
+                ].join("\n"));
+            });
+            cubature.addEventListener("computation_failed", (event) => {
+                window.autoCubatureLog.push({ failed: event.reason });
+                setStatus(`FAILED: ${event.reason}`);
+            });
+            cubature.addEventListener("stale_changed", () => {
+                setStatus("obrys změněn — přepočítám automaticky…");
+            });
+            cubature.addEventListener("height_lock_changed", (event) => {
+                const lock = event.lock;
+                setStatus(lock === null
+                    ? "držení výšky: vypnuto"
+                    : `držení výšky: ${(Math.abs(lock.gx) > 1e-9 || Math.abs(lock.gy) > 1e-9)
+                        ? "šikmá rovina dle naklikaných bodů"
+                        : lock.z0.toFixed(2) + " m"} — body kloužou po zobrazené mřížce (Z = vypnout)`);
+            });
+        };
+
+        window.startAutoCubature = (options = {}) => {
+            const cubature = potreeViewer.cubatureTool.startAutoInsertion({ options });
+            wireCubature(cubature);
+            return cubature;
+        };
+
+        const wireEmbankment = (embankment) => {
+            let startedAt = performance.now();
+            embankment.addEventListener("computation_started", () => {
+                startedAt = performance.now();
+                setStatus("násep: počítám terén…");
+            });
+            embankment.addEventListener("phase_changed", (event) => {
+                if (event.phase === "height") {
+                    setStatus("násep: táhni výšku nahoru, levým potvrď");
+                }
+            });
+            embankment.addEventListener("volume_computed", (event) => {
+                const r = event.result;
+                window.embankmentLog.push({ ...r, surface: undefined, crownSurface: undefined, durationMs: Math.round(performance.now() - startedAt) });
+                if (r.uncertaintyPct !== undefined) {
+                    setStatus([
+                        `HROMADA objem: ${r.total.toFixed(2)} m³`,
+                        `nejistota podkladu: ±${r.uncertaintyPct} %`,
+                        `kvalita: ${r.quality.approximate ? "ORIENTAČNÍ" : "ok"}`,
+                        `hash: ${r.inputHash}`
+                    ].join("\n"));
+                    return;
+                }
+                setStatus([
+                    `NÁSEP celkem: ${r.total.toFixed(2)} m³`,
+                    `dosypání: ${r.belowOutlineVolume.toFixed(2)} m³`,
+                    `navážka: ${r.aboveOutlineVolume.toFixed(2)} m³`,
+                    `výška: ${r.heightM.toFixed(2)} m${r.bevelCapM != null ? ` (svahy stropují na ${r.bevelCapM.toFixed(2)} m)` : ""}`,
+                    `zkosení: ${r.bevelEnabled ? r.slopeDeg + "°" : "vypnuto"}`,
+                    `kvalita: ${r.quality.approximate ? "ORIENTAČNÍ" : "ok"}`,
+                    `hash: ${r.inputHash}`
+                ].join("\n"));
+            });
+            embankment.addEventListener("computation_failed", (event) => {
+                window.embankmentLog.push({ failed: event.reason });
+                setStatus(`NÁSEP FAILED: ${event.reason}`);
+            });
+            embankment.addEventListener("height_lock_changed", (event) => {
+                const lock = event.lock;
+                setStatus(lock === null
+                    ? "držení výšky: vypnuto"
+                    : `držení výšky: ${(Math.abs(lock.gx) > 1e-9 || Math.abs(lock.gy) > 1e-9)
+                        ? "šikmá rovina dle naklikaných bodů"
+                        : lock.z0.toFixed(2) + " m"} — body kloužou po zobrazené mřížce (Z = vypnout)`);
+            });
+        };
+        window.embankmentLog = [];
+        window.startEmbankment = (args = {}) => {
+            const embankment = potreeViewer.embankmentTool.startInsertion(args);
+            wireEmbankment(embankment);
+            return embankment;
+        };
+
+        window.addEventListener("keydown", (e) => {
+            const target = e.target;
+            if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA")) {
+                return;
+            }
+            if ((e.key === "a" || e.key === "A") && !e.repeat) {
+                window.startAutoCubature();
+            } else if ((e.key === "n" || e.key === "N") && !e.repeat) {
+                window.startEmbankment();
+            } else if ((e.key === "h" || e.key === "H") && !e.repeat) {
+                window.startEmbankment({ mode: "pile" });
+            } else if ((e.key === "k" || e.key === "K") && !e.repeat) {
+                potreeViewer.cubatureTool.startInsertion();
+            }
+        });
+    </script>
+</body>
+</html>

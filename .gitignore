@@ -34,3 +34,5 @@ libs/CesiumUnminified
 pointclouds/F
 
 .DS_Store
+examples/data/
+.playwright-mcp/

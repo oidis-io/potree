@@ -41,6 +41,7 @@ export class Scene extends EventDispatcher {
         this.profiles = [];
         this.volumes = [];
         this.cubatures = [];
+        this.embankments = [];
         this.polygonClipVolumes = [];
         this.cameraAnimations = [];
         this.orientedImages = [];
@@ -339,6 +340,33 @@ export class Scene extends EventDispatcher {
         }
     }
 
+    addEmbankment(embankment) {
+        this.embankments.push(embankment);
+        this.dispatchEvent({
+            "type": "embankment_added",
+            "scene": this,
+            "embankment": embankment
+        });
+    }
+
+    removeEmbankment(embankment) {
+        const index = this.embankments.indexOf(embankment);
+        if (index > -1) {
+            this.embankments.splice(index, 1);
+            this.dispatchEvent({
+                "type": "embankment_removed",
+                "scene": this,
+                "embankment": embankment
+            });
+        }
+    }
+
+    removeAllEmbankments() {
+        while (this.embankments.length > 0) {
+            this.removeEmbankment(this.embankments[0]);
+        }
+    }
+
     removeProfile(profile) {
         let index = this.profiles.indexOf(profile);
         if (index > -1) {
@@ -365,6 +393,7 @@ export class Scene extends EventDispatcher {
         }
 
         this.removeAllCubatures();
+        this.removeAllEmbankments();
     }
 
     removeAllClipVolumes() {

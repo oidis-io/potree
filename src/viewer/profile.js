@@ -288,11 +288,50 @@ export class ProfileControl extends EventDispatcher {
         });
 
         this.renderArea.mousedown(e => {
+            if (e.button !== 0) {
+                return;
+            }
             this.mouseIsDown = true;
+            this.mouseDownPos = { x: e.clientX, y: e.clientY };
+            this.renderArea[0].style.cursor = this.measureArmed ? "crosshair" : "grabbing";
+        });
+
+        $(this.renderArea)[0].addEventListener("contextmenu", e => e.preventDefault());
+
+        // Stop panning on any mouse release, even when it lands outside the canvas (e.g. on the axis SVG above the
+        // profile line) — otherwise the pan mode gets stuck because renderArea never sees the mouseup.
+        window.addEventListener("mouseup", () => {
+            if (this.mouseIsDown) {
+                this.mouseIsDown = false;
+                this.renderArea[0].style.cursor = this.measureArmed ? "crosshair" : "grab";
+            }
         });
 
         this.renderArea.mouseup(e => {
             this.mouseIsDown = false;
+            if (this.mouseDownPos) {
+                let moved = Math.abs(e.clientX - this.mouseDownPos.x) + Math.abs(e.clientY - this.mouseDownPos.y);
+                this.mouseDownPos = null;
+                // A click (not a drag) on a profile point projects that real 3D position out to the editor so it
+                // can feed the active measuring tool — measuring lives in 3D, nothing extra is stored here.
+                if (moved < 5 && this.pointclouds.size > 0) {
+                    let rect = this.renderArea[0].getBoundingClientRect();
+                    let mileage = this.scaleX.invert(e.clientX - rect.left);
+                    let elevation = this.scaleY.invert(e.clientY - rect.top);
+                    let closest = this.selectPoint(mileage, elevation, 40);
+                    if (closest) {
+                        let point = closest.point;
+                        this.dispatchEvent({
+                            type: "on_profile_point_clicked",
+                            position: {
+                                x: point.position[0] + closest.pointcloud.position.x,
+                                y: point.position[1] + closest.pointcloud.position.y,
+                                z: point.position[2] + closest.pointcloud.position.z
+                            }
+                        });
+                    }
+                }
+            }
         });
 
         this.renderArea.mousemove(e => {
@@ -311,7 +350,7 @@ export class ProfileControl extends EventDispatcher {
                 let domElement = this.viewer.renderer.domElement;
                 let distance = this.viewerPickSphere.position.distanceTo(camera.position);
                 let pr = Utils.projectedRadius(1, camera, distance, domElement.clientWidth, domElement.clientHeight);
-                let scale = (10 / pr);
+                let scale = (15 / pr);
                 this.viewerPickSphere.scale.set(scale, scale, scale);
             };
 
@@ -335,6 +374,7 @@ export class ProfileControl extends EventDispatcher {
 
                 if (closest) {
                     let point = closest.point;
+                    this.renderArea[0].style.cursor = this.measureArmed ? "crosshair" : "default";
 
                     let position = new Float64Array([
                         point.position[0] + closest.pointcloud.position.x,
@@ -366,6 +406,7 @@ export class ProfileControl extends EventDispatcher {
                     }
                     this.dispatchEvent({ type: "on_profile_point_changed", attributes });
                 } else {
+                    this.renderArea[0].style.cursor = this.measureArmed ? "crosshair" : "grab";
                     this.viewer.scene.scene.add(this.viewerPickSphere);
 
                     let index = this.viewer.scene.scene.children.indexOf(this.viewerPickSphere);
@@ -410,6 +451,15 @@ export class ProfileControl extends EventDispatcher {
 
             this.render();
             this.updateScales();
+
+            // Zoom fires no mousemove, so the point under the cursor would not re-pick until the user moves the
+            // profile. Re-run the hover pick at the current cursor by replaying a synthetic mousemove.
+            let rect = this.renderArea[0].getBoundingClientRect();
+            this.renderArea[0].dispatchEvent(new MouseEvent("mousemove", {
+                clientX: rect.left + this.mouse.x,
+                clientY: rect.top + this.mouse.y,
+                bubbles: true
+            }));
         };
         $(this.renderArea)[0].addEventListener("mousewheel", onWheel, false);
         $(this.renderArea)[0].addEventListener("DOMMouseScroll", onWheel, false); // Firefox
@@ -423,9 +473,16 @@ export class ProfileControl extends EventDispatcher {
             index: null
         };
 
+        // Pick tolerance is defined on screen (pixels) and converted per-axis to world units: the profile's
+        // horizontal (mileage) and vertical (elevation) scales differ, so a single world-space radius made the
+        // pick area an ellipse on screen and left elevation-separated (upper) points nearly unselectable.
+        const radiusPx = 40;
+        const radiusX = Math.abs(this.scaleX.invert(0) - this.scaleX.invert(radiusPx));
+        const radiusY = Math.abs(this.scaleY.invert(0) - this.scaleY.invert(radiusPx));
+
         let pointBox = new THREE.Box2(
-            new THREE.Vector2(mileage - radius, elevation - radius),
-            new THREE.Vector2(mileage + radius, elevation + radius));
+            new THREE.Vector2(mileage - radiusX, elevation - radiusY),
+            new THREE.Vector2(mileage + radiusX, elevation + radiusY));
 
         for (let [pointcloud, entry] of this.pointclouds) {
             for (let points of entry.points) {
@@ -441,11 +498,11 @@ export class ProfileControl extends EventDispatcher {
                 }
 
                 for (let i = 0; i < points.numPoints; i++) {
-                    let m = points.data.mileage[i] - mileage;
-                    let e = points.data.position[3 * i + 2] - elevation + pointcloud.position.z;
-                    let r = Math.sqrt(m * m + e * e);
+                    let mPx = this.scaleX(points.data.mileage[i]) - this.scaleX(mileage);
+                    let ePx = this.scaleY(points.data.position[3 * i + 2] + pointcloud.position.z) - this.scaleY(elevation);
+                    let r = Math.sqrt(mPx * mPx + ePx * ePx);
 
-                    const withinDistance = r < radius && r < closest.distance;
+                    const withinDistance = r < radiusPx && r < closest.distance;
                     let unfilteredClass = true;
 
                     if (points.data.classification) {
@@ -531,11 +588,20 @@ export class ProfileControl extends EventDispatcher {
         this.profileScene = new THREE.Scene();
 
         let sg = new THREE.SphereGeometry(1, 16, 16);
-        let sm = new THREE.MeshNormalMaterial();
+        let sm = new THREE.MeshBasicMaterial({ color: 0xff0000 });
         this.pickSphere = new THREE.Mesh(sg, sm);
         this.scene.add(this.pickSphere);
 
-        this.viewerPickSphere = new THREE.Mesh(sg, sm);
+        // The 3D-scene pick marker matches the measurement markers' on-screen size (0.4 sphere scaled to 15/pr) and
+        // renders on top of the point cloud, so it reads as a small shaded ball, not a big flat dot. The overlay
+        // scene carries no lights, so add soft lighting once — other overlays use unlit materials and ignore it.
+        let viewerSg = new THREE.SphereGeometry(0.4, 16, 16);
+        let viewerSm = new THREE.MeshLambertMaterial({ color: 0xff0000, depthTest: false, depthWrite: false });
+        this.viewerPickSphere = new THREE.Mesh(viewerSg, viewerSm);
+        let pickDirectional = new THREE.DirectionalLight(0xffffff, 0.8);
+        pickDirectional.position.set(10, 10, 10);
+        this.viewer.scene.scene.add(pickDirectional);
+        this.viewer.scene.scene.add(new THREE.AmbientLight(0x999999));
 
         this.renderer.domElement.addEventListener("webglcontextlost", (e) => {
             e.preventDefault();
@@ -676,6 +742,12 @@ export class ProfileControl extends EventDispatcher {
 
     hide() {
         this.enabled = false;
+        if (this.pickSphere) {
+            this.pickSphere.visible = false;
+        }
+        if (this.viewerPickSphere && this.viewer.scene.scene.children.includes(this.viewerPickSphere)) {
+            this.viewer.scene.scene.remove(this.viewerPickSphere);
+        }
     }
 
     updateScales() {
@@ -894,6 +966,7 @@ export class ProfileWindow extends ProfileControl {
 
                 if (closest) {
                     let point = closest.point;
+                    this.renderArea[0].style.cursor = this.measureArmed ? "crosshair" : "default";
 
                     let position = new Float64Array([
                         point.position[0] + closest.pointcloud.position.x,
@@ -970,6 +1043,7 @@ export class ProfileWindow extends ProfileControl {
                     html += "</table>";
                     info.html(html);
                 } else {
+                    this.renderArea[0].style.cursor = this.measureArmed ? "crosshair" : "grab";
                     this.viewer.scene.scene.add(this.viewerPickSphere);
 
                     let index = this.viewer.scene.scene.children.indexOf(this.viewerPickSphere);
@@ -1014,6 +1088,15 @@ export class ProfileWindow extends ProfileControl {
 
             this.render();
             this.updateScales();
+
+            // Zoom fires no mousemove, so the point under the cursor would not re-pick until the user moves the
+            // profile. Re-run the hover pick at the current cursor by replaying a synthetic mousemove.
+            let rect = this.renderArea[0].getBoundingClientRect();
+            this.renderArea[0].dispatchEvent(new MouseEvent("mousemove", {
+                clientX: rect.left + this.mouse.x,
+                clientY: rect.top + this.mouse.y,
+                bubbles: true
+            }));
         };
         $(this.renderArea)[0].addEventListener("mousewheel", onWheel, false);
         $(this.renderArea)[0].addEventListener("DOMMouseScroll", onWheel, false); // Firefox

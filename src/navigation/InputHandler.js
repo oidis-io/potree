@@ -36,6 +36,7 @@ export class InputHandler extends EventDispatcher {
         this.blacklist = new Set();
 
         this.drag = null;
+        this.objectDragThreshold = 5;
         this.mouse = new THREE.Vector2(0, 0);
 
         this.selection = [];
@@ -348,15 +349,32 @@ export class InputHandler extends EventDispatcher {
 
         if (this.drag) {
             if (this.drag.object) {
-                if (this.logMessages) {
-                    console.log(`${this.constructor.name}: drop ${this.drag.object.name}`);
-                }
-                this.drag.object.dispatchEvent({
-                    type: "drop",
-                    drag: this.drag,
-                    viewer: this.viewer
+                if (e.button === THREE.MOUSE.LEFT) {
+                    if (this.logMessages) {
+                        console.log(`${this.constructor.name}: drop ${this.drag.object.name}`);
+                    }
+                    this.drag.object.dispatchEvent({
+                        type: "drop",
+                        drag: this.drag,
+                        viewer: this.viewer
 
-                });
+                    });
+
+                    // check for a click
+                    let clicked = this.hoveredElements.map(h => h.object).find(v => v === this.drag.object) !== undefined;
+                    if (clicked) {
+                        if (this.logMessages) {
+                            console.log(`${this.constructor.name}: click ${this.drag.object.name}`);
+                        }
+                        this.drag.object.dispatchEvent({
+                            type: "click",
+                            viewer: this.viewer,
+                            consume: consume,
+                        });
+                    }
+
+                    this.drag = null;
+                }
             } else {
                 for (let inputListener of this.getSortedListeners()) {
                     inputListener.dispatchEvent({
@@ -365,22 +383,9 @@ export class InputHandler extends EventDispatcher {
                         viewer: this.viewer
                     });
                 }
-            }
 
-            // check for a click
-            let clicked = this.hoveredElements.map(h => h.object).find(v => v === this.drag.object) !== undefined;
-            if (clicked) {
-                if (this.logMessages) {
-                    console.log(`${this.constructor.name}: click ${this.drag.object.name}`);
-                }
-                this.drag.object.dispatchEvent({
-                    type: "click",
-                    viewer: this.viewer,
-                    consume: consume,
-                });
+                this.drag = null;
             }
-
-            this.drag = null;
         }
 
         if (!consumed) {
@@ -435,14 +440,17 @@ export class InputHandler extends EventDispatcher {
             this.drag.end.set(x, y);
 
             if (this.drag.object) {
-                if (this.logMessages) {
-                    console.log(this.constructor.name + ": drag: " + this.drag.object.name);
+                let dragDistance = new THREE.Vector2().subVectors(this.drag.end, this.drag.start).length();
+                if (dragDistance >= this.objectDragThreshold) {
+                    if (this.logMessages) {
+                        console.log(this.constructor.name + ": drag: " + this.drag.object.name);
+                    }
+                    this.drag.object.dispatchEvent({
+                        type: "drag",
+                        drag: this.drag,
+                        viewer: this.viewer
+                    });
                 }
-                this.drag.object.dispatchEvent({
-                    type: "drag",
-                    drag: this.drag,
-                    viewer: this.viewer
-                });
             } else {
                 if (this.logMessages) {
                     console.log(this.constructor.name + ": drag: ");
@@ -463,6 +471,15 @@ export class InputHandler extends EventDispatcher {
                         break;
                     }
                 }
+            }
+
+            let curr = hoveredElements.map(a => a.object).find(a => true);
+            let prev = this.hoveredElements.map(a => a.object).find(a => true);
+            if (curr !== prev && prev) {
+                prev.dispatchEvent({
+                    type: "mouseleave",
+                    object: prev
+                });
             }
         } else {
             let curr = hoveredElements.map(a => a.object).find(a => true);
