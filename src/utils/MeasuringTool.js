@@ -269,7 +269,7 @@ export class MeasuringTool extends EventDispatcher {
             this.viewer.removeEventListener("cancel_insertions", cancel.callback);
 
             if ($deferInserting !== true) {
-                let requiredPoints = measure.showArea ? 3 : (measure.maxMarkers === Infinity ? 2 : measure.maxMarkers);
+                let requiredPoints = (measure.showArea || measure.showAngles) ? 3 : (measure.maxMarkers === Infinity ? 2 : measure.maxMarkers);
                 if (measure.points.length < requiredPoints) {
                     this.viewer.scene.removeMeasurement(measure);
                 } else {
@@ -458,14 +458,9 @@ export class MeasuringTool extends EventDispatcher {
 
             const reveal = measure.isRevealed();
             const primaryVisible = (measure.permanentLabelsVisible !== false) || reveal;
-            const anglesPrimary = measure.showDistances === false;
-
-            const detailLabels = [...measure.edgeLabels];
+            const detailLabels = [...measure.edgeLabels, ...measure.angleLabels];
             if (measure.circleDetailLabel) {
                 detailLabels.push(measure.circleDetailLabel);
-            }
-            if (!anglesPrimary) {
-                detailLabels.push(...measure.angleLabels);
             }
             const primaryLabels = [
                 ...measure.coordinateLabels,
@@ -474,9 +469,6 @@ export class MeasuringTool extends EventDispatcher {
                 measure.totalLabel,
                 measure.circleRadiusLabel,
             ];
-            if (anglesPrimary) {
-                primaryLabels.push(...measure.angleLabels);
-            }
             if (measure.azimuth && measure.azimuth.label) {
                 primaryLabels.push(measure.azimuth.label);
             }

@@ -858,7 +858,7 @@ export class Measure extends THREE.Object3D {
                 let msg = Utils.addCommas((angle * (180.0 / Math.PI)).toFixed(1)) + "\u00B0";
                 angleLabel.setText(msg);
 
-                angleLabel.visible = this.showAngles && (index < lastIndex || this.closed) && this.points.length >= 3 && angle > 0;
+                angleLabel.visible = this.showAngles && ((index > 0 && index < lastIndex) || this.closed) && this.points.length >= 3 && angle > 0;
             }
         }
 
