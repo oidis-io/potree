@@ -875,6 +875,34 @@ export class Cubature extends THREE.Object3D {
             this.volumeLabel.visible = this.phase === "pushpull" || this.phase === "computing" ||
                 this.permanentLabelsVisible !== false || this.isRevealed();
         }
+
+        // Auto cubature: keep the view clean like the pile — hide everything under the surface (floor + side
+        // markers, edges and the volume "curtain" side/floor fill) unless this cubature is selected. Manual
+        // cubature is left untouched (the user shapes the floor). The top surface fill and the volume number
+        // stay visible either way.
+        const showUnderside = !this.autoMode || this.isSelected === true;
+        for (const obj of [...this.bottomSpheres, ...this.bottomEdges, ...this.sideEdges]) {
+            if (obj) {
+                obj.visible = showUnderside;
+            }
+        }
+        if (this.autoMode) {
+            for (const mesh of this.sideMeshes) {
+                if (mesh) {
+                    mesh.visible = showUnderside;
+                }
+            }
+            if (this.bottomMesh) {
+                this.bottomMesh.visible = showUnderside;
+            }
+        }
+        if (!showUnderside) {
+            for (const label of [...this.bottomEdgeLabels, ...this.sideEdgeLabels]) {
+                if (label) {
+                    label.visible = false;
+                }
+            }
+        }
     }
 
     applyDetectedSurface(surface) {
