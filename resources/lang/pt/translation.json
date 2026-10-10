@@ -1,0 +1,74 @@
+{
+	"zbysek": {
+		"computation": {
+			"loadTimeout": "O carregamento de parte da nuvem de pontos expirou — o cálculo não pode ser concluído.",
+			"gridTooLarge": "A grelha de cálculo é demasiado grande (__cells__ células, limite __limit__). Reduza o contorno ou aumente o tamanho da célula nas definições.",
+			"pointLimit": "O cálculo excedeu o limite de __limit__ pontos. Reduza o contorno ou aumente o limite nas definições.",
+			"triangulationFailed": "Falha ao triangular o contorno — verifique se não se autointerseta.",
+			"outlineInvalid": "O contorno autointerseta-se ou é degenerado — ajuste os vértices e execute o cálculo novamente.",
+			"noPointCloud": "Não existe nenhuma nuvem de pontos na cena à qual a medição se possa ajustar."
+		},
+		"common": {
+			"computing": "A calcular…",
+			"computingWithPoints": "A calcular… (__pointsAccepted__ pontos)",
+			"computationFailed": "O cálculo falhou",
+			"approximateSuffix": " (aproximado)",
+			"staleSuffix": " (obsoleto)",
+			"invalidValueHint": "Valor inválido. "
+		},
+		"cubature": {
+			"contextMenu": {
+				"recomputeVolume": "Recalcular volume",
+				"snapBottomToTerrain": "Encaixar o fundo no terreno",
+				"holdVertexHeight": "Manter a altura do vértice selecionado (corte)",
+				"releaseHeightHold": "Libertar a retenção de altura",
+				"snapVertexToSurface": "Encaixar o ponto selecionado na superfície",
+				"insertVertexAfter": "Inserir vértice após o selecionado",
+				"deleteVertex": "Eliminar o vértice selecionado",
+				"edit": "Editar…",
+				"delete": "Eliminar cubicagem"
+			},
+			"pitDepthLabel": "Profundidade da escavação (m, valor negativo = para baixo):"
+		},
+		"embankment": {
+			"contextMenu": {
+				"editHeightByDrag": "Editar a altura arrastando",
+				"holdVertexHeight": "Manter a altura do vértice selecionado (corte)",
+				"releaseHeightHold": "Libertar a retenção de altura",
+				"levelVertexWithNeighbors": "Nivelar o vértice selecionado com os vizinhos",
+				"levelAllVerticesTo": "Nivelar todos os vértices a esta altura (corte)",
+				"setVertexHeight": "Definir a altura do vértice selecionado…",
+				"recomputeVolume": "Recalcular volume",
+				"edit": "Editar…",
+				"deletePile": "Eliminar pilha",
+				"deleteEmbankment": "Eliminar aterro"
+			},
+			"heightLabel": "Altura do aterro (m):",
+			"vertexHeightLabel": "Altura do vértice (m acima do nível do mar):",
+			"heightPreview": "altura __value__ m",
+			"cornerHeightLabel": "a __value__ m",
+			"pileBreakdown": "volume da pilha · incerteza da base ±__pct__ %",
+			"embankmentBreakdown": "enchimento __below__ · aterro __above__",
+			"bevelCapSuffix": " — os taludes limitam a altura a __value__ m",
+			"errors": {
+				"bevelAngleRange": "O ângulo do talude deve estar entre 10° e 90°.",
+				"heightNonNegative": "A altura do aterro não pode ser negativa."
+			}
+		},
+		"terrain": {
+			"quality": {
+				"lowCoverage": "A nuvem de pontos cobre apenas __pct__ % da área do contorno",
+				"filledFromSurrounding": "__pct__ % das colunas foram preenchidas a partir da envolvente",
+				"unfilledColumns": "__columnCount__ colunas permaneceram sem dados",
+				"lowDensity": "A densidade de pontos é demasiado baixa para um encaixe fiável",
+				"terrainAboveLid": "O terreno encontra-se acima do plano de tampa em __pct__ % das colunas — o contorno está abaixo do limite"
+			}
+		},
+		"viewer": {
+			"webglContextLost": "O contexto WebGL foi perdido",
+			"webglContextLostHint": "Demasiados separadores abertos com o editor 3D",
+			"restoreView": "Restaurar vista",
+			"restoringView": "A restaurar a vista 3D..."
+		}
+	}
+}

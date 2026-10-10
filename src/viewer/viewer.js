@@ -1408,7 +1408,7 @@ export class Viewer extends EventDispatcher {
                     lng: "en",
                     fallbackLng: "en",
                     resGetPath: PotreeConfig.resourcePath + "/lang/__lng__/__ns__.json",
-                    preload: ["en", "fr", "de", "jp", "se", "es", "zh", "it", "ca", "cs"],
+                    preload: ["en", "fr", "de", "jp", "se", "es", "zh", "it", "ca", "cs", "sk", "pl", "pt"],
                     getAsync: true,
                     debug: false
                 }, function (t) {

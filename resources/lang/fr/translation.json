@@ -27,7 +27,7 @@
         "earth_control": "Earth"
     },
     "appearance": {
-        "nb_max_pts": "Nb points max", 
+        "nb_max_pts": "Nb points max",
         "point_size": "Taille des points",
         "point_opacity": "Opacité",
         "field_view": "Angle de vue",
@@ -54,5 +54,77 @@
     },
     "settings": {
         "language": "Langue"
+    },
+    "zbysek": {
+        "computation": {
+            "loadTimeout": "Le chargement d'une partie du nuage de points a expiré — le calcul ne peut pas se terminer.",
+            "gridTooLarge": "La grille de calcul est trop grande (__cells__ cellules, limite __limit__). Réduisez le contour ou augmentez la taille des cellules dans les paramètres.",
+            "pointLimit": "Le calcul a dépassé la limite de __limit__ points. Réduisez le contour ou augmentez la limite dans les paramètres.",
+            "triangulationFailed": "Échec de la triangulation du contour — vérifiez qu'il ne se croise pas lui-même.",
+            "outlineInvalid": "Le contour se croise lui-même ou est dégénéré — ajustez les sommets et relancez le calcul.",
+            "noPointCloud": "Il n'y a aucun nuage de points dans la scène sur lequel ajuster la mesure."
+        },
+        "common": {
+            "computing": "Calcul en cours…",
+            "computingWithPoints": "Calcul en cours… (__pointsAccepted__ points)",
+            "computationFailed": "Échec du calcul",
+            "approximateSuffix": " (approximatif)",
+            "staleSuffix": " (obsolète)",
+            "invalidValueHint": "Valeur invalide. "
+        },
+        "cubature": {
+            "contextMenu": {
+                "recomputeVolume": "Recalculer le volume",
+                "snapBottomToTerrain": "Ajuster le fond au terrain",
+                "holdVertexHeight": "Maintenir la hauteur du sommet sélectionné (coupe)",
+                "releaseHeightHold": "Relâcher le maintien de hauteur",
+                "snapVertexToSurface": "Ajuster le point sélectionné à la surface",
+                "insertVertexAfter": "Insérer un sommet après le sommet sélectionné",
+                "deleteVertex": "Supprimer le sommet sélectionné",
+                "edit": "Modifier…",
+                "delete": "Supprimer la cubature"
+            },
+            "pitDepthLabel": "Profondeur de la fouille (m, valeur négative = vers le bas) :"
+        },
+        "embankment": {
+            "contextMenu": {
+                "editHeightByDrag": "Modifier la hauteur en glissant",
+                "holdVertexHeight": "Maintenir la hauteur du sommet sélectionné (coupe)",
+                "releaseHeightHold": "Relâcher le maintien de hauteur",
+                "levelVertexWithNeighbors": "Aligner le sommet sélectionné avec ses voisins",
+                "levelAllVerticesTo": "Aligner tous les sommets à cette hauteur (coupe)",
+                "setVertexHeight": "Définir la hauteur du sommet sélectionné…",
+                "recomputeVolume": "Recalculer le volume",
+                "edit": "Modifier…",
+                "deletePile": "Supprimer le tas",
+                "deleteEmbankment": "Supprimer le remblai"
+            },
+            "heightLabel": "Hauteur de remblai (m) :",
+            "vertexHeightLabel": "Altitude du sommet (m au-dessus du niveau de la mer) :",
+            "heightPreview": "hauteur __value__ m",
+            "cornerHeightLabel": "h __value__ m",
+            "pileBreakdown": "volume du tas · incertitude de base ±__pct__ %",
+            "embankmentBreakdown": "comblement __below__ · remblai ajouté __above__",
+            "bevelCapSuffix": " — les talus limitent la hauteur à __value__ m",
+            "errors": {
+                "bevelAngleRange": "L'angle de talus doit être compris entre 10° et 90°.",
+                "heightNonNegative": "La hauteur du remblai ne doit pas être négative."
+            }
+        },
+        "terrain": {
+            "quality": {
+                "lowCoverage": "Le nuage de points ne couvre que __pct__ % de la surface du contour",
+                "filledFromSurrounding": "__pct__ % des colonnes ont été complétées à partir des environs",
+                "unfilledColumns": "__columnCount__ colonnes sont restées sans données",
+                "lowDensity": "La densité de points est trop faible pour un ajustement fiable",
+                "terrainAboveLid": "Le terrain est au-dessus du plan supérieur sur __pct__ % des colonnes — le contour est sous le bord"
+            }
+        },
+        "viewer": {
+            "webglContextLost": "Le contexte WebGL a été perdu",
+            "webglContextLostHint": "Trop d'onglets ouverts avec l'éditeur 3D",
+            "restoreView": "Restaurer la vue",
+            "restoringView": "Restauration de la vue 3D..."
+        }
     }
 }

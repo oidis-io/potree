@@ -8,10 +8,12 @@
  *
  * ********************************************************************************************************* */
 
+const LOCALES = { cs: "cs-CZ", sk: "sk-SK", pl: "pl-PL", de: "de-DE", fr: "fr-FR", es: "es-ES", it: "it-IT", pt: "pt-PT" };
+
 /**
  * Resolves the Intl locale to use for number formatting based on the active i18n language.
- * @returns {string} "cs-CZ" when the active language is Czech, "en-GB" otherwise.
+ * @returns {string} Locale of the active language, "en-GB" for any language without a mapping.
  */
 export function activeLocale() {
-    return (typeof i18n !== "undefined" && i18n.lng() === "cs") ? "cs-CZ" : "en-GB";
+    return (typeof i18n !== "undefined" && LOCALES[i18n.lng()]) || "en-GB";
 }

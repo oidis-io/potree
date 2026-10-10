@@ -1,0 +1,74 @@
+{
+	"zbysek": {
+		"computation": {
+			"loadTimeout": "Wczytywanie części chmury punktów przekroczyło limit czasu — obliczenie nie może zostać zakończone.",
+			"gridTooLarge": "Siatka obliczeniowa jest za duża (liczba komórek: __cells__, limit: __limit__). Zmniejsz obrys lub zwiększ rozmiar komórki w ustawieniach.",
+			"pointLimit": "Obliczenie przekroczyło limit __limit__ punktów. Zmniejsz obrys lub zwiększ limit w ustawieniach.",
+			"triangulationFailed": "Nie udało się zatriangulować obrysu — sprawdź, czy się nie przecina.",
+			"outlineInvalid": "Obrys przecina się lub jest zdegenerowany — dostosuj wierzchołki i uruchom obliczenie ponownie.",
+			"noPointCloud": "W scenie nie ma chmury punktów, do której można przyciągnąć pomiar."
+		},
+		"common": {
+			"computing": "Obliczanie…",
+			"computingWithPoints": "Obliczanie… (liczba punktów: __pointsAccepted__)",
+			"computationFailed": "Obliczenie nie powiodło się",
+			"approximateSuffix": " (orientacyjnie)",
+			"staleSuffix": " (nieaktualne)",
+			"invalidValueHint": "Nieprawidłowa wartość. "
+		},
+		"cubature": {
+			"contextMenu": {
+				"recomputeVolume": "Przelicz objętość",
+				"snapBottomToTerrain": "Przyciągnij dno do terenu",
+				"holdVertexHeight": "Zachowaj wysokość wybranego wierzchołka (przekrój)",
+				"releaseHeightHold": "Wyłącz zachowanie wysokości",
+				"snapVertexToSurface": "Przyciągnij wybrany punkt do powierzchni",
+				"insertVertexAfter": "Wstaw wierzchołek po wybranym",
+				"deleteVertex": "Usuń wybrany wierzchołek",
+				"edit": "Edytuj…",
+				"delete": "Usuń kubaturę"
+			},
+			"pitDepthLabel": "Głębokość wykopu (m, wartość ujemna = w dół):"
+		},
+		"embankment": {
+			"contextMenu": {
+				"editHeightByDrag": "Edytuj wysokość przez przeciąganie",
+				"holdVertexHeight": "Zachowaj wysokość wybranego wierzchołka (przekrój)",
+				"releaseHeightHold": "Wyłącz zachowanie wysokości",
+				"levelVertexWithNeighbors": "Wyrównaj wybrany wierzchołek z sąsiadami",
+				"levelAllVerticesTo": "Wyrównaj wszystkie wierzchołki do tej wysokości (przekrój)",
+				"setVertexHeight": "Ustaw wysokość wybranego wierzchołka…",
+				"recomputeVolume": "Przelicz objętość",
+				"edit": "Edytuj…",
+				"deletePile": "Usuń hałdę",
+				"deleteEmbankment": "Usuń nasyp"
+			},
+			"heightLabel": "Wysokość nasypu (m):",
+			"vertexHeightLabel": "Wysokość wierzchołka (m n.p.m.):",
+			"heightPreview": "wysokość __value__ m",
+			"cornerHeightLabel": "w. __value__ m",
+			"pileBreakdown": "objętość hałdy · niepewność podstawy ±__pct__ %",
+			"embankmentBreakdown": "dosypanie __below__ · nasyp __above__",
+			"bevelCapSuffix": " — skarpy ograniczają wysokość do __value__ m",
+			"errors": {
+				"bevelAngleRange": "Kąt skarpy musi być pomiędzy 10° a 90°.",
+				"heightNonNegative": "Wysokość nasypu nie może być ujemna."
+			}
+		},
+		"terrain": {
+			"quality": {
+				"lowCoverage": "Chmura punktów pokrywa tylko __pct__ % powierzchni obrysu",
+				"filledFromSurrounding": "__pct__ % kolumn zostało uzupełnionych z otoczenia",
+				"unfilledColumns": "Liczba kolumn, które pozostały bez danych: __columnCount__",
+				"lowDensity": "Gęstość punktów jest zbyt niska dla wiarygodnego przyciągania",
+				"terrainAboveLid": "Teren leży powyżej płaszczyzny wieka dla __pct__ % kolumn — obrys znajduje się pod krawędzią"
+			}
+		},
+		"viewer": {
+			"webglContextLost": "Kontekst WebGL został utracony",
+			"webglContextLostHint": "Za dużo otwartych kart z edytorem 3D",
+			"restoreView": "Przywróć widok",
+			"restoringView": "Przywracanie widoku 3D..."
+		}
+	}
+}
