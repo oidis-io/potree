@@ -55,11 +55,11 @@ export class TerrainProbeComputation {
     startValidated() {
         const polygon = this.outlinePoints.map((p) => ({ x: p.x, y: p.y }));
         if (!isSimplePolygon(polygon)) {
-            throw new Error("Obrys se kříží nebo je degenerovaný — upravte vrcholy a spusťte výpočet znovu.");
+            throw new Error(i18n.t("zbysek.computation.outlineInvalid"));
         }
         this.pointclouds = selectMeasurablePointclouds(this.viewer);
         if (this.pointclouds.length === 0) {
-            throw new Error("Ve scéně není žádné mračno bodů, ke kterému by šlo měření přichytit.");
+            throw new Error(i18n.t("zbysek.computation.noPointCloud"));
         }
 
         let zMin = Infinity;

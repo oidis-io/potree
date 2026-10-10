@@ -17,7 +17,7 @@ export class TerrainColumnGrid {
     constructor(options) {
         const { polygon, cellSize, maxGridCells, maxPoints } = options;
         if (!(cellSize > 0)) {
-            throw new Error("Velikost buňky výpočetní mřížky musí být kladná.");
+            throw new Error("The computation grid cell size must be positive.");
         }
         if (!Number.isFinite(maxGridCells) || maxGridCells <= 0 || !Number.isFinite(maxPoints) || maxPoints <= 0) {
             throw new Error("TerrainColumnGrid requires positive finite maxGridCells and maxPoints.");
@@ -34,10 +34,7 @@ export class TerrainColumnGrid {
 
         const cellCount = this.cols * this.rows;
         if (cellCount > maxGridCells) {
-            throw new Error(
-                `Výpočetní mřížka je příliš velká (${cellCount} buněk, limit ${maxGridCells}). ` +
-                "Zmenšete obrys, nebo zvyšte velikost buňky v nastavení."
-            );
+            throw new Error(i18n.t("zbysek.computation.gridTooLarge", { cells: cellCount, limit: maxGridCells }));
         }
 
         this.weights = new Float64Array(cellCount);
@@ -95,10 +92,7 @@ export class TerrainColumnGrid {
         }
         this.totalPoints += accepted;
         if (this.totalPoints > this.maxPoints) {
-            throw new Error(
-                `Výpočet překročil limit ${this.maxPoints} bodů. ` +
-                "Zmenšete obrys, nebo zvyšte limit v nastavení."
-            );
+            throw new Error(i18n.t("zbysek.computation.pointLimit", { limit: this.maxPoints }));
         }
         return accepted;
     }

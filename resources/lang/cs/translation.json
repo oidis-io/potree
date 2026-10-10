@@ -1,0 +1,74 @@
+{
+	"zbysek": {
+		"computation": {
+			"loadTimeout": "Načítání části mračna vypršelo — výpočet nelze dokončit.",
+			"gridTooLarge": "Výpočetní mřížka je příliš velká (__cells__ buněk, limit __limit__). Zmenšete obrys, nebo zvyšte velikost buňky v nastavení.",
+			"pointLimit": "Výpočet překročil limit __limit__ bodů. Zmenšete obrys, nebo zvyšte limit v nastavení.",
+			"triangulationFailed": "Obrys se nepodařilo triangulovat — zkontrolujte, zda se nekříží.",
+			"outlineInvalid": "Obrys se kříží nebo je degenerovaný — upravte vrcholy a spusťte výpočet znovu.",
+			"noPointCloud": "Ve scéně není žádné mračno bodů, ke kterému by šlo měření přichytit."
+		},
+		"common": {
+			"computing": "Počítám…",
+			"computingWithPoints": "Počítám… (__pointsAccepted__ bodů)",
+			"computationFailed": "Výpočet selhal",
+			"approximateSuffix": " (orientační)",
+			"staleSuffix": " (neaktuální)",
+			"invalidValueHint": "Neplatná hodnota. "
+		},
+		"cubature": {
+			"contextMenu": {
+				"recomputeVolume": "Přepočítat objem",
+				"snapBottomToTerrain": "Přichytit dno k terénu",
+				"holdVertexHeight": "Držet výšku vybraného vrcholu (řez)",
+				"releaseHeightHold": "Vypnout držení výšky",
+				"snapVertexToSurface": "Přichytit vybraný bod k povrchu",
+				"insertVertexAfter": "Vložit vrchol za vybraný",
+				"deleteVertex": "Smazat vybraný vrchol",
+				"edit": "Upravit…",
+				"delete": "Smazat kubaturu"
+			},
+			"pitDepthLabel": "Hloubka výkopu (m, záporná hodnota = dolů):"
+		},
+		"embankment": {
+			"contextMenu": {
+				"editHeightByDrag": "Upravit výšku tažením",
+				"holdVertexHeight": "Držet výšku vybraného vrcholu (řez)",
+				"releaseHeightHold": "Vypnout držení výšky",
+				"levelVertexWithNeighbors": "Srovnat vybraný vrchol podle sousedů",
+				"levelAllVerticesTo": "Srovnat všechny vrcholy na tuto výšku (řez)",
+				"setVertexHeight": "Zadat výšku vybraného vrcholu…",
+				"recomputeVolume": "Přepočítat objem",
+				"edit": "Upravit…",
+				"deletePile": "Smazat haldu",
+				"deleteEmbankment": "Smazat násep"
+			},
+			"heightLabel": "Výška náspu (m):",
+			"vertexHeightLabel": "Výška vrcholu (m n. m.):",
+			"heightPreview": "výška __value__ m",
+			"cornerHeightLabel": "v __value__ m",
+			"pileBreakdown": "objem haldy · nejistota podkladu ±__pct__ %",
+			"embankmentBreakdown": "dosypání __below__ · navážka __above__",
+			"bevelCapSuffix": " — svahy stropují výšku na __value__ m",
+			"errors": {
+				"bevelAngleRange": "Úhel zkosení musí být mezi 10° a 90°.",
+				"heightNonNegative": "Výška náspu musí být nezáporná."
+			}
+		},
+		"terrain": {
+			"quality": {
+				"lowCoverage": "Mračno pokrývá jen __pct__ % plochy obrysu",
+				"filledFromSurrounding": "__pct__ % sloupců bylo doplněno z okolí",
+				"unfilledColumns": "__columnCount__ sloupců zůstalo bez dat",
+				"lowDensity": "Hustota bodů je pro spolehlivé přichycení příliš nízká",
+				"terrainAboveLid": "Terén leží nad rovinou víka u __pct__ % sloupců — obrys je pod okrajem"
+			}
+		},
+		"viewer": {
+			"webglContextLost": "WebGL kontext byl ztracen",
+			"webglContextLostHint": "Příliš mnoho otevřených záložek s 3D editorem",
+			"restoreView": "Obnovit zobrazení",
+			"restoringView": "Obnovuji 3D pohled..."
+		}
+	}
+}

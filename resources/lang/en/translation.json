@@ -102,5 +102,77 @@
 	},
 	"settings": {
 		"language": "Language"
+	},
+	"zbysek": {
+		"computation": {
+			"loadTimeout": "Loading part of the point cloud timed out — the computation cannot finish.",
+			"gridTooLarge": "The computation grid is too large (__cells__ cells, limit __limit__). Shrink the outline, or increase the cell size in settings.",
+			"pointLimit": "The computation exceeded the limit of __limit__ points. Shrink the outline, or increase the limit in settings.",
+			"triangulationFailed": "Failed to triangulate the outline — check that it does not self-intersect.",
+			"outlineInvalid": "The outline self-intersects or is degenerate — adjust the vertices and run the computation again.",
+			"noPointCloud": "There is no point cloud in the scene to snap the measurement to."
+		},
+		"common": {
+			"computing": "Computing…",
+			"computingWithPoints": "Computing… (__pointsAccepted__ points)",
+			"computationFailed": "Computation failed",
+			"approximateSuffix": " (approximate)",
+			"staleSuffix": " (outdated)",
+			"invalidValueHint": "Invalid value. "
+		},
+		"cubature": {
+			"contextMenu": {
+				"recomputeVolume": "Recompute volume",
+				"snapBottomToTerrain": "Snap bottom to terrain",
+				"holdVertexHeight": "Hold height of selected vertex (cut)",
+				"releaseHeightHold": "Release height hold",
+				"snapVertexToSurface": "Snap selected point to surface",
+				"insertVertexAfter": "Insert vertex after selected",
+				"deleteVertex": "Delete selected vertex",
+				"edit": "Edit…",
+				"delete": "Delete cubature"
+			},
+			"pitDepthLabel": "Pit depth (m, negative value = downward):"
+		},
+		"embankment": {
+			"contextMenu": {
+				"editHeightByDrag": "Edit height by dragging",
+				"holdVertexHeight": "Hold height of selected vertex (cut)",
+				"releaseHeightHold": "Release height hold",
+				"levelVertexWithNeighbors": "Level selected vertex with neighbors",
+				"levelAllVerticesTo": "Level all vertices to this height (cut)",
+				"setVertexHeight": "Set height of selected vertex…",
+				"recomputeVolume": "Recompute volume",
+				"edit": "Edit…",
+				"deletePile": "Delete pile",
+				"deleteEmbankment": "Delete embankment"
+			},
+			"heightLabel": "Embankment height (m):",
+			"vertexHeightLabel": "Vertex height (m a.s.l.):",
+			"heightPreview": "height __value__ m",
+			"cornerHeightLabel": "h __value__ m",
+			"pileBreakdown": "pile volume · base uncertainty ±__pct__ %",
+			"embankmentBreakdown": "fill-in __below__ · embankment fill __above__",
+			"bevelCapSuffix": " — slopes cap the height at __value__ m",
+			"errors": {
+				"bevelAngleRange": "The bevel angle must be between 10° and 90°.",
+				"heightNonNegative": "Embankment height must not be negative."
+			}
+		},
+		"terrain": {
+			"quality": {
+				"lowCoverage": "The point cloud covers only __pct__ % of the outline area",
+				"filledFromSurrounding": "__pct__ % of columns were filled in from the surroundings",
+				"unfilledColumns": "__columnCount__ columns remained without data",
+				"lowDensity": "Point density is too low for reliable snapping",
+				"terrainAboveLid": "Terrain lies above the lid plane for __pct__ % of columns — the outline is below the edge"
+			}
+		},
+		"viewer": {
+			"webglContextLost": "WebGL context was lost",
+			"webglContextLostHint": "Too many open tabs with the 3D editor",
+			"restoreView": "Restore view",
+			"restoringView": "Restoring 3D view..."
+		}
 	}
 }
