@@ -77,7 +77,7 @@
                 "recomputeVolume": "Recalculer le volume",
                 "snapBottomToTerrain": "Ajuster le fond au terrain",
                 "holdVertexHeight": "Maintenir la hauteur du sommet sélectionné (coupe)",
-                "releaseHeightHold": "Relâcher le maintien de hauteur",
+                "releaseHeightHold": "Désactiver le maintien de la hauteur",
                 "snapVertexToSurface": "Ajuster le point sélectionné à la surface",
                 "insertVertexAfter": "Insérer un sommet après le sommet sélectionné",
                 "deleteVertex": "Supprimer le sommet sélectionné",
@@ -90,7 +90,7 @@
             "contextMenu": {
                 "editHeightByDrag": "Modifier la hauteur en glissant",
                 "holdVertexHeight": "Maintenir la hauteur du sommet sélectionné (coupe)",
-                "releaseHeightHold": "Relâcher le maintien de hauteur",
+                "releaseHeightHold": "Désactiver le maintien de la hauteur",
                 "levelVertexWithNeighbors": "Aligner le sommet sélectionné avec ses voisins",
                 "levelAllVerticesTo": "Aligner tous les sommets à cette hauteur (coupe)",
                 "setVertexHeight": "Définir la hauteur du sommet sélectionné…",
@@ -103,7 +103,7 @@
             "vertexHeightLabel": "Altitude du sommet (m au-dessus du niveau de la mer) :",
             "heightPreview": "hauteur __value__ m",
             "cornerHeightLabel": "h __value__ m",
-            "pileBreakdown": "volume du tas · incertitude de base ±__pct__ %",
+            "pileBreakdown": "volume du tas · incertitude liée à la surface de base ±__pct__ %",
             "embankmentBreakdown": "comblement __below__ · remblai ajouté __above__",
             "bevelCapSuffix": " — les talus limitent la hauteur à __value__ m",
             "errors": {

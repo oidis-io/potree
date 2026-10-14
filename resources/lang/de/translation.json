@@ -79,7 +79,7 @@
             "computing": "Wird berechnet…",
             "computingWithPoints": "Wird berechnet… (__pointsAccepted__ Punkte)",
             "computationFailed": "Die Berechnung ist fehlgeschlagen",
-            "approximateSuffix": " (ungefähr)",
+            "approximateSuffix": " (Näherungswert)",
             "staleSuffix": " (veraltet)",
             "invalidValueHint": "Ungültiger Wert. "
         },
@@ -111,10 +111,10 @@
                 "deleteEmbankment": "Damm löschen"
             },
             "heightLabel": "Dammhöhe (m):",
-            "vertexHeightLabel": "Höhe des Eckpunkts (m ü. M.):",
+            "vertexHeightLabel": "Höhe des Eckpunkts (m ü. NHN):",
             "heightPreview": "Höhe __value__ m",
             "cornerHeightLabel": "h __value__ m",
-            "pileBreakdown": "Haldenvolumen · Grundunsicherheit ±__pct__ %",
+            "pileBreakdown": "Haldenvolumen · Unsicherheit der Grundfläche ±__pct__ %",
             "embankmentBreakdown": "Auffüllung __below__ · Dammaufschüttung __above__",
             "bevelCapSuffix": " — die Böschungen begrenzen die Höhe auf __value__ m",
             "errors": {

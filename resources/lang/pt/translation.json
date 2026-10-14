@@ -13,7 +13,7 @@
 			"computingWithPoints": "A calcular… (__pointsAccepted__ pontos)",
 			"computationFailed": "O cálculo falhou",
 			"approximateSuffix": " (aproximado)",
-			"staleSuffix": " (obsoleto)",
+			"staleSuffix": " (desatualizado)",
 			"invalidValueHint": "Valor inválido. "
 		},
 		"cubature": {
@@ -21,7 +21,7 @@
 				"recomputeVolume": "Recalcular volume",
 				"snapBottomToTerrain": "Encaixar o fundo no terreno",
 				"holdVertexHeight": "Manter a altura do vértice selecionado (corte)",
-				"releaseHeightHold": "Libertar a retenção de altura",
+				"releaseHeightHold": "Desativar a retenção de altura",
 				"snapVertexToSurface": "Encaixar o ponto selecionado na superfície",
 				"insertVertexAfter": "Inserir vértice após o selecionado",
 				"deleteVertex": "Eliminar o vértice selecionado",
@@ -34,7 +34,7 @@
 			"contextMenu": {
 				"editHeightByDrag": "Editar a altura arrastando",
 				"holdVertexHeight": "Manter a altura do vértice selecionado (corte)",
-				"releaseHeightHold": "Libertar a retenção de altura",
+				"releaseHeightHold": "Desativar a retenção de altura",
 				"levelVertexWithNeighbors": "Nivelar o vértice selecionado com os vizinhos",
 				"levelAllVerticesTo": "Nivelar todos os vértices a esta altura (corte)",
 				"setVertexHeight": "Definir a altura do vértice selecionado…",
@@ -61,7 +61,7 @@
 				"filledFromSurrounding": "__pct__ % das colunas foram preenchidas a partir da envolvente",
 				"unfilledColumns": "__columnCount__ colunas permaneceram sem dados",
 				"lowDensity": "A densidade de pontos é demasiado baixa para um encaixe fiável",
-				"terrainAboveLid": "O terreno encontra-se acima do plano de tampa em __pct__ % das colunas — o contorno está abaixo do limite"
+				"terrainAboveLid": "O terreno encontra-se acima do plano da tampa em __pct__ % das colunas — o contorno está abaixo da borda do terreno"
 			}
 		},
 		"viewer": {

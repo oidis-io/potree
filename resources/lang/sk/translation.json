@@ -2,9 +2,9 @@
 	"zbysek": {
 		"computation": {
 			"loadTimeout": "Vypršal časový limit na načítanie časti mračna bodov — výpočet nemožno dokončiť.",
-			"gridTooLarge": "Výpočtová mriežka je príliš veľká (__cells__ buniek, limit __limit__). Zmenšite obrys, alebo zväčšite veľkosť bunky v nastaveniach.",
-			"pointLimit": "Výpočet prekročil limit __limit__ bodov. Zmenšite obrys, alebo zvýšte limit v nastaveniach.",
-			"triangulationFailed": "Obrys sa nepodarilo trianguláciou spracovať — skontrolujte, či sa nekríži.",
+			"gridTooLarge": "Výpočtová mriežka je príliš veľká (__cells__ buniek, limit __limit__). Zmenšite obrys alebo zväčšite veľkosť bunky v nastaveniach.",
+			"pointLimit": "Výpočet prekročil limit __limit__ bodov. Zmenšite obrys alebo zvýšte limit v nastaveniach.",
+			"triangulationFailed": "Obrys sa nepodarilo triangulovať — skontrolujte, či sa nekríži.",
 			"outlineInvalid": "Obrys sa kríži alebo je degenerovaný — upravte vrcholy a spustite výpočet znova.",
 			"noPointCloud": "V scéne nie je žiadne mračno bodov, k ktorému by sa dalo meranie prichytiť."
 		},
@@ -47,8 +47,8 @@
 			"vertexHeightLabel": "Výška vrcholu (m n. m.):",
 			"heightPreview": "výška __value__ m",
 			"cornerHeightLabel": "v __value__ m",
-			"pileBreakdown": "objem haldy · nepresnosť podkladu ±__pct__ %",
-			"embankmentBreakdown": "dosyp __below__ · násyp __above__",
+			"pileBreakdown": "objem haldy · neistota podkladu ±__pct__ %",
+			"embankmentBreakdown": "dosypanie __below__ · navážka __above__",
 			"bevelCapSuffix": " — svahy obmedzujú výšku na __value__ m",
 			"errors": {
 				"bevelAngleRange": "Uhol zošikmenia musí byť medzi 10° a 90°.",
@@ -66,7 +66,7 @@
 		},
 		"viewer": {
 			"webglContextLost": "Kontext WebGL bol stratený",
-			"webglContextLostHint": "Príliš mnoho otvorených záložiek s 3D editorom",
+			"webglContextLostHint": "Príliš veľa otvorených kariet s 3D editorom",
 			"restoreView": "Obnoviť zobrazenie",
 			"restoringView": "Obnovuje sa 3D pohľad..."
 		}

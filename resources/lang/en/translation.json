@@ -130,7 +130,7 @@
 				"insertVertexAfter": "Insert vertex after selected",
 				"deleteVertex": "Delete selected vertex",
 				"edit": "Edit…",
-				"delete": "Delete cubature"
+				"delete": "Delete excavation volume"
 			},
 			"pitDepthLabel": "Pit depth (m, negative value = downward):"
 		},
@@ -139,23 +139,23 @@
 				"editHeightByDrag": "Edit height by dragging",
 				"holdVertexHeight": "Hold height of selected vertex (cut)",
 				"releaseHeightHold": "Release height hold",
-				"levelVertexWithNeighbors": "Level selected vertex with neighbors",
+				"levelVertexWithNeighbors": "Level selected vertex with neighbours",
 				"levelAllVerticesTo": "Level all vertices to this height (cut)",
 				"setVertexHeight": "Set height of selected vertex…",
 				"recomputeVolume": "Recompute volume",
 				"edit": "Edit…",
-				"deletePile": "Delete pile",
+				"deletePile": "Delete stockpile",
 				"deleteEmbankment": "Delete embankment"
 			},
 			"heightLabel": "Embankment height (m):",
 			"vertexHeightLabel": "Vertex height (m a.s.l.):",
 			"heightPreview": "height __value__ m",
 			"cornerHeightLabel": "h __value__ m",
-			"pileBreakdown": "pile volume · base uncertainty ±__pct__ %",
+			"pileBreakdown": "stockpile volume · base uncertainty ±__pct__ %",
 			"embankmentBreakdown": "fill-in __below__ · embankment fill __above__",
 			"bevelCapSuffix": " — slopes cap the height at __value__ m",
 			"errors": {
-				"bevelAngleRange": "The bevel angle must be between 10° and 90°.",
+				"bevelAngleRange": "The slope angle must be between 10° and 90°.",
 				"heightNonNegative": "Embankment height must not be negative."
 			}
 		},

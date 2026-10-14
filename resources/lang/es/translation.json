@@ -101,7 +101,7 @@
 			"computingWithPoints": "Calculando… (__pointsAccepted__ puntos)",
 			"computationFailed": "Error en el cálculo",
 			"approximateSuffix": " (aproximado)",
-			"staleSuffix": " (obsoleto)",
+			"staleSuffix": " (desactualizado)",
 			"invalidValueHint": "Valor no válido. "
 		},
 		"cubature": {
