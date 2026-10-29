@@ -104,6 +104,19 @@ export class ProfileTool extends EventDispatcher {
             domElement.removeEventListener("mouseup", insertionCallback, false);
             this.viewer.removeEventListener("cancel_insertions", cancel.callback);
             domElement.style.cursor = "";
+
+            if (profile.points.length < 2) {
+                this.dispatchEvent({
+                    type: "profile_insertion_cancelled",
+                    profile: profile
+                });
+                this.viewer.scene.removeProfile(profile);
+            } else {
+                this.dispatchEvent({
+                    type: "profile_insertion_finished",
+                    profile: profile
+                });
+            }
         };
 
         this.viewer.addEventListener("cancel_insertions", cancel.callback);
