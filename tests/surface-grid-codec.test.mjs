@@ -92,6 +92,6 @@ test("height ranges beyond centimetre resolution fall back to a coarser scale", 
 test("damaged payloads are rejected instead of silently ignored", () => {
     const payload = encodeSurfaceGrid(makeSurface(6, 6, () => 12.5));
 
-    assert.throws(() => decodeSurfaceGrid("nonsense"), /neplatný formát/);
-    assert.throws(() => decodeSurfaceGrid(payload.replace("|6|6|", "|7|6|")), /neplatnou velikost/);
+    assert.throws(() => decodeSurfaceGrid("nonsense"), /invalid format/);
+    assert.throws(() => decodeSurfaceGrid(payload.replace("|6|6|", "|7|6|")), /invalid data size/);
 });

@@ -286,7 +286,7 @@ test("corpus: dense ghost reflections below the floor are skipped, not measured"
 test("corpus: point budget guard throws a loud error", async () => {
     await assert.rejects(
         computePit({ surfaceFn: () => -2, outline: squareOutline, maxPoints: 1000 }),
-        /limit 1000 bodů/
+        /limit of 1000 points/
     );
 });
 
@@ -296,5 +296,5 @@ test("grid guard: too many cells throws before any computation", () => {
         cellSize: 0.15,
         maxGridCells: 250000,
         maxPoints: 1
-    }), /příliš velká/);
+    }), /too large/);
 });

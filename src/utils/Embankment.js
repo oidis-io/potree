@@ -21,6 +21,7 @@ import { intersectDragWithLockPlane, lockPlaneZAt, refreshHeightLockVisual } fro
 import { buildSurfaceMeshData } from "./TerrainGridMath.js";
 import { encodeSurfaceGrid, decodeSurfaceGrid } from "./SurfaceGridCodec.js";
 import { sphereHoverEmissive, sphereRestEmissive } from "./VertexSelection.js";
+import { activeLocale } from "./LocaleFormat.js";
 
 function isValidPosition(p) {
     return p && Number.isFinite(p.x) && Number.isFinite(p.y) && Number.isFinite(p.z);
@@ -39,11 +40,11 @@ function createLabel(fontsize, color) {
 }
 
 function formatCubicMeters(value) {
-    return value.toLocaleString("cs-CZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " m³";
+    return value.toLocaleString(activeLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " m³";
 }
 
 function formatMeters(value) {
-    return value.toLocaleString("cs-CZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " m";
+    return value.toLocaleString(activeLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " m";
 }
 
 export class Embankment extends THREE.Object3D {
@@ -597,17 +598,21 @@ export class Embankment extends THREE.Object3D {
         if (this.computationState === "computing") {
             const progress = this.computationProgress;
             if (progress && progress.pointsAccepted > 0) {
-                return "Počítám… (" + progress.pointsAccepted.toLocaleString("cs-CZ") + " bodů)";
+                return i18n.t("zbysek.common.computingWithPoints", {
+                    pointsAccepted: progress.pointsAccepted.toLocaleString(activeLocale())
+                });
             }
-            return "Počítám…";
+            return i18n.t("zbysek.common.computing");
         }
         if (this.computationState === "failed") {
-            return "Výpočet selhal";
+            return i18n.t("zbysek.common.computationFailed");
         }
         if (this.phase === "height") {
-            return "výška " + this.heightM.toLocaleString("cs-CZ", {
-                minimumFractionDigits: 2, maximumFractionDigits: 2
-            }) + " m";
+            return i18n.t("zbysek.embankment.heightPreview", {
+                value: this.heightM.toLocaleString(activeLocale(), {
+                    minimumFractionDigits: 2, maximumFractionDigits: 2
+                })
+            });
         }
         if (this.computedTotal === null) {
             return "";
@@ -617,15 +622,17 @@ export class Embankment extends THREE.Object3D {
             text += ` (±${this.computedUncertaintyPct} %)`;
         }
         if (this.computedBevelCapM !== null && this.computedBevelCapM !== undefined) {
-            text += " — svahy stropují výšku na " + this.computedBevelCapM.toLocaleString("cs-CZ", {
-                minimumFractionDigits: 2, maximumFractionDigits: 2
-            }) + " m";
+            text += i18n.t("zbysek.embankment.bevelCapSuffix", {
+                value: this.computedBevelCapM.toLocaleString(activeLocale(), {
+                    minimumFractionDigits: 2, maximumFractionDigits: 2
+                })
+            });
         }
         if (this.computedQuality && this.computedQuality.approximate) {
-            text += " (orientační)";
+            text += i18n.t("zbysek.common.approximateSuffix");
         }
         if (this.autoStale) {
-            text += " (neaktuální)";
+            text += i18n.t("zbysek.common.staleSuffix");
         }
         return text;
     }
@@ -698,7 +705,7 @@ export class Embankment extends THREE.Object3D {
             temporaryB.copy(this.controlPoints[i]).setZ(this.controlPoints[i].z + this.heightM);
             setEdge(this.cornerEdges[i], temporaryA, temporaryB);
             updateDetailLabel(this.heightLabels[i], temporaryA, temporaryB,
-                "v " + formatMeters(this.heightM), this.heightM > 0);
+                i18n.t("zbysek.embankment.cornerHeightLabel", { value: formatMeters(this.heightM) }), this.heightM > 0);
         }
 
         if (n >= 3 && this.phase !== "insertion") {
@@ -715,9 +722,11 @@ export class Embankment extends THREE.Object3D {
             if (this.computedTotal !== null && this.phase === "edit") {
                 this.breakdownLabel.position.set(centroid.x, centroid.y, centroid.z + this.heightM + 0.2);
                 this.breakdownLabel.setText(this.mode === "pile"
-                    ? "objem haldy · nejistota podkladu ±" + this.computedUncertaintyPct + " %"
-                    : "dosypání " + formatCubicMeters(this.computedBelowOutlineVolume) +
-                      " · navážka " + formatCubicMeters(this.computedAboveOutlineVolume));
+                    ? i18n.t("zbysek.embankment.pileBreakdown", { pct: this.computedUncertaintyPct })
+                    : i18n.t("zbysek.embankment.embankmentBreakdown", {
+                        below: formatCubicMeters(this.computedBelowOutlineVolume),
+                        above: formatCubicMeters(this.computedAboveOutlineVolume)
+                    }));
                 this.breakdownLabel.visible = mainVisible && detailVisible;
             } else {
                 this.breakdownLabel.visible = false;

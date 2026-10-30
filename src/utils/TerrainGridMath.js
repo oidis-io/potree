@@ -185,12 +185,12 @@ export function fillEmptyCells(surface, relevant, cols, rows, maxRing) {
 
 export function buildLidInterpolator(points) {
     if (points.length < 3) {
-        throw new Error("Obrys musí mít alespoň 3 vrcholy.");
+        throw new Error("The outline must have at least 3 vertices.");
     }
     const shape = points.map((p) => new THREE.Vector2(p.x, p.y));
     const indexTriples = THREE.ShapeUtils.triangulateShape(shape, []);
     if (indexTriples.length === 0) {
-        throw new Error("Obrys se nepodařilo triangulovat — zkontrolujte, zda se nekříží.");
+        throw new Error(i18n.t("zbysek.computation.triangulationFailed"));
     }
     const triangles = indexTriples.map((tri) => [points[tri[0]], points[tri[1]], points[tri[2]]]);
 
@@ -222,7 +222,7 @@ export function buildLidInterpolator(points) {
             }
         }
         if (bestZ === null) {
-            throw new Error("Obrys je degenerovaný — víko nelze vyhodnotit.");
+            throw new Error("The outline is degenerate — the lid cannot be evaluated.");
         }
         return bestZ;
     };
@@ -312,19 +312,19 @@ export function buildSurfaceMeshData(surface) {
 export function evaluateQuality(stats, thresholds) {
     const reasons = [];
     if (stats.coveragePct < thresholds.minCoveragePct) {
-        reasons.push(`Mračno pokrývá jen ${stats.coveragePct.toFixed(0)} % plochy obrysu`);
+        reasons.push(i18n.t("zbysek.terrain.quality.lowCoverage", { pct: stats.coveragePct.toFixed(0) }));
     }
     if (stats.filledPct > thresholds.maxFilledPct) {
-        reasons.push(`${stats.filledPct.toFixed(0)} % sloupců bylo doplněno z okolí`);
+        reasons.push(i18n.t("zbysek.terrain.quality.filledFromSurrounding", { pct: stats.filledPct.toFixed(0) }));
     }
     if (stats.unfilled > 0) {
-        reasons.push(`${stats.unfilled} sloupců zůstalo bez dat`);
+        reasons.push(i18n.t("zbysek.terrain.quality.unfilledColumns", { columnCount: stats.unfilled }));
     }
     if (stats.medianPointsPerCell < thresholds.minMedianPointsPerCell) {
-        reasons.push("Hustota bodů je pro spolehlivé přichycení příliš nízká");
+        reasons.push(i18n.t("zbysek.terrain.quality.lowDensity"));
     }
     if (Number.isFinite(stats.clampedPct) && stats.clampedPct > thresholds.maxClampedPct) {
-        reasons.push(`Terén leží nad rovinou víka u ${stats.clampedPct.toFixed(0)} % sloupců — obrys je pod okrajem`);
+        reasons.push(i18n.t("zbysek.terrain.quality.terrainAboveLid", { pct: stats.clampedPct.toFixed(0) }));
     }
     return { approximate: reasons.length > 0, reasons };
 }

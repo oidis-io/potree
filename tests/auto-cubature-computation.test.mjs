@@ -106,14 +106,14 @@ test("auto cubature fails loudly on a self-intersecting outline", async () => {
     ];
     await assert.rejects(
         runComputation(makeViewer([cloud]), { topControlPoints: bowtie }),
-        /kříží/
+        /self-intersects/
     );
 });
 
 test("auto cubature fails when the scene has no measurable pointcloud", async () => {
     await assert.rejects(
         runComputation(makeViewer([]), { topControlPoints: outline }),
-        /žádné mračno/
+        /no point cloud/
     );
 });
 
