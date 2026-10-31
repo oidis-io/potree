@@ -21,6 +21,7 @@ import { Renderer } from "../PotreeRenderer.js";
 import { PointCloudMaterial } from "../materials/PointCloudMaterial.js";
 import { PointSizeType } from "../defines.js";
 import PotreeConfig from "../PotreeConfig.js";
+import { ProfileMeasurementOverlay } from "./ProfileMeasurementOverlay.js";
 
 function copyMaterial(source, target) {
     for (let name of Object.keys(target.uniforms)) {
@@ -251,6 +252,7 @@ export class ProfileControl extends EventDispatcher {
         this.pRenderer = null;
 
         this.initControl();
+        this.measurementOverlay = new ProfileMeasurementOverlay(this, d3.select("svg#profileMeasurementSVG"));
         this.initListeners();
     }
 
@@ -742,12 +744,21 @@ export class ProfileControl extends EventDispatcher {
 
     hide() {
         this.enabled = false;
+        this.measurementOverlay.clear();
         if (this.pickSphere) {
             this.pickSphere.visible = false;
         }
         if (this.viewerPickSphere && this.viewer.scene.scene.children.includes(this.viewerPickSphere)) {
             this.viewer.scene.scene.remove(this.viewerPickSphere);
         }
+    }
+
+    setProfile(profile) {
+        this.measurementOverlay.setProfile(profile);
+    }
+
+    updateMeasurements() {
+        this.measurementOverlay.update();
     }
 
     updateScales() {
@@ -791,6 +802,8 @@ export class ProfileControl extends EventDispatcher {
         this.elYAxis
             .attr("transform", `translate(${marginLeft}, 0)`)
             .call(this.yAxis);
+
+        this.measurementOverlay.update();
     }
 
     requestScaleUpdate() {
@@ -1262,6 +1275,7 @@ export class ProfileControlController {
         }
 
         this.profile = profile;
+        this.profileView.setProfile(profile);
 
         {
             this.profile.addEventListener("marker_moved", this._recompute);
@@ -1278,11 +1292,7 @@ export class ProfileControlController {
 
         this.numPoints = 0;
 
-        if (this.profile) {
-            for (let request of this.requests) {
-                request.cancel();
-            }
-        }
+        this.cancel();
     }
 
     progressHandler(pointcloud, progress) {
@@ -1304,8 +1314,6 @@ export class ProfileControlController {
         for (let request of this.requests) {
             request.finishLevelThenCancel();
         }
-
-        this.requests = [];
     }
 
     recompute() {
@@ -1325,7 +1333,7 @@ export class ProfileControlController {
         for (let pointcloud of this.viewer.scene.pointclouds.filter(p => p.visible)) {
             let request = pointcloud.getPointsInProfile(this.profile, null, {
                 "onProgress": (event) => {
-                    if (!this.enabled) {
+                    if (!this.enabled || event.request.profile !== this.profile) {
                         return;
                     }
 

@@ -65,5 +65,77 @@
     },
     "settings": {
         "language": "Sprache"
+    },
+    "zbysek": {
+        "computation": {
+            "loadTimeout": "Das Laden eines Teils der Punktwolke hat das Zeitlimit überschritten — die Berechnung kann nicht abgeschlossen werden.",
+            "gridTooLarge": "Das Berechnungsraster ist zu groß (__cells__ Zellen, Limit __limit__). Verkleinern Sie die Kontur oder erhöhen Sie die Zellgröße in den Einstellungen.",
+            "pointLimit": "Die Berechnung hat das Limit von __limit__ Punkten überschritten. Verkleinern Sie die Kontur oder erhöhen Sie das Limit in den Einstellungen.",
+            "triangulationFailed": "Die Triangulation der Kontur ist fehlgeschlagen — prüfen Sie, dass sie sich nicht selbst schneidet.",
+            "outlineInvalid": "Die Kontur schneidet sich selbst oder ist entartet — passen Sie die Eckpunkte an und führen Sie die Berechnung erneut aus.",
+            "noPointCloud": "In der Szene befindet sich keine Punktwolke, an die die Messung einrasten könnte."
+        },
+        "common": {
+            "computing": "Wird berechnet…",
+            "computingWithPoints": "Wird berechnet… (__pointsAccepted__ Punkte)",
+            "computationFailed": "Die Berechnung ist fehlgeschlagen",
+            "approximateSuffix": " (Näherungswert)",
+            "staleSuffix": " (veraltet)",
+            "invalidValueHint": "Ungültiger Wert. "
+        },
+        "cubature": {
+            "contextMenu": {
+                "recomputeVolume": "Volumen neu berechnen",
+                "snapBottomToTerrain": "Boden am Gelände einrasten",
+                "holdVertexHeight": "Höhe des ausgewählten Eckpunkts halten (Schnitt)",
+                "releaseHeightHold": "Höhenhaltung aufheben",
+                "snapVertexToSurface": "Ausgewählten Punkt an der Oberfläche einrasten",
+                "insertVertexAfter": "Eckpunkt nach dem ausgewählten einfügen",
+                "deleteVertex": "Ausgewählten Eckpunkt löschen",
+                "edit": "Bearbeiten…",
+                "delete": "Kubatur löschen"
+            },
+            "pitDepthLabel": "Aushubtiefe (m, negativer Wert = nach unten):"
+        },
+        "embankment": {
+            "contextMenu": {
+                "editHeightByDrag": "Höhe durch Ziehen bearbeiten",
+                "holdVertexHeight": "Höhe des ausgewählten Eckpunkts halten (Schnitt)",
+                "releaseHeightHold": "Höhenhaltung aufheben",
+                "levelVertexWithNeighbors": "Ausgewählten Eckpunkt an Nachbarn ausrichten",
+                "levelAllVerticesTo": "Alle Eckpunkte auf diese Höhe ausrichten (Schnitt)",
+                "setVertexHeight": "Höhe des ausgewählten Eckpunkts festlegen…",
+                "recomputeVolume": "Volumen neu berechnen",
+                "edit": "Bearbeiten…",
+                "deletePile": "Halde löschen",
+                "deleteEmbankment": "Damm löschen"
+            },
+            "heightLabel": "Dammhöhe (m):",
+            "vertexHeightLabel": "Höhe des Eckpunkts (m ü. NHN):",
+            "heightPreview": "Höhe __value__ m",
+            "cornerHeightLabel": "h __value__ m",
+            "pileBreakdown": "Haldenvolumen · Unsicherheit der Grundfläche ±__pct__ %",
+            "embankmentBreakdown": "Auffüllung __below__ · Dammaufschüttung __above__",
+            "bevelCapSuffix": " — die Böschungen begrenzen die Höhe auf __value__ m",
+            "errors": {
+                "bevelAngleRange": "Der Böschungswinkel muss zwischen 10° und 90° liegen.",
+                "heightNonNegative": "Die Dammhöhe darf nicht negativ sein."
+            }
+        },
+        "terrain": {
+            "quality": {
+                "lowCoverage": "Die Punktwolke deckt nur __pct__ % der Konturfläche ab",
+                "filledFromSurrounding": "__pct__ % der Spalten wurden aus der Umgebung aufgefüllt",
+                "unfilledColumns": "__columnCount__ Spalten blieben ohne Daten",
+                "lowDensity": "Die Punktdichte ist für ein zuverlässiges Einrasten zu gering",
+                "terrainAboveLid": "Das Gelände liegt bei __pct__ % der Spalten über der Deckelebene — die Kontur liegt unterhalb der Kante"
+            }
+        },
+        "viewer": {
+            "webglContextLost": "Der WebGL-Kontext ist verloren gegangen",
+            "webglContextLostHint": "Zu viele geöffnete Tabs mit dem 3D-Editor",
+            "restoreView": "Ansicht wiederherstellen",
+            "restoringView": "3D-Ansicht wird wiederhergestellt..."
+        }
     }
 }

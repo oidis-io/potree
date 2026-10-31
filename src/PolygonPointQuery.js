@@ -156,7 +156,7 @@ export class PolygonPointQuery {
                 if (since === undefined) {
                     this.loadWaitSince.set(node, now);
                 } else if (now - since > this.loadTimeoutMs) {
-                    this.fail(new Error("Načítání části mračna vypršelo — výpočet nelze dokončit."));
+                    this.fail(new Error(i18n.t("zbysek.computation.loadTimeout")));
                     return { advanced: false, waiting: 0, done: true };
                 }
                 this.priorityQueue.push(element);

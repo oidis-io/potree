@@ -95,5 +95,77 @@
 	},
     "settings": {
         "language": "Lingua"
+    },
+    "zbysek": {
+        "computation": {
+            "loadTimeout": "Il caricamento di una parte della nuvola di punti ha superato il tempo limite — il calcolo non può terminare.",
+            "gridTooLarge": "La griglia di calcolo è troppo grande (__cells__ celle, limite __limit__). Riduci il contorno oppure aumenta la dimensione della cella nelle impostazioni.",
+            "pointLimit": "Il calcolo ha superato il limite di __limit__ punti. Riduci il contorno oppure aumenta il limite nelle impostazioni.",
+            "triangulationFailed": "Triangolazione del contorno non riuscita — verifica che non si autointersechi.",
+            "outlineInvalid": "Il contorno si autointerseca o è degenerato — correggi i vertici e avvia di nuovo il calcolo.",
+            "noPointCloud": "Non c'è nessuna nuvola di punti nella scena a cui agganciare la misurazione."
+        },
+        "common": {
+            "computing": "Calcolo in corso…",
+            "computingWithPoints": "Calcolo in corso… (__pointsAccepted__ punti)",
+            "computationFailed": "Calcolo non riuscito",
+            "approximateSuffix": " (approssimativo)",
+            "staleSuffix": " (non aggiornato)",
+            "invalidValueHint": "Valore non valido. "
+        },
+        "cubature": {
+            "contextMenu": {
+                "recomputeVolume": "Ricalcola volume",
+                "snapBottomToTerrain": "Aggancia il fondo al terreno",
+                "holdVertexHeight": "Mantieni la quota del vertice selezionato (sezione)",
+                "releaseHeightHold": "Rilascia il blocco della quota",
+                "snapVertexToSurface": "Aggancia il punto selezionato alla superficie",
+                "insertVertexAfter": "Inserisci vertice dopo il selezionato",
+                "deleteVertex": "Elimina vertice selezionato",
+                "edit": "Modifica…",
+                "delete": "Elimina cubatura"
+            },
+            "pitDepthLabel": "Profondità scavo (m, valore negativo = verso il basso):"
+        },
+        "embankment": {
+            "contextMenu": {
+                "editHeightByDrag": "Modifica altezza trascinando",
+                "holdVertexHeight": "Mantieni la quota del vertice selezionato (sezione)",
+                "releaseHeightHold": "Rilascia il blocco della quota",
+                "levelVertexWithNeighbors": "Livella il vertice selezionato con i vicini",
+                "levelAllVerticesTo": "Livella tutti i vertici a questa quota (sezione)",
+                "setVertexHeight": "Imposta la quota del vertice selezionato…",
+                "recomputeVolume": "Ricalcola volume",
+                "edit": "Modifica…",
+                "deletePile": "Elimina cumulo",
+                "deleteEmbankment": "Elimina rilevato"
+            },
+            "heightLabel": "Altezza rilevato (m):",
+            "vertexHeightLabel": "Quota vertice (m s.l.m.):",
+            "heightPreview": "altezza __value__ m",
+            "cornerHeightLabel": "h __value__ m",
+            "pileBreakdown": "volume cumulo · incertezza del piano di base ±__pct__ %",
+            "embankmentBreakdown": "riempimento __below__ · riporto __above__",
+            "bevelCapSuffix": " — le scarpate limitano l'altezza a __value__ m",
+            "errors": {
+                "bevelAngleRange": "L'angolo di scarpa deve essere compreso tra 10° e 90°.",
+                "heightNonNegative": "L'altezza del rilevato non deve essere negativa."
+            }
+        },
+        "terrain": {
+            "quality": {
+                "lowCoverage": "La nuvola di punti copre solo il __pct__ % dell'area del contorno",
+                "filledFromSurrounding": "Il __pct__ % delle colonne è stato riempito dalle aree circostanti",
+                "unfilledColumns": "__columnCount__ colonne sono rimaste senza dati",
+                "lowDensity": "La densità dei punti è troppo bassa per un aggancio affidabile",
+                "terrainAboveLid": "Il terreno si trova sopra il piano di copertura per il __pct__ % delle colonne — il contorno è sotto il bordo"
+            }
+        },
+        "viewer": {
+            "webglContextLost": "Il contesto WebGL è stato perso",
+            "webglContextLostHint": "Troppe schede aperte con l'editor 3D",
+            "restoreView": "Ripristina vista",
+            "restoringView": "Ripristino della vista 3D in corso..."
+        }
     }
 }

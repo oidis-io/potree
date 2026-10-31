@@ -20,6 +20,7 @@ import { buildSurfaceMeshData } from "./TerrainGridMath.js";
 import { encodeSurfaceGrid, decodeSurfaceGrid } from "./SurfaceGridCodec.js";
 import { intersectDragWithLockPlane, lockPlaneZAt, refreshHeightLockVisual } from "./HeightLockPlane.js";
 import { sphereHoverEmissive, sphereRestEmissive } from "./VertexSelection.js";
+import { activeLocale } from "./LocaleFormat.js";
 
 function isValidPosition(p) {
     return p
@@ -53,7 +54,7 @@ function createEdgeLabel() {
 }
 
 function formatLengthCs(value, unitCode) {
-    const text = value.toLocaleString("cs-CZ", {
+    const text = value.toLocaleString(activeLocale(), {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
     });
@@ -958,7 +959,7 @@ export class Cubature extends THREE.Object3D {
             value = value / Math.pow(this.lengthUnit.unitspermeter, 3) * Math.pow(this.lengthUnitDisplay.unitspermeter, 3);
             suffix = this.lengthUnitDisplay.code;
         }
-        const formatted = value.toLocaleString("cs-CZ", {
+        const formatted = value.toLocaleString(activeLocale(), {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
@@ -972,22 +973,24 @@ export class Cubature extends THREE.Object3D {
         if (this.computationState === "computing") {
             const progress = this.computationProgress;
             if (progress && progress.pointsAccepted > 0) {
-                return "Počítám… (" + progress.pointsAccepted.toLocaleString("cs-CZ") + " bodů)";
+                return i18n.t("zbysek.common.computingWithPoints", {
+                    pointsAccepted: progress.pointsAccepted.toLocaleString(activeLocale())
+                });
             }
-            return "Počítám…";
+            return i18n.t("zbysek.common.computing");
         }
         if (this.computationState === "failed") {
-            return "Výpočet selhal";
+            return i18n.t("zbysek.common.computationFailed");
         }
         if (this.computedVolume === null) {
             return this.formatVolume(this.computeVolume());
         }
         let text = this.formatVolume(this.computedVolume);
         if (this.computedQuality && this.computedQuality.approximate) {
-            text += " (orientační)";
+            text += i18n.t("zbysek.common.approximateSuffix");
         }
         if (this.autoStale) {
-            text += " (neaktuální)";
+            text += i18n.t("zbysek.common.staleSuffix");
         }
         return text;
     }

@@ -395,13 +395,13 @@ export class Viewer extends EventDispatcher {
         if (type === "restoring") {
             overlay.innerHTML = `
                 <div class="potree_context_spinner"></div>
-                <div>Obnovuji 3D pohled...</div>`;
+                <div>${i18n.t("zbysek.viewer.restoringView")}</div>`;
         } else {
             overlay.innerHTML = `
                 <div style="font-size:48px; margin-bottom:16px">\u26A0</div>
-                <div>WebGL kontext byl ztracen</div>
-                <div style="margin-top:8px; font-size:13px; opacity:0.7">Příliš mnoho otevřených záložek s 3D editorem</div>
-                <button onclick="this.parentElement.dispatchEvent(new Event('restore'))">Obnovit zobrazení</button>`;
+                <div>${i18n.t("zbysek.viewer.webglContextLost")}</div>
+                <div style="margin-top:8px; font-size:13px; opacity:0.7">${i18n.t("zbysek.viewer.webglContextLostHint")}</div>
+                <button onclick="this.parentElement.dispatchEvent(new Event('restore'))">${i18n.t("zbysek.viewer.restoreView")}</button>`;
             overlay.addEventListener("restore", () => {
                 this._showContextOverlay("restoring");
                 this.renderer.forceContextRestore();
@@ -1406,8 +1406,9 @@ export class Viewer extends EventDispatcher {
 
                 i18n.init({
                     lng: "en",
+                    fallbackLng: "en",
                     resGetPath: PotreeConfig.resourcePath + "/lang/__lng__/__ns__.json",
-                    preload: ["en", "fr", "de", "jp", "se", "es", "zh", "it", "ca"],
+                    preload: ["en", "fr", "de", "jp", "se", "es", "zh", "it", "ca", "cs", "sk", "pl", "pt"],
                     getAsync: true,
                     debug: false
                 }, function (t) {

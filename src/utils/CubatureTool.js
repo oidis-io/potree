@@ -574,16 +574,19 @@ export class CubatureTool extends EventDispatcher {
     buildEditMenuItems(cubature, options = {}) {
         const items = [];
         if (cubature.autoMode) {
-            items.push({ label: "Přepočítat objem", action: () => this.recompute(cubature) });
+            items.push({ label: i18n.t("zbysek.cubature.contextMenu.recomputeVolume"), action: () => this.recompute(cubature) });
         }
-        items.push({ label: "Přichytit dno k terénu", action: () => cubature.snapBottomToTerrain(this.viewer) });
+        items.push({
+            label: i18n.t("zbysek.cubature.contextMenu.snapBottomToTerrain"),
+            action: () => cubature.snapBottomToTerrain(this.viewer)
+        });
         const index = this.selectedVertexIndex(cubature);
         if (index !== -1) {
             items.push(
                 {
                     label: cubature.heightLock === null
-                        ? "Držet výšku vybraného vrcholu (řez)"
-                        : "Vypnout držení výšky",
+                        ? i18n.t("zbysek.cubature.contextMenu.holdVertexHeight")
+                        : i18n.t("zbysek.cubature.contextMenu.releaseHeightHold"),
                     action: () => {
                         if (cubature.heightLock === null) {
                             const vertex = cubature.topControlPoints[index];
@@ -594,20 +597,29 @@ export class CubatureTool extends EventDispatcher {
                     }
                 },
                 {
-                    label: "Přichytit vybraný bod k povrchu",
+                    label: i18n.t("zbysek.cubature.contextMenu.snapVertexToSurface"),
                     action: () => cubature.snapVertexToTerrain(this.viewer, "top", index)
                 },
-                { label: "Vložit vrchol za vybraný", action: () => cubature.insertVertexAt("top", index) },
-                { label: "Smazat vybraný vrchol", action: () => cubature.removeVertex(index) }
+                {
+                    label: i18n.t("zbysek.cubature.contextMenu.insertVertexAfter"),
+                    action: () => cubature.insertVertexAt("top", index)
+                },
+                {
+                    label: i18n.t("zbysek.cubature.contextMenu.deleteVertex"),
+                    action: () => cubature.removeVertex(index)
+                }
             );
         } else if (cubature.heightLock !== null) {
-            items.push({ label: "Vypnout držení výšky", action: () => cubature.applyHeightLock(null) });
+            items.push({
+                label: i18n.t("zbysek.cubature.contextMenu.releaseHeightHold"),
+                action: () => cubature.applyHeightLock(null)
+            });
         }
         if (typeof this.onRequestEdit === "function" && options.includeEdit !== false) {
-            items.push({ label: "Upravit…", action: () => this.onRequestEdit(cubature) });
+            items.push({ label: i18n.t("zbysek.cubature.contextMenu.edit"), action: () => this.onRequestEdit(cubature) });
         }
         if (options.includeDelete !== false) {
-            items.push({ label: "Smazat kubaturu", action: () => this.requestDelete(cubature) });
+            items.push({ label: i18n.t("zbysek.cubature.contextMenu.delete"), action: () => this.requestDelete(cubature) });
         }
         return items;
     }
@@ -678,7 +690,7 @@ export class CubatureTool extends EventDispatcher {
     openNumericInput(cubature) {
         this.requestNumber({
             kind: "pitDepth",
-            label: "Hloubka výkopu (m, záporná hodnota = dolů):",
+            label: i18n.t("zbysek.cubature.pitDepthLabel"),
             value: "-1.0",
             min: null,
             max: null

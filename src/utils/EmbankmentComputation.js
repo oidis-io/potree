@@ -69,13 +69,13 @@ export class EmbankmentComputation extends TerrainProbeComputation {
 export function computeEmbankmentVolumes(probe, settings) {
     const { heightM, bevelEnabled, slopeDeg } = settings;
     if (!(heightM >= 0)) {
-        throw new Error("Výška náspu musí být nezáporná.");
+        throw new Error(i18n.t("zbysek.embankment.errors.heightNonNegative"));
     }
     const options = probe.options;
     let capZ = null;
     if (bevelEnabled) {
         if (!(slopeDeg >= 10 && slopeDeg <= 90)) {
-            throw new Error("Úhel zkosení musí být mezi 10° a 90°.");
+            throw new Error(i18n.t("zbysek.embankment.errors.bevelAngleRange"));
         }
         const tanAlpha = Math.tan((slopeDeg * Math.PI) / 180);
         capZ = computeBevelCapZ(probe.grid, probe.outlinePoints, heightM, tanAlpha);

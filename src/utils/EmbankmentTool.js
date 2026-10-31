@@ -534,14 +534,14 @@ export class EmbankmentTool extends EventDispatcher {
                 apply(parsed);
                 return;
             }
-            hint = "Neplatná hodnota. ";
+            hint = i18n.t("zbysek.common.invalidValueHint");
         }
     }
 
     openHeightInput(embankment) {
         this.requestNumber({
             kind: "embankmentHeight",
-            label: "Výška náspu (m):",
+            label: i18n.t("zbysek.embankment.heightLabel"),
             value: embankment.heightM.toFixed(2),
             min: 0,
             max: null
@@ -559,7 +559,7 @@ export class EmbankmentTool extends EventDispatcher {
 
     applyBevel(embankment, enabled, slopeDeg) {
         if (!(slopeDeg >= 10 && slopeDeg <= 90)) {
-            throw new Error("Úhel zkosení musí být mezi 10° a 90°.");
+            throw new Error(i18n.t("zbysek.embankment.errors.bevelAngleRange"));
         }
         embankment.slopeDeg = slopeDeg;
         embankment.bevelEnabled = enabled;
@@ -583,36 +583,47 @@ export class EmbankmentTool extends EventDispatcher {
     buildEditMenuItems(embankment, markerIndex, options = {}) {
         const items = [];
         if (embankment.mode !== "pile") {
-            items.push({ label: "Upravit výšku tažením", action: () => this.enterHeightPhase(embankment) });
+            items.push({
+                label: i18n.t("zbysek.embankment.contextMenu.editHeightByDrag"),
+                action: () => this.enterHeightPhase(embankment)
+            });
         }
         if (markerIndex !== null && markerIndex >= 0) {
             items.push(
                 {
                     label: embankment.heightLock === null
-                        ? "Držet výšku vybraného vrcholu (řez)"
-                        : "Vypnout držení výšky",
+                        ? i18n.t("zbysek.embankment.contextMenu.holdVertexHeight")
+                        : i18n.t("zbysek.embankment.contextMenu.releaseHeightHold"),
                     action: () => this.toggleHeightLock(embankment, markerIndex)
                 },
                 {
-                    label: "Srovnat vybraný vrchol podle sousedů",
+                    label: i18n.t("zbysek.embankment.contextMenu.levelVertexWithNeighbors"),
                     action: () => this.levelVertexWithNeighbors(embankment, markerIndex)
                 },
                 {
-                    label: "Srovnat všechny vrcholy na tuto výšku (řez)",
+                    label: i18n.t("zbysek.embankment.contextMenu.levelAllVerticesTo"),
                     action: () => this.levelAllVerticesTo(embankment, markerIndex)
                 },
-                { label: "Zadat výšku vybraného vrcholu…", action: () => this.openVertexHeightInput(embankment, markerIndex) }
+                {
+                    label: i18n.t("zbysek.embankment.contextMenu.setVertexHeight"),
+                    action: () => this.openVertexHeightInput(embankment, markerIndex)
+                }
             );
         } else if (embankment.heightLock !== null) {
-            items.push({ label: "Vypnout držení výšky", action: () => embankment.applyHeightLock(null) });
+            items.push({
+                label: i18n.t("zbysek.embankment.contextMenu.releaseHeightHold"),
+                action: () => embankment.applyHeightLock(null)
+            });
         }
-        items.push({ label: "Přepočítat objem", action: () => this.recompute(embankment) });
+        items.push({ label: i18n.t("zbysek.embankment.contextMenu.recomputeVolume"), action: () => this.recompute(embankment) });
         if (typeof this.onRequestEdit === "function" && options.includeEdit !== false) {
-            items.push({ label: "Upravit…", action: () => this.onRequestEdit(embankment) });
+            items.push({ label: i18n.t("zbysek.embankment.contextMenu.edit"), action: () => this.onRequestEdit(embankment) });
         }
         if (options.includeDelete !== false) {
             items.push({
-                label: embankment.mode === "pile" ? "Smazat haldu" : "Smazat násep",
+                label: embankment.mode === "pile"
+                    ? i18n.t("zbysek.embankment.contextMenu.deletePile")
+                    : i18n.t("zbysek.embankment.contextMenu.deleteEmbankment"),
                 action: () => this.requestDelete(embankment)
             });
         }
@@ -653,7 +664,7 @@ export class EmbankmentTool extends EventDispatcher {
         const current = embankment.controlPoints[index];
         this.requestNumber({
             kind: "vertexHeight",
-            label: "Výška vrcholu (m n. m.):",
+            label: i18n.t("zbysek.embankment.vertexHeightLabel"),
             value: current.z.toFixed(2),
             min: null,
             max: null

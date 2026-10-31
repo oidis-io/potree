@@ -92,7 +92,7 @@ export function encodeSurfaceGrid(surface, maxCells = DEFAULT_MAX_STORED_CELLS) 
         scale /= 10;
     }
     if ((maxZ - minZ) * scale > MAX_VALUE) {
-        throw new Error("Rozsah výšek povrchu je mimo rozsah ukládaného formátu.");
+        throw new Error("The surface height range is outside the stored format's range.");
     }
 
     const values = new Int16Array(source.cols * source.rows);
@@ -124,7 +124,7 @@ export function decodeSurfaceGrid(payload) {
     }
     const parts = payload.split("|");
     if (parts.length !== 9 || parts[0] !== FORMAT) {
-        throw new Error("Uložený povrch má neplatný formát.");
+        throw new Error("The stored surface has an invalid format.");
     }
     const originX = Number(parts[1]);
     const originY = Number(parts[2]);
@@ -136,12 +136,12 @@ export function decodeSurfaceGrid(payload) {
     if (!Number.isFinite(originX) || !Number.isFinite(originY) || !(cellSize > 0) ||
         !Number.isInteger(cols) || cols <= 0 || !Number.isInteger(rows) || rows <= 0 ||
         !(scale > 0) || !Number.isFinite(baseZ)) {
-        throw new Error("Uložený povrch má neplatnou hlavičku.");
+        throw new Error("The stored surface has an invalid header.");
     }
 
     const values = fromBase64(parts[8]);
     if (values.length !== cols * rows) {
-        throw new Error("Uložený povrch má neplatnou velikost dat.");
+        throw new Error("The stored surface has an invalid data size.");
     }
     const surfaceZ = new Float64Array(values.length).fill(NaN);
     const weights = new Float64Array(values.length);
