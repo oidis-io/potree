@@ -1,7 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
- * Copyright 2025 Oidis
+ * Copyright 2025-2026 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -12,6 +12,8 @@
 const path = require("path");
 const fs = require("fs");
 const exec = require("child_process").exec;
+const https = require("https");
+const { pipeline } = require("stream");
 const gulp = require("gulp");
 const fsp = fs.promises;
 const concat = require("gulp-concat");
@@ -130,6 +132,87 @@ gulp.task("archive", async () => {
     return archive.finalize();
 });
 
+const mapProxyPath = "/api/mapProxy";
+const mapProxyAllowedHosts = ["geoportal.cuzk.cz", "ags.cuzk.gov.cz", "services.cuzk.gov.cz"];
+const mapProxyRedirectStatuses = [301, 302, 303, 307, 308];
+const mapProxyMaximumRedirects = 5;
+const mapProxyTimeoutMilliseconds = 30000;
+
+function isAllowedMapProxyTarget(targetUrl) {
+    try {
+        const parsedUrl = new URL(targetUrl);
+        return parsedUrl.protocol === "https:" && mapProxyAllowedHosts.includes(parsedUrl.hostname);
+    } catch (error) {
+        return false;
+    }
+}
+
+function sendMapProxyError(response, status, message) {
+    if (response.headersSent || response.destroyed) {
+        return;
+    }
+    response.writeHead(status, { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" });
+    response.end(message);
+}
+
+function forwardMapTile(targetUrl, redirectCount, response) {
+    if (!isAllowedMapProxyTarget(targetUrl)) {
+        sendMapProxyError(response, 403, "Disallowed map proxy target");
+        return;
+    }
+    if (redirectCount > mapProxyMaximumRedirects) {
+        sendMapProxyError(response, 404, "Too many map proxy redirects");
+        return;
+    }
+    const upstreamRequest = https.get(targetUrl, { timeout: mapProxyTimeoutMilliseconds }, (upstreamResponse) => {
+        const status = upstreamResponse.statusCode;
+        const location = upstreamResponse.headers.location;
+        if (mapProxyRedirectStatuses.includes(status) && location) {
+            upstreamResponse.resume();
+            forwardMapTile(new URL(location, targetUrl).toString(), redirectCount + 1, response);
+            return;
+        }
+        if (status !== 200) {
+            upstreamResponse.resume();
+            sendMapProxyError(response, 404, `Upstream map request returned ${status}`);
+            return;
+        }
+        if (response.headersSent || response.destroyed) {
+            upstreamRequest.destroy();
+            return;
+        }
+        response.writeHead(200, {
+            "Content-Type": upstreamResponse.headers["content-type"] ?? "image/png",
+            "Cache-Control": "public, max-age=86400"
+        });
+        pipeline(upstreamResponse, response, () => {});
+    });
+    upstreamRequest.on("timeout", () => {
+        upstreamRequest.destroy(new Error("Map proxy request timed out"));
+    });
+    upstreamRequest.on("error", () => {
+        sendMapProxyError(response, 502, "Map proxy request error");
+    });
+    response.on("close", () => {
+        if (!response.writableFinished) {
+            upstreamRequest.destroy();
+        }
+    });
+}
+
+function mapProxyMiddleware(request, response, next) {
+    if (request.url.split("?")[0] !== mapProxyPath) {
+        next();
+        return;
+    }
+    if (request.method !== "GET") {
+        sendMapProxyError(response, 405, "Method not allowed");
+        return;
+    }
+    const requestUrl = new URL(request.url, "http://localhost");
+    forwardMapTile(requestUrl.searchParams.get("url"), 0, response);
+}
+
 gulp.task("webserver", gulp.series(async function () {
     connect.server({
         root: ".",
@@ -145,7 +228,8 @@ gulp.task("webserver", gulp.series(async function () {
                     } else {
                         next();
                     }
-                }
+                },
+                mapProxyMiddleware
             ];
         }
     });
