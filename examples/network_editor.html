@@ -84,6 +84,17 @@
             color: #aab4be;
             font-size: 11px;
         }
+        .network-editor-active {
+            outline: 2px solid #ffcc66;
+        }
+        .network-editor-field {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .network-editor-field input[type=text] {
+            flex: 1;
+        }
     </style>
 </head>
 
@@ -157,6 +168,28 @@
         const mapPlane = new Potree.NetworkEditor.MapPlane(viewer);
         const dtmOverlay = new Potree.NetworkEditor.DtmOverlay(viewer, mapPlane);
         const dtmInfoTool = new Potree.NetworkEditor.DtmInfoTool(viewer, mapPlane, dtmOverlay);
+        const cadDocument = new Potree.NetworkEditor.CadDocument();
+        const cadView = new Potree.NetworkEditor.CadView(viewer, cadDocument);
+        const cadTool = new Potree.NetworkEditor.CadTool(viewer, mapPlane, cadDocument, cadView);
+
+        const drawingIdleHint = "Vyber typ prvku a klikej do mapy. Tažením myši otáčíš a posouváš pohled.";
+        const drawingTypes = [
+            {
+                featureType: Potree.NetworkEditor.CadFeatureType.POINT,
+                title: "Bod",
+                hint: "Každým kliknutím vložíš bod. Esc kreslení ukončí."
+            },
+            {
+                featureType: Potree.NetworkEditor.CadFeatureType.POLYLINE,
+                title: "Linie",
+                hint: "Kliknutím přidáš vrchol, Backspace vrátí poslední, Esc linii dokončí."
+            },
+            {
+                featureType: Potree.NetworkEditor.CadFeatureType.POLYGON,
+                title: "Polygon",
+                hint: "Kliknutím přidáš vrchol, Backspace vrátí poslední, Esc polygon uzavře."
+            }
+        ];
 
         const infoPanel = $("#network_info_panel");
         const infoPanelBody = infoPanel.find(".network-info-body");
@@ -282,6 +315,52 @@
             return button;
         }
 
+        function createDrawingButtonsItem() {
+            const item = $("<li></li>");
+            for (const drawingType of drawingTypes) {
+                const button = $("<input type=\"button\">").val(drawingType.title);
+                button.on("click", () => {
+                    if (cadTool.drawingType === drawingType.featureType) {
+                        cadTool.finishDrawing();
+                    } else {
+                        cadTool.startDrawing(drawingType.featureType);
+                    }
+                });
+                cadTool.addEventListener("drawing_changed", (event) => {
+                    button.toggleClass("network-editor-active", event.drawingType === drawingType.featureType);
+                });
+                item.append(button);
+            }
+            return item;
+        }
+
+        function createStyleItems() {
+            const labelInput = $("<input type=\"text\" id=\"network_editor_label\" placeholder=\"např. Kabel NN\">")
+                .on("input", (event) => cadTool.setStyle({ label: event.target.value }));
+            const colorInput = $("<input type=\"color\" id=\"network_editor_color\">")
+                .val(cadTool.style.color)
+                .on("input", (event) => cadTool.setStyle({ color: event.target.value }));
+            return [
+                $("<li class=\"network-editor-field\"></li>").append($("<label for=\"network_editor_label\">Popisek</label>"), labelInput),
+                $("<li class=\"network-editor-field\"></li>").append($("<label for=\"network_editor_color\">Barva</label>"), colorInput)
+            ];
+        }
+
+        function createDrawingHintItem() {
+            const hint = $("<li class=\"network-editor-note\"></li>").text(drawingIdleHint);
+            cadTool.addEventListener("drawing_changed", (event) => {
+                const activeDrawingType = drawingTypes.find((drawingType) => drawingType.featureType === event.drawingType);
+                hint.text(activeDrawingType ? activeDrawingType.hint : drawingIdleHint);
+            });
+            return hint;
+        }
+
+        function createFeatureCountItem() {
+            const featureCount = $("<li class=\"network-editor-note\"></li>").text("Nakreslené prvky: 0");
+            cadDocument.addEventListener("feature_added", () => featureCount.text(`Nakreslené prvky: ${cadDocument.features.length}`));
+            return featureCount;
+        }
+
         function addNetworkEditorSection() {
             const header = $("<h3 id=\"menu_network_editor\"><span>Síťový editor</span></h3>");
             const list = $("<ul class=\"pv-menu-list\"></ul>").append(
@@ -290,6 +369,11 @@
                 createCheckboxItem("network_editor_point_cloud", "Mračno bodů", true, setPointCloudsVisible),
                 createDtmLayerItem(),
                 $("<li class=\"network-editor-note\"></li>").text("DTM: ČÚZK – IS DMVS, přibližný zákres, pouze orientačně."),
+                $("<div class=\"divider\"><span>Kreslení</span></div>"),
+                createDrawingButtonsItem(),
+                ...createStyleItems(),
+                createDrawingHintItem(),
+                createFeatureCountItem(),
                 $("<div class=\"divider\"><span>Nástroje</span></div>"),
                 $("<li></li>").append(createInfoToolButton())
             );

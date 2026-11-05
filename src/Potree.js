@@ -53,6 +53,10 @@ import { ShapefileLoader } from "./loader/ShapefileLoader.js";
 import { MapPlane } from "./modules/NetworkEditor/MapPlane.js";
 import { DtmOverlay } from "./modules/NetworkEditor/DtmOverlay.js";
 import { DtmInfoTool } from "./modules/NetworkEditor/DtmInfoTool.js";
+import { CadFeature, CadFeatureType } from "./modules/NetworkEditor/CadFeature.js";
+import { CadDocument } from "./modules/NetworkEditor/CadDocument.js";
+import { CadView } from "./modules/NetworkEditor/CadView.js";
+import { CadTool } from "./modules/NetworkEditor/CadTool.js";
 
 const Potree = {
     OrbitControls,
@@ -92,7 +96,7 @@ const Potree = {
     Embankment,
     EmbankmentTool,
     EmbankmentConfig: { DEFAULTS: EMBANKMENT_DEFAULTS },
-    NetworkEditor: { MapPlane, DtmOverlay, DtmInfoTool },
+    NetworkEditor: { MapPlane, DtmOverlay, DtmInfoTool, CadFeature, CadFeatureType, CadDocument, CadView, CadTool },
     pointBudget: PotreeConfig.pointBudget,
     framenumber: PotreeConfig.framenumber,
     numNodesLoading: PotreeConfig.numNodesLoading,
