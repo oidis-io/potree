@@ -1,7 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
- * Copyright 2025 Oidis
+ * Copyright 2025-2026 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -50,6 +50,9 @@ import { AnimationPath } from "./AnimationPath.js";
 import { CameraAnimation } from "./modules/CameraAnimation/CameraAnimation.js";
 import { SpotLightHelper } from "./utils/SpotLightHelper.js";
 import { ShapefileLoader } from "./loader/ShapefileLoader.js";
+import { MapPlane } from "./modules/NetworkEditor/MapPlane.js";
+import { DtmOverlay } from "./modules/NetworkEditor/DtmOverlay.js";
+import { DtmInfoTool } from "./modules/NetworkEditor/DtmInfoTool.js";
 
 const Potree = {
     OrbitControls,
@@ -89,6 +92,7 @@ const Potree = {
     Embankment,
     EmbankmentTool,
     EmbankmentConfig: { DEFAULTS: EMBANKMENT_DEFAULTS },
+    NetworkEditor: { MapPlane, DtmOverlay, DtmInfoTool },
     pointBudget: PotreeConfig.pointBudget,
     framenumber: PotreeConfig.framenumber,
     numNodesLoading: PotreeConfig.numNodesLoading,

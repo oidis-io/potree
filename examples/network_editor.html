@@ -20,6 +20,71 @@
     <link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
     <link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
     <link rel="stylesheet" type="text/css" href="../libs/Cesium/Widgets/CesiumWidget/CesiumWidget.css">
+    <style>
+        #network_info_panel {
+            display: none;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 10000;
+            width: 340px;
+            max-height: calc(100% - 40px);
+            overflow-y: auto;
+            padding: 10px 12px;
+            border-radius: 4px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #ffffff;
+            font: 12px/1.4 Arial, sans-serif;
+        }
+        #network_info_panel .network-info-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+        #network_info_panel .network-info-close {
+            border: none;
+            background: none;
+            color: #ffffff;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #network_info_panel .network-info-feature {
+            padding: 6px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        #network_info_panel .network-info-title {
+            margin-bottom: 2px;
+            color: #ffcc66;
+            font-weight: bold;
+        }
+        #network_info_panel table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        #network_info_panel td {
+            padding: 1px 4px 1px 0;
+            vertical-align: top;
+        }
+        #network_info_panel td:first-child {
+            width: 45%;
+            color: #aab4be;
+        }
+        #network_info_panel .network-info-footer {
+            margin-top: 6px;
+            color: #aab4be;
+            font-size: 11px;
+        }
+        .network-editor-status {
+            margin-left: 4px;
+            color: #aab4be;
+        }
+        .network-editor-note {
+            color: #aab4be;
+            font-size: 11px;
+        }
+    </style>
 </head>
 
 <body>
@@ -45,6 +110,15 @@
         <div id="potree_sidebar_container"></div>
     </div>
 
+    <div id="network_info_panel">
+        <div class="network-info-header">
+            <span>Info o síti</span>
+            <button class="network-info-close" type="button" title="Zavřít">×</button>
+        </div>
+        <div class="network-info-body"></div>
+        <div class="network-info-footer">Zdroj: ČÚZK – IS DMVS (DTM krajů). Přibližný zákres, pouze orientačně.</div>
+    </div>
+
     <script type="module">
         const defaultDatasetName = "litovel";
         const requestedDatasetName = new URLSearchParams(window.location.search).get("data") ?? "";
@@ -56,6 +130,21 @@
             target: [-558516, -1108324, 250]
         };
 
+        const dtmPropertyLabels = {
+            nazevvlastnika: "Vlastník",
+            nazevspravce: "Správce",
+            nazevprovozovatele: "Provozovatel",
+            urovenumisteniobjektuti: "Úroveň umístění",
+            tridapresnostipoloha: "Třída přesnosti polohy",
+            tridapresnostivyska: "Třída přesnosti výšky",
+            zpusobporizeniti: "Způsob pořízení",
+            maximalninapetovahladina: "Napěťová hladina",
+            doplnek: "Doplněk",
+            datumvkladu: "Datum vkladu",
+            datumzmeny: "Datum změny",
+            neuplnadata: "Neúplná data"
+        };
+
         const viewer = new Potree.Viewer(document.getElementById("potree_render_area"), {
             cesiumRenderArea: document.getElementById("cesiumContainer")
         });
@@ -65,6 +154,14 @@
         viewer.setPointBudget(2_000_000);
         viewer.setBackground(null);
 
+        const mapPlane = new Potree.NetworkEditor.MapPlane(viewer);
+        const dtmOverlay = new Potree.NetworkEditor.DtmOverlay(viewer, mapPlane);
+        const dtmInfoTool = new Potree.NetworkEditor.DtmInfoTool(viewer, mapPlane, dtmOverlay);
+
+        const infoPanel = $("#network_info_panel");
+        const infoPanelBody = infoPanel.find(".network-info-body");
+        let isInfoPromptShown = false;
+
         function loadPointCloud(name) {
             return new Promise((resolve) => {
                 Potree.loadPointCloud(`./data/${name}/ept/ept.json`, name, (event) => resolve(event.pointcloud));
@@ -73,11 +170,20 @@
 
         function addPointCloud(pointCloud) {
             const material = pointCloud.material;
+            const pointCloudCheckbox = $("#network_editor_point_cloud");
             material.activeAttributeName = "rgba";
             material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
             material.size = 1;
+            pointCloud.visible = pointCloudCheckbox.prop("checked");
+            pointCloud.addEventListener("visibility_changed", () => pointCloudCheckbox.prop("checked", pointCloud.visible));
             viewer.scene.addPointCloud(pointCloud);
             viewer.fitToScreen();
+        }
+
+        function setPointCloudsVisible(visible) {
+            for (const pointCloud of viewer.scene.pointclouds) {
+                pointCloud.visible = visible;
+            }
         }
 
         function showOrthophotoMap() {
@@ -86,21 +192,120 @@
             $("#show_cesium_map_provider input[value=orto]").prop("checked", true).trigger("change");
         }
 
+        function formatPropertyValue(value) {
+            if (typeof value === "boolean") {
+                return value ? "ano" : "ne";
+            }
+            return String(value);
+        }
+
+        function createFeatureElement(properties) {
+            const title = $("<div class=\"network-info-title\"></div>").text(properties.objektovytypnazev ?? "Objekt DTM");
+            const table = $("<table></table>");
+            for (const [key, label] of Object.entries(dtmPropertyLabels)) {
+                const value = properties[key];
+                if (value === null || value === undefined || value === "") {
+                    continue;
+                }
+                table.append($("<tr></tr>").append($("<td></td>").text(label), $("<td></td>").text(formatPropertyValue(value))));
+            }
+            return $("<div class=\"network-info-feature\"></div>").append(title, table);
+        }
+
+        function showInfoMessage(message) {
+            infoPanelBody.empty().append($("<div></div>").text(message));
+            infoPanel.show();
+        }
+
+        function showInfoResult(result) {
+            if (result.features.length === 0) {
+                showInfoMessage("V místě kliknutí není žádná síť.");
+                return;
+            }
+            infoPanelBody.empty();
+            if (result.region) {
+                infoPanelBody.append($("<div class=\"network-editor-note\"></div>").text(`DTM: ${result.region}`));
+            }
+            for (const properties of result.features) {
+                infoPanelBody.append(createFeatureElement(properties));
+            }
+            infoPanel.show();
+        }
+
+        function closeInfoPanel() {
+            isInfoPromptShown = false;
+            infoPanel.hide();
+            dtmInfoTool.clearMarker();
+        }
+
         function createBookmarkButton(bookmark) {
             return $("<input type=\"button\">")
                 .val(bookmark.title)
                 .on("click", () => viewer.scene.view.setView(bookmark.position, bookmark.target, 1000));
         }
 
+        function createCheckboxItem(identifier, text, checked, onChange) {
+            const checkbox = $("<input type=\"checkbox\">")
+                .attr("id", identifier)
+                .prop("checked", checked)
+                .on("change", (event) => onChange(event.target.checked));
+            const label = $("<label></label>").attr("for", identifier).text(text);
+            return $("<li></li>").append(checkbox, label);
+        }
+
+        function createDtmLayerItem() {
+            const status = $("<span class=\"network-editor-status\"></span>");
+            dtmOverlay.addEventListener("loading_changed", (event) => status.text(event.loading ? "načítám…" : ""));
+            dtmOverlay.addEventListener("load_failed", () => status.text("nepodařilo se načíst"));
+            return createCheckboxItem("network_editor_dtm", "DTM – technická infrastruktura", true, (checked) => dtmOverlay.setVisible(checked))
+                .append(status);
+        }
+
+        function createInfoToolButton() {
+            const button = $("<input type=\"button\">").val("Info o síti");
+            button.on("click", () => {
+                if (dtmInfoTool.active) {
+                    dtmInfoTool.deactivate();
+                } else {
+                    dtmInfoTool.activate();
+                }
+            });
+            dtmInfoTool.addEventListener("activation_changed", (event) => {
+                button.val(event.active ? "Info o síti: zapnuto (Esc vypne)" : "Info o síti");
+                if (event.active) {
+                    showInfoMessage("Klikni na síť v mapě.");
+                    isInfoPromptShown = true;
+                } else if (isInfoPromptShown) {
+                    closeInfoPanel();
+                }
+            });
+            return button;
+        }
+
         function addNetworkEditorSection() {
             const header = $("<h3 id=\"menu_network_editor\"><span>Síťový editor</span></h3>");
-            const list = $("<ul class=\"pv-menu-list\"></ul>");
-            list.append($("<li></li>").append(createBookmarkButton(litovelCentreBookmark)));
+            const list = $("<ul class=\"pv-menu-list\"></ul>").append(
+                $("<li></li>").append(createBookmarkButton(litovelCentreBookmark)),
+                $("<div class=\"divider\"><span>Vrstvy</span></div>"),
+                createCheckboxItem("network_editor_point_cloud", "Mračno bodů", true, setPointCloudsVisible),
+                createDtmLayerItem(),
+                $("<li class=\"network-editor-note\"></li>").text("DTM: ČÚZK – IS DMVS, přibližný zákres, pouze orientačně."),
+                $("<div class=\"divider\"><span>Nástroje</span></div>"),
+                $("<li></li>").append(createInfoToolButton())
+            );
             const content = $("<div></div>").append(list);
             header.on("click", () => content.slideToggle());
             header.insertBefore($("#menu_about"));
             content.insertBefore($("#menu_about"));
         }
+
+        infoPanel.find(".network-info-close").on("click", closeInfoPanel);
+        dtmInfoTool.addEventListener("query_started", () => {
+            isInfoPromptShown = false;
+            showInfoMessage("Načítám informace o síti…");
+        });
+        dtmInfoTool.addEventListener("query_finished", (event) => showInfoResult(event.result));
+        dtmInfoTool.addEventListener("query_failed", () => showInfoMessage("Dotaz na DTM se nezdařil."));
 
         const pointCloudLoaded = loadPointCloud(datasetName);
         await viewer.loadGUI();
@@ -110,6 +315,7 @@
         addNetworkEditorSection();
         addPointCloud(await pointCloudLoaded);
         showOrthophotoMap();
+        dtmOverlay.setVisible($("#network_editor_dtm").prop("checked"));
     </script>
 </body>
 </html>
