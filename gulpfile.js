@@ -335,7 +335,7 @@ gulp.task("build",
         async () => {
             gulp.src(paths.html).pipe(gulp.dest("build/potree"));
 
-            gulp.src(paths.resources).pipe(gulp.dest("build/potree/resources"));
+            gulp.src(paths.resources, { encoding: false }).pipe(gulp.dest("build/potree/resources"));
 
             gulp.src(["LICENSE"]).pipe(gulp.dest("build/potree"));
         }
