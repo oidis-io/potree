@@ -216,6 +216,13 @@
         cadView.setDimensionFormatter((dimension) => formatDimension(dimension));
         cadDocument.addLayer("Vrstva 1");
 
+        const maximumLasPointCount = 20000000;
+        const lasErrorMessages = {
+            [Potree.NetworkEditor.LasReadErrorCode.NOT_LAS]: "Soubor není mračno ve formátu LAS.",
+            [Potree.NetworkEditor.LasReadErrorCode.COMPRESSED]: "Komprimovaný LAZ zatím neumíme načíst, použij nekomprimovaný LAS.",
+            [Potree.NetworkEditor.LasReadErrorCode.UNSUPPORTED_FORMAT]: "Tento formát bodů v LAS neumíme načíst.",
+            [Potree.NetworkEditor.LasReadErrorCode.EMPTY]: "Soubor neobsahuje body, nebo je poškozený."
+        };
         const maximumDrawingFileBytes = 20 * 1024 * 1024;
         const drawingFileErrorMessages = {
             [Potree.NetworkEditor.CadFileErrorCode.TOO_LARGE]: "Soubor je příliš velký (max. 20 MB).",
@@ -394,6 +401,75 @@
             return $("<input type=\"button\">")
                 .val("Zobrazit mračno")
                 .on("click", () => viewer.fitToScreen(1, 1000));
+        }
+
+        function showPointCloudStatus(text) {
+            $("#network_editor_point_cloud_status").text(text);
+        }
+
+        function describeLasProgress(progress) {
+            const percent = Math.round(progress.share * 100);
+            return progress.stage === Potree.NetworkEditor.LasLoadStage.READING ? `Čtu soubor… ${percent} %` : `Stavím mračno… ${percent} %`;
+        }
+
+        function disposePointCloud(pointCloud) {
+            const pendingNodes = [pointCloud.pcoGeometry.root];
+            while (pendingNodes.length > 0) {
+                const node = pendingNodes.pop();
+                node.geometry?.dispose();
+                pendingNodes.push(...Object.values(node.children ?? {}).filter(Boolean));
+            }
+        }
+
+        function looksLikeKrovakCoordinates(origin) {
+            return origin[0] < -300000 && origin[0] > -950000 && origin[1] < -900000 && origin[1] > -1350000;
+        }
+
+        function replacePointCloud(pointCloud) {
+            for (const previousPointCloud of [...viewer.scene.pointclouds]) {
+                viewer.scene.removePointCloud(previousPointCloud);
+                disposePointCloud(previousPointCloud);
+            }
+            addPointCloud(pointCloud);
+            startTerrainHeightSampler(pointCloud);
+        }
+
+        async function openLasFile(file) {
+            showPointCloudStatus(describeLasProgress({ stage: Potree.NetworkEditor.LasLoadStage.READING, share: 0 }));
+            let result;
+            try {
+                result = await Potree.NetworkEditor.loadLasPointCloud(file, maximumLasPointCount, (progress) => showPointCloudStatus(describeLasProgress(progress)));
+            } catch (error) {
+                showPointCloudStatus(lasErrorMessages[error.code] ?? "Mračno se nepodařilo načíst.");
+                return;
+            }
+            result.pointCloud.setName(file.name);
+            replacePointCloud(result.pointCloud);
+            if (!result.hasColors) {
+                result.pointCloud.material.activeAttributeName = "elevation";
+            }
+            const thinnedText = result.pointCount < result.sourcePointCount ? `, zředěno z ${formatNumber(result.sourcePointCount, 0)}` : "";
+            const coordinateText = looksLikeKrovakCoordinates(result.origin) ? "" : " Souřadnice nevypadají jako S-JTSK (EPSG:5514), mapa, DTM a katastr nemusí sedět.";
+            showPointCloudStatus(`Načteno: ${file.name}, bodů ${formatNumber(result.pointCount, 0)}${thinnedText}.${coordinateText}`);
+        }
+
+        function createPointCloudItems() {
+            const fileInput = $("<input type=\"file\" accept=\".las,.laz\" hidden>")
+                .on("change", (event) => {
+                    const file = event.target.files[0];
+                    event.target.value = "";
+                    if (file) {
+                        openLasFile(file);
+                    }
+                });
+            const openButton = $("<input type=\"button\">")
+                .val("Otevřít mračno (LAS)")
+                .on("click", () => fileInput[0].click());
+            return [
+                $("<li></li>").append(createShowPointCloudButton(), openButton, createBookmarkButton(litovelCentreBookmark), fileInput),
+                $("<li class=\"network-editor-note\" id=\"network_editor_point_cloud_status\"></li>")
+                    .text("Vlastní mračno: nekomprimovaný LAS v S-JTSK (EPSG:5514). Převede se v prohlížeči, nic se neodesílá.")
+            ];
         }
 
         function createCheckboxItem(identifier, text, checked, onChange) {
@@ -941,7 +1017,7 @@
         function addNetworkEditorSection() {
             const header = $("<h3 id=\"menu_network_editor\"><span>Síťový editor</span></h3>");
             const list = $("<ul class=\"pv-menu-list\"></ul>").append(
-                $("<li></li>").append(createShowPointCloudButton(), createBookmarkButton(litovelCentreBookmark)),
+                ...createPointCloudItems(),
                 $("<div class=\"divider\"><span>Vrstvy</span></div>"),
                 createCheckboxItem("network_editor_point_cloud", "Mračno bodů", true, setPointCloudsVisible),
                 createDtmLayerItem(),

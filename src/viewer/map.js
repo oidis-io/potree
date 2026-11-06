@@ -1,7 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
- * Copyright 2025 Oidis
+ * Copyright 2025-2026 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -672,7 +672,7 @@ export class MapView {
             constrainResolution: false
         });
 
-        if (pointcloud.pcoGeometry.type == "ept") {
+        if (pointcloud.pcoGeometry.type == "ept" || !pointcloud.pcoGeometry.url) {
             return;
         }
 

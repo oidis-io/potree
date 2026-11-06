@@ -22,7 +22,7 @@ export class MapPlane {
 
     get height() {
         const firstPointCloud = this.viewer.scene.pointclouds[0];
-        const centerHeight = firstPointCloud?.boundingSphere?.center?.z;
+        const centerHeight = (firstPointCloud?.boundingSphere?.center?.z ?? NaN) + (firstPointCloud?.position.z ?? 0);
         return Number.isFinite(centerHeight) ? centerHeight - MAP_PLANE_OFFSET : 0;
     }
 
