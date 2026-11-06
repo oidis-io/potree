@@ -69,6 +69,17 @@
 			"webglContextLostHint": "Demasiados separadores abertos com o editor 3D",
 			"restoreView": "Restaurar vista",
 			"restoringView": "A restaurar a vista 3D..."
+		},
+		"navigationCube": {
+			"top": "TOPO",
+			"bottom": "BAIXO",
+			"front": "FRENTE",
+			"back": "TRÁS",
+			"left": "ESQUERDA",
+			"right": "DIREITA"
+		},
+		"measure": {
+			"circumference": "perímetro"
 		}
 	}
 }

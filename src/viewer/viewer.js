@@ -1455,8 +1455,10 @@ export class Viewer extends EventDispatcher {
     }
 
     setLanguage(lang) {
-        i18n.setLng(lang);
-        $("body").i18n();
+        i18n.setLng(lang, () => {
+            $("body").i18n();
+            this.navigationCube?.refreshLabels();
+        });
     }
 
     setServer(server) {

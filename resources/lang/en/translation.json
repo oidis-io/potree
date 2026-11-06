@@ -173,6 +173,17 @@
 			"webglContextLostHint": "Too many open tabs with the 3D editor",
 			"restoreView": "Restore view",
 			"restoringView": "Restoring 3D view..."
+		},
+		"navigationCube": {
+			"top": "TOP",
+			"bottom": "BOTTOM",
+			"front": "FRONT",
+			"back": "BACK",
+			"left": "LEFT",
+			"right": "RIGHT"
+		},
+		"measure": {
+			"circumference": "circumference"
 		}
 	}
 }

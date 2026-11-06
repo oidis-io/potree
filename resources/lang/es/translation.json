@@ -157,6 +157,17 @@
 			"webglContextLostHint": "Demasiadas pestañas abiertas con el editor 3D",
 			"restoreView": "Restaurar vista",
 			"restoringView": "Restaurando la vista 3D..."
+		},
+		"navigationCube": {
+			"top": "ARRIBA",
+			"bottom": "ABAJO",
+			"front": "FRENTE",
+			"back": "ATRÁS",
+			"left": "IZQUIERDA",
+			"right": "DERECHA"
+		},
+		"measure": {
+			"circumference": "perímetro"
 		}
 	}
 }

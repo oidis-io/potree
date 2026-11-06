@@ -13,6 +13,7 @@ import * as THREE from "../../libs/three.js/build/three.module.js";
 import { BoxVolume, Volume } from "./Volume.js";
 import { Utils } from "../utils.js";
 import { EventDispatcher } from "../EventDispatcher.js";
+import { formatNumber } from "./LocaleFormat.js";
 
 export class VolumeTool extends EventDispatcher {
     constructor(viewer) {
@@ -155,7 +156,7 @@ export class VolumeTool extends EventDispatcher {
 
             let calculatedVolume = volume.getVolume();
             calculatedVolume = calculatedVolume / Math.pow(this.viewer.lengthUnit.unitspermeter, 3) * Math.pow(this.viewer.lengthUnitDisplay.unitspermeter, 3);  // convert to cubic meters then to the cubic display unit
-            let text = Utils.addCommas(calculatedVolume.toFixed(3)) + " " + this.viewer.lengthUnitDisplay.code + "\u00B3";
+            let text = formatNumber(calculatedVolume, 3) + " " + this.viewer.lengthUnitDisplay.code + "\u00B3";
             label.setText(text);
         }
     }

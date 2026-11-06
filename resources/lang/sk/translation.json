@@ -69,6 +69,17 @@
 			"webglContextLostHint": "Príliš veľa otvorených kariet s 3D editorom",
 			"restoreView": "Obnoviť zobrazenie",
 			"restoringView": "Obnovuje sa 3D pohľad..."
+		},
+		"navigationCube": {
+			"top": "HORE",
+			"bottom": "DOLE",
+			"front": "VPREDU",
+			"back": "VZADU",
+			"left": "VĽAVO",
+			"right": "VPRAVO"
+		},
+		"measure": {
+			"circumference": "obvod"
 		}
 	}
 }

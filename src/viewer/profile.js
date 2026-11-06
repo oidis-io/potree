@@ -22,6 +22,7 @@ import { PointCloudMaterial } from "../materials/PointCloudMaterial.js";
 import { PointSizeType } from "../defines.js";
 import PotreeConfig from "../PotreeConfig.js";
 import { ProfileMeasurementOverlay } from "./ProfileMeasurementOverlay.js";
+import { formatNumber } from "../utils/LocaleFormat.js";
 
 function copyMaterial(source, target) {
     for (let name of Object.keys(target.uniforms)) {
@@ -1017,7 +1018,7 @@ export class ProfileWindow extends ProfileControl {
                         }
 
                         if (attributeName === "position") {
-                            let values = [...position].map(v => Utils.addCommas(v.toFixed(3)));
+                            let values = [...position].map(v => formatNumber(v, 3));
                             html += `
                                 <tr>
                                     <td>x</td>

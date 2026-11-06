@@ -69,6 +69,17 @@
 			"webglContextLostHint": "Za dużo otwartych kart z edytorem 3D",
 			"restoreView": "Przywróć widok",
 			"restoringView": "Przywracanie widoku 3D..."
+		},
+		"navigationCube": {
+			"top": "GÓRA",
+			"bottom": "DÓŁ",
+			"front": "PRZÓD",
+			"back": "TYŁ",
+			"left": "LEWO",
+			"right": "PRAWO"
+		},
+		"measure": {
+			"circumference": "obwód"
 		}
 	}
 }
