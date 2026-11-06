@@ -30,6 +30,8 @@ export const MINIMUM_POINT_COUNTS = Object.freeze({
 
 const MARKER_RADIUS_PIXELS = 6;
 const SELECTED_MARKER_RADIUS_PIXELS = 9;
+const SELECTED_VERTEX_RADIUS_PIXELS = 11;
+const SELECTED_VERTEX_COLOR = 0xffffff;
 const LABEL_SCALE_PIXELS = 60;
 const LABEL_FONT_SIZE = 24;
 const LINE_WIDTH_PIXELS = 3;
@@ -51,10 +53,17 @@ export class CadFeature extends THREE.Object3D {
         this.points = [];
         this.isDrawing = false;
         this.isSelected = false;
+        this.selectedVertexIndex = null;
         this.trailingPoint = null;
 
         this.markerGeometry = new THREE.SphereGeometry(1, 12, 12);
         this.markerMaterial = new THREE.MeshBasicMaterial({ color: this.color, transparent: true, depthTest: false, depthWrite: false });
+        this.selectedVertexMaterial = new THREE.MeshBasicMaterial({
+            color: SELECTED_VERTEX_COLOR,
+            transparent: true,
+            depthTest: false,
+            depthWrite: false
+        });
         this.fillMaterial = new THREE.MeshBasicMaterial({
             color: this.color,
             transparent: true,
@@ -104,9 +113,15 @@ export class CadFeature extends THREE.Object3D {
 
     setSelected(isSelected) {
         this.isSelected = isSelected;
+        this.selectedVertexIndex = null;
         this.lineMaterial.linewidth = isSelected ? SELECTED_LINE_WIDTH_PIXELS : LINE_WIDTH_PIXELS;
         this.fillMaterial.opacity = isSelected ? SELECTED_FILL_OPACITY : FILL_OPACITY;
         this.rebuild();
+    }
+
+    setSelectedVertex(index) {
+        this.selectedVertexIndex = index;
+        this.syncMarkers();
     }
 
     addPoint(position) {
@@ -114,9 +129,43 @@ export class CadFeature extends THREE.Object3D {
         this.rebuild();
     }
 
+    setPoints(points) {
+        this.points = points.map((point) => point.clone());
+        this.rebuild();
+    }
+
     setPointAt(index, position) {
         this.points[index].copy(position);
         this.rebuild();
+    }
+
+    insertPointAt(index, position) {
+        this.points.splice(index, 0, position.clone());
+        this.selectedVertexIndex = index;
+        this.rebuild();
+    }
+
+    removePointAt(index) {
+        this.points.splice(index, 1);
+        this.selectedVertexIndex = null;
+        this.rebuild();
+    }
+
+    toData() {
+        return {
+            featureType: this.featureType,
+            label: this.label,
+            color: `#${this.color.getHexString()}`,
+            layerId: this.layerId,
+            points: this.points.map((point) => point.toArray())
+        };
+    }
+
+    static fromData(data) {
+        const feature = new CadFeature(data.featureType, { label: data.label, color: data.color });
+        feature.layerId = data.layerId;
+        feature.setPoints(data.points.map((coordinates) => new THREE.Vector3().fromArray(coordinates)));
+        return feature;
     }
 
     removeLastPoint() {
@@ -180,7 +229,10 @@ export class CadFeature extends THREE.Object3D {
             marker.renderOrder = MARKER_RENDER_ORDER;
             this.markerGroup.add(marker);
         }
-        this.markerGroup.children.forEach((marker, index) => marker.position.copy(this.points[index]));
+        this.markerGroup.children.forEach((marker, index) => {
+            marker.position.copy(this.points[index]);
+            marker.material = index === this.selectedVertexIndex ? this.selectedVertexMaterial : this.markerMaterial;
+        });
     }
 
     computeEdgeSegments() {
@@ -287,9 +339,10 @@ export class CadFeature extends THREE.Object3D {
     updateScreenSize(camera, renderWidth, renderHeight) {
         this.lineMaterial.resolution.set(renderWidth, renderHeight);
         const markerRadius = this.isSelected ? SELECTED_MARKER_RADIUS_PIXELS : MARKER_RADIUS_PIXELS;
-        for (const marker of this.markerGroup.children) {
-            marker.scale.setScalar(markerRadius / this.computePixelsPerMetre(marker.position, camera, renderWidth, renderHeight));
-        }
+        this.markerGroup.children.forEach((marker, index) => {
+            const radius = index === this.selectedVertexIndex ? SELECTED_VERTEX_RADIUS_PIXELS : markerRadius;
+            marker.scale.setScalar(radius / this.computePixelsPerMetre(marker.position, camera, renderWidth, renderHeight));
+        });
         if (this.labelSprite.visible) {
             const labelScale = LABEL_SCALE_PIXELS / this.computePixelsPerMetre(this.labelSprite.position, camera, renderWidth, renderHeight);
             this.labelSprite.scale.setScalar(labelScale);
@@ -307,6 +360,7 @@ export class CadFeature extends THREE.Object3D {
         this.markerGroup.clear();
         this.markerGeometry.dispose();
         this.markerMaterial.dispose();
+        this.selectedVertexMaterial.dispose();
         this.fillMaterial.dispose();
         this.lineMaterial.dispose();
         this.labelSprite.material.map?.dispose();

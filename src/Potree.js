@@ -58,6 +58,7 @@ import { CadDocument } from "./modules/NetworkEditor/CadDocument.js";
 import { CadView } from "./modules/NetworkEditor/CadView.js";
 import { CadTool } from "./modules/NetworkEditor/CadTool.js";
 import { CadEditTool } from "./modules/NetworkEditor/CadEditTool.js";
+import { CadHistory } from "./modules/NetworkEditor/CadHistory.js";
 import { SurfacePicker } from "./modules/NetworkEditor/SurfacePicker.js";
 
 const Potree = {
@@ -108,7 +109,8 @@ const Potree = {
         CadDocument,
         CadView,
         CadTool,
-        CadEditTool
+        CadEditTool,
+        CadHistory
     },
     pointBudget: PotreeConfig.pointBudget,
     framenumber: PotreeConfig.framenumber,

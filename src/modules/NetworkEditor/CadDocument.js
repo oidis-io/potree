@@ -9,6 +9,7 @@
  * ********************************************************************************************************* */
 
 import { EventDispatcher } from "../../EventDispatcher.js";
+import { CadFeature } from "./CadFeature.js";
 
 export class CadDocument extends EventDispatcher {
     constructor() {
@@ -67,5 +68,22 @@ export class CadDocument extends EventDispatcher {
         }
         this.features.splice(index, 1);
         this.dispatchEvent({ type: "feature_removed", feature: feature });
+    }
+
+    toData() {
+        return this.features.map((feature) => feature.toData());
+    }
+
+    loadData(featureData) {
+        for (const feature of [...this.features]) {
+            this.removeFeature(feature);
+            feature.dispose();
+        }
+        for (const data of featureData) {
+            const feature = CadFeature.fromData(data);
+            feature.visible = this.findLayer(feature.layerId)?.visible !== false;
+            this.features.push(feature);
+            this.dispatchEvent({ type: "feature_added", feature: feature });
+        }
     }
 }

@@ -178,12 +178,16 @@
         const cadView = new Potree.NetworkEditor.CadView(viewer, cadDocument);
         const cadTool = new Potree.NetworkEditor.CadTool(viewer, surfacePicker, cadDocument, cadView);
         const cadEditTool = new Potree.NetworkEditor.CadEditTool(viewer, cadDocument, surfacePicker);
+        const cadHistory = new Potree.NetworkEditor.CadHistory(cadDocument);
         cadDocument.addLayer("Vrstva 1");
 
         const drawingIdleHint = "Vyber typ prvku a klikej do mapy. Kliknutím na nakreslený prvek ho vybereš. "
-            + "Tažením myši otáčíš a posouváš pohled.";
-        const selectionHint = "Vybraný prvek: tažením vrcholu ho posuneš, Delete ho smaže, Esc zruší výběr. "
+            + "Tažením myši otáčíš a posouváš pohled. Ctrl+Z vrátí poslední změnu.";
+        const selectionHint = "Vybraný prvek: tažením vrcholu ho posuneš, kliknutím na hranu přidáš vrchol, "
+            + "kliknutím na vrchol ho vybereš. Delete smaže vybraný vrchol, jinak celý prvek. Esc zruší výběr. "
             + "Popisek a barva se teď mění u vybraného prvku.";
+        const vertexDeleteRefusedHint = "Vrchol nejde smazat: linie potřebuje aspoň 2 vrcholy a polygon 3. "
+            + "Celý prvek smažeš, když vrchol odznačíš a stiskneš Delete.";
         const drawingTypes = [
             {
                 featureType: Potree.NetworkEditor.CadFeatureType.POINT,
@@ -353,12 +357,20 @@
             }
         }
 
+        function captureSelectedFeatureChange() {
+            if (cadEditTool.selectedFeature) {
+                cadHistory.capture();
+            }
+        }
+
         function createStyleItems() {
             const labelInput = $("<input type=\"text\" id=\"network_editor_label\" placeholder=\"např. Kabel NN\">")
-                .on("input", (event) => applyStyle({ label: event.target.value }));
+                .on("input", (event) => applyStyle({ label: event.target.value }))
+                .on("change", captureSelectedFeatureChange);
             const colorInput = $("<input type=\"color\" id=\"network_editor_color\">")
                 .val(cadTool.style.color)
-                .on("input", (event) => applyStyle({ color: event.target.value }));
+                .on("input", (event) => applyStyle({ color: event.target.value }))
+                .on("change", captureSelectedFeatureChange);
             cadEditTool.addEventListener("selection_changed", (event) => {
                 const feature = event.feature;
                 labelInput.val(feature ? feature.label : cadTool.style.label);
@@ -382,7 +394,31 @@
             };
             cadTool.addEventListener("drawing_changed", updateHint);
             cadEditTool.addEventListener("selection_changed", updateHint);
+            cadEditTool.addEventListener("vertex_delete_refused", () => hint.text(vertexDeleteRefusedHint));
             return hint;
+        }
+
+        function createUndoItem() {
+            const undoButton = $("<input type=\"button\">")
+                .val("Zpět (Ctrl+Z)")
+                .prop("disabled", !cadHistory.canUndo)
+                .on("click", () => cadHistory.undo());
+            cadHistory.addEventListener("history_changed", () => undoButton.prop("disabled", !cadHistory.canUndo));
+            return $("<li></li>").append(undoButton);
+        }
+
+        function isTextEditingTarget(event) {
+            return event.target.isContentEditable
+                || $(event.target).is("textarea, input:not([type=button], [type=checkbox], [type=radio], [type=color], [type=range])");
+        }
+
+        function onUndoShortcut(event) {
+            const isUndoShortcut = (event.ctrlKey || event.metaKey) && !event.shiftKey && !event.altKey && event.key.toLowerCase() === "z";
+            if (!isUndoShortcut || isTextEditingTarget(event) || cadTool.isDrawing || viewer.cubatureTool.anyInsertionActive()) {
+                return;
+            }
+            event.preventDefault();
+            cadHistory.undo();
         }
 
         function createFeatureCountItem() {
@@ -437,6 +473,7 @@
                 createDrawingButtonsItem(),
                 ...createStyleItems(),
                 createDrawingHintItem(),
+                createUndoItem(),
                 createFeatureCountItem(),
                 $("<div class=\"divider\"><span>Vrstvy kreslení</span></div>"),
                 ...createLayerItems(),
@@ -457,6 +494,9 @@
         dtmInfoTool.addEventListener("query_failed", () => showInfoMessage("Dotaz na DTM se nezdařil."));
         cadTool.addEventListener("drawing_changed", updateEditToolAvailability);
         dtmInfoTool.addEventListener("activation_changed", updateEditToolAvailability);
+        cadEditTool.addEventListener("feature_changed", () => cadHistory.capture());
+        cadEditTool.addEventListener("selection_changed", () => cadHistory.capture());
+        document.addEventListener("keydown", onUndoShortcut);
 
         const pointCloudLoaded = loadPointCloud(datasetName);
         await viewer.loadGUI();
