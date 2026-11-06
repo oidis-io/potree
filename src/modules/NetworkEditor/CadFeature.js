@@ -29,10 +29,13 @@ export const MINIMUM_POINT_COUNTS = Object.freeze({
 });
 
 const MARKER_RADIUS_PIXELS = 6;
+const SELECTED_MARKER_RADIUS_PIXELS = 9;
 const LABEL_SCALE_PIXELS = 60;
 const LABEL_FONT_SIZE = 24;
 const LINE_WIDTH_PIXELS = 3;
+const SELECTED_LINE_WIDTH_PIXELS = 6;
 const FILL_OPACITY = 0.2;
+const SELECTED_FILL_OPACITY = 0.35;
 const FILL_RENDER_ORDER = 1;
 const EDGE_RENDER_ORDER = 2;
 const MARKER_RENDER_ORDER = 3;
@@ -43,9 +46,11 @@ export class CadFeature extends THREE.Object3D {
         super();
         this.featureType = featureType;
         this.label = "";
+        this.layerId = null;
         this.color = new THREE.Color(style.color);
         this.points = [];
         this.isDrawing = false;
+        this.isSelected = false;
         this.trailingPoint = null;
 
         this.markerGeometry = new THREE.SphereGeometry(1, 12, 12);
@@ -94,14 +99,23 @@ export class CadFeature extends THREE.Object3D {
     setDrawing(isDrawing) {
         this.isDrawing = isDrawing;
         this.trailingPoint = null;
-        if (!isDrawing) {
-            this.disposeEdges(this.trailingGroup);
-        }
+        this.rebuild();
+    }
+
+    setSelected(isSelected) {
+        this.isSelected = isSelected;
+        this.lineMaterial.linewidth = isSelected ? SELECTED_LINE_WIDTH_PIXELS : LINE_WIDTH_PIXELS;
+        this.fillMaterial.opacity = isSelected ? SELECTED_FILL_OPACITY : FILL_OPACITY;
         this.rebuild();
     }
 
     addPoint(position) {
         this.points.push(position.clone());
+        this.rebuild();
+    }
+
+    setPointAt(index, position) {
+        this.points[index].copy(position);
         this.rebuild();
     }
 
@@ -115,7 +129,7 @@ export class CadFeature extends THREE.Object3D {
 
     setTrailingPoint(position) {
         this.trailingPoint = position ? position.clone() : null;
-        this.updateTrailingEdges();
+        this.syncEdges(this.trailingGroup, this.computeTrailingSegments());
     }
 
     setColor(color) {
@@ -141,42 +155,41 @@ export class CadFeature extends THREE.Object3D {
     }
 
     rebuild() {
-        this.markerGroup.clear();
-        this.disposeEdges(this.edgeGroup);
+        this.syncMarkers();
+        this.syncEdges(this.edgeGroup, this.computeEdgeSegments());
+        this.syncEdges(this.trailingGroup, this.computeTrailingSegments());
         this.removeFill();
-        if (this.featureType === CadFeatureType.POINT || this.isDrawing) {
-            for (const point of this.points) {
-                const marker = new THREE.Mesh(this.markerGeometry, this.markerMaterial);
-                marker.position.copy(point);
-                marker.renderOrder = MARKER_RENDER_ORDER;
-                this.markerGroup.add(marker);
-            }
-        }
-        const isClosed = this.featureType === CadFeatureType.POLYGON && !this.isDrawing;
-        const segmentCount = isClosed ? this.points.length : this.points.length - 1;
-        for (let index = 0; index < segmentCount; index++) {
-            this.edgeGroup.add(this.createEdge(this.points[index], this.points[(index + 1) % this.points.length]));
-        }
-        if (isClosed && this.hasSimpleOutline()) {
+        if (this.isClosed() && this.hasSimpleOutline()) {
             this.createFill();
         }
-        this.updateTrailingEdges();
         this.updateLabelPosition();
     }
 
-    updateTrailingEdges() {
-        const segments = this.computeTrailingSegments();
-        while (this.trailingGroup.children.length < segments.length) {
-            const [start, end] = segments[this.trailingGroup.children.length];
-            this.trailingGroup.add(this.createEdge(start, end));
+    isClosed() {
+        return this.featureType === CadFeatureType.POLYGON && !this.isDrawing;
+    }
+
+    syncMarkers() {
+        const showsMarkers = this.featureType === CadFeatureType.POINT || this.isDrawing || this.isSelected;
+        const markerCount = showsMarkers ? this.points.length : 0;
+        while (this.markerGroup.children.length > markerCount) {
+            this.markerGroup.remove(this.markerGroup.children[this.markerGroup.children.length - 1]);
         }
-        this.trailingGroup.children.forEach((edge, index) => {
-            const segment = segments[index];
-            edge.visible = segment !== undefined;
-            if (segment) {
-                this.placeEdge(edge, segment[0], segment[1]);
-            }
-        });
+        while (this.markerGroup.children.length < markerCount) {
+            const marker = new THREE.Mesh(this.markerGeometry, this.markerMaterial);
+            marker.renderOrder = MARKER_RENDER_ORDER;
+            this.markerGroup.add(marker);
+        }
+        this.markerGroup.children.forEach((marker, index) => marker.position.copy(this.points[index]));
+    }
+
+    computeEdgeSegments() {
+        const segmentCount = this.isClosed() ? this.points.length : this.points.length - 1;
+        const segments = [];
+        for (let index = 0; index < segmentCount; index++) {
+            segments.push([this.points[index], this.points[(index + 1) % this.points.length]]);
+        }
+        return segments;
     }
 
     computeTrailingSegments() {
@@ -190,16 +203,22 @@ export class CadFeature extends THREE.Object3D {
         return segments;
     }
 
-    createEdge(start, end) {
-        const edge = new Line2(new LineGeometry(), this.lineMaterial);
-        edge.renderOrder = EDGE_RENDER_ORDER;
-        this.placeEdge(edge, start, end);
-        return edge;
-    }
-
-    placeEdge(edge, start, end) {
-        edge.geometry.setPositions([0, 0, 0, end.x - start.x, end.y - start.y, end.z - start.z]);
-        edge.position.copy(start);
+    syncEdges(group, segments) {
+        while (group.children.length > segments.length) {
+            const edge = group.children[group.children.length - 1];
+            group.remove(edge);
+            edge.geometry.dispose();
+        }
+        segments.forEach(([start, end], index) => {
+            let edge = group.children[index];
+            if (!edge) {
+                edge = new Line2(new LineGeometry(), this.lineMaterial);
+                edge.renderOrder = EDGE_RENDER_ORDER;
+                group.add(edge);
+            }
+            edge.geometry.setPositions([0, 0, 0, end.x - start.x, end.y - start.y, end.z - start.z]);
+            edge.position.copy(start);
+        });
     }
 
     getRelativeOutline() {
@@ -230,13 +249,6 @@ export class CadFeature extends THREE.Object3D {
             this.remove(this.fill);
             this.fill.geometry.dispose();
             this.fill = null;
-        }
-    }
-
-    disposeEdges(group) {
-        for (const edge of [...group.children]) {
-            group.remove(edge);
-            edge.geometry.dispose();
         }
     }
 
@@ -274,8 +286,9 @@ export class CadFeature extends THREE.Object3D {
 
     updateScreenSize(camera, renderWidth, renderHeight) {
         this.lineMaterial.resolution.set(renderWidth, renderHeight);
+        const markerRadius = this.isSelected ? SELECTED_MARKER_RADIUS_PIXELS : MARKER_RADIUS_PIXELS;
         for (const marker of this.markerGroup.children) {
-            marker.scale.setScalar(MARKER_RADIUS_PIXELS / this.computePixelsPerMetre(marker.position, camera, renderWidth, renderHeight));
+            marker.scale.setScalar(markerRadius / this.computePixelsPerMetre(marker.position, camera, renderWidth, renderHeight));
         }
         if (this.labelSprite.visible) {
             const labelScale = LABEL_SCALE_PIXELS / this.computePixelsPerMetre(this.labelSprite.position, camera, renderWidth, renderHeight);
@@ -288,8 +301,8 @@ export class CadFeature extends THREE.Object3D {
     }
 
     dispose() {
-        this.disposeEdges(this.edgeGroup);
-        this.disposeEdges(this.trailingGroup);
+        this.syncEdges(this.edgeGroup, []);
+        this.syncEdges(this.trailingGroup, []);
         this.removeFill();
         this.markerGroup.clear();
         this.markerGeometry.dispose();

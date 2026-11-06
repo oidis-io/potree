@@ -9,7 +9,6 @@
  * ********************************************************************************************************* */
 
 import { EventDispatcher } from "../../EventDispatcher.js";
-import { Utils } from "../../utils.js";
 import { isTextInputTarget } from "../../utils/InsertionKeyboard.js";
 import { CadFeature, CadFeatureType, MINIMUM_POINT_COUNTS } from "./CadFeature.js";
 
@@ -18,17 +17,16 @@ const DUPLICATE_VERTEX_DISTANCE_METRES = 0.01;
 const DRAWING_CURSOR = "cell";
 
 export class CadTool extends EventDispatcher {
-    constructor(viewer, mapPlane, cadDocument, cadView) {
+    constructor(viewer, surfacePicker, cadDocument, cadView) {
         super();
         this.viewer = viewer;
-        this.mapPlane = mapPlane;
+        this.surfacePicker = surfacePicker;
         this.cadDocument = cadDocument;
         this.cadView = cadView;
         this.style = { label: "", color: "#ff3366" };
         this.drawingType = null;
         this.draftFeature = null;
         this.pressPosition = null;
-        this.lastPickHeight = null;
         this.savedDoubleClickZoom = null;
 
         const canvas = viewer.renderer.domElement;
@@ -100,7 +98,7 @@ export class CadTool extends EventDispatcher {
         if (Math.hypot(event.clientX - pressPosition.x, event.clientY - pressPosition.y) > CLICK_TOLERANCE_PIXELS) {
             return;
         }
-        const position = this.resolvePointer(this.toCanvasPoint(event));
+        const position = this.pickSurface(event);
         if (position) {
             this.addVertex(position);
         }
@@ -110,7 +108,7 @@ export class CadTool extends EventDispatcher {
         if (!this.draftFeature || event.buttons !== 0) {
             return;
         }
-        this.draftFeature.setTrailingPoint(this.resolvePointer(this.toCanvasPoint(event)));
+        this.draftFeature.setTrailingPoint(this.pickSurface(event));
     }
 
     onKeyDown(event) {
@@ -136,19 +134,10 @@ export class CadTool extends EventDispatcher {
         this.draftFeature.addPoint(position);
     }
 
-    resolvePointer(canvasPoint) {
-        const camera = this.viewer.scene.getActiveCamera();
-        const pick = Utils.getMousePointCloudIntersection(canvasPoint, camera, this.viewer, this.viewer.scene.pointclouds, { pickClipped: true });
-        if (pick && pick.distance !== null) {
-            this.lastPickHeight = pick.location.z;
-            return pick.location.clone();
-        }
-        return this.mapPlane.intersectScreenPointAtHeight(canvasPoint.x, canvasPoint.y, this.getReferenceHeight());
-    }
-
-    getReferenceHeight() {
+    pickSurface(event) {
         const points = this.draftFeature?.points ?? [];
-        return points[points.length - 1]?.z ?? this.lastPickHeight ?? this.mapPlane.height;
+        const referenceHeight = points[points.length - 1]?.z ?? null;
+        return this.surfacePicker.pick(this.toCanvasPoint(event), referenceHeight);
     }
 
     toCanvasPoint(event) {

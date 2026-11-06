@@ -95,6 +95,11 @@
         .network-editor-field input[type=text] {
             flex: 1;
         }
+        .network-editor-layer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
     </style>
 </head>
 
@@ -168,11 +173,17 @@
         const mapPlane = new Potree.NetworkEditor.MapPlane(viewer);
         const dtmOverlay = new Potree.NetworkEditor.DtmOverlay(viewer, mapPlane);
         const dtmInfoTool = new Potree.NetworkEditor.DtmInfoTool(viewer, mapPlane, dtmOverlay);
+        const surfacePicker = new Potree.NetworkEditor.SurfacePicker(viewer, mapPlane);
         const cadDocument = new Potree.NetworkEditor.CadDocument();
         const cadView = new Potree.NetworkEditor.CadView(viewer, cadDocument);
-        const cadTool = new Potree.NetworkEditor.CadTool(viewer, mapPlane, cadDocument, cadView);
+        const cadTool = new Potree.NetworkEditor.CadTool(viewer, surfacePicker, cadDocument, cadView);
+        const cadEditTool = new Potree.NetworkEditor.CadEditTool(viewer, cadDocument, surfacePicker);
+        cadDocument.addLayer("Vrstva 1");
 
-        const drawingIdleHint = "Vyber typ prvku a klikej do mapy. Tažením myši otáčíš a posouváš pohled.";
+        const drawingIdleHint = "Vyber typ prvku a klikej do mapy. Kliknutím na nakreslený prvek ho vybereš. "
+            + "Tažením myši otáčíš a posouváš pohled.";
+        const selectionHint = "Vybraný prvek: tažením vrcholu ho posuneš, Delete ho smaže, Esc zruší výběr. "
+            + "Popisek a barva se teď mění u vybraného prvku.";
         const drawingTypes = [
             {
                 featureType: Potree.NetworkEditor.CadFeatureType.POINT,
@@ -334,12 +345,25 @@
             return item;
         }
 
+        function applyStyle(style) {
+            if (cadEditTool.selectedFeature) {
+                cadEditTool.updateSelectedFeature(style);
+            } else {
+                cadTool.setStyle(style);
+            }
+        }
+
         function createStyleItems() {
             const labelInput = $("<input type=\"text\" id=\"network_editor_label\" placeholder=\"např. Kabel NN\">")
-                .on("input", (event) => cadTool.setStyle({ label: event.target.value }));
+                .on("input", (event) => applyStyle({ label: event.target.value }));
             const colorInput = $("<input type=\"color\" id=\"network_editor_color\">")
                 .val(cadTool.style.color)
-                .on("input", (event) => cadTool.setStyle({ color: event.target.value }));
+                .on("input", (event) => applyStyle({ color: event.target.value }));
+            cadEditTool.addEventListener("selection_changed", (event) => {
+                const feature = event.feature;
+                labelInput.val(feature ? feature.label : cadTool.style.label);
+                colorInput.val(feature ? `#${feature.color.getHexString()}` : cadTool.style.color);
+            });
             return [
                 $("<li class=\"network-editor-field\"></li>").append($("<label for=\"network_editor_label\">Popisek</label>"), labelInput),
                 $("<li class=\"network-editor-field\"></li>").append($("<label for=\"network_editor_color\">Barva</label>"), colorInput)
@@ -348,17 +372,57 @@
 
         function createDrawingHintItem() {
             const hint = $("<li class=\"network-editor-note\"></li>").text(drawingIdleHint);
-            cadTool.addEventListener("drawing_changed", (event) => {
-                const activeDrawingType = drawingTypes.find((drawingType) => drawingType.featureType === event.drawingType);
-                hint.text(activeDrawingType ? activeDrawingType.hint : drawingIdleHint);
-            });
+            const updateHint = () => {
+                const activeDrawingType = drawingTypes.find((drawingType) => drawingType.featureType === cadTool.drawingType);
+                if (activeDrawingType) {
+                    hint.text(activeDrawingType.hint);
+                } else {
+                    hint.text(cadEditTool.selectedFeature ? selectionHint : drawingIdleHint);
+                }
+            };
+            cadTool.addEventListener("drawing_changed", updateHint);
+            cadEditTool.addEventListener("selection_changed", updateHint);
             return hint;
         }
 
         function createFeatureCountItem() {
             const featureCount = $("<li class=\"network-editor-note\"></li>").text("Nakreslené prvky: 0");
-            cadDocument.addEventListener("feature_added", () => featureCount.text(`Nakreslené prvky: ${cadDocument.features.length}`));
+            const updateFeatureCount = () => featureCount.text(`Nakreslené prvky: ${cadDocument.features.length}`);
+            cadDocument.addEventListener("feature_added", updateFeatureCount);
+            cadDocument.addEventListener("feature_removed", updateFeatureCount);
             return featureCount;
+        }
+
+        function createLayerRow(layer) {
+            const activeRadio = $("<input type=\"radio\" name=\"network_editor_active_layer\">")
+                .prop("checked", layer.id === cadDocument.activeLayerId)
+                .on("change", () => cadDocument.setActiveLayer(layer.id));
+            const visibleCheckbox = $("<input type=\"checkbox\">")
+                .prop("checked", layer.visible)
+                .on("change", (event) => cadDocument.setLayerVisible(layer.id, event.target.checked));
+            return $("<div class=\"network-editor-layer\"></div>").append(
+                $("<label></label>").append(activeRadio, $("<span></span>").text(` ${layer.name}`)),
+                $("<label></label>").append(visibleCheckbox, $("<span></span>").text(" zobrazit"))
+            );
+        }
+
+        function createLayerItems() {
+            const layerList = $("<li></li>");
+            const renderLayers = () => layerList.empty().append(cadDocument.layers.map(createLayerRow));
+            cadDocument.addEventListener("layers_changed", renderLayers);
+            renderLayers();
+            const addLayerButton = $("<input type=\"button\">")
+                .val("Přidat vrstvu")
+                .on("click", () => cadDocument.addLayer(`Vrstva ${cadDocument.layers.length + 1}`));
+            return [
+                layerList,
+                $("<li></li>").append(addLayerButton),
+                $("<li class=\"network-editor-note\"></li>").text("Nové prvky se kreslí do vybrané vrstvy.")
+            ];
+        }
+
+        function updateEditToolAvailability() {
+            cadEditTool.setEnabled(!cadTool.isDrawing && !dtmInfoTool.active);
         }
 
         function addNetworkEditorSection() {
@@ -374,13 +438,14 @@
                 ...createStyleItems(),
                 createDrawingHintItem(),
                 createFeatureCountItem(),
+                $("<div class=\"divider\"><span>Vrstvy kreslení</span></div>"),
+                ...createLayerItems(),
                 $("<div class=\"divider\"><span>Nástroje</span></div>"),
                 $("<li></li>").append(createInfoToolButton())
             );
             const content = $("<div></div>").append(list);
             header.on("click", () => content.slideToggle());
-            header.insertBefore($("#menu_about"));
-            content.insertBefore($("#menu_about"));
+            $("#potree_menu").prepend(header, content);
         }
 
         infoPanel.find(".network-info-close").on("click", closeInfoPanel);
@@ -390,6 +455,8 @@
         });
         dtmInfoTool.addEventListener("query_finished", (event) => showInfoResult(event.result));
         dtmInfoTool.addEventListener("query_failed", () => showInfoMessage("Dotaz na DTM se nezdařil."));
+        cadTool.addEventListener("drawing_changed", updateEditToolAvailability);
+        dtmInfoTool.addEventListener("activation_changed", updateEditToolAvailability);
 
         const pointCloudLoaded = loadPointCloud(datasetName);
         await viewer.loadGUI();

@@ -22,6 +22,7 @@ export class CadView {
             this.scene.add(feature);
         }
         cadDocument.addEventListener("feature_added", (event) => this.scene.add(event.feature));
+        cadDocument.addEventListener("feature_removed", (event) => this.scene.remove(event.feature));
         viewer.addEventListener("update", () => this.update());
         viewer.addEventListener("render.pass.perspective_overlay", () => this.render());
     }

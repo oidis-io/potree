@@ -57,6 +57,8 @@ import { CadFeature, CadFeatureType } from "./modules/NetworkEditor/CadFeature.j
 import { CadDocument } from "./modules/NetworkEditor/CadDocument.js";
 import { CadView } from "./modules/NetworkEditor/CadView.js";
 import { CadTool } from "./modules/NetworkEditor/CadTool.js";
+import { CadEditTool } from "./modules/NetworkEditor/CadEditTool.js";
+import { SurfacePicker } from "./modules/NetworkEditor/SurfacePicker.js";
 
 const Potree = {
     OrbitControls,
@@ -96,7 +98,18 @@ const Potree = {
     Embankment,
     EmbankmentTool,
     EmbankmentConfig: { DEFAULTS: EMBANKMENT_DEFAULTS },
-    NetworkEditor: { MapPlane, DtmOverlay, DtmInfoTool, CadFeature, CadFeatureType, CadDocument, CadView, CadTool },
+    NetworkEditor: {
+        MapPlane,
+        SurfacePicker,
+        DtmOverlay,
+        DtmInfoTool,
+        CadFeature,
+        CadFeatureType,
+        CadDocument,
+        CadView,
+        CadTool,
+        CadEditTool
+    },
     pointBudget: PotreeConfig.pointBudget,
     framenumber: PotreeConfig.framenumber,
     numNodesLoading: PotreeConfig.numNodesLoading,
