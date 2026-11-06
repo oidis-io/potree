@@ -56,6 +56,7 @@ function parseFeature(feature, layerIds) {
     requireValid(layerIds.includes(feature.layerId));
     requireValid(Array.isArray(feature.points) && feature.points.length >= MINIMUM_POINT_COUNTS[feature.featureType]);
     requireValid(feature.featureType !== CadFeatureType.POINT || feature.points.length === 1);
+    requireValid(feature.featureType !== CadFeatureType.CIRCLE || feature.points.length === 2);
     return {
         featureType: feature.featureType,
         label: typeof feature.label === "string" ? feature.label.slice(0, MAXIMUM_TEXT_LENGTH) : "",

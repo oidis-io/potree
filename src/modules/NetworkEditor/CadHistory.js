@@ -20,6 +20,7 @@ export class CadHistory extends EventDispatcher {
         this.snapshots = [this.createSnapshot()];
         cadDocument.addEventListener("feature_added", () => this.capture());
         cadDocument.addEventListener("feature_removed", () => this.capture());
+        cadDocument.addEventListener("feature_layer_changed", () => this.capture());
     }
 
     get canUndo() {

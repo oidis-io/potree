@@ -205,6 +205,7 @@
         const cadEditTool = new Potree.NetworkEditor.CadEditTool(viewer, cadDocument, surfacePicker);
         const cadHistory = new Potree.NetworkEditor.CadHistory(cadDocument);
         const featureProfile = new Potree.NetworkEditor.FeatureProfile(viewer);
+        cadView.setDimensionFormatter((dimension) => formatDimension(dimension));
         cadDocument.addLayer("Vrstva 1");
 
         const maximumDrawingFileBytes = 20 * 1024 * 1024;
@@ -219,6 +220,7 @@
         const flyToDurationMilliseconds = 800;
         const featureViewRenderers = [];
         let isFeatureViewRenderScheduled = false;
+        let terrainHeightSampler = null;
 
         const cadastreExtentMetres = 1500;
         const cadastreLayers = [
@@ -231,26 +233,43 @@
         const drawingIdleHint = "Vyber typ prvku a klikej do mapy. Kliknutím na nakreslený prvek ho vybereš. "
             + "Tažením myši otáčíš a posouváš pohled. Žlutý čtvereček ukazuje přichycení k vrcholu nebo hraně. "
             + "Ctrl+Z vrátí poslední změnu.";
-        const selectionHint = "Vybraný prvek: tažením vrcholu ho posuneš, kliknutím na hranu přidáš vrchol, "
-            + "kliknutím na vrchol ho vybereš. Delete smaže vybraný vrchol, jinak celý prvek. Esc zruší výběr. "
-            + "Popisek a barva se teď mění u vybraného prvku.";
-        const vertexDeleteRefusedHint = "Vrchol nejde smazat: linie potřebuje aspoň 2 vrcholy a polygon 3. "
-            + "Celý prvek smažeš, když vrchol odznačíš a stiskneš Delete.";
+        const selectionHint = "Vybraný prvek: tažením vrcholu ho upravíš, tažením za hranu nebo plochu posuneš celý prvek, "
+            + "kliknutím na hranu přidáš vrchol, kliknutím na vrchol ho vybereš. U kružnice tažením středu posuneš kružnici "
+            + "a tažením bodu na obvodu změníš poloměr. Delete smaže vybraný vrchol, jinak celý prvek. Esc zruší výběr. "
+            + "Popisek, barva a vrstva se teď mění u vybraného prvku.";
+        const vertexDeleteRefusedHint = "Vrchol nejde smazat: linie potřebuje aspoň 2 vrcholy, polygon 3 a kružnice má vždy střed "
+            + "a bod na obvodu. Celý prvek smažeš, když vrchol odznačíš a stiskneš Delete.";
+        const featureTypeTitles = {
+            [Potree.NetworkEditor.CadFeatureType.POINT]: "Bod",
+            [Potree.NetworkEditor.CadFeatureType.POLYLINE]: "Linie",
+            [Potree.NetworkEditor.CadFeatureType.POLYGON]: "Polygon",
+            [Potree.NetworkEditor.CadFeatureType.CIRCLE]: "Kružnice"
+        };
         const drawingTypes = [
             {
-                featureType: Potree.NetworkEditor.CadFeatureType.POINT,
+                drawingType: Potree.NetworkEditor.CadDrawingType.POINT,
                 title: "Bod",
                 hint: "Každým kliknutím vložíš bod. Esc kreslení ukončí."
             },
             {
-                featureType: Potree.NetworkEditor.CadFeatureType.POLYLINE,
+                drawingType: Potree.NetworkEditor.CadDrawingType.POLYLINE,
                 title: "Linie",
                 hint: "Kliknutím přidáš vrchol, Backspace vrátí poslední, Esc linii dokončí."
             },
             {
-                featureType: Potree.NetworkEditor.CadFeatureType.POLYGON,
+                drawingType: Potree.NetworkEditor.CadDrawingType.POLYGON,
                 title: "Polygon",
                 hint: "Kliknutím přidáš vrchol, Backspace vrátí poslední. Polygon uzavřeš kliknutím na první vrchol nebo Esc."
+            },
+            {
+                drawingType: Potree.NetworkEditor.CadDrawingType.RECTANGLE,
+                title: "Obdélník",
+                hint: "První dvě kliknutí určí jednu stranu, třetí kliknutí šířku obdélníku. Backspace vrátí poslední roh, Esc kreslení zruší."
+            },
+            {
+                drawingType: Potree.NetworkEditor.CadDrawingType.CIRCLE,
+                title: "Kružnice",
+                hint: "Prvním kliknutím určíš střed, druhým bod na obvodu. Esc kreslení zruší."
             }
         ];
 
@@ -341,6 +360,12 @@
                 .on("click", () => viewer.scene.view.setView(bookmark.position, bookmark.target, 1000));
         }
 
+        function createShowPointCloudButton() {
+            return $("<input type=\"button\">")
+                .val("Zobrazit mračno")
+                .on("click", () => viewer.fitToScreen(1, 1000));
+        }
+
         function createCheckboxItem(identifier, text, checked, onChange) {
             const checkbox = $("<input type=\"checkbox\">")
                 .attr("id", identifier)
@@ -384,14 +409,14 @@
             for (const drawingType of drawingTypes) {
                 const button = $("<input type=\"button\">").val(drawingType.title);
                 button.on("click", () => {
-                    if (cadTool.drawingType === drawingType.featureType) {
+                    if (cadTool.drawingType === drawingType.drawingType) {
                         cadTool.finishDrawing();
                     } else {
-                        cadTool.startDrawing(drawingType.featureType);
+                        cadTool.startDrawing(drawingType.drawingType);
                     }
                 });
                 cadTool.addEventListener("drawing_changed", (event) => {
-                    button.toggleClass("network-editor-active", event.drawingType === drawingType.featureType);
+                    button.toggleClass("network-editor-active", event.drawingType === drawingType.drawingType);
                 });
                 item.append(button);
             }
@@ -428,14 +453,30 @@
             });
             return [
                 $("<li class=\"network-editor-field\"></li>").append($("<label for=\"network_editor_label\">Popisek</label>"), labelInput),
-                $("<li class=\"network-editor-field\"></li>").append($("<label for=\"network_editor_color\">Barva</label>"), colorInput)
+                $("<li class=\"network-editor-field\"></li>").append($("<label for=\"network_editor_color\">Barva</label>"), colorInput),
+                createFeatureLayerItem()
             ];
+        }
+
+        function createFeatureLayerItem() {
+            const layerSelect = $("<select id=\"network_editor_feature_layer\"></select>")
+                .on("change", (event) => {
+                    if (cadEditTool.selectedFeature) {
+                        cadDocument.moveFeatureToLayer(cadEditTool.selectedFeature, event.target.value);
+                    }
+                });
+            featureViewRenderers.push(() => {
+                const feature = cadEditTool.selectedFeature;
+                layerSelect.empty().append(cadDocument.layers.map((layer) => $("<option></option>").val(layer.id).text(layer.name)));
+                layerSelect.val(feature ? feature.layerId : cadDocument.activeLayerId).prop("disabled", !feature);
+            });
+            return $("<li class=\"network-editor-field\"></li>").append($("<label for=\"network_editor_feature_layer\">Vrstva</label>"), layerSelect);
         }
 
         function createDrawingHintItem() {
             const hint = $("<li class=\"network-editor-note\"></li>").text(drawingIdleHint);
             const updateHint = () => {
-                const activeDrawingType = drawingTypes.find((drawingType) => drawingType.featureType === cadTool.drawingType);
+                const activeDrawingType = drawingTypes.find((drawingType) => drawingType.drawingType === cadTool.drawingType);
                 if (activeDrawingType) {
                     hint.text(activeDrawingType.hint);
                 } else {
@@ -523,20 +564,53 @@
         }
 
         function describeFeature(feature) {
-            const typeTitle = drawingTypes.find((drawingType) => drawingType.featureType === feature.featureType).title;
+            const isRectangle = feature.featureType === Potree.NetworkEditor.CadFeatureType.POLYGON
+                && Potree.NetworkEditor.measureFeature(feature, null).rectangleSides !== null;
+            const typeTitle = isRectangle ? "Obdélník" : featureTypeTitles[feature.featureType];
             return feature.label !== "" ? `${typeTitle} „${feature.label}“` : typeTitle;
         }
 
-        function describeFeatureMeasurement(feature) {
-            if (feature.featureType === Potree.NetworkEditor.CadFeatureType.POLYLINE) {
-                return `délka ${formatNumber(feature.computeHorizontalLength(), 2)} m (šikmo ${formatNumber(feature.computeSlopeLength(), 2)} m)`;
+        function formatSignedNumber(value, fractionDigits) {
+            const roundedValue = Number(value.toFixed(fractionDigits)) || 0;
+            return `${roundedValue > 0 ? "+" : ""}${formatNumber(roundedValue, fractionDigits)}`;
+        }
+
+        function describeArea(measurement) {
+            return measurement.area === null ? "plochu nelze spočítat, hrany se kříží" : `plocha ${formatNumber(measurement.area, 1)} m²`;
+        }
+
+        function describeFeatureSummary(feature) {
+            const measurement = Potree.NetworkEditor.measureFeature(feature, terrainHeightSampler);
+            if (feature.featureType === Potree.NetworkEditor.CadFeatureType.POINT) {
+                return `výška ${formatNumber(measurement.height, 2)} m`;
             }
             if (feature.featureType === Potree.NetworkEditor.CadFeatureType.POLYGON) {
-                const area = feature.computeArea();
-                const areaText = area === null ? "plochu nelze spočítat, hrany se kříží" : `plocha ${formatNumber(area, 1)} m²`;
-                return `${areaText}, obvod ${formatNumber(feature.computeHorizontalLength(), 2)} m`;
+                return describeArea(measurement);
             }
-            return "";
+            if (feature.featureType === Potree.NetworkEditor.CadFeatureType.CIRCLE) {
+                return `poloměr ${formatNumber(measurement.radius, 2)} m`;
+            }
+            return `délka ${formatNumber(measurement.horizontalLength, 2)} m`;
+        }
+
+        function describeFeatureMeasurement(feature) {
+            const measurement = Potree.NetworkEditor.measureFeature(feature, terrainHeightSampler);
+            if (feature.featureType === Potree.NetworkEditor.CadFeatureType.POINT) {
+                return `Y ${formatNumber(measurement.coordinateY, 2)}, X ${formatNumber(measurement.coordinateX, 2)}, výška ${formatNumber(measurement.height, 2)} m`;
+            }
+            if (feature.featureType === Potree.NetworkEditor.CadFeatureType.POLYGON) {
+                const sidesText = measurement.rectangleSides
+                    ? `rozměry ${measurement.rectangleSides.map((side) => formatNumber(side, 2)).join(" × ")} m, `
+                    : "";
+                return `${sidesText}${describeArea(measurement)}, obvod ${formatNumber(measurement.perimeter, 2)} m`;
+            }
+            if (feature.featureType === Potree.NetworkEditor.CadFeatureType.CIRCLE) {
+                return `poloměr ${formatNumber(measurement.radius, 2)} m, průměr ${formatNumber(measurement.diameter, 2)} m, `
+                    + `obvod ${formatNumber(measurement.circumference, 2)} m, plocha ${formatNumber(measurement.area, 1)} m²`;
+            }
+            const slopeText = measurement.slopePercent === null ? "" : ` (spád ${formatSignedNumber(measurement.slopePercent, 1)} %)`;
+            return `délka ${formatNumber(measurement.horizontalLength, 2)} m, po terénu ${formatNumber(measurement.terrainLength, 2)} m, `
+                + `převýšení ${formatSignedNumber(measurement.heightDifference, 2)} m${slopeText}`;
         }
 
         function flyToFeature(feature) {
@@ -577,8 +651,7 @@
                 .on("click", () => featureProfile.show(cadEditTool.selectedFeature));
             featureViewRenderers.push(() => {
                 const feature = cadEditTool.selectedFeature;
-                const measurement = feature ? describeFeatureMeasurement(feature) : "";
-                summary.text(feature ? `Vybráno: ${describeFeature(feature)}${measurement !== "" ? ` – ${measurement}` : ""}` : "Žádný prvek není vybraný.");
+                summary.text(feature ? `Vybráno: ${describeFeature(feature)} – ${describeFeatureMeasurement(feature)}` : "Žádný prvek není vybraný.");
                 profileButton.prop("disabled", !featureProfile.canShow(feature));
             });
             return [
@@ -589,9 +662,8 @@
         }
 
         function createFeatureRow(feature) {
-            const measurement = describeFeatureMeasurement(feature);
             const swatch = $("<span class=\"network-editor-swatch\"></span>").css("background", `#${feature.color.getHexString()}`);
-            const title = $("<span></span>").text(measurement !== "" ? `${describeFeature(feature)} – ${measurement}` : describeFeature(feature));
+            const title = $("<span></span>").text(`${describeFeature(feature)} – ${describeFeatureSummary(feature)}`);
             return $("<div class=\"network-editor-feature\"></div>")
                 .toggleClass("network-editor-active", feature === cadEditTool.selectedFeature)
                 .append(swatch, title)
@@ -676,6 +748,13 @@
             return [$("<li></li>").append(saveButton, loadButton, fileInput), status];
         }
 
+        function hidePotreeMeasurementTools() {
+            const measurementTools = $("#tools");
+            measurementTools.prevAll(".divider").first().hide();
+            $("#measurement_options_show").closest("li").hide();
+            measurementTools.hide();
+        }
+
         function updateEditToolAvailability() {
             cadEditTool.setEnabled(!cadTool.isDrawing && !dtmInfoTool.active);
         }
@@ -741,16 +820,34 @@
             return createCheckboxItem("network_editor_snapping", "Přichytávání k vrcholům a hranám", true, (checked) => cadSnapper.setEnabled(checked));
         }
 
+        function createDimensionItem() {
+            return createCheckboxItem("network_editor_dimensions", "Zobrazit rozměry u prvků", true, (checked) => cadView.setDimensionVisible(checked));
+        }
+
+        function formatDimension(dimension) {
+            const dimensionFormats = {
+                [Potree.NetworkEditor.DimensionKind.LENGTH]: (value) => `${formatNumber(value, 2)} m`,
+                [Potree.NetworkEditor.DimensionKind.AREA]: (value) => `${formatNumber(value, 1)} m²`,
+                [Potree.NetworkEditor.DimensionKind.RADIUS]: (value) => `r = ${formatNumber(value, 2)} m`,
+                [Potree.NetworkEditor.DimensionKind.HEIGHT]: (value) => `v = ${formatNumber(value, 2)} m`
+            };
+            return dimensionFormats[dimension.kind](dimension.value);
+        }
+
         function createTerrainStatusItem() {
             return $("<li class=\"network-editor-note\" id=\"network_editor_terrain_status\"></li>").text("Výška terénu: čeká na mračno");
         }
 
         function startTerrainHeightSampler(pointCloud) {
-            const terrainHeightSampler = new Potree.NetworkEditor.TerrainHeightSampler(pointCloud);
+            terrainHeightSampler = new Potree.NetworkEditor.TerrainHeightSampler(pointCloud);
             const terrainStatus = $("#network_editor_terrain_status");
             dtmOverlay.setTerrainHeightSampler(terrainHeightSampler);
             cadastreOverlay.setTerrainHeightSampler(terrainHeightSampler);
-            terrainHeightSampler.addEventListener("ready", () => terrainStatus.text("Výška terénu z mračna: hotovo, sítě i katastr leží na terénu."));
+            cadEditTool.setTerrainHeightSampler(terrainHeightSampler);
+            terrainHeightSampler.addEventListener("ready", () => {
+                terrainStatus.text("Výška terénu z mračna: hotovo, sítě i katastr leží na terénu.");
+                scheduleFeatureViewRender();
+            });
             terrainHeightSampler.addEventListener("failed", () => terrainStatus.text("Výšku terénu se nepodařilo spočítat."));
             terrainStatus.text("Výška terénu z mračna: počítám…");
             terrainHeightSampler.start();
@@ -759,7 +856,7 @@
         function addNetworkEditorSection() {
             const header = $("<h3 id=\"menu_network_editor\"><span>Síťový editor</span></h3>");
             const list = $("<ul class=\"pv-menu-list\"></ul>").append(
-                $("<li></li>").append(createBookmarkButton(litovelCentreBookmark)),
+                $("<li></li>").append(createShowPointCloudButton(), createBookmarkButton(litovelCentreBookmark)),
                 $("<div class=\"divider\"><span>Vrstvy</span></div>"),
                 createCheckboxItem("network_editor_point_cloud", "Mračno bodů", true, setPointCloudsVisible),
                 createDtmLayerItem(),
@@ -771,6 +868,7 @@
                 createDrawingButtonsItem(),
                 ...createStyleItems(),
                 createSnappingItem(),
+                createDimensionItem(),
                 createDrawingHintItem(),
                 createUndoItem(),
                 createFeatureCountItem(),
@@ -787,7 +885,7 @@
             const content = $("<div></div>").append(list);
             header.on("click", () => content.slideToggle());
             $("#potree_menu").prepend(header, content);
-            for (const eventType of ["feature_added", "feature_removed", "layers_changed"]) {
+            for (const eventType of ["feature_added", "feature_removed", "layers_changed", "feature_layer_changed"]) {
                 cadDocument.addEventListener(eventType, scheduleFeatureViewRender);
             }
             for (const eventType of ["feature_changed", "selection_changed"]) {
@@ -814,6 +912,7 @@
         viewer.setLanguage("cs");
         viewer.toggleSidebar();
         $("#menu_tools").next().show();
+        hidePotreeMeasurementTools();
         addNetworkEditorSection();
         const pointCloud = await pointCloudLoaded;
         addPointCloud(pointCloud);

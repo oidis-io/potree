@@ -56,7 +56,7 @@ import { DtmInfoTool } from "./modules/NetworkEditor/DtmInfoTool.js";
 import { CadFeature, CadFeatureType } from "./modules/NetworkEditor/CadFeature.js";
 import { CadDocument } from "./modules/NetworkEditor/CadDocument.js";
 import { CadView } from "./modules/NetworkEditor/CadView.js";
-import { CadTool } from "./modules/NetworkEditor/CadTool.js";
+import { CadDrawingType, CadTool } from "./modules/NetworkEditor/CadTool.js";
 import { CadEditTool } from "./modules/NetworkEditor/CadEditTool.js";
 import { CadHistory } from "./modules/NetworkEditor/CadHistory.js";
 import { SurfacePicker } from "./modules/NetworkEditor/SurfacePicker.js";
@@ -66,6 +66,8 @@ import { CadastreOverlay } from "./modules/NetworkEditor/CadastreOverlay.js";
 import { CadSnapper } from "./modules/NetworkEditor/CadSnapper.js";
 import { CadFileErrorCode, createCadFile, parseCadFile } from "./modules/NetworkEditor/CadFileFormat.js";
 import { FeatureProfile } from "./modules/NetworkEditor/FeatureProfile.js";
+import { measureFeature } from "./modules/NetworkEditor/FeatureMeasurement.js";
+import { DimensionKind } from "./modules/NetworkEditor/FeatureDimensions.js";
 
 const Potree = {
     OrbitControls,
@@ -115,6 +117,7 @@ const Potree = {
         CadDocument,
         CadView,
         CadTool,
+        CadDrawingType,
         CadEditTool,
         CadHistory,
         TerrainHeightSampler,
@@ -124,7 +127,9 @@ const Potree = {
         CadFileErrorCode,
         createCadFile,
         parseCadFile,
-        FeatureProfile
+        FeatureProfile,
+        measureFeature,
+        DimensionKind
     },
     pointBudget: PotreeConfig.pointBudget,
     framenumber: PotreeConfig.framenumber,

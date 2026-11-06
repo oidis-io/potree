@@ -28,7 +28,8 @@ export class FeatureProfile {
             return;
         }
         this.clear();
-        const points = feature.featureType === CadFeatureType.POLYGON ? [...feature.points, feature.points[0]] : feature.points;
+        const outlinePoints = feature.getOutlinePoints();
+        const points = feature.isClosed() ? [...outlinePoints, outlinePoints[0]] : outlinePoints;
         const profile = new Profile();
         profile.name = feature.label !== "" ? feature.label : profile.name;
         for (const point of points) {

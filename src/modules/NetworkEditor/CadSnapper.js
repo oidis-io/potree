@@ -135,6 +135,13 @@ export class CadSnapper {
 
     addFeatureCandidates(candidates, feature, excludedVertex) {
         const isExcludedFeature = excludedVertex?.feature === feature;
+        if (feature.featureType === CadFeatureType.CIRCLE) {
+            if (!isExcludedFeature) {
+                feature.points.forEach((point, index) => candidates.vertices.push({ position: point, feature: feature, index: index }));
+                feature.computeEdgeSegments().forEach(([start, end]) => candidates.segments.push({ start: start, end: end }));
+            }
+            return;
+        }
         const isExcludedIndex = (index) => isExcludedFeature && index === excludedVertex.index;
         const pointCount = feature.points.length;
         const isClosed = feature.featureType === CadFeatureType.POLYGON && !feature.isDrawing;

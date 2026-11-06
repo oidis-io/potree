@@ -65,6 +65,16 @@ export class CadDocument extends EventDispatcher {
         this.dispatchEvent({ type: "feature_added", feature: feature });
     }
 
+    moveFeatureToLayer(feature, layerId) {
+        if (!this.findLayer(layerId) || feature.layerId === layerId) {
+            return;
+        }
+        feature.layerId = layerId;
+        this.setLayerVisible(layerId, true);
+        feature.visible = true;
+        this.dispatchEvent({ type: "feature_layer_changed", feature: feature });
+    }
+
     removeFeature(feature) {
         const index = this.features.indexOf(feature);
         if (index < 0) {

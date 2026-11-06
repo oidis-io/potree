@@ -19,14 +19,18 @@ import { isSimplePolygon, polygonArea, polygonCentroid } from "../../utils/Polyg
 export const CadFeatureType = Object.freeze({
     POINT: "point",
     POLYLINE: "polyline",
-    POLYGON: "polygon"
+    POLYGON: "polygon",
+    CIRCLE: "circle"
 });
 
 export const MINIMUM_POINT_COUNTS = Object.freeze({
     [CadFeatureType.POINT]: 1,
     [CadFeatureType.POLYLINE]: 2,
-    [CadFeatureType.POLYGON]: 3
+    [CadFeatureType.POLYGON]: 3,
+    [CadFeatureType.CIRCLE]: 2
 });
+
+const CIRCLE_OUTLINE_SEGMENT_COUNT = 64;
 
 const MARKER_RADIUS_PIXELS = 6;
 const SELECTED_MARKER_RADIUS_PIXELS = 9;
@@ -55,6 +59,7 @@ export class CadFeature extends THREE.Object3D {
         this.isSelected = false;
         this.selectedVertexIndex = null;
         this.trailingPoint = null;
+        this.revision = 0;
 
         this.markerGeometry = new THREE.SphereGeometry(1, 12, 12);
         this.markerMaterial = new THREE.MeshBasicMaterial({ color: this.color, transparent: true, depthTest: false, depthWrite: false });
@@ -135,6 +140,9 @@ export class CadFeature extends THREE.Object3D {
     }
 
     setPointAt(index, position) {
+        if (this.featureType === CadFeatureType.CIRCLE && index === 0 && this.points.length > 1) {
+            this.points[1].add(position.clone().sub(this.points[0]));
+        }
         this.points[index].copy(position);
         this.rebuild();
     }
@@ -152,15 +160,44 @@ export class CadFeature extends THREE.Object3D {
     }
 
     computeHorizontalLength() {
+        if (this.featureType === CadFeatureType.CIRCLE) {
+            return 2 * Math.PI * this.computeRadius();
+        }
         return this.computeEdgeSegments().reduce((sum, [start, end]) => sum + Math.hypot(end.x - start.x, end.y - start.y), 0);
     }
 
-    computeSlopeLength() {
-        return this.computeEdgeSegments().reduce((sum, [start, end]) => sum + start.distanceTo(end), 0);
+    computeArea() {
+        if (this.featureType === CadFeatureType.CIRCLE) {
+            return Math.PI * this.computeRadius() ** 2;
+        }
+        return this.featureType === CadFeatureType.POLYGON && this.hasSimpleOutline() ? polygonArea(this.getRelativeOutline()) : null;
     }
 
-    computeArea() {
-        return this.featureType === CadFeatureType.POLYGON && this.hasSimpleOutline() ? polygonArea(this.getRelativeOutline()) : null;
+    computeRadius() {
+        if (this.points.length < 2) {
+            return 0;
+        }
+        return Math.hypot(this.points[1].x - this.points[0].x, this.points[1].y - this.points[0].y);
+    }
+
+    getOutlinePoints() {
+        if (this.featureType !== CadFeatureType.CIRCLE) {
+            return this.points;
+        }
+        return this.points.length < 2 ? [] : this.computeCirclePoints(this.points[0], this.points[1]);
+    }
+
+    computeCirclePoints(center, rimPoint) {
+        const radius = Math.hypot(rimPoint.x - center.x, rimPoint.y - center.y);
+        const startAngle = Math.atan2(rimPoint.y - center.y, rimPoint.x - center.x);
+        return Array.from({ length: CIRCLE_OUTLINE_SEGMENT_COUNT }, (unused, index) => {
+            const angle = startAngle + index / CIRCLE_OUTLINE_SEGMENT_COUNT * 2 * Math.PI;
+            return new THREE.Vector3(center.x + Math.cos(angle) * radius, center.y + Math.sin(angle) * radius, center.z);
+        });
+    }
+
+    toRingSegments(ringPoints) {
+        return ringPoints.map((point, index) => [point, ringPoints[(index + 1) % ringPoints.length]]);
     }
 
     toData() {
@@ -191,9 +228,11 @@ export class CadFeature extends THREE.Object3D {
     setTrailingPoint(position) {
         this.trailingPoint = position ? position.clone() : null;
         this.syncEdges(this.trailingGroup, this.computeTrailingSegments());
+        this.revision++;
     }
 
     setColor(color) {
+        this.revision++;
         this.color.set(color);
         this.markerMaterial.color.copy(this.color);
         this.fillMaterial.color.copy(this.color);
@@ -216,6 +255,7 @@ export class CadFeature extends THREE.Object3D {
     }
 
     rebuild() {
+        this.revision++;
         this.syncMarkers();
         this.syncEdges(this.edgeGroup, this.computeEdgeSegments());
         this.syncEdges(this.trailingGroup, this.computeTrailingSegments());
@@ -227,7 +267,7 @@ export class CadFeature extends THREE.Object3D {
     }
 
     isClosed() {
-        return this.featureType === CadFeatureType.POLYGON && !this.isDrawing;
+        return (this.featureType === CadFeatureType.POLYGON || this.featureType === CadFeatureType.CIRCLE) && !this.isDrawing;
     }
 
     syncMarkers() {
@@ -248,6 +288,9 @@ export class CadFeature extends THREE.Object3D {
     }
 
     computeEdgeSegments() {
+        if (this.featureType === CadFeatureType.CIRCLE) {
+            return this.isDrawing ? [] : this.toRingSegments(this.getOutlinePoints());
+        }
         const segmentCount = this.isClosed() ? this.points.length : this.points.length - 1;
         const segments = [];
         for (let index = 0; index < segmentCount; index++) {
@@ -259,6 +302,9 @@ export class CadFeature extends THREE.Object3D {
     computeTrailingSegments() {
         if (!this.isDrawing || !this.trailingPoint || this.points.length === 0) {
             return [];
+        }
+        if (this.featureType === CadFeatureType.CIRCLE) {
+            return this.toRingSegments(this.computeCirclePoints(this.points[0], this.trailingPoint));
         }
         const segments = [[this.points[this.points.length - 1], this.trailingPoint]];
         if (this.featureType === CadFeatureType.POLYGON && this.points.length >= 2) {
@@ -286,19 +332,22 @@ export class CadFeature extends THREE.Object3D {
     }
 
     getRelativeOutline() {
-        const origin = this.points[0];
-        return this.points.map((point) => ({ x: point.x - origin.x, y: point.y - origin.y }));
+        const outlinePoints = this.getOutlinePoints();
+        const origin = outlinePoints[0];
+        return outlinePoints.map((point) => ({ x: point.x - origin.x, y: point.y - origin.y }));
     }
 
     hasSimpleOutline() {
-        return this.points.length >= MINIMUM_POINT_COUNTS[CadFeatureType.POLYGON] && isSimplePolygon(this.getRelativeOutline());
+        const outlinePoints = this.getOutlinePoints();
+        return outlinePoints.length >= MINIMUM_POINT_COUNTS[CadFeatureType.POLYGON] && isSimplePolygon(this.getRelativeOutline());
     }
 
     createFill() {
-        const origin = this.points[0];
+        const outlinePoints = this.getOutlinePoints();
+        const origin = outlinePoints[0];
         const contour = this.getRelativeOutline().map((point) => new THREE.Vector2(point.x, point.y));
         const triangles = THREE.ShapeUtils.triangulateShape(contour, []);
-        const positions = this.points.flatMap((point) => [point.x - origin.x, point.y - origin.y, point.z - origin.z]);
+        const positions = outlinePoints.flatMap((point) => [point.x - origin.x, point.y - origin.y, point.z - origin.z]);
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
         geometry.setIndex(triangles.flat());
@@ -324,6 +373,9 @@ export class CadFeature extends THREE.Object3D {
     }
 
     computeLabelAnchor() {
+        if (this.featureType === CadFeatureType.CIRCLE) {
+            return this.points[0].clone();
+        }
         if (this.featureType !== CadFeatureType.POLYGON || this.points.length < MINIMUM_POINT_COUNTS[CadFeatureType.POLYGON]) {
             return this.computePointAtHalfLength();
         }

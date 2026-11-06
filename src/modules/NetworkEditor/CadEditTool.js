@@ -33,9 +33,16 @@ export class CadEditTool extends EventDispatcher {
         this.pressPosition = null;
         this.draggedVertexIndex = null;
         this.hasVertexMoved = false;
+        this.moveStartPosition = null;
+        this.moveOriginalPoints = null;
+        this.hasFeatureMoved = false;
+        this.terrainHeightSampler = null;
         this.dragHandle = new THREE.Object3D();
         this.dragHandle.addEventListener("drag", (event) => this.onVertexDrag(event));
         this.dragHandle.addEventListener("drop", () => this.onVertexDrop());
+        this.moveHandle = new THREE.Object3D();
+        this.moveHandle.addEventListener("drag", (event) => this.onFeatureMoveDrag(event));
+        this.moveHandle.addEventListener("drop", () => this.onFeatureMoveDrop());
 
         const canvas = viewer.renderer.domElement;
         canvas.addEventListener("mousedown", (event) => this.onMouseDown(event));
@@ -66,15 +73,22 @@ export class CadEditTool extends EventDispatcher {
         }
     }
 
+    setTerrainHeightSampler(terrainHeightSampler) {
+        this.terrainHeightSampler = terrainHeightSampler;
+    }
+
     select(feature) {
         if (this.selectedFeature === feature) {
             return;
         }
-        if (this.selectedFeature && this.draggedVertexIndex !== null && this.hasVertexMoved) {
+        const isVertexDragUnsaved = this.draggedVertexIndex !== null && this.hasVertexMoved;
+        const isFeatureMoveUnsaved = this.moveStartPosition !== null && this.hasFeatureMoved;
+        if (this.selectedFeature && (isVertexDragUnsaved || isFeatureMoveUnsaved)) {
             this.dispatchEvent({ type: "feature_changed", feature: this.selectedFeature });
         }
         this.draggedVertexIndex = null;
         this.hasVertexMoved = false;
+        this.resetFeatureMove();
         this.surfacePicker.clearSnapIndicator();
         this.selectedFeature?.setSelected(false);
         this.selectedFeature = feature;
@@ -116,7 +130,7 @@ export class CadEditTool extends EventDispatcher {
 
     insertVertexAt(canvasPoint) {
         const feature = this.selectedFeature;
-        if (feature.featureType === CadFeatureType.POINT) {
+        if (feature.featureType === CadFeatureType.POINT || feature.featureType === CadFeatureType.CIRCLE) {
             return false;
         }
         const segmentIndex = this.findSelectedSegmentAt(canvasPoint);
@@ -149,7 +163,7 @@ export class CadEditTool extends EventDispatcher {
 
     isOtherObjectDragged() {
         const draggedObject = this.viewer.inputHandler.drag?.object;
-        return Boolean(draggedObject) && draggedObject !== this.dragHandle;
+        return Boolean(draggedObject) && draggedObject !== this.dragHandle && draggedObject !== this.moveHandle;
     }
 
     onMouseDown(event) {
@@ -157,7 +171,8 @@ export class CadEditTool extends EventDispatcher {
         if (!this.enabled || event.button !== 0 || this.isOtherObjectDragged()) {
             return;
         }
-        const vertexIndex = this.findSelectedVertexAt(this.toCanvasPoint(event));
+        const canvasPoint = this.toCanvasPoint(event);
+        const vertexIndex = this.findSelectedVertexAt(canvasPoint);
         if (vertexIndex !== null) {
             this.draggedVertexIndex = vertexIndex;
             this.hasVertexMoved = false;
@@ -165,6 +180,56 @@ export class CadEditTool extends EventDispatcher {
             return;
         }
         this.pressPosition = { x: event.clientX, y: event.clientY };
+        if (this.selectedFeature && this.measureScreenHit(this.selectedFeature, canvasPoint).distance <= FEATURE_PICK_TOLERANCE_PIXELS) {
+            this.startFeatureMove(canvasPoint);
+        }
+    }
+
+    startFeatureMove(canvasPoint) {
+        const startPosition = this.surfacePicker.pick(canvasPoint);
+        if (!startPosition) {
+            return;
+        }
+        this.moveStartPosition = startPosition;
+        this.moveOriginalPoints = this.selectedFeature.points.map((point) => point.clone());
+        this.hasFeatureMoved = false;
+        this.viewer.inputHandler.startDragging(this.moveHandle);
+    }
+
+    resetFeatureMove() {
+        this.moveStartPosition = null;
+        this.moveOriginalPoints = null;
+        this.hasFeatureMoved = false;
+    }
+
+    onFeatureMoveDrag(event) {
+        if ((event.drag.mouse & MOUSE.LEFT) === 0) {
+            this.viewer.inputHandler.drag = null;
+            this.onFeatureMoveDrop();
+            return;
+        }
+        const feature = this.selectedFeature;
+        if (!feature || !this.moveStartPosition) {
+            return;
+        }
+        const position = this.surfacePicker.pick(event.drag.end, this.moveStartPosition.z);
+        if (!position) {
+            return;
+        }
+        this.hasFeatureMoved = true;
+        const offset = position.sub(this.moveStartPosition);
+        feature.setPoints(this.moveOriginalPoints.map((point) => {
+            const movedPoint = point.clone().add(offset);
+            movedPoint.z = this.terrainHeightSampler?.measuredHeightAt(movedPoint.x, movedPoint.y) ?? movedPoint.z;
+            return movedPoint;
+        }));
+    }
+
+    onFeatureMoveDrop() {
+        if (this.selectedFeature && this.hasFeatureMoved) {
+            this.dispatchEvent({ type: "feature_changed", feature: this.selectedFeature });
+        }
+        this.resetFeatureMove();
     }
 
     onMouseUp(event) {
@@ -189,6 +254,7 @@ export class CadEditTool extends EventDispatcher {
         }
         event.preventDefault();
         this.draggedVertexIndex = null;
+        this.resetFeatureMove();
         this.surfacePicker.clearSnapIndicator();
         const isVertexSelected = this.selectedFeature.selectedVertexIndex !== null
             && this.selectedFeature.featureType !== CadFeatureType.POINT;
@@ -277,18 +343,15 @@ export class CadEditTool extends EventDispatcher {
             const distance = screenPoint ? Math.hypot(screenPoint.x - canvasPoint.x, screenPoint.y - canvasPoint.y) : Infinity;
             return { distance: distance, area: 0 };
         }
-        const isPolygon = feature.featureType === CadFeatureType.POLYGON;
-        const pointCount = feature.points.length;
-        const segmentCount = isPolygon ? pointCount : pointCount - 1;
         let distance = Infinity;
-        for (let index = 0; index < segmentCount; index++) {
-            const segment = this.screenProjector.projectSegment(feature.points[index], feature.points[(index + 1) % pointCount]);
+        for (const [start, end] of feature.computeEdgeSegments()) {
+            const segment = this.screenProjector.projectSegment(start, end);
             if (segment) {
                 distance = Math.min(distance, this.screenProjector.measureDistanceToSegment(canvasPoint, segment[0], segment[1]));
             }
         }
-        if (isPolygon) {
-            const screenRing = this.screenProjector.projectRing(feature.points);
+        if (feature.isClosed()) {
+            const screenRing = this.screenProjector.projectRing(feature.getOutlinePoints());
             if (screenRing.length >= 3 && pointInPolygon(canvasPoint.x, canvasPoint.y, screenRing)) {
                 return { distance: Math.min(distance, FEATURE_PICK_TOLERANCE_PIXELS), area: polygonArea(screenRing) };
             }

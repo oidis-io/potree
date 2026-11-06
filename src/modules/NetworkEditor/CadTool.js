@@ -16,7 +16,37 @@ import { ScreenProjector } from "./ScreenProjector.js";
 const CLICK_TOLERANCE_PIXELS = 3;
 const CLOSE_TOLERANCE_PIXELS = 10;
 const DUPLICATE_VERTEX_DISTANCE_METRES = 0.01;
+const RECTANGLE_POINT_COUNT = 4;
 const DRAWING_CURSOR = "cell";
+
+export const CadDrawingType = Object.freeze({
+    POINT: CadFeatureType.POINT,
+    POLYLINE: CadFeatureType.POLYLINE,
+    POLYGON: CadFeatureType.POLYGON,
+    RECTANGLE: "rectangle",
+    CIRCLE: CadFeatureType.CIRCLE
+});
+
+function computeRectanglePoints(firstCorner, secondCorner, widthPoint) {
+    const sideX = secondCorner.x - firstCorner.x;
+    const sideY = secondCorner.y - firstCorner.y;
+    const sideLength = Math.hypot(sideX, sideY);
+    if (sideLength < DUPLICATE_VERTEX_DISTANCE_METRES) {
+        return null;
+    }
+    const normalX = -sideY / sideLength;
+    const normalY = sideX / sideLength;
+    const width = (widthPoint.x - firstCorner.x) * normalX + (widthPoint.y - firstCorner.y) * normalY;
+    if (Math.abs(width) < DUPLICATE_VERTEX_DISTANCE_METRES) {
+        return null;
+    }
+    return [
+        firstCorner.clone(),
+        secondCorner.clone(),
+        widthPoint.clone().set(secondCorner.x + normalX * width, secondCorner.y + normalY * width, widthPoint.z),
+        widthPoint.clone().set(firstCorner.x + normalX * width, firstCorner.y + normalY * width, widthPoint.z)
+    ];
+}
 
 export class CadTool extends EventDispatcher {
     constructor(viewer, surfacePicker, cadDocument, cadView) {
@@ -29,6 +59,7 @@ export class CadTool extends EventDispatcher {
         this.style = { label: "", color: "#ff3366" };
         this.drawingType = null;
         this.draftFeature = null;
+        this.rectangleCorners = [];
         this.pressPosition = null;
         this.savedDoubleClickZoom = null;
 
@@ -52,18 +83,27 @@ export class CadTool extends EventDispatcher {
         }
     }
 
-    startDrawing(featureType) {
+    startDrawing(drawingType) {
         this.viewer.dispatchEvent({ type: "cancel_insertions" });
-        this.drawingType = featureType;
+        this.drawingType = drawingType;
+        this.rectangleCorners = [];
         this.viewer.renderer.domElement.style.cursor = DRAWING_CURSOR;
         this.savedDoubleClickZoom = this.viewer.getDoubleClickZoom() !== false;
         this.viewer.setDoubleClickZoom(false);
-        if (featureType !== CadFeatureType.POINT) {
+        if (drawingType !== CadDrawingType.POINT) {
+            const featureType = drawingType === CadDrawingType.RECTANGLE ? CadFeatureType.POLYGON : drawingType;
             this.draftFeature = new CadFeature(featureType, this.style);
             this.draftFeature.setDrawing(true);
             this.cadView.setDraftFeature(this.draftFeature);
         }
-        this.dispatchEvent({ type: "drawing_changed", drawingType: featureType });
+        this.dispatchEvent({ type: "drawing_changed", drawingType: drawingType });
+    }
+
+    isDraftComplete(feature) {
+        if (this.drawingType === CadDrawingType.RECTANGLE) {
+            return feature.points.length === RECTANGLE_POINT_COUNT;
+        }
+        return feature.points.length >= MINIMUM_POINT_COUNTS[feature.featureType];
     }
 
     finishDrawing() {
@@ -73,13 +113,14 @@ export class CadTool extends EventDispatcher {
         const feature = this.draftFeature;
         this.draftFeature = null;
         this.cadView.setDraftFeature(null);
-        if (feature && feature.points.length >= MINIMUM_POINT_COUNTS[feature.featureType]) {
+        if (feature && this.isDraftComplete(feature)) {
             feature.setDrawing(false);
             this.cadDocument.addFeature(feature);
         } else if (feature) {
             feature.dispose();
         }
         this.drawingType = null;
+        this.rectangleCorners = [];
         this.surfacePicker.clearSnapIndicator();
         const canvasStyle = this.viewer.renderer.domElement.style;
         if (canvasStyle.cursor === DRAWING_CURSOR) {
@@ -119,14 +160,46 @@ export class CadTool extends EventDispatcher {
             return;
         }
         const position = this.pickSurface(event);
-        if (this.draftFeature) {
+        if (this.drawingType === CadDrawingType.RECTANGLE) {
+            this.updateRectanglePreview(position);
+        } else if (this.draftFeature) {
             this.draftFeature.setTrailingPoint(position);
         }
     }
 
+    updateRectanglePreview(position) {
+        const rectanglePoints = position && this.rectangleCorners.length === 2
+            ? computeRectanglePoints(this.rectangleCorners[0], this.rectangleCorners[1], position)
+            : null;
+        if (!rectanglePoints) {
+            this.draftFeature.setPoints(this.rectangleCorners);
+            this.draftFeature.setTrailingPoint(position);
+            return;
+        }
+        this.draftFeature.setPoints(rectanglePoints.slice(0, RECTANGLE_POINT_COUNT - 1));
+        this.draftFeature.setTrailingPoint(rectanglePoints[RECTANGLE_POINT_COUNT - 1]);
+    }
+
+    addRectangleCorner(position) {
+        const corners = this.rectangleCorners;
+        if (corners.length === 2) {
+            const rectanglePoints = computeRectanglePoints(corners[0], corners[1], position);
+            if (rectanglePoints) {
+                this.draftFeature.setPoints(rectanglePoints);
+                this.finishDrawing();
+            }
+            return;
+        }
+        if (corners.length === 1 && Math.hypot(position.x - corners[0].x, position.y - corners[0].y) < DUPLICATE_VERTEX_DISTANCE_METRES) {
+            return;
+        }
+        corners.push(position.clone());
+        this.draftFeature.setPoints(corners);
+    }
+
     isFirstPolygonVertexClicked(event) {
         const draftFeature = this.draftFeature;
-        if (!draftFeature || draftFeature.featureType !== CadFeatureType.POLYGON || draftFeature.points.length === 0) {
+        if (this.drawingType !== CadDrawingType.POLYGON || !draftFeature || draftFeature.points.length === 0) {
             return false;
         }
         const firstVertex = this.screenProjector.projectPoint(draftFeature.points[0]);
@@ -139,14 +212,23 @@ export class CadTool extends EventDispatcher {
             return;
         }
         event.preventDefault();
+        if (this.drawingType === CadDrawingType.RECTANGLE) {
+            this.rectangleCorners.pop();
+            this.draftFeature.setPoints(this.rectangleCorners);
+            return;
+        }
         this.draftFeature.removeLastPoint();
     }
 
     addVertex(position) {
-        if (this.drawingType === CadFeatureType.POINT) {
+        if (this.drawingType === CadDrawingType.POINT) {
             const feature = new CadFeature(CadFeatureType.POINT, this.style);
             feature.addPoint(position);
             this.cadDocument.addFeature(feature);
+            return;
+        }
+        if (this.drawingType === CadDrawingType.RECTANGLE) {
+            this.addRectangleCorner(position);
             return;
         }
         const points = this.draftFeature.points;
@@ -155,12 +237,16 @@ export class CadTool extends EventDispatcher {
             return;
         }
         this.draftFeature.addPoint(position);
+        if (this.drawingType === CadDrawingType.CIRCLE && this.draftFeature.points.length === MINIMUM_POINT_COUNTS[CadFeatureType.CIRCLE]) {
+            this.finishDrawing();
+        }
     }
 
     pickSurface(event) {
-        const points = this.draftFeature?.points ?? [];
+        const points = this.drawingType === CadDrawingType.RECTANGLE ? this.rectangleCorners : this.draftFeature?.points ?? [];
         const referenceHeight = points[points.length - 1]?.z ?? null;
-        const snapOptions = { extraFeatures: this.draftFeature ? [this.draftFeature] : [] };
+        const snapsToDraft = this.draftFeature && this.drawingType !== CadDrawingType.RECTANGLE;
+        const snapOptions = { extraFeatures: snapsToDraft ? [this.draftFeature] : [] };
         return this.surfacePicker.pick(this.toCanvasPoint(event), referenceHeight, snapOptions);
     }
 

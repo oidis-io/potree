@@ -144,6 +144,13 @@ export class TerrainHeightSampler extends EventDispatcher {
         if (!this.isReady) {
             return null;
         }
+        return this.measuredHeightAt(x, y) ?? this.fallbackHeight;
+    }
+
+    measuredHeightAt(x, y) {
+        if (!this.isReady) {
+            return null;
+        }
         const gridX = (x - this.minimumX) / CELL_SIZE_METRES - 0.5;
         const gridY = (y - this.minimumY) / CELL_SIZE_METRES - 0.5;
         const column = Math.floor(gridX);
@@ -165,6 +172,6 @@ export class TerrainHeightSampler extends EventDispatcher {
                 weightSum += weight;
             }
         }
-        return weightSum > 0 ? weightedSum / weightSum : this.fallbackHeight;
+        return weightSum > 0 ? weightedSum / weightSum : null;
     }
 }
