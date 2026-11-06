@@ -123,6 +123,14 @@
         .network-editor-subitem {
             padding-left: 18px;
         }
+        .network-editor-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 10px;
+        }
+        .network-editor-option {
+            white-space: nowrap;
+        }
         .network-editor-subitem .network-editor-swatch {
             display: inline-block;
             margin-right: 4px;
@@ -192,7 +200,7 @@
             cesiumRenderArea: document.getElementById("cesiumContainer")
         });
         window.viewer = viewer;
-        viewer.setEDLEnabled(true);
+        viewer.setEDLEnabled(false);
         viewer.setFOV(60);
         viewer.setPointBudget(5_000_000);
         viewer.setMinNodeSize(30);
@@ -235,6 +243,7 @@
         const flyToDurationMilliseconds = 800;
         const featureViewRenderers = [];
         let isFeatureViewRenderScheduled = false;
+        let isDrawingHelpShown = false;
         let terrainHeightSampler = null;
 
         const cadastreExtentMetres = 1500;
@@ -245,13 +254,18 @@
         ];
         const loadedCadastreLayers = new Set();
 
-        const drawingIdleHint = "Vyber typ prvku a klikej do mapy. Kliknutím na nakreslený prvek ho vybereš. "
-            + "Tažením myši otáčíš a posouváš pohled. Žlutý čtvereček ukazuje přichycení k vrcholu nebo hraně. "
-            + "Ctrl+Z vrátí poslední změnu.";
-        const selectionHint = "Vybraný prvek: tažením vrcholu ho upravíš, tažením za hranu nebo plochu posuneš celý prvek, "
-            + "kliknutím na hranu přidáš vrchol, kliknutím na vrchol ho vybereš. U kružnice tažením středu posuneš kružnici "
-            + "a tažením bodu na obvodu změníš poloměr. Delete smaže vybraný vrchol, jinak celý prvek. Esc zruší výběr. "
-            + "Popisek, barva a vrstva se teď mění u vybraného prvku.";
+        const drawingHelp = "Pohled: levé tlačítko otáčí, pravé posouvá, kolečko přibližuje. "
+            + "Kreslení: vyber tvar a klikej do mapy, Esc kreslení ukončí. Žlutý čtvereček ukazuje přichycení. "
+            + "Úpravy: klikni na prvek, tažením vrcholu ho upravíš, tažením za hranu nebo plochu posuneš celý prvek, "
+            + "kliknutím na hranu přidáš vrchol. U kružnice tažením středu posuneš kružnici a tažením bodu na obvodu změníš poloměr. "
+            + "Delete smaže vybraný vrchol, jinak celý prvek. Esc zruší výběr, Ctrl+Z vrátí poslední změnu. "
+            + "Popisek, barva a vrstva se mění u vybraného prvku, jinak platí pro nově kreslené.";
+        const baseMaps = [
+            { provider: "orto", title: "Ortofoto" },
+            { provider: "cuzk", title: "Základní mapa" },
+            { provider: "openStreetMap", title: "OpenStreetMap" },
+            { provider: null, title: "Bez mapy" }
+        ];
         const vertexDeleteRefusedHint = "Vrchol nejde smazat: linie potřebuje aspoň 2 vrcholy, polygon 3 a kružnice má vždy střed "
             + "a bod na obvodu. Celý prvek smažeš, když vrchol odznačíš a stiskneš Delete.";
         const dtmNetworkLayer = Potree.NetworkEditor.DtmNetworkLayer;
@@ -339,10 +353,44 @@
             }
         }
 
-        function showOrthophotoMap() {
+        function setBaseMap(provider) {
             viewer.cesiumRender.init();
-            viewer.setShowCesium(true);
-            $("#show_cesium_map_provider input[value=orto]").prop("checked", true).trigger("change");
+            viewer.setShowCesium(provider !== null);
+            $("#show_cesium").prop("checked", provider !== null);
+            if (provider !== null) {
+                $("#show_cesium_map_provider input[type=checkbox]").each((index, element) => {
+                    element.checked = element.value === provider;
+                });
+                $(`#show_cesium_map_provider input[value=${provider}]`).trigger("change");
+            }
+        }
+
+        function createBaseMapItem() {
+            const options = baseMaps.map((baseMap, index) => {
+                const radio = $("<input type=\"radio\" name=\"network_editor_base_map\">")
+                    .attr("id", `network_editor_base_map_${index}`)
+                    .prop("checked", index === 0)
+                    .on("change", () => setBaseMap(baseMap.provider));
+                return $("<label class=\"network-editor-option\"></label>").attr("for", `network_editor_base_map_${index}`).append(radio, ` ${baseMap.title}`);
+            });
+            return $("<li class=\"network-editor-options\"></li>").append($("<span>Mapa:</span>"), ...options);
+        }
+
+        function createEdlItem() {
+            return createCheckboxItem("network_editor_edl", "Zvýraznit tvary mračna (EDL)", viewer.getEDLEnabled(), (checked) => viewer.setEDLEnabled(checked));
+        }
+
+        function hidePotreeMenuSections() {
+            $("#potree_menu > h3").not(".network-editor-section").each((index, element) => {
+                $(element).hide().next().hide();
+            });
+        }
+
+        function createMenuSection(identifier, title, items, isExpanded) {
+            const header = $("<h3 class=\"network-editor-section\"></h3>").attr("id", identifier).append($("<span></span>").text(title));
+            const content = $("<div></div>").append($("<ul class=\"pv-menu-list\"></ul>").append(items)).toggle(isExpanded);
+            header.on("click", () => content.slideToggle());
+            return [header, content];
         }
 
         function formatPropertyValue(value) {
@@ -432,6 +480,7 @@
             }
             addPointCloud(pointCloud);
             startTerrainHeightSampler(pointCloud);
+            $("#network_editor_bookmark").hide();
         }
 
         async function openLasFile(file) {
@@ -465,10 +514,13 @@
             const openButton = $("<input type=\"button\">")
                 .val("Otevřít mračno (LAS)")
                 .on("click", () => fileInput[0].click());
+            const bookmarkButton = createBookmarkButton(litovelCentreBookmark)
+                .attr("id", "network_editor_bookmark")
+                .toggle(datasetName.startsWith(defaultDatasetName));
             return [
-                $("<li></li>").append(createShowPointCloudButton(), openButton, createBookmarkButton(litovelCentreBookmark), fileInput),
+                $("<li></li>").append(createShowPointCloudButton(), openButton, bookmarkButton, fileInput),
                 $("<li class=\"network-editor-note\" id=\"network_editor_point_cloud_status\"></li>")
-                    .text("Vlastní mračno: nekomprimovaný LAS v S-JTSK (EPSG:5514). Převede se v prohlížeči, nic se neodesílá.")
+                    .text("Vlastní mračno: nekomprimovaný LAS v S-JTSK, převede se v prohlížeči.")
             ];
         }
 
@@ -545,7 +597,13 @@
                 });
                 item.append(button);
             }
-            return item;
+            const helpButton = $("<input type=\"button\" value=\"?\" title=\"Nápověda k ovládání\">")
+                .on("click", () => {
+                    isDrawingHelpShown = !isDrawingHelpShown;
+                    helpButton.toggleClass("network-editor-active", isDrawingHelpShown);
+                    updateDrawingHint();
+                });
+            return item.append(helpButton);
         }
 
         function applyStyle(style) {
@@ -598,20 +656,18 @@
             return $("<li class=\"network-editor-field\"></li>").append($("<label for=\"network_editor_feature_layer\">Vrstva</label>"), layerSelect);
         }
 
+        function updateDrawingHint() {
+            const hint = $("#network_editor_drawing_hint");
+            const activeDrawingType = drawingTypes.find((drawingType) => drawingType.drawingType === cadTool.drawingType);
+            const text = activeDrawingType?.hint ?? (isDrawingHelpShown ? drawingHelp : "");
+            hint.text(text).toggle(text !== "");
+        }
+
         function createDrawingHintItem() {
-            const hint = $("<li class=\"network-editor-note\"></li>").text(drawingIdleHint);
-            const updateHint = () => {
-                const activeDrawingType = drawingTypes.find((drawingType) => drawingType.drawingType === cadTool.drawingType);
-                if (activeDrawingType) {
-                    hint.text(activeDrawingType.hint);
-                } else {
-                    hint.text(cadEditTool.selectedFeature ? selectionHint : drawingIdleHint);
-                }
-            };
-            cadTool.addEventListener("drawing_changed", updateHint);
-            cadEditTool.addEventListener("selection_changed", updateHint);
-            cadEditTool.addEventListener("vertex_delete_refused", () => hint.text(vertexDeleteRefusedHint));
-            return hint;
+            cadTool.addEventListener("drawing_changed", updateDrawingHint);
+            cadEditTool.addEventListener("selection_changed", updateDrawingHint);
+            cadEditTool.addEventListener("vertex_delete_refused", () => $("#network_editor_drawing_hint").text(vertexDeleteRefusedHint).show());
+            return $("<li class=\"network-editor-note\" id=\"network_editor_drawing_hint\"></li>").hide();
         }
 
         function createUndoItem() {
@@ -637,16 +693,8 @@
             cadHistory.undo();
         }
 
-        function createFeatureCountItem() {
-            const featureCount = $("<li class=\"network-editor-note\"></li>").text("Nakreslené prvky: 0");
-            const updateFeatureCount = () => featureCount.text(`Nakreslené prvky: ${cadDocument.features.length}`);
-            cadDocument.addEventListener("feature_added", updateFeatureCount);
-            cadDocument.addEventListener("feature_removed", updateFeatureCount);
-            return featureCount;
-        }
-
         function createLayerRow(layer) {
-            const activeRadio = $("<input type=\"radio\" name=\"network_editor_active_layer\">")
+            const activeRadio = $("<input type=\"radio\" name=\"network_editor_active_layer\" title=\"Kreslit do této vrstvy\">")
                 .prop("checked", layer.id === cadDocument.activeLayerId)
                 .on("change", () => cadDocument.setActiveLayer(layer.id));
             const visibleCheckbox = $("<input type=\"checkbox\">")
@@ -666,11 +714,7 @@
             const addLayerButton = $("<input type=\"button\">")
                 .val("Přidat vrstvu")
                 .on("click", () => cadDocument.addLayer(`Vrstva ${cadDocument.layers.length + 1}`));
-            return [
-                layerList,
-                $("<li></li>").append(addLayerButton),
-                $("<li class=\"network-editor-note\"></li>").text("Nové prvky se kreslí do vybrané vrstvy.")
-            ];
+            return [layerList, $("<li></li>").append(addLayerButton)];
         }
 
         function scheduleFeatureViewRender() {
@@ -771,19 +815,30 @@
 
         function createSelectedFeatureItems() {
             const summary = $("<li class=\"network-editor-note\"></li>");
-            const profileButton = $("<input type=\"button\">")
+            const profileButton = $("<input type=\"button\" title=\"Body mračna v pásu 1 m podél linie nebo obvodu\">")
                 .val("Výškový profil")
-                .on("click", () => featureProfile.show(cadEditTool.selectedFeature));
+                .on("click", () => {
+                    featureProfile.show(cadEditTool.selectedFeature);
+                    scheduleFeatureViewRender();
+                });
+            const clearProfileButton = $("<input type=\"button\">")
+                .val("Zrušit profil")
+                .on("click", () => {
+                    featureProfile.clear();
+                    viewer.profileWindow.hide();
+                    scheduleFeatureViewRender();
+                });
+            const deleteButton = $("<input type=\"button\">")
+                .val("Smazat")
+                .on("click", () => cadEditTool.deleteSelectedFeature());
             featureViewRenderers.push(() => {
                 const feature = cadEditTool.selectedFeature;
-                summary.text(feature ? `Vybráno: ${describeFeature(feature)} – ${describeFeatureMeasurement(feature)}` : "Žádný prvek není vybraný.");
+                summary.text(feature ? `${describeFeature(feature)} – ${describeFeatureMeasurement(feature)}` : "Klikni na prvek v mapě nebo v seznamu.");
                 profileButton.prop("disabled", !featureProfile.canShow(feature));
+                clearProfileButton.prop("disabled", featureProfile.profile === null);
+                deleteButton.prop("disabled", !feature);
             });
-            return [
-                summary,
-                $("<li></li>").append(profileButton),
-                $("<li class=\"network-editor-note\"></li>").text("Profil ukáže body mračna v pásu 1 m podél vybrané linie nebo hrany polygonu.")
-            ];
+            return [summary, $("<li></li>").append(profileButton, clearProfileButton, deleteButton)];
         }
 
         function createFeatureRow(feature) {
@@ -904,16 +959,9 @@
                 .on("click", startNewDrawing);
             return [
                 $("<li></li>").append(saveButton, loadButton, newDrawingButton, fileInput),
-                $("<li class=\"network-editor-note\" id=\"network_editor_file_status\"></li>").text("Kresba se ukládá v souřadnicích S-JTSK (EPSG:5514)."),
-                $("<li class=\"network-editor-note\"></li>").text("Kresba se průběžně ukládá i v tomto prohlížeči, zvlášť pro každé mračno, a po obnovení stránky se sama načte.")
+                $("<li class=\"network-editor-note\" id=\"network_editor_file_status\"></li>")
+                    .text("Kresba se průběžně ukládá v tomto prohlížeči. Soubor JSON je v souřadnicích S-JTSK.")
             ];
-        }
-
-        function hidePotreeMeasurementTools() {
-            const measurementTools = $("#tools");
-            measurementTools.prevAll(".divider").first().hide();
-            $("#measurement_options_show").closest("li").hide();
-            measurementTools.hide();
         }
 
         function updateEditToolAvailability() {
@@ -972,8 +1020,7 @@
             return [
                 ...cadastreLayers.map(createCadastreLayerItem),
                 $("<li></li>").append(reloadButton),
-                $("<li class=\"network-editor-note\"></li>").text("Katastr: ČÚZK (RÚIAN, ZABAGED), CC BY 4.0. "
-                    + "Načte se pro aktuální pohled. Hranice mají přesnost 0,1–1,5 m, cesty jsou orientační.")
+                $("<li class=\"network-editor-note\"></li>").text("ČÚZK (RÚIAN, ZABAGED), CC BY 4.0. Načítá se pro aktuální pohled.")
             ];
         }
 
@@ -1006,7 +1053,7 @@
             cadastreOverlay.setTerrainHeightSampler(terrainHeightSampler);
             cadEditTool.setTerrainHeightSampler(terrainHeightSampler);
             terrainHeightSampler.addEventListener("ready", () => {
-                terrainStatus.text("Výška terénu z mračna: hotovo, sítě i katastr leží na terénu.");
+                terrainStatus.text("Výška terénu z mračna: hotovo.");
                 scheduleFeatureViewRender();
             });
             terrainHeightSampler.addEventListener("failed", () => terrainStatus.text("Výšku terénu se nepodařilo spočítat."));
@@ -1014,39 +1061,40 @@
             terrainHeightSampler.start();
         }
 
-        function addNetworkEditorSection() {
-            const header = $("<h3 id=\"menu_network_editor\"><span>Síťový editor</span></h3>");
-            const list = $("<ul class=\"pv-menu-list\"></ul>").append(
-                ...createPointCloudItems(),
-                $("<div class=\"divider\"><span>Vrstvy</span></div>"),
-                createCheckboxItem("network_editor_point_cloud", "Mračno bodů", true, setPointCloudsVisible),
-                createDtmLayerItem(),
-                ...createDtmNetworkItems(),
-                $("<li class=\"network-editor-note\"></li>").text("DTM: ČÚZK – IS DMVS, přibližný zákres, pouze orientačně. Info o síti hledá jen v zapnutých druzích."),
-                createTerrainStatusItem(),
-                $("<div class=\"divider\"><span>Katastr</span></div>"),
-                ...createCadastreItems(),
-                $("<div class=\"divider\"><span>Kreslení</span></div>"),
-                createDrawingButtonsItem(),
-                ...createStyleItems(),
-                createSnappingItem(),
-                createDimensionItem(),
-                createDrawingHintItem(),
-                createUndoItem(),
-                createFeatureCountItem(),
-                ...createSelectedFeatureItems(),
-                $("<div class=\"divider\"><span>Vrstvy kreslení</span></div>"),
-                ...createLayerItems(),
-                $("<div class=\"divider\"><span>Nakreslené prvky</span></div>"),
-                createFeatureListItem(),
-                $("<div class=\"divider\"><span>Soubor</span></div>"),
-                ...createDrawingFileItems(),
-                $("<div class=\"divider\"><span>Nástroje</span></div>"),
-                $("<li></li>").append(createInfoToolButton())
-            );
-            const content = $("<div></div>").append(list);
-            header.on("click", () => content.slideToggle());
-            $("#potree_menu").prepend(header, content);
+        function addNetworkEditorSections() {
+            const sections = [
+                createMenuSection("menu_network_editor", "Podklady", [
+                    ...createPointCloudItems(),
+                    createCheckboxItem("network_editor_point_cloud", "Mračno bodů", true, setPointCloudsVisible),
+                    createEdlItem(),
+                    createBaseMapItem(),
+                    createTerrainStatusItem(),
+                    $("<div class=\"divider\"><span>Katastr</span></div>"),
+                    ...createCadastreItems()
+                ], true),
+                createMenuSection("menu_network_editor_networks", "Sítě (DTM)", [
+                    createDtmLayerItem(),
+                    ...createDtmNetworkItems(),
+                    $("<li></li>").append(createInfoToolButton()),
+                    $("<li class=\"network-editor-note\"></li>").text("ČÚZK – IS DMVS, přibližný zákres, jen orientačně.")
+                ], true),
+                createMenuSection("menu_network_editor_drawing", "Kreslení", [
+                    createDrawingButtonsItem(),
+                    createDrawingHintItem(),
+                    ...createStyleItems(),
+                    createSnappingItem(),
+                    createDimensionItem(),
+                    createUndoItem()
+                ], true),
+                createMenuSection("menu_network_editor_selection", "Vybraný prvek", createSelectedFeatureItems(), true),
+                createMenuSection("menu_network_editor_features", "Vrstvy a prvky", [
+                    ...createLayerItems(),
+                    $("<div class=\"divider\"><span>Nakreslené prvky</span></div>"),
+                    createFeatureListItem()
+                ], true),
+                createMenuSection("menu_network_editor_file", "Soubor", createDrawingFileItems(), false)
+            ];
+            $("#potree_menu").prepend(...sections.flat());
             for (const eventType of ["feature_added", "feature_removed", "layers_changed", "feature_layer_changed"]) {
                 cadDocument.addEventListener(eventType, scheduleFeatureViewRender);
             }
@@ -1073,14 +1121,13 @@
         await viewer.loadGUI();
         viewer.setLanguage("cs");
         viewer.toggleSidebar();
-        $("#menu_tools").next().show();
-        hidePotreeMeasurementTools();
-        addNetworkEditorSection();
+        hidePotreeMenuSections();
+        addNetworkEditorSections();
         restoreStoredDrawing();
         const pointCloud = await pointCloudLoaded;
         addPointCloud(pointCloud);
         startTerrainHeightSampler(pointCloud);
-        showOrthophotoMap();
+        setBaseMap(baseMaps[0].provider);
         dtmOverlay.setVisible($("#network_editor_dtm").prop("checked"));
     </script>
 </body>
