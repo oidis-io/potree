@@ -140,7 +140,7 @@
     <script src="../libs/copc/index.js"></script>
 
     <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px;">
-        <div id="potree_render_area" style="background-image: url('../build/potree/resources/images/background.jpg');">
+        <div id="potree_render_area" style="background-color: #102030;">
             <div id="cesiumContainer" style="position: absolute; inset: 0; background-color: #102030"></div>
         </div>
         <div id="potree_sidebar_container"></div>
@@ -205,6 +205,7 @@
         const cadEditTool = new Potree.NetworkEditor.CadEditTool(viewer, cadDocument, surfacePicker);
         const cadHistory = new Potree.NetworkEditor.CadHistory(cadDocument);
         const featureProfile = new Potree.NetworkEditor.FeatureProfile(viewer);
+        const cadAutosave = new Potree.NetworkEditor.CadAutosave(cadDocument, cadHistory, `oidis-network-editor:${datasetName}`);
         cadView.setDimensionFormatter((dimension) => formatDimension(dimension));
         cadDocument.addLayer("Vrstva 1");
 
@@ -707,9 +708,13 @@
             cadHistory.reset();
         }
 
-        async function loadDrawingFile(file, status) {
+        function showFileStatus(text) {
+            $("#network_editor_file_status").text(text);
+        }
+
+        async function loadDrawingFile(file) {
             if (file.size > maximumDrawingFileBytes) {
-                status.text(drawingFileErrorMessages[Potree.NetworkEditor.CadFileErrorCode.TOO_LARGE]);
+                showFileStatus(drawingFileErrorMessages[Potree.NetworkEditor.CadFileErrorCode.TOO_LARGE]);
                 return;
             }
             if (cadDocument.features.length > 0 && !window.confirm("Načtení nahradí současnou kresbu. Pokračovat?")) {
@@ -719,33 +724,65 @@
             try {
                 content = Potree.NetworkEditor.parseCadFile(await file.text());
             } catch (error) {
-                status.text(drawingFileErrorMessages[error.code] ?? "Soubor se nepodařilo načíst.");
+                showFileStatus(drawingFileErrorMessages[error.code] ?? "Soubor se nepodařilo načíst.");
                 return;
             }
             replaceDrawing(content);
-            status.text(`Načteno prvků: ${content.features.length}, vrstev: ${content.layers.length}.`);
+            showFileStatus(`Načteno prvků: ${content.features.length}, vrstev: ${content.layers.length}.`);
+        }
+
+        function createEmptyDrawingContent() {
+            return { layers: [{ id: "layer-1", name: "Vrstva 1", visible: true }], activeLayerId: "layer-1", features: [] };
+        }
+
+        function startNewDrawing() {
+            if (cadDocument.features.length > 0 && !window.confirm("Nová kresba smaže všechny nakreslené prvky. Pokračovat?")) {
+                return;
+            }
+            replaceDrawing(createEmptyDrawingContent());
+            showFileStatus("Začala nová prázdná kresba.");
+        }
+
+        function restoreStoredDrawing() {
+            try {
+                const content = cadAutosave.load();
+                if (content) {
+                    replaceDrawing(content);
+                    showFileStatus(`Obnoveno z prohlížeče: prvků ${content.features.length}, vrstev ${content.layers.length}.`);
+                }
+            } catch (error) {
+                showFileStatus(`Uloženou kresbu se nepodařilo obnovit. ${drawingFileErrorMessages[error.code] ?? ""}`.trim());
+            }
+            cadAutosave.addEventListener("save_failed", () => showFileStatus("Automatické ukládání se nezdařilo: prohlížeč úložiště nepovolil, nebo je plné."));
+            cadAutosave.start();
         }
 
         function createDrawingFileItems() {
-            const status = $("<li class=\"network-editor-note\"></li>").text("Kresba se ukládá v souřadnicích S-JTSK (EPSG:5514).");
             const fileInput = $("<input type=\"file\" accept=\".json,application/json\" hidden>")
                 .on("change", (event) => {
                     const file = event.target.files[0];
                     event.target.value = "";
                     if (file) {
-                        loadDrawingFile(file, status);
+                        loadDrawingFile(file);
                     }
                 });
             const saveButton = $("<input type=\"button\">")
                 .val("Uložit kresbu (JSON)")
                 .on("click", () => {
                     saveDrawing();
-                    status.text(`Uloženo prvků: ${cadDocument.features.length}.`);
+                    showFileStatus(`Uloženo prvků: ${cadDocument.features.length}.`);
                 });
             const loadButton = $("<input type=\"button\">")
                 .val("Načíst kresbu")
                 .on("click", () => fileInput[0].click());
-            return [$("<li></li>").append(saveButton, loadButton, fileInput), status];
+            const newDrawingButton = $("<input type=\"button\">")
+                .val("Nová kresba")
+                .on("click", startNewDrawing);
+            return [
+                $("<li></li>").append(saveButton, loadButton, newDrawingButton, fileInput),
+                $("<li class=\"network-editor-note\" id=\"network_editor_file_status\"></li>").text("Kresba se ukládá v souřadnicích S-JTSK (EPSG:5514)."),
+                $("<li class=\"network-editor-note\"></li>").text("Kresba se průběžně ukládá i v tomto prohlížeči, zvlášť pro každé mračno, a po obnovení stránky se sama načte.")
+            ];
         }
 
         function hidePotreeMeasurementTools() {
@@ -914,6 +951,7 @@
         $("#menu_tools").next().show();
         hidePotreeMeasurementTools();
         addNetworkEditorSection();
+        restoreStoredDrawing();
         const pointCloud = await pointCloudLoaded;
         addPointCloud(pointCloud);
         startTerrainHeightSampler(pointCloud);

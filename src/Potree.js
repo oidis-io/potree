@@ -68,6 +68,7 @@ import { CadFileErrorCode, createCadFile, parseCadFile } from "./modules/Network
 import { FeatureProfile } from "./modules/NetworkEditor/FeatureProfile.js";
 import { measureFeature } from "./modules/NetworkEditor/FeatureMeasurement.js";
 import { DimensionKind } from "./modules/NetworkEditor/FeatureDimensions.js";
+import { CadAutosave } from "./modules/NetworkEditor/CadAutosave.js";
 
 const Potree = {
     OrbitControls,
@@ -129,7 +130,8 @@ const Potree = {
         parseCadFile,
         FeatureProfile,
         measureFeature,
-        DimensionKind
+        DimensionKind,
+        CadAutosave
     },
     pointBudget: PotreeConfig.pointBudget,
     framenumber: PotreeConfig.framenumber,
