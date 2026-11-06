@@ -14,7 +14,7 @@ import { LineGeometry } from "../../../libs/three.js/lines/LineGeometry.js";
 import { LineMaterial } from "../../../libs/three.js/lines/LineMaterial.js";
 import { TextSprite } from "../../TextSprite.js";
 import { Utils } from "../../utils.js";
-import { isSimplePolygon, polygonCentroid } from "../../utils/PolygonMath.js";
+import { isSimplePolygon, polygonArea, polygonCentroid } from "../../utils/PolygonMath.js";
 
 export const CadFeatureType = Object.freeze({
     POINT: "point",
@@ -149,6 +149,18 @@ export class CadFeature extends THREE.Object3D {
         this.points.splice(index, 1);
         this.selectedVertexIndex = null;
         this.rebuild();
+    }
+
+    computeHorizontalLength() {
+        return this.computeEdgeSegments().reduce((sum, [start, end]) => sum + Math.hypot(end.x - start.x, end.y - start.y), 0);
+    }
+
+    computeSlopeLength() {
+        return this.computeEdgeSegments().reduce((sum, [start, end]) => sum + start.distanceTo(end), 0);
+    }
+
+    computeArea() {
+        return this.featureType === CadFeatureType.POLYGON && this.hasSimpleOutline() ? polygonArea(this.getRelativeOutline()) : null;
     }
 
     toData() {

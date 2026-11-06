@@ -26,6 +26,11 @@ export class CadHistory extends EventDispatcher {
         return this.snapshots.length > 1;
     }
 
+    reset() {
+        this.snapshots = [this.createSnapshot()];
+        this.dispatchEvent({ type: "history_changed" });
+    }
+
     createSnapshot() {
         return JSON.stringify(this.cadDocument.toData());
     }

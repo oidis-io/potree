@@ -64,6 +64,8 @@ import { TerrainHeightSampler } from "./modules/NetworkEditor/TerrainHeightSampl
 import { CadastreLayer } from "./modules/NetworkEditor/CadastreService.js";
 import { CadastreOverlay } from "./modules/NetworkEditor/CadastreOverlay.js";
 import { CadSnapper } from "./modules/NetworkEditor/CadSnapper.js";
+import { CadFileErrorCode, createCadFile, parseCadFile } from "./modules/NetworkEditor/CadFileFormat.js";
+import { FeatureProfile } from "./modules/NetworkEditor/FeatureProfile.js";
 
 const Potree = {
     OrbitControls,
@@ -118,7 +120,11 @@ const Potree = {
         TerrainHeightSampler,
         CadastreLayer,
         CadastreOverlay,
-        CadSnapper
+        CadSnapper,
+        CadFileErrorCode,
+        createCadFile,
+        parseCadFile,
+        FeatureProfile
     },
     pointBudget: PotreeConfig.pointBudget,
     framenumber: PotreeConfig.framenumber,

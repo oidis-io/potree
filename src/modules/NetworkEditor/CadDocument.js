@@ -21,8 +21,12 @@ export class CadDocument extends EventDispatcher {
     }
 
     addLayer(name) {
-        this.layerCounter++;
-        const layer = { id: `layer-${this.layerCounter}`, name: name, visible: true };
+        let layerId;
+        do {
+            this.layerCounter++;
+            layerId = `layer-${this.layerCounter}`;
+        } while (this.findLayer(layerId));
+        const layer = { id: layerId, name: name, visible: true };
         this.layers.push(layer);
         this.activeLayerId = layer.id;
         this.dispatchEvent({ type: "layers_changed" });
@@ -72,6 +76,13 @@ export class CadDocument extends EventDispatcher {
 
     toData() {
         return this.features.map((feature) => feature.toData());
+    }
+
+    replaceContent(content) {
+        this.layers = content.layers.map((layer) => ({ id: layer.id, name: layer.name, visible: layer.visible }));
+        this.activeLayerId = content.activeLayerId;
+        this.loadData(content.features);
+        this.dispatchEvent({ type: "layers_changed" });
     }
 
     loadData(featureData) {

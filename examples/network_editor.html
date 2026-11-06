@@ -100,6 +100,26 @@
             justify-content: space-between;
             align-items: center;
         }
+        .network-editor-feature-group {
+            margin-top: 4px;
+            font-weight: bold;
+        }
+        .network-editor-feature {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+            padding: 2px 4px;
+            cursor: pointer;
+        }
+        .network-editor-feature:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .network-editor-swatch {
+            flex: none;
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+        }
     </style>
 </head>
 
@@ -167,8 +187,10 @@
         window.viewer = viewer;
         viewer.setEDLEnabled(true);
         viewer.setFOV(60);
-        viewer.setPointBudget(2_000_000);
+        viewer.setPointBudget(5_000_000);
+        viewer.setMinNodeSize(30);
         viewer.setBackground(null);
+        viewer.useHQ = true;
 
         const mapPlane = new Potree.NetworkEditor.MapPlane(viewer);
         const dtmOverlay = new Potree.NetworkEditor.DtmOverlay(viewer, mapPlane);
@@ -182,7 +204,21 @@
         const cadTool = new Potree.NetworkEditor.CadTool(viewer, surfacePicker, cadDocument, cadView);
         const cadEditTool = new Potree.NetworkEditor.CadEditTool(viewer, cadDocument, surfacePicker);
         const cadHistory = new Potree.NetworkEditor.CadHistory(cadDocument);
+        const featureProfile = new Potree.NetworkEditor.FeatureProfile(viewer);
         cadDocument.addLayer("Vrstva 1");
+
+        const maximumDrawingFileBytes = 20 * 1024 * 1024;
+        const drawingFileErrorMessages = {
+            [Potree.NetworkEditor.CadFileErrorCode.TOO_LARGE]: "Soubor je příliš velký (max. 20 MB).",
+            [Potree.NetworkEditor.CadFileErrorCode.INVALID_JSON]: "Soubor není platný JSON.",
+            [Potree.NetworkEditor.CadFileErrorCode.UNSUPPORTED_FORMAT]: "Soubor není kresba síťového editoru, nebo má jinou verzi či souřadnicový systém.",
+            [Potree.NetworkEditor.CadFileErrorCode.INVALID_CONTENT]: "Kresba obsahuje neplatná data."
+        };
+        const flyToMinimumDistanceMetres = 40;
+        const flyToMaximumPitch = -Math.PI / 4;
+        const flyToDurationMilliseconds = 800;
+        const featureViewRenderers = [];
+        let isFeatureViewRenderScheduled = false;
 
         const cadastreExtentMetres = 1500;
         const cadastreLayers = [
@@ -234,6 +270,7 @@
             material.activeAttributeName = "rgba";
             material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
             material.size = 1;
+            material.minSize = 2;
             pointCloud.visible = pointCloudCheckbox.prop("checked");
             pointCloud.addEventListener("visibility_changed", () => pointCloudCheckbox.prop("checked", pointCloud.visible));
             viewer.scene.addPointCloud(pointCloud);
@@ -364,6 +401,7 @@
         function applyStyle(style) {
             if (cadEditTool.selectedFeature) {
                 cadEditTool.updateSelectedFeature(style);
+                scheduleFeatureViewRender();
             } else {
                 cadTool.setStyle(style);
             }
@@ -469,6 +507,175 @@
             ];
         }
 
+        function scheduleFeatureViewRender() {
+            if (isFeatureViewRenderScheduled) {
+                return;
+            }
+            isFeatureViewRenderScheduled = true;
+            queueMicrotask(() => {
+                isFeatureViewRenderScheduled = false;
+                featureViewRenderers.forEach((render) => render());
+            });
+        }
+
+        function formatNumber(value, fractionDigits) {
+            return value.toLocaleString("cs-CZ", { minimumFractionDigits: fractionDigits, maximumFractionDigits: fractionDigits });
+        }
+
+        function describeFeature(feature) {
+            const typeTitle = drawingTypes.find((drawingType) => drawingType.featureType === feature.featureType).title;
+            return feature.label !== "" ? `${typeTitle} „${feature.label}“` : typeTitle;
+        }
+
+        function describeFeatureMeasurement(feature) {
+            if (feature.featureType === Potree.NetworkEditor.CadFeatureType.POLYLINE) {
+                return `délka ${formatNumber(feature.computeHorizontalLength(), 2)} m (šikmo ${formatNumber(feature.computeSlopeLength(), 2)} m)`;
+            }
+            if (feature.featureType === Potree.NetworkEditor.CadFeatureType.POLYGON) {
+                const area = feature.computeArea();
+                const areaText = area === null ? "plochu nelze spočítat, hrany se kříží" : `plocha ${formatNumber(area, 1)} m²`;
+                return `${areaText}, obvod ${formatNumber(feature.computeHorizontalLength(), 2)} m`;
+            }
+            return "";
+        }
+
+        function flyToFeature(feature) {
+            const minimum = feature.points[0].clone();
+            const maximum = feature.points[0].clone();
+            for (const point of feature.points) {
+                minimum.min(point);
+                maximum.max(point);
+            }
+            const target = minimum.clone().add(maximum).multiplyScalar(0.5);
+            const distance = Math.max(minimum.distanceTo(maximum) * 1.5, flyToMinimumDistanceMetres);
+            const yaw = viewer.scene.view.yaw;
+            const pitch = Math.min(viewer.scene.view.pitch, flyToMaximumPitch);
+            const position = [
+                target.x + Math.sin(yaw) * Math.cos(pitch) * distance,
+                target.y - Math.cos(yaw) * Math.cos(pitch) * distance,
+                target.z - Math.sin(pitch) * distance
+            ];
+            viewer.scene.view.setView(position, target.toArray(), flyToDurationMilliseconds);
+        }
+
+        function focusFeature(feature) {
+            if (cadTool.isDrawing) {
+                cadTool.finishDrawing();
+            }
+            if (dtmInfoTool.active) {
+                dtmInfoTool.deactivate();
+            }
+            cadDocument.setLayerVisible(feature.layerId, true);
+            cadEditTool.select(feature);
+            flyToFeature(feature);
+        }
+
+        function createSelectedFeatureItems() {
+            const summary = $("<li class=\"network-editor-note\"></li>");
+            const profileButton = $("<input type=\"button\">")
+                .val("Výškový profil")
+                .on("click", () => featureProfile.show(cadEditTool.selectedFeature));
+            featureViewRenderers.push(() => {
+                const feature = cadEditTool.selectedFeature;
+                const measurement = feature ? describeFeatureMeasurement(feature) : "";
+                summary.text(feature ? `Vybráno: ${describeFeature(feature)}${measurement !== "" ? ` – ${measurement}` : ""}` : "Žádný prvek není vybraný.");
+                profileButton.prop("disabled", !featureProfile.canShow(feature));
+            });
+            return [
+                summary,
+                $("<li></li>").append(profileButton),
+                $("<li class=\"network-editor-note\"></li>").text("Profil ukáže body mračna v pásu 1 m podél vybrané linie nebo hrany polygonu.")
+            ];
+        }
+
+        function createFeatureRow(feature) {
+            const measurement = describeFeatureMeasurement(feature);
+            const swatch = $("<span class=\"network-editor-swatch\"></span>").css("background", `#${feature.color.getHexString()}`);
+            const title = $("<span></span>").text(measurement !== "" ? `${describeFeature(feature)} – ${measurement}` : describeFeature(feature));
+            return $("<div class=\"network-editor-feature\"></div>")
+                .toggleClass("network-editor-active", feature === cadEditTool.selectedFeature)
+                .append(swatch, title)
+                .on("click", () => focusFeature(feature));
+        }
+
+        function createFeatureListItem() {
+            const featureList = $("<li></li>");
+            featureViewRenderers.push(() => {
+                featureList.empty();
+                if (cadDocument.features.length === 0) {
+                    featureList.append($("<div class=\"network-editor-note\"></div>").text("Zatím žádné prvky."));
+                    return;
+                }
+                for (const layer of cadDocument.layers) {
+                    const layerFeatures = cadDocument.features.filter((feature) => feature.layerId === layer.id);
+                    if (layerFeatures.length === 0) {
+                        continue;
+                    }
+                    const groupTitle = layer.visible ? layer.name : `${layer.name} (skrytá)`;
+                    featureList.append($("<div class=\"network-editor-feature-group\"></div>").text(groupTitle), layerFeatures.map(createFeatureRow));
+                }
+            });
+            return featureList;
+        }
+
+        function saveDrawing() {
+            const content = JSON.stringify(Potree.NetworkEditor.createCadFile(cadDocument), null, 2);
+            const url = URL.createObjectURL(new Blob([content], { type: "application/json" }));
+            $("<a></a>").attr({ href: url, download: `kresba-${datasetName}.json` })[0].click();
+            setTimeout(() => URL.revokeObjectURL(url), 0);
+        }
+
+        function replaceDrawing(content) {
+            if (cadTool.isDrawing) {
+                cadTool.finishDrawing();
+            }
+            cadEditTool.select(null);
+            featureProfile.clear();
+            cadDocument.replaceContent(content);
+            cadHistory.reset();
+        }
+
+        async function loadDrawingFile(file, status) {
+            if (file.size > maximumDrawingFileBytes) {
+                status.text(drawingFileErrorMessages[Potree.NetworkEditor.CadFileErrorCode.TOO_LARGE]);
+                return;
+            }
+            if (cadDocument.features.length > 0 && !window.confirm("Načtení nahradí současnou kresbu. Pokračovat?")) {
+                return;
+            }
+            let content;
+            try {
+                content = Potree.NetworkEditor.parseCadFile(await file.text());
+            } catch (error) {
+                status.text(drawingFileErrorMessages[error.code] ?? "Soubor se nepodařilo načíst.");
+                return;
+            }
+            replaceDrawing(content);
+            status.text(`Načteno prvků: ${content.features.length}, vrstev: ${content.layers.length}.`);
+        }
+
+        function createDrawingFileItems() {
+            const status = $("<li class=\"network-editor-note\"></li>").text("Kresba se ukládá v souřadnicích S-JTSK (EPSG:5514).");
+            const fileInput = $("<input type=\"file\" accept=\".json,application/json\" hidden>")
+                .on("change", (event) => {
+                    const file = event.target.files[0];
+                    event.target.value = "";
+                    if (file) {
+                        loadDrawingFile(file, status);
+                    }
+                });
+            const saveButton = $("<input type=\"button\">")
+                .val("Uložit kresbu (JSON)")
+                .on("click", () => {
+                    saveDrawing();
+                    status.text(`Uloženo prvků: ${cadDocument.features.length}.`);
+                });
+            const loadButton = $("<input type=\"button\">")
+                .val("Načíst kresbu")
+                .on("click", () => fileInput[0].click());
+            return [$("<li></li>").append(saveButton, loadButton, fileInput), status];
+        }
+
         function updateEditToolAvailability() {
             cadEditTool.setEnabled(!cadTool.isDrawing && !dtmInfoTool.active);
         }
@@ -567,14 +774,26 @@
                 createDrawingHintItem(),
                 createUndoItem(),
                 createFeatureCountItem(),
+                ...createSelectedFeatureItems(),
                 $("<div class=\"divider\"><span>Vrstvy kreslení</span></div>"),
                 ...createLayerItems(),
+                $("<div class=\"divider\"><span>Nakreslené prvky</span></div>"),
+                createFeatureListItem(),
+                $("<div class=\"divider\"><span>Soubor</span></div>"),
+                ...createDrawingFileItems(),
                 $("<div class=\"divider\"><span>Nástroje</span></div>"),
                 $("<li></li>").append(createInfoToolButton())
             );
             const content = $("<div></div>").append(list);
             header.on("click", () => content.slideToggle());
             $("#potree_menu").prepend(header, content);
+            for (const eventType of ["feature_added", "feature_removed", "layers_changed"]) {
+                cadDocument.addEventListener(eventType, scheduleFeatureViewRender);
+            }
+            for (const eventType of ["feature_changed", "selection_changed"]) {
+                cadEditTool.addEventListener(eventType, scheduleFeatureViewRender);
+            }
+            scheduleFeatureViewRender();
         }
 
         infoPanel.find(".network-info-close").on("click", closeInfoPanel);
