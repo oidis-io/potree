@@ -166,6 +166,17 @@
             "webglContextLostHint": "Troppe schede aperte con l'editor 3D",
             "restoreView": "Ripristina vista",
             "restoringView": "Ripristino della vista 3D in corso..."
+        },
+        "navigationCube": {
+            "top": "SOPRA",
+            "bottom": "SOTTO",
+            "front": "FRONTE",
+            "back": "RETRO",
+            "left": "SINISTRA",
+            "right": "DESTRA"
+        },
+        "measure": {
+            "circumference": "circonferenza"
         }
     }
 }

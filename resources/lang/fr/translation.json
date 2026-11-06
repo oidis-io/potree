@@ -125,6 +125,17 @@
             "webglContextLostHint": "Trop d'onglets ouverts avec l'éditeur 3D",
             "restoreView": "Restaurer la vue",
             "restoringView": "Restauration de la vue 3D..."
+        },
+        "navigationCube": {
+            "top": "HAUT",
+            "bottom": "BAS",
+            "front": "AVANT",
+            "back": "ARRIÈRE",
+            "left": "GAUCHE",
+            "right": "DROITE"
+        },
+        "measure": {
+            "circumference": "périmètre"
         }
     }
 }

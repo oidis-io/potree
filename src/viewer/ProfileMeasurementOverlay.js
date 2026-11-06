@@ -9,11 +9,12 @@
  * ********************************************************************************************************* */
 
 import * as THREE from "../../libs/three.js/build/three.module.js";
-import { Utils } from "../utils.js";
 import { ProfileProjection } from "./ProfileProjection.js";
+import { formatNumber } from "../utils/LocaleFormat.js";
 
 const MARKER_RADIUS = 4;
 const LABEL_OFFSET = 12;
+const LABEL_PADDING = 2;
 const ANGLE_LABEL_DISTANCE = 20;
 const MEASUREMENT_EVENTS = ["marker_added", "marker_removed", "marker_moved"];
 
@@ -203,12 +204,24 @@ export class ProfileMeasurementOverlay {
     }
 
     drawLabel(group, text, x, y, anchor) {
-        group.append("text")
+        const label = group.append("text")
             .attr("class", "profile-measurement-label")
             .attr("x", x)
             .attr("y", y)
             .attr("text-anchor", anchor)
             .text(text);
+        this.keepInside(label, x, y);
+    }
+
+    keepInside(label, x, y) {
+        const bounds = this.svg.node().getBoundingClientRect();
+        const box = label.node().getBBox();
+        if (bounds.width === 0 || box.width === 0) {
+            return;
+        }
+        const shiftX = Math.min(0, bounds.width - LABEL_PADDING - (box.x + box.width)) || Math.max(0, LABEL_PADDING - box.x);
+        const shiftY = Math.min(0, bounds.height - LABEL_PADDING - (box.y + box.height)) || Math.max(0, LABEL_PADDING - box.y);
+        label.attr("x", x + shiftX).attr("y", y + shiftY);
     }
 
     drawDistanceLabels(group, measurement, points) {
@@ -275,7 +288,7 @@ export class ProfileMeasurementOverlay {
     drawElevationLabels(group, measurement, points) {
         points.forEach((point, index) => {
             const elevation = measurement.points[index].position.z;
-            this.drawLabel(group, Utils.addCommas(elevation.toFixed(2)),
+            this.drawLabel(group, formatNumber(elevation, 2),
                 point.x, point.y - MARKER_RADIUS - LABEL_OFFSET, "middle");
         });
     }

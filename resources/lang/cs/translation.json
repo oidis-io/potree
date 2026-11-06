@@ -69,6 +69,17 @@
 			"webglContextLostHint": "Příliš mnoho otevřených záložek s 3D editorem",
 			"restoreView": "Obnovit zobrazení",
 			"restoringView": "Obnovuji 3D pohled..."
+		},
+		"navigationCube": {
+			"top": "NAHOŘE",
+			"bottom": "DOLE",
+			"front": "VPŘEDU",
+			"back": "VZADU",
+			"left": "VLEVO",
+			"right": "VPRAVO"
+		},
+		"measure": {
+			"circumference": "obvod"
 		}
 	}
 }

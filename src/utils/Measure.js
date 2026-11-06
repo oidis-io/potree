@@ -16,6 +16,7 @@ import { bindDuplicateDrag } from "./DuplicateDrag.js";
 import { Line2 } from "../../libs/three.js/lines/Line2.js";
 import { LineGeometry } from "../../libs/three.js/lines/LineGeometry.js";
 import { LineMaterial } from "../../libs/three.js/lines/LineMaterial.js";
+import { formatNumber } from "./LocaleFormat.js";
 
 function createHeightLine() {
     let lineGeometry = new LineGeometry();
@@ -765,7 +766,7 @@ export class Measure extends THREE.Object3D {
             {
                 let coordinateLabel = this.coordinateLabels[0];
                 if (this._title === null) {
-                    let msg = position.toArray().map(p => Utils.addCommas(p.toFixed(2))).join(" / ");
+                    let msg = position.toArray().map(p => formatNumber(p, 2)).join(" / ");
                     coordinateLabel.setText(msg);
                 } else {
                     coordinateLabel.setText(this._title);
@@ -839,7 +840,7 @@ export class Measure extends THREE.Object3D {
                     suffix = this.lengthUnitDisplay.code;
                 }
 
-                let txtLength = Utils.addCommas(distance.toFixed(2));
+                let txtLength = formatNumber(distance, 2);
                 edgeLabel.setText(`${txtLength} ${suffix}`);
                 edgeLabel.visible = this.showDistances && (index < lastIndex || this.closed) && this.points.length >= 2 && distance > 0;
             }
@@ -858,7 +859,7 @@ export class Measure extends THREE.Object3D {
                 let labelPos = point.position.clone().add(dir.multiplyScalar(dist));
                 angleLabel.position.copy(labelPos);
 
-                let msg = Utils.addCommas((angle * (180.0 / Math.PI)).toFixed(1)) + "\u00B0";
+                let msg = formatNumber(angle * (180.0 / Math.PI), 1) + "\u00B0";
                 angleLabel.setText(msg);
 
                 angleLabel.visible = this.showAngles && ((index > 0 && index < lastIndex) || this.closed) && this.points.length >= 3 && angle > 0;
@@ -881,7 +882,7 @@ export class Measure extends THREE.Object3D {
                 suffix = this.lengthUnitDisplay.code;
             }
             this.totalLabel.position.copy(centroid);
-            this.totalLabel.setText(`${Utils.addCommas(totalLength.toFixed(2))} ${suffix}`);
+            this.totalLabel.setText(`${formatNumber(totalLength, 2)} ${suffix}`);
             this.totalLabel.visible = this.showDistances && !this.showArea && this.points.length >= 2;
         }
 
@@ -923,7 +924,7 @@ export class Measure extends THREE.Object3D {
                     suffix = this.lengthUnitDisplay.code;
                 }
 
-                let txtHeight = Utils.addCommas(height.toFixed(2));
+                let txtHeight = formatNumber(height, 2);
                 let msg = `${txtHeight} ${suffix}`;
                 this.heightLabel.setText(msg);
             }
@@ -989,14 +990,14 @@ export class Measure extends THREE.Object3D {
 
                     circleRadiusLabel.visible = true;
                     circleRadiusLabel.position.copy(center.clone().add(B).multiplyScalar(0.5));
-                    circleRadiusLabel.setText(`${radius.toFixed(3)}`);
+                    circleRadiusLabel.setText(formatNumber(radius, 3));
 
                     const diameter = radius * 2;
                     const circumference = Math.PI * diameter;
                     const circleArea = Math.PI * radius * radius;
                     circleDetailLabel.position.copy(center);
                     circleDetailLabel.setText(
-                        `⌀ ${diameter.toFixed(3)}   obvod ${circumference.toFixed(3)}   ${circleArea.toFixed(2)} m²`);
+                        `⌀ ${formatNumber(diameter, 3)}   ${i18n.t("zbysek.measure.circumference")} ${formatNumber(circumference, 3)}   ${formatNumber(circleArea, 2)} m²`);
                 }
             }
         }
@@ -1012,7 +1013,7 @@ export class Measure extends THREE.Object3D {
                 suffix = this.lengthUnitDisplay.code;
             }
 
-            let txtArea = Utils.addCommas(area.toFixed(1));
+            let txtArea = formatNumber(area, 1);
             let msg = `${txtArea} ${suffix}\u00B2`;
             this.areaLabel.setText(msg);
         }
@@ -1063,7 +1064,7 @@ export class Measure extends THREE.Object3D {
 
                 this.areaLabel.position.copy(centroid);
                 this.areaLabel.visible = this.showArea && this.points.length >= 2;
-                const txtArea = Utils.addCommas(area.toFixed(1));
+                const txtArea = formatNumber(area, 1);
                 const msg = `${txtArea} ${suffix}\u00B2`;
                 this.areaLabel.setText(msg);
             } else {

@@ -17,3 +17,13 @@ const LOCALES = { cs: "cs-CZ", sk: "sk-SK", pl: "pl-PL", de: "de-DE", fr: "fr-FR
 export function activeLocale() {
     return (typeof i18n !== "undefined" && LOCALES[i18n.lng()]) || "en-GB";
 }
+
+/**
+ * Formats a number with the decimal and grouping separators of the active i18n language.
+ * @param {number} value Number to format.
+ * @param {number} digits Count of decimal places, always shown.
+ * @returns {string} Formatted number.
+ */
+export function formatNumber(value, digits) {
+    return value.toLocaleString(activeLocale(), { minimumFractionDigits: digits, maximumFractionDigits: digits });
+}

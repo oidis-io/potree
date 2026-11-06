@@ -196,6 +196,26 @@ export class NavigationCube extends THREE.Object3D {
         }, false);
     }
 
+    /**
+     * Redraws the side labels in the active i18n language; the translations load after the cube is built.
+     * @returns {void}
+     */
+    refreshLabels() {
+        this.traverse((child) => {
+            if (child.userData.type === "label") {
+                child.material.map.dispose();
+                child.material.map = this.createLabelTexture(this.getLabelText(child.userData.side), 512, this.options.color);
+                child.material.needsUpdate = true;
+            }
+        });
+    }
+
+    getLabelText(side) {
+        const key = "zbysek.navigationCube." + side.toLowerCase();
+        const text = typeof i18n !== "undefined" && typeof i18n.t === "function" ? i18n.t(key) : key;
+        return !text || text === key ? side : text;
+    }
+
     refreshTextures() {
         this.traverse((child) => {
             if (child.material && child.material.map) {
@@ -205,6 +225,16 @@ export class NavigationCube extends THREE.Object3D {
     }
 
     createTextLabel(text, size = 256, color = "#000000", background = null) {
+        const material = new THREE.MeshBasicMaterial({
+            map: this.createLabelTexture(text, size, color, background),
+            transparent: true,
+            side: THREE.DoubleSide
+        });
+        const geometry = new THREE.PlaneGeometry(1, 1);
+        return new THREE.Mesh(geometry, material);
+    }
+
+    createLabelTexture(text, size, color, background = null) {
         const canvas = document.createElement("canvas");
         canvas.width = size;
         canvas.height = size;
@@ -217,18 +247,16 @@ export class NavigationCube extends THREE.Object3D {
 
         ctx.fillStyle = color;
         ctx.font = `${size / 5}px Arial`;
+        const maxWidth = size * 0.9;
+        const width = ctx.measureText(text).width;
+        if (width > maxWidth) {
+            ctx.font = `${Math.floor(size / 5 * maxWidth / width)}px Arial`;
+        }
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(text, size / 2, size / 2);
 
-        const texture = new THREE.CanvasTexture(canvas);
-        const material = new THREE.MeshBasicMaterial({
-            map: texture,
-            transparent: true,
-            side: THREE.DoubleSide
-        });
-        const geometry = new THREE.PlaneGeometry(1, 1);
-        return new THREE.Mesh(geometry, material);
+        return new THREE.CanvasTexture(canvas);
     }
 
     createSide(name) {
@@ -278,8 +306,8 @@ export class NavigationCube extends THREE.Object3D {
         faceMesh.userData = { type: "face", side: name };
         group.add(faceMesh);
 
-        const textMesh = this.createTextLabel(name, 512, this.options.color);
-        textMesh.userData = { type: "label", parent: faceMesh };
+        const textMesh = this.createTextLabel(this.getLabelText(name), 512, this.options.color);
+        textMesh.userData = { type: "label", parent: faceMesh, side: name };
         textMesh.scale.set(edgeSize, edgeSize, 1);
         textMesh.position.z = 0.001;
         textMesh.raycast = () => {
