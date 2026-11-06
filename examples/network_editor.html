@@ -120,6 +120,13 @@
             height: 10px;
             border-radius: 2px;
         }
+        .network-editor-subitem {
+            padding-left: 18px;
+        }
+        .network-editor-subitem .network-editor-swatch {
+            display: inline-block;
+            margin-right: 4px;
+        }
     </style>
 </head>
 
@@ -240,6 +247,28 @@
             + "Popisek, barva a vrstva se teď mění u vybraného prvku.";
         const vertexDeleteRefusedHint = "Vrchol nejde smazat: linie potřebuje aspoň 2 vrcholy, polygon 3 a kružnice má vždy střed "
             + "a bod na obvodu. Celý prvek smažeš, když vrchol odznačíš a stiskneš Delete.";
+        const dtmNetworkLayer = Potree.NetworkEditor.DtmNetworkLayer;
+        const dtmNetworkGroups = [
+            { title: "Elektrické vedení", color: "#e60000", layerIds: [dtmNetworkLayer.ELECTRIC_LINE] },
+            { title: "Elektronické komunikace", color: "#c300fd", layerIds: [dtmNetworkLayer.ELECTRONIC_COMMUNICATION] },
+            { title: "Plynovod", color: "#4ce600", layerIds: [dtmNetworkLayer.GAS_PIPELINE] },
+            { title: "Vodovod", color: "#005be5", layerIds: [dtmNetworkLayer.WATER_PIPELINE] },
+            { title: "Kanalizace", color: "#905803", layerIds: [dtmNetworkLayer.SEWER] },
+            { title: "Teplovod", color: "#ff7d00", layerIds: [dtmNetworkLayer.HEATING_PIPELINE] },
+            { title: "Produktovod", color: "#73004c", layerIds: [dtmNetworkLayer.PRODUCT_PIPELINE] },
+            {
+                title: "Ostatní stavby (sdílené, vodní, dopravní, protipovodňové, meliorace)",
+                color: "#686868",
+                layerIds: [
+                    dtmNetworkLayer.SHARED_STRUCTURE,
+                    dtmNetworkLayer.SURFACE_WATER_SUPPLY,
+                    dtmNetworkLayer.TRANSPORT_EQUIPMENT,
+                    dtmNetworkLayer.FLOOD_PROTECTION,
+                    dtmNetworkLayer.LAND_DRAINAGE,
+                    dtmNetworkLayer.WATERCOURSE_STRUCTURE
+                ]
+            }
+        ];
         const featureTypeTitles = {
             [Potree.NetworkEditor.CadFeatureType.POINT]: "Bod",
             [Potree.NetworkEditor.CadFeatureType.POLYLINE]: "Linie",
@@ -380,8 +409,27 @@
             const status = $("<span class=\"network-editor-status\"></span>");
             dtmOverlay.addEventListener("loading_changed", (event) => status.text(event.loading ? "načítám…" : ""));
             dtmOverlay.addEventListener("load_failed", () => status.text("nepodařilo se načíst"));
-            return createCheckboxItem("network_editor_dtm", "DTM – technická infrastruktura", true, (checked) => dtmOverlay.setVisible(checked))
-                .append(status);
+            return createCheckboxItem("network_editor_dtm", "DTM – technická infrastruktura", true, (checked) => {
+                dtmOverlay.setVisible(checked);
+                $(".network-editor-subitem input[type=checkbox]").prop("disabled", !checked);
+            }).append(status);
+        }
+
+        function collectVisibleDtmLayerIds() {
+            return dtmNetworkGroups
+                .filter((group) => $(`#network_editor_dtm_${group.layerIds[0]}`).prop("checked"))
+                .flatMap((group) => group.layerIds);
+        }
+
+        function createDtmNetworkItems() {
+            return dtmNetworkGroups.map((group) => {
+                const item = createCheckboxItem(`network_editor_dtm_${group.layerIds[0]}`, group.title, true, () => {
+                    dtmOverlay.setLayerIds(collectVisibleDtmLayerIds());
+                });
+                item.addClass("network-editor-subitem");
+                item.find("label").prepend($("<span class=\"network-editor-swatch\"></span>").css("background", group.color));
+                return item;
+            });
         }
 
         function createInfoToolButton() {
@@ -897,7 +945,8 @@
                 $("<div class=\"divider\"><span>Vrstvy</span></div>"),
                 createCheckboxItem("network_editor_point_cloud", "Mračno bodů", true, setPointCloudsVisible),
                 createDtmLayerItem(),
-                $("<li class=\"network-editor-note\"></li>").text("DTM: ČÚZK – IS DMVS, přibližný zákres, pouze orientačně."),
+                ...createDtmNetworkItems(),
+                $("<li class=\"network-editor-note\"></li>").text("DTM: ČÚZK – IS DMVS, přibližný zákres, pouze orientačně. Info o síti hledá jen v zapnutých druzích."),
                 createTerrainStatusItem(),
                 $("<div class=\"divider\"><span>Katastr</span></div>"),
                 ...createCadastreItems(),

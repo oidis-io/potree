@@ -53,6 +53,7 @@ import { ShapefileLoader } from "./loader/ShapefileLoader.js";
 import { MapPlane } from "./modules/NetworkEditor/MapPlane.js";
 import { DtmOverlay } from "./modules/NetworkEditor/DtmOverlay.js";
 import { DtmInfoTool } from "./modules/NetworkEditor/DtmInfoTool.js";
+import { DtmNetworkLayer } from "./modules/NetworkEditor/DtmService.js";
 import { CadFeature, CadFeatureType } from "./modules/NetworkEditor/CadFeature.js";
 import { CadDocument } from "./modules/NetworkEditor/CadDocument.js";
 import { CadView } from "./modules/NetworkEditor/CadView.js";
@@ -113,6 +114,7 @@ const Potree = {
         SurfacePicker,
         DtmOverlay,
         DtmInfoTool,
+        DtmNetworkLayer,
         CadFeature,
         CadFeatureType,
         CadDocument,

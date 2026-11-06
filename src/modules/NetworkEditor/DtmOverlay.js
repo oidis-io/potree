@@ -10,7 +10,7 @@
 
 import * as THREE from "../../../libs/three.js/build/three.module.js";
 import { EventDispatcher } from "../../EventDispatcher.js";
-import { createDtmMapUrl } from "./DtmService.js";
+import { createDtmMapUrl, DtmNetworkLayer } from "./DtmService.js";
 
 const REFRESH_DELAY_MILLISECONDS = 400;
 const MAXIMUM_EXTENT_METRES = 3000;
@@ -29,6 +29,7 @@ export class DtmOverlay extends EventDispatcher {
         this.viewer = viewer;
         this.mapPlane = mapPlane;
         this.visible = false;
+        this.layerIds = Object.values(DtmNetworkLayer);
         this.loading = false;
         this.requestIndex = 0;
         this.refreshPending = false;
@@ -90,14 +91,32 @@ export class DtmOverlay extends EventDispatcher {
 
     setVisible(visible) {
         this.visible = visible;
-        this.mesh.visible = visible && this.material.map !== null;
-        if (visible) {
-            this.refreshPending = true;
-            this.lastViewChangeTime = 0;
+        this.mesh.visible = this.hasVisibleLayers() && this.material.map !== null;
+        if (this.hasVisibleLayers()) {
+            this.requestRefresh();
         } else {
-            this.requestIndex++;
-            this.setLoading(false);
+            this.cancelRefresh();
         }
+    }
+
+    setLayerIds(layerIds) {
+        this.layerIds = [...layerIds];
+        this.setVisible(this.visible);
+    }
+
+    hasVisibleLayers() {
+        return this.visible && this.layerIds.length > 0;
+    }
+
+    requestRefresh() {
+        this.refreshPending = true;
+        this.lastViewChangeTime = 0;
+    }
+
+    cancelRefresh() {
+        this.requestIndex++;
+        this.refreshPending = false;
+        this.setLoading(false);
     }
 
     getImageMetresPerPixelAt(x, y) {
@@ -110,7 +129,7 @@ export class DtmOverlay extends EventDispatcher {
     }
 
     update() {
-        if (!this.visible) {
+        if (!this.hasVisibleLayers()) {
             return;
         }
         const now = performance.now();
@@ -157,7 +176,7 @@ export class DtmOverlay extends EventDispatcher {
         }
         const image = this.computeImageSize(extent);
         this.setLoading(true);
-        this.textureLoader.load(createDtmMapUrl(extent, image.width, image.height), (texture) => {
+        this.textureLoader.load(createDtmMapUrl(extent, image.width, image.height, this.layerIds), (texture) => {
             if (requestIndex !== this.requestIndex) {
                 texture.dispose();
                 return;
