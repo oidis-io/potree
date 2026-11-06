@@ -16,9 +16,12 @@ const REFRESH_DELAY_MILLISECONDS = 400;
 const MAXIMUM_EXTENT_METRES = 3000;
 const MAXIMUM_IMAGE_SIZE = 4096;
 const MINIMUM_METRES_PER_PIXEL = 0.05;
-const SCREEN_SAMPLES = [0, 0.25, 0.5, 0.75, 1];
 const VIEW_CHANGE_TOLERANCE = 0.001;
 const DIRECTION_SCALE = 1000;
+const TERRAIN_GRID_STEP_METRES = 4;
+const MAXIMUM_TERRAIN_GRID_SEGMENTS = 256;
+const TERRAIN_LIFT_METRES = 0.1;
+const SURFACE_INTERSECTION_ITERATIONS = 4;
 
 export class DtmOverlay extends EventDispatcher {
     constructor(viewer, mapPlane) {
@@ -32,9 +35,10 @@ export class DtmOverlay extends EventDispatcher {
         this.lastViewChangeTime = 0;
         this.lastViewSnapshot = null;
         this.shownImage = null;
+        this.terrainHeightSampler = null;
         this.textureLoader = new THREE.TextureLoader();
         this.material = new THREE.MeshBasicMaterial({ transparent: true, depthTest: false, depthWrite: false });
-        this.mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), this.material);
+        this.mesh = new THREE.Mesh(new THREE.PlaneBufferGeometry(1, 1), this.material);
         this.mesh.visible = false;
         this.mesh.frustumCulled = false;
         this.scene = new THREE.Scene();
@@ -42,6 +46,46 @@ export class DtmOverlay extends EventDispatcher {
 
         viewer.addEventListener("update", () => this.update());
         viewer.addEventListener("render.pass.scene", (event) => this.render(event));
+    }
+
+    setTerrainHeightSampler(terrainHeightSampler) {
+        this.terrainHeightSampler = terrainHeightSampler;
+        terrainHeightSampler.addEventListener("ready", () => {
+            if (this.shownImage) {
+                this.updateSurfaceGeometry(this.shownImage.extent);
+            }
+        });
+    }
+
+    intersectSurface(screenX, screenY) {
+        const sampler = this.terrainHeightSampler?.isReady ? this.terrainHeightSampler : null;
+        let point = this.mapPlane.intersectScreenPoint(screenX, screenY);
+        for (let iteration = 0; point && sampler && iteration < SURFACE_INTERSECTION_ITERATIONS; iteration++) {
+            const surfaceHeight = (sampler.heightAt(point.x, point.y) ?? this.mapPlane.height) + TERRAIN_LIFT_METRES;
+            point = this.mapPlane.intersectScreenPointAtHeight(screenX, screenY, surfaceHeight) ?? point;
+        }
+        return point;
+    }
+
+    updateSurfaceGeometry(extent) {
+        const sampler = this.terrainHeightSampler?.isReady ? this.terrainHeightSampler : null;
+        const extentWidth = extent.maximumX - extent.minimumX;
+        const extentHeight = extent.maximumY - extent.minimumY;
+        const countSegments = (size) => THREE.MathUtils.clamp(Math.ceil(size / TERRAIN_GRID_STEP_METRES), 1, MAXIMUM_TERRAIN_GRID_SEGMENTS);
+        const geometry = sampler
+            ? new THREE.PlaneBufferGeometry(1, 1, countSegments(extentWidth), countSegments(extentHeight))
+            : new THREE.PlaneBufferGeometry(1, 1);
+        if (sampler) {
+            const positions = geometry.attributes.position;
+            const centerX = (extent.minimumX + extent.maximumX) / 2;
+            const centerY = (extent.minimumY + extent.maximumY) / 2;
+            for (let index = 0; index < positions.count; index++) {
+                const terrainHeight = sampler.heightAt(centerX + positions.getX(index) * extentWidth, centerY + positions.getY(index) * extentHeight);
+                positions.setZ(index, terrainHeight === null ? 0 : terrainHeight + TERRAIN_LIFT_METRES - this.mapPlane.height);
+            }
+        }
+        this.mesh.geometry.dispose();
+        this.mesh.geometry = geometry;
     }
 
     setVisible(visible) {
@@ -129,40 +173,7 @@ export class DtmOverlay extends EventDispatcher {
     }
 
     computeViewExtent() {
-        const camera = this.viewer.scene.getActiveCamera();
-        if (camera.position.z <= this.mapPlane.height) {
-            return null;
-        }
-        const { width, height } = this.mapPlane.getRenderSize();
-        const points = [];
-        for (const horizontalShare of SCREEN_SAMPLES) {
-            for (const verticalShare of SCREEN_SAMPLES) {
-                const point = this.mapPlane.intersectScreenPoint(horizontalShare * width, verticalShare * height);
-                if (point) {
-                    points.push(point);
-                }
-            }
-        }
-        if (points.length === 0) {
-            return null;
-        }
-        const nearestPoint = points.reduce((nearest, point) => {
-            return point.distanceToSquared(camera.position) < nearest.distanceToSquared(camera.position) ? point : nearest;
-        });
-        const viewDirection = camera.getWorldDirection(new THREE.Vector3());
-        const halfExtent = MAXIMUM_EXTENT_METRES / 2;
-        const windowCenterX = nearestPoint.x + viewDirection.x * halfExtent;
-        const windowCenterY = nearestPoint.y + viewDirection.y * halfExtent;
-        const extent = {
-            minimumX: Math.max(Math.min(...points.map((point) => point.x)), windowCenterX - halfExtent),
-            minimumY: Math.max(Math.min(...points.map((point) => point.y)), windowCenterY - halfExtent),
-            maximumX: Math.min(Math.max(...points.map((point) => point.x)), windowCenterX + halfExtent),
-            maximumY: Math.min(Math.max(...points.map((point) => point.y)), windowCenterY + halfExtent)
-        };
-        if (extent.maximumX <= extent.minimumX || extent.maximumY <= extent.minimumY) {
-            return null;
-        }
-        return extent;
+        return this.mapPlane.computeViewExtent(MAXIMUM_EXTENT_METRES);
     }
 
     computeImageSize(extent) {
@@ -199,6 +210,7 @@ export class DtmOverlay extends EventDispatcher {
         }
         this.mesh.position.set((extent.minimumX + extent.maximumX) / 2, (extent.minimumY + extent.maximumY) / 2, this.mapPlane.height);
         this.mesh.scale.set(extent.maximumX - extent.minimumX, extent.maximumY - extent.minimumY, 1);
+        this.updateSurfaceGeometry(extent);
         this.mesh.visible = this.visible;
         this.shownImage = { extent: extent, metresPerPixel: metresPerPixel };
     }

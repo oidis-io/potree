@@ -89,7 +89,9 @@ export class DtmInfoTool extends EventDispatcher {
     }
 
     async query(screenX, screenY) {
-        const position = this.mapPlane.intersectScreenPoint(screenX, screenY);
+        const position = this.dtmOverlay
+            ? this.dtmOverlay.intersectSurface(screenX, screenY)
+            : this.mapPlane.intersectScreenPoint(screenX, screenY);
         const screenMetresPerPixel = this.mapPlane.metresPerPixelAt(screenX, screenY);
         if (!position || !screenMetresPerPixel) {
             return;

@@ -60,6 +60,10 @@ import { CadTool } from "./modules/NetworkEditor/CadTool.js";
 import { CadEditTool } from "./modules/NetworkEditor/CadEditTool.js";
 import { CadHistory } from "./modules/NetworkEditor/CadHistory.js";
 import { SurfacePicker } from "./modules/NetworkEditor/SurfacePicker.js";
+import { TerrainHeightSampler } from "./modules/NetworkEditor/TerrainHeightSampler.js";
+import { CadastreLayer } from "./modules/NetworkEditor/CadastreService.js";
+import { CadastreOverlay } from "./modules/NetworkEditor/CadastreOverlay.js";
+import { CadSnapper } from "./modules/NetworkEditor/CadSnapper.js";
 
 const Potree = {
     OrbitControls,
@@ -110,7 +114,11 @@ const Potree = {
         CadView,
         CadTool,
         CadEditTool,
-        CadHistory
+        CadHistory,
+        TerrainHeightSampler,
+        CadastreLayer,
+        CadastreOverlay,
+        CadSnapper
     },
     pointBudget: PotreeConfig.pointBudget,
     framenumber: PotreeConfig.framenumber,

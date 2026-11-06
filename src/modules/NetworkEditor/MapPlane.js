@@ -11,6 +11,7 @@
 import * as THREE from "../../../libs/three.js/build/three.module.js";
 
 const MAP_PLANE_OFFSET = 2;
+const SCREEN_SAMPLES = [0, 0.25, 0.5, 0.75, 1];
 
 export class MapPlane {
     constructor(viewer) {
@@ -51,5 +52,42 @@ export class MapPlane {
             return null;
         }
         return point.distanceTo(neighbour);
+    }
+
+    computeViewExtent(maximumExtentMetres) {
+        const camera = this.viewer.scene.getActiveCamera();
+        if (camera.position.z <= this.height) {
+            return null;
+        }
+        const { width: renderWidth, height: renderHeight } = this.getRenderSize();
+        const points = [];
+        for (const horizontalShare of SCREEN_SAMPLES) {
+            for (const verticalShare of SCREEN_SAMPLES) {
+                const point = this.intersectScreenPoint(horizontalShare * renderWidth, verticalShare * renderHeight);
+                if (point) {
+                    points.push(point);
+                }
+            }
+        }
+        if (points.length === 0) {
+            return null;
+        }
+        const nearestPoint = points.reduce((nearest, point) => {
+            return point.distanceToSquared(camera.position) < nearest.distanceToSquared(camera.position) ? point : nearest;
+        });
+        const viewDirection = camera.getWorldDirection(new THREE.Vector3());
+        const halfExtent = maximumExtentMetres / 2;
+        const windowCenterX = nearestPoint.x + viewDirection.x * halfExtent;
+        const windowCenterY = nearestPoint.y + viewDirection.y * halfExtent;
+        const extent = {
+            minimumX: Math.max(Math.min(...points.map((point) => point.x)), windowCenterX - halfExtent),
+            minimumY: Math.max(Math.min(...points.map((point) => point.y)), windowCenterY - halfExtent),
+            maximumX: Math.min(Math.max(...points.map((point) => point.x)), windowCenterX + halfExtent),
+            maximumY: Math.min(Math.max(...points.map((point) => point.y)), windowCenterY + halfExtent)
+        };
+        if (extent.maximumX <= extent.minimumX || extent.maximumY <= extent.minimumY) {
+            return null;
+        }
+        return extent;
     }
 }

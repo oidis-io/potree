@@ -11,8 +11,10 @@
 import { EventDispatcher } from "../../EventDispatcher.js";
 import { isTextInputTarget } from "../../utils/InsertionKeyboard.js";
 import { CadFeature, CadFeatureType, MINIMUM_POINT_COUNTS } from "./CadFeature.js";
+import { ScreenProjector } from "./ScreenProjector.js";
 
 const CLICK_TOLERANCE_PIXELS = 3;
+const CLOSE_TOLERANCE_PIXELS = 10;
 const DUPLICATE_VERTEX_DISTANCE_METRES = 0.01;
 const DRAWING_CURSOR = "cell";
 
@@ -23,6 +25,7 @@ export class CadTool extends EventDispatcher {
         this.surfacePicker = surfacePicker;
         this.cadDocument = cadDocument;
         this.cadView = cadView;
+        this.screenProjector = new ScreenProjector(viewer);
         this.style = { label: "", color: "#ff3366" };
         this.drawingType = null;
         this.draftFeature = null;
@@ -77,6 +80,7 @@ export class CadTool extends EventDispatcher {
             feature.dispose();
         }
         this.drawingType = null;
+        this.surfacePicker.clearSnapIndicator();
         const canvasStyle = this.viewer.renderer.domElement.style;
         if (canvasStyle.cursor === DRAWING_CURSOR) {
             canvasStyle.cursor = "";
@@ -98,6 +102,12 @@ export class CadTool extends EventDispatcher {
         if (Math.hypot(event.clientX - pressPosition.x, event.clientY - pressPosition.y) > CLICK_TOLERANCE_PIXELS) {
             return;
         }
+        if (this.isFirstPolygonVertexClicked(event)) {
+            if (this.draftFeature.points.length >= MINIMUM_POINT_COUNTS[CadFeatureType.POLYGON]) {
+                this.finishDrawing();
+            }
+            return;
+        }
         const position = this.pickSurface(event);
         if (position) {
             this.addVertex(position);
@@ -105,10 +115,23 @@ export class CadTool extends EventDispatcher {
     }
 
     onMouseMove(event) {
-        if (!this.draftFeature || event.buttons !== 0) {
+        if (!this.isDrawing || event.buttons !== 0) {
             return;
         }
-        this.draftFeature.setTrailingPoint(this.pickSurface(event));
+        const position = this.pickSurface(event);
+        if (this.draftFeature) {
+            this.draftFeature.setTrailingPoint(position);
+        }
+    }
+
+    isFirstPolygonVertexClicked(event) {
+        const draftFeature = this.draftFeature;
+        if (!draftFeature || draftFeature.featureType !== CadFeatureType.POLYGON || draftFeature.points.length === 0) {
+            return false;
+        }
+        const firstVertex = this.screenProjector.projectPoint(draftFeature.points[0]);
+        const canvasPoint = this.toCanvasPoint(event);
+        return firstVertex !== null && Math.hypot(firstVertex.x - canvasPoint.x, firstVertex.y - canvasPoint.y) <= CLOSE_TOLERANCE_PIXELS;
     }
 
     onKeyDown(event) {
@@ -137,7 +160,8 @@ export class CadTool extends EventDispatcher {
     pickSurface(event) {
         const points = this.draftFeature?.points ?? [];
         const referenceHeight = points[points.length - 1]?.z ?? null;
-        return this.surfacePicker.pick(this.toCanvasPoint(event), referenceHeight);
+        const snapOptions = { extraFeatures: this.draftFeature ? [this.draftFeature] : [] };
+        return this.surfacePicker.pick(this.toCanvasPoint(event), referenceHeight, snapOptions);
     }
 
     toCanvasPoint(event) {

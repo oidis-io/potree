@@ -14,6 +14,7 @@ import { EventDispatcher } from "../../EventDispatcher.js";
 import { isTextInputTarget } from "../../utils/InsertionKeyboard.js";
 import { pointInPolygon, polygonArea } from "../../utils/PolygonMath.js";
 import { CadFeatureType, MINIMUM_POINT_COUNTS } from "./CadFeature.js";
+import { ScreenProjector } from "./ScreenProjector.js";
 
 const CLICK_TOLERANCE_PIXELS = 3;
 const FEATURE_PICK_TOLERANCE_PIXELS = 8;
@@ -26,13 +27,12 @@ export class CadEditTool extends EventDispatcher {
         this.viewer = viewer;
         this.cadDocument = cadDocument;
         this.surfacePicker = surfacePicker;
+        this.screenProjector = new ScreenProjector(viewer);
         this.enabled = true;
         this.selectedFeature = null;
         this.pressPosition = null;
         this.draggedVertexIndex = null;
         this.hasVertexMoved = false;
-        this.renderSize = new THREE.Vector2();
-        this.raycaster = new THREE.Raycaster();
         this.dragHandle = new THREE.Object3D();
         this.dragHandle.addEventListener("drag", (event) => this.onVertexDrag(event));
         this.dragHandle.addEventListener("drop", () => this.onVertexDrop());
@@ -75,6 +75,7 @@ export class CadEditTool extends EventDispatcher {
         }
         this.draggedVertexIndex = null;
         this.hasVertexMoved = false;
+        this.surfacePicker.clearSnapIndicator();
         this.selectedFeature?.setSelected(false);
         this.selectedFeature = feature;
         feature?.setSelected(true);
@@ -124,7 +125,7 @@ export class CadEditTool extends EventDispatcher {
         }
         const start = feature.points[segmentIndex];
         const end = feature.points[(segmentIndex + 1) % feature.points.length];
-        feature.insertPointAt(segmentIndex + 1, this.computePointOnSegment(canvasPoint, start, end));
+        feature.insertPointAt(segmentIndex + 1, this.screenProjector.closestPointOnSegment(canvasPoint, start, end));
         this.dispatchEvent({ type: "feature_changed", feature: feature });
         return true;
     }
@@ -136,23 +137,14 @@ export class CadEditTool extends EventDispatcher {
         let nearestIndex = null;
         let nearestDistance = EDGE_INSERT_TOLERANCE_PIXELS;
         for (let index = 0; index < segmentCount; index++) {
-            const segment = this.projectSegmentToScreen(feature.points[index], feature.points[(index + 1) % pointCount]);
-            const distance = segment ? this.measureDistanceToSegment(canvasPoint, segment[0], segment[1]) : Infinity;
+            const segment = this.screenProjector.projectSegment(feature.points[index], feature.points[(index + 1) % pointCount]);
+            const distance = segment ? this.screenProjector.measureDistanceToSegment(canvasPoint, segment[0], segment[1]) : Infinity;
             if (distance <= nearestDistance) {
                 nearestIndex = index;
                 nearestDistance = distance;
             }
         }
         return nearestIndex;
-    }
-
-    computePointOnSegment(canvasPoint, start, end) {
-        const { width, height } = this.viewer.renderer.getSize(this.renderSize);
-        const pointer = new THREE.Vector2(canvasPoint.x / width * 2 - 1, -canvasPoint.y / height * 2 + 1);
-        this.raycaster.setFromCamera(pointer, this.viewer.scene.getActiveCamera());
-        const pointOnSegment = new THREE.Vector3();
-        this.raycaster.ray.distanceSqToSegment(start, end, null, pointOnSegment);
-        return pointOnSegment;
     }
 
     isOtherObjectDragged() {
@@ -197,6 +189,7 @@ export class CadEditTool extends EventDispatcher {
         }
         event.preventDefault();
         this.draggedVertexIndex = null;
+        this.surfacePicker.clearSnapIndicator();
         const isVertexSelected = this.selectedFeature.selectedVertexIndex !== null
             && this.selectedFeature.featureType !== CadFeatureType.POINT;
         if (isVertexSelected) {
@@ -217,7 +210,9 @@ export class CadEditTool extends EventDispatcher {
             return;
         }
         this.hasVertexMoved = true;
-        const position = this.surfacePicker.pick(event.drag.end, feature.points[this.draggedVertexIndex].z);
+        const referenceHeight = feature.points[this.draggedVertexIndex].z;
+        const snapOptions = { excludedVertex: { feature: feature, index: this.draggedVertexIndex } };
+        const position = this.surfacePicker.pick(event.drag.end, referenceHeight, snapOptions);
         if (position) {
             feature.setPointAt(this.draggedVertexIndex, position);
         }
@@ -235,6 +230,7 @@ export class CadEditTool extends EventDispatcher {
         }
         this.draggedVertexIndex = null;
         this.hasVertexMoved = false;
+        this.surfacePicker.clearSnapIndicator();
     }
 
     findSelectedVertexAt(canvasPoint) {
@@ -244,7 +240,7 @@ export class CadEditTool extends EventDispatcher {
         let nearestIndex = null;
         let nearestDistance = VERTEX_PICK_TOLERANCE_PIXELS;
         this.selectedFeature.points.forEach((point, index) => {
-            const screenPoint = this.projectPointToScreen(point);
+            const screenPoint = this.screenProjector.projectPoint(point);
             const distance = screenPoint ? Math.hypot(screenPoint.x - canvasPoint.x, screenPoint.y - canvasPoint.y) : Infinity;
             if (distance <= nearestDistance) {
                 nearestIndex = index;
@@ -277,7 +273,7 @@ export class CadEditTool extends EventDispatcher {
 
     measureScreenHit(feature, canvasPoint) {
         if (feature.featureType === CadFeatureType.POINT) {
-            const screenPoint = this.projectPointToScreen(feature.points[0]);
+            const screenPoint = this.screenProjector.projectPoint(feature.points[0]);
             const distance = screenPoint ? Math.hypot(screenPoint.x - canvasPoint.x, screenPoint.y - canvasPoint.y) : Infinity;
             return { distance: distance, area: 0 };
         }
@@ -286,87 +282,18 @@ export class CadEditTool extends EventDispatcher {
         const segmentCount = isPolygon ? pointCount : pointCount - 1;
         let distance = Infinity;
         for (let index = 0; index < segmentCount; index++) {
-            const segment = this.projectSegmentToScreen(feature.points[index], feature.points[(index + 1) % pointCount]);
+            const segment = this.screenProjector.projectSegment(feature.points[index], feature.points[(index + 1) % pointCount]);
             if (segment) {
-                distance = Math.min(distance, this.measureDistanceToSegment(canvasPoint, segment[0], segment[1]));
+                distance = Math.min(distance, this.screenProjector.measureDistanceToSegment(canvasPoint, segment[0], segment[1]));
             }
         }
         if (isPolygon) {
-            const screenRing = this.projectRingToScreen(feature.points);
+            const screenRing = this.screenProjector.projectRing(feature.points);
             if (screenRing.length >= 3 && pointInPolygon(canvasPoint.x, canvasPoint.y, screenRing)) {
                 return { distance: Math.min(distance, FEATURE_PICK_TOLERANCE_PIXELS), area: polygonArea(screenRing) };
             }
         }
         return { distance: distance, area: 0 };
-    }
-
-    measureDistanceToSegment(point, start, end) {
-        const segmentX = end.x - start.x;
-        const segmentY = end.y - start.y;
-        const lengthSquared = segmentX * segmentX + segmentY * segmentY;
-        const share = lengthSquared === 0 ? 0 : THREE.MathUtils.clamp(((point.x - start.x) * segmentX + (point.y - start.y) * segmentY) / lengthSquared, 0, 1);
-        return Math.hypot(point.x - (start.x + share * segmentX), point.y - (start.y + share * segmentY));
-    }
-
-    toViewSpace(position) {
-        return position.clone().applyMatrix4(this.viewer.scene.getActiveCamera().matrixWorldInverse);
-    }
-
-    isInFrontOfCamera(viewPosition) {
-        return viewPosition.z <= -this.viewer.scene.getActiveCamera().near;
-    }
-
-    clipToNearPlane(visiblePosition, hiddenPosition) {
-        const nearDepth = -this.viewer.scene.getActiveCamera().near;
-        const share = (nearDepth - visiblePosition.z) / (hiddenPosition.z - visiblePosition.z);
-        return visiblePosition.clone().lerp(hiddenPosition, share);
-    }
-
-    viewToScreen(viewPosition) {
-        const projected = viewPosition.clone().applyMatrix4(this.viewer.scene.getActiveCamera().projectionMatrix);
-        const { width, height } = this.viewer.renderer.getSize(this.renderSize);
-        return { x: (projected.x + 1) / 2 * width, y: (1 - projected.y) / 2 * height };
-    }
-
-    projectPointToScreen(position) {
-        const viewPosition = this.toViewSpace(position);
-        return this.isInFrontOfCamera(viewPosition) ? this.viewToScreen(viewPosition) : null;
-    }
-
-    projectSegmentToScreen(start, end) {
-        let viewStart = this.toViewSpace(start);
-        let viewEnd = this.toViewSpace(end);
-        const isStartVisible = this.isInFrontOfCamera(viewStart);
-        const isEndVisible = this.isInFrontOfCamera(viewEnd);
-        if (!isStartVisible && !isEndVisible) {
-            return null;
-        }
-        if (!isStartVisible) {
-            viewStart = this.clipToNearPlane(viewEnd, viewStart);
-        }
-        if (!isEndVisible) {
-            viewEnd = this.clipToNearPlane(viewStart, viewEnd);
-        }
-        return [this.viewToScreen(viewStart), this.viewToScreen(viewEnd)];
-    }
-
-    projectRingToScreen(points) {
-        const viewPoints = points.map((point) => this.toViewSpace(point));
-        const clippedRing = [];
-        viewPoints.forEach((current, index) => {
-            const next = viewPoints[(index + 1) % viewPoints.length];
-            const isCurrentVisible = this.isInFrontOfCamera(current);
-            const isNextVisible = this.isInFrontOfCamera(next);
-            if (isCurrentVisible) {
-                clippedRing.push(current);
-            }
-            if (isCurrentVisible && !isNextVisible) {
-                clippedRing.push(this.clipToNearPlane(current, next));
-            } else if (!isCurrentVisible && isNextVisible) {
-                clippedRing.push(this.clipToNearPlane(next, current));
-            }
-        });
-        return clippedRing.map((viewPoint) => this.viewToScreen(viewPoint));
     }
 
     toCanvasPoint(event) {

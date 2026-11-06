@@ -172,17 +172,29 @@
 
         const mapPlane = new Potree.NetworkEditor.MapPlane(viewer);
         const dtmOverlay = new Potree.NetworkEditor.DtmOverlay(viewer, mapPlane);
-        const dtmInfoTool = new Potree.NetworkEditor.DtmInfoTool(viewer, mapPlane, dtmOverlay);
         const surfacePicker = new Potree.NetworkEditor.SurfacePicker(viewer, mapPlane);
+        const cadastreOverlay = new Potree.NetworkEditor.CadastreOverlay(viewer, mapPlane);
+        const dtmInfoTool = new Potree.NetworkEditor.DtmInfoTool(viewer, mapPlane, dtmOverlay);
         const cadDocument = new Potree.NetworkEditor.CadDocument();
         const cadView = new Potree.NetworkEditor.CadView(viewer, cadDocument);
+        const cadSnapper = new Potree.NetworkEditor.CadSnapper(viewer, mapPlane, cadDocument, cadastreOverlay);
+        surfacePicker.setSnapper(cadSnapper);
         const cadTool = new Potree.NetworkEditor.CadTool(viewer, surfacePicker, cadDocument, cadView);
         const cadEditTool = new Potree.NetworkEditor.CadEditTool(viewer, cadDocument, surfacePicker);
         const cadHistory = new Potree.NetworkEditor.CadHistory(cadDocument);
         cadDocument.addLayer("Vrstva 1");
 
+        const cadastreExtentMetres = 1500;
+        const cadastreLayers = [
+            { layerId: Potree.NetworkEditor.CadastreLayer.PARCELS, title: "Parcely" },
+            { layerId: Potree.NetworkEditor.CadastreLayer.BUILDINGS, title: "Budovy" },
+            { layerId: Potree.NetworkEditor.CadastreLayer.ROADS, title: "Cesty (ZABAGED)" }
+        ];
+        const loadedCadastreLayers = new Set();
+
         const drawingIdleHint = "Vyber typ prvku a klikej do mapy. Kliknutím na nakreslený prvek ho vybereš. "
-            + "Tažením myši otáčíš a posouváš pohled. Ctrl+Z vrátí poslední změnu.";
+            + "Tažením myši otáčíš a posouváš pohled. Žlutý čtvereček ukazuje přichycení k vrcholu nebo hraně. "
+            + "Ctrl+Z vrátí poslední změnu.";
         const selectionHint = "Vybraný prvek: tažením vrcholu ho posuneš, kliknutím na hranu přidáš vrchol, "
             + "kliknutím na vrchol ho vybereš. Delete smaže vybraný vrchol, jinak celý prvek. Esc zruší výběr. "
             + "Popisek a barva se teď mění u vybraného prvku.";
@@ -202,7 +214,7 @@
             {
                 featureType: Potree.NetworkEditor.CadFeatureType.POLYGON,
                 title: "Polygon",
-                hint: "Kliknutím přidáš vrchol, Backspace vrátí poslední, Esc polygon uzavře."
+                hint: "Kliknutím přidáš vrchol, Backspace vrátí poslední. Polygon uzavřeš kliknutím na první vrchol nebo Esc."
             }
         ];
 
@@ -461,6 +473,82 @@
             cadEditTool.setEnabled(!cadTool.isDrawing && !dtmInfoTool.active);
         }
 
+        function loadCadastreLayer(layerId) {
+            const extent = mapPlane.computeViewExtent(cadastreExtentMetres);
+            if (!extent) {
+                cadastreOverlay.dispatchEvent({ type: "layer_failed", layerId: layerId });
+                return;
+            }
+            loadedCadastreLayers.add(layerId);
+            cadastreOverlay.loadLayer(layerId, extent);
+        }
+
+        function onCadastreLayerToggled(layerId, checked) {
+            if (checked && !loadedCadastreLayers.has(layerId)) {
+                loadCadastreLayer(layerId);
+            }
+            cadastreOverlay.setLayerVisible(layerId, checked);
+        }
+
+        function createCadastreLayerItem(cadastreLayer) {
+            const identifier = `network_editor_cadastre_${cadastreLayer.layerId}`;
+            const status = $("<span class=\"network-editor-status\"></span>");
+            cadastreOverlay.addEventListener("layer_loading", (event) => {
+                if (event.layerId === cadastreLayer.layerId) {
+                    status.text("načítám…");
+                }
+            });
+            cadastreOverlay.addEventListener("layer_loaded", (event) => {
+                if (event.layerId === cadastreLayer.layerId) {
+                    status.text(event.isTruncated ? `${event.lineCount} čar, neúplné` : `${event.lineCount} čar`);
+                }
+            });
+            cadastreOverlay.addEventListener("layer_failed", (event) => {
+                if (event.layerId === cadastreLayer.layerId) {
+                    status.text("nepodařilo se načíst");
+                }
+            });
+            return createCheckboxItem(identifier, cadastreLayer.title, false, (checked) => onCadastreLayerToggled(cadastreLayer.layerId, checked))
+                .append(status);
+        }
+
+        function createCadastreItems() {
+            const reloadButton = $("<input type=\"button\">")
+                .val("Načíst katastr pro aktuální pohled")
+                .on("click", () => {
+                    for (const cadastreLayer of cadastreLayers) {
+                        if ($(`#network_editor_cadastre_${cadastreLayer.layerId}`).prop("checked")) {
+                            loadCadastreLayer(cadastreLayer.layerId);
+                        }
+                    }
+                });
+            return [
+                ...cadastreLayers.map(createCadastreLayerItem),
+                $("<li></li>").append(reloadButton),
+                $("<li class=\"network-editor-note\"></li>").text("Katastr: ČÚZK (RÚIAN, ZABAGED), CC BY 4.0. "
+                    + "Načte se pro aktuální pohled. Hranice mají přesnost 0,1–1,5 m, cesty jsou orientační.")
+            ];
+        }
+
+        function createSnappingItem() {
+            return createCheckboxItem("network_editor_snapping", "Přichytávání k vrcholům a hranám", true, (checked) => cadSnapper.setEnabled(checked));
+        }
+
+        function createTerrainStatusItem() {
+            return $("<li class=\"network-editor-note\" id=\"network_editor_terrain_status\"></li>").text("Výška terénu: čeká na mračno");
+        }
+
+        function startTerrainHeightSampler(pointCloud) {
+            const terrainHeightSampler = new Potree.NetworkEditor.TerrainHeightSampler(pointCloud);
+            const terrainStatus = $("#network_editor_terrain_status");
+            dtmOverlay.setTerrainHeightSampler(terrainHeightSampler);
+            cadastreOverlay.setTerrainHeightSampler(terrainHeightSampler);
+            terrainHeightSampler.addEventListener("ready", () => terrainStatus.text("Výška terénu z mračna: hotovo, sítě i katastr leží na terénu."));
+            terrainHeightSampler.addEventListener("failed", () => terrainStatus.text("Výšku terénu se nepodařilo spočítat."));
+            terrainStatus.text("Výška terénu z mračna: počítám…");
+            terrainHeightSampler.start();
+        }
+
         function addNetworkEditorSection() {
             const header = $("<h3 id=\"menu_network_editor\"><span>Síťový editor</span></h3>");
             const list = $("<ul class=\"pv-menu-list\"></ul>").append(
@@ -469,9 +557,13 @@
                 createCheckboxItem("network_editor_point_cloud", "Mračno bodů", true, setPointCloudsVisible),
                 createDtmLayerItem(),
                 $("<li class=\"network-editor-note\"></li>").text("DTM: ČÚZK – IS DMVS, přibližný zákres, pouze orientačně."),
+                createTerrainStatusItem(),
+                $("<div class=\"divider\"><span>Katastr</span></div>"),
+                ...createCadastreItems(),
                 $("<div class=\"divider\"><span>Kreslení</span></div>"),
                 createDrawingButtonsItem(),
                 ...createStyleItems(),
+                createSnappingItem(),
                 createDrawingHintItem(),
                 createUndoItem(),
                 createFeatureCountItem(),
@@ -504,7 +596,9 @@
         viewer.toggleSidebar();
         $("#menu_tools").next().show();
         addNetworkEditorSection();
-        addPointCloud(await pointCloudLoaded);
+        const pointCloud = await pointCloudLoaded;
+        addPointCloud(pointCloud);
+        startTerrainHeightSampler(pointCloud);
         showOrthophotoMap();
         dtmOverlay.setVisible($("#network_editor_dtm").prop("checked"));
     </script>
