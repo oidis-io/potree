@@ -79,6 +79,10 @@ export async function readLasHeader(file) {
     };
 }
 
+function toHorizontalOrigin(minimum) {
+    return [minimum[0], minimum[1], 0];
+}
+
 function convertColors(wideColors) {
     const isSixteenBit = wideColors.some((value) => value > EIGHT_BIT_COLOR_MAXIMUM);
     const colors = new Uint8Array(wideColors.length);
@@ -91,7 +95,7 @@ function convertColors(wideColors) {
 export async function readLasPoints(file, header, maximumPointCount, onProgress) {
     const step = Math.max(1, Math.ceil(header.pointCount / maximumPointCount));
     const keptCount = Math.ceil(header.pointCount / step);
-    const origin = header.minimum;
+    const headerOrigin = toHorizontalOrigin(header.minimum);
     const positions = new Float32Array(keptCount * 3);
     const wideColors = header.hasColors ? new Uint16Array(keptCount * 3) : null;
     const colorOffset = RGB_OFFSETS[header.pointFormat];
@@ -106,7 +110,7 @@ export async function readLasPoints(file, header, maximumPointCount, onProgress)
             const base = (index - chunkStart) * header.recordLength;
             for (let axis = 0; axis < 3; axis++) {
                 const coordinate = view.getInt32(base + axis * 4, true) * header.scale[axis] + header.offset[axis];
-                positions[kept * 3 + axis] = coordinate - origin[axis];
+                positions[kept * 3 + axis] = coordinate - headerOrigin[axis];
                 minimum[axis] = Math.min(minimum[axis], coordinate);
                 maximum[axis] = Math.max(maximum[axis], coordinate);
             }
@@ -119,7 +123,8 @@ export async function readLasPoints(file, header, maximumPointCount, onProgress)
         }
         onProgress?.(chunkEnd / header.pointCount);
     }
-    const shift = minimum.map((value, axis) => value - origin[axis]);
+    const origin = toHorizontalOrigin(minimum);
+    const shift = origin.map((value, axis) => value - headerOrigin[axis]);
     if (shift.some((value) => value !== 0)) {
         for (let index = 0; index < kept * 3; index++) {
             positions[index] -= shift[index % 3];
@@ -128,7 +133,7 @@ export async function readLasPoints(file, header, maximumPointCount, onProgress)
     return {
         pointCount: kept,
         sourcePointCount: header.pointCount,
-        origin: minimum,
+        origin: origin,
         minimum: minimum,
         maximum: maximum,
         positions: positions,

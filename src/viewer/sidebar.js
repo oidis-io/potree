@@ -1,7 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
- * Copyright 2025-2026 Oidis
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -757,15 +757,6 @@ export class Sidebar {
         this.viewer.scene.addEventListener("polygon_clip_volume_added", onVolumeAdded);
         this.viewer.scene.annotations.addEventListener("annotation_added", onAnnotationAdded);
 
-        let onPointCloudRemoved = (e) => {
-            let pointCloudsRoot = $("#jstree_scene").jstree().get_json("pointclouds");
-            let jsonNode = pointCloudsRoot.children.find(child => child.data.uuid === e.pointcloud.uuid);
-
-            if (jsonNode) {
-                tree.jstree("delete_node", jsonNode.id);
-            }
-        };
-
         let onMeasurementRemoved = (e) => {
             let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
             let jsonNode = measurementsRoot.children.find(child => child.data.uuid === e.measurement.uuid);
@@ -801,7 +792,6 @@ export class Sidebar {
             tree.jstree("delete_node", jsonNode.id);
         };
 
-        this.viewer.scene.addEventListener("pointcloud_removed", onPointCloudRemoved);
         this.viewer.scene.addEventListener("measurement_removed", onMeasurementRemoved);
         this.viewer.scene.addEventListener("drawing_removed", onDrawingRemoved);
         this.viewer.scene.addEventListener("volume_removed", onVolumeRemoved);
@@ -864,7 +854,6 @@ export class Sidebar {
             propertiesPanel.setScene(e.scene);
 
             e.oldScene.removeEventListener("pointcloud_added", onPointCloudAdded);
-            e.oldScene.removeEventListener("pointcloud_removed", onPointCloudRemoved);
             e.oldScene.removeEventListener("measurement_added", onMeasurementAdded);
             e.oldScene.removeEventListener("drawing_added", onDrawingAdded);
             e.oldScene.removeEventListener("profile_added", onProfileAdded);
@@ -874,7 +863,6 @@ export class Sidebar {
             e.oldScene.removeEventListener("drawing_removed", onDrawingRemoved);
 
             e.scene.addEventListener("pointcloud_added", onPointCloudAdded);
-            e.scene.addEventListener("pointcloud_removed", onPointCloudRemoved);
             e.scene.addEventListener("measurement_added", onMeasurementAdded);
             e.scene.addEventListener("drawing_added", onDrawingAdded);
             e.scene.addEventListener("profile_added", onProfileAdded);

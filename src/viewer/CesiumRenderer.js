@@ -321,7 +321,7 @@ export class CesiumRenderer {
             this._geoidOffsetDirty = false;
             return;
         }
-        const centerZ = (firstCloud.boundingSphere?.center?.z ?? NaN) + firstCloud.position.z;
+        const centerZ = firstCloud.boundingSphere?.center?.z;
         if (Number.isFinite(centerZ)) {
             this._geoidOffset = -1 * centerZ + 2;
             this._geoidOffsetDirty = false;

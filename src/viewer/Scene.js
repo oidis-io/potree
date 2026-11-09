@@ -1,7 +1,7 @@
 /*! ******************************************************************************************************** *
  *
  * Copyright 2011-2020 Markus Schütz
- * Copyright 2025-2026 Oidis
+ * Copyright 2025 Oidis
  *
  * SPDX-License-Identifier: BSD-2-Clause
  * The BSD-2-Clause license for this file can be found in the LICENSE.txt file included with this distribution
@@ -138,19 +138,6 @@ export class Scene extends EventDispatcher {
 
         this.dispatchEvent({
             type: "pointcloud_added",
-            pointcloud: pointcloud
-        });
-    }
-
-    removePointCloud(pointcloud) {
-        const index = this.pointclouds.indexOf(pointcloud);
-        if (index < 0) {
-            return;
-        }
-        this.pointclouds.splice(index, 1);
-        this.scenePointCloud.remove(pointcloud);
-        this.dispatchEvent({
-            type: "pointcloud_removed",
             pointcloud: pointcloud
         });
     }

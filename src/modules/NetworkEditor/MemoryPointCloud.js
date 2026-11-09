@@ -93,11 +93,12 @@ function createGeometryNode(octreeNode, geometry, spacing) {
 
 export function createMemoryPointCloud(cloud, octree) {
     const geometry = new PointCloudOctreeGeometry();
-    const extent = cloud.maximum.map((value, axis) => value - cloud.minimum[axis]);
+    const localMinimum = cloud.minimum.map((value, axis) => value - cloud.origin[axis]);
+    const localMaximum = cloud.maximum.map((value, axis) => value - cloud.origin[axis]);
     geometry.spacing = octree.spacing;
     geometry.offset = new THREE.Vector3(...cloud.origin);
     geometry.boundingBox = toBox(octree.root.minimum, octree.cubeSize);
-    geometry.tightBoundingBox = new THREE.Box3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(...extent));
+    geometry.tightBoundingBox = new THREE.Box3(new THREE.Vector3(...localMinimum), new THREE.Vector3(...localMaximum));
     geometry.boundingSphere = geometry.boundingBox.getBoundingSphere(new THREE.Sphere());
     geometry.tightBoundingSphere = geometry.tightBoundingBox.getBoundingSphere(new THREE.Sphere());
     geometry.pointAttributes = createPointAttributes();

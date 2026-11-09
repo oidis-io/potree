@@ -125,7 +125,7 @@ export async function buildMemoryOctree(cloud, onProgress) {
     const extent = cloud.maximum.map((value, axis) => value - cloud.minimum[axis]);
     const cubeSize = Math.max(...extent) * (1 + CUBE_PADDING_RATIO) || 1;
     const partitioner = new OctreePartitioner(cloud);
-    const cubeMinimum = extent.map((size) => size / 2 - cubeSize / 2);
+    const cubeMinimum = extent.map((size, axis) => cloud.minimum[axis] - cloud.origin[axis] + size / 2 - cubeSize / 2);
     const root = { name: "r", index: 0, level: 0, minimum: cubeMinimum, size: cubeSize, start: 0, end: cloud.pointCount, children: [] };
     const pendingNodes = [root];
     let nodeCount = 0;

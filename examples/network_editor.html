@@ -577,7 +577,7 @@
         const maximumLasPointCount = 20000000;
         const lasErrorMessages = {
             [Potree.NetworkEditor.LasReadErrorCode.NOT_LAS]: "Soubor není mračno ve formátu LAS.",
-            [Potree.NetworkEditor.LasReadErrorCode.COMPRESSED]: "Komprimovaný LAZ zatím neumíme načíst, použij nekomprimovaný LAS.",
+            [Potree.NetworkEditor.LasReadErrorCode.COMPRESSED]: "Komprimovaný LAZ zatím neumíme načíst, použijte nekomprimovaný LAS.",
             [Potree.NetworkEditor.LasReadErrorCode.UNSUPPORTED_FORMAT]: "Tento formát bodů v LAS neumíme načíst.",
             [Potree.NetworkEditor.LasReadErrorCode.EMPTY]: "Soubor neobsahuje body, nebo je poškozený."
         };
@@ -609,9 +609,9 @@
 
         const drawingHelp = "Pohled: levé tlačítko otáčí, pravé posouvá, kolečko přibližuje. "
             + "Se zapnutou ručičkou v liště levé tlačítko táhne mapu a pravé otáčí. "
-            + "Kreslení: vyber nástroj v liště a klikej do mapy, Esc kreslení ukončí. Žlutý čtvereček ukazuje přichycení. "
-            + "Úpravy: klikni na prvek, tažením vrcholu ho upravíš, tažením za hranu nebo plochu posuneš celý prvek, "
-            + "kliknutím na hranu přidáš vrchol. U kružnice tažením středu posuneš kružnici a tažením bodu na obvodu změníš poloměr. "
+            + "Kreslení: vyberte nástroj v liště a klikejte do mapy, Esc kreslení ukončí. Žlutý čtvereček ukazuje přichycení. "
+            + "Úpravy: klikněte na prvek, tažením vrcholu ho upravíte, tažením za hranu nebo plochu posunete celý prvek, "
+            + "kliknutím na hranu přidáte vrchol. U kružnice tažením středu posunete kružnici a tažením bodu na obvodu změníte poloměr. "
             + "Delete smaže vybraný vrchol, jinak celý prvek. Esc zruší výběr, Ctrl+Z vrátí poslední změnu.";
         const baseMaps = [
             { provider: "orto", title: "Ortofoto ČÚZK", shortTitle: "Orto", attribution: "Mapa © ČÚZK, CC BY 4.0" },
@@ -620,7 +620,7 @@
             { provider: null, title: "Bez mapy", shortTitle: "Žádná", attribution: "" }
         ];
         const vertexDeleteRefusedHint = "Vrchol nejde smazat: délka potřebuje aspoň 2 vrcholy, polygon 3 a kružnice má vždy střed "
-            + "a bod na obvodu. Celý prvek smažeš, když vrchol odznačíš a stiskneš Delete.";
+            + "a bod na obvodu. Celý prvek smažete, když vrchol odznačíte a stisknete Delete.";
         const dtmNetworkLayer = Potree.NetworkEditor.DtmNetworkLayer;
         const dtmNetworkGroups = [
             { title: "Elektrické vedení", shortTitle: "Elektro", color: "#e60000", layerIds: [dtmNetworkLayer.ELECTRIC_LINE] },
@@ -644,6 +644,10 @@
                 ]
             }
         ];
+        const profileWindowTexts = {
+            "profile.title": "Výškový profil",
+            "profile.nb_points": "Počet bodů"
+        };
         const featureTypeTitles = {
             [Potree.NetworkEditor.CadFeatureType.POINT]: "Bod",
             [Potree.NetworkEditor.CadFeatureType.POLYLINE]: "Délka",
@@ -655,19 +659,19 @@
                 drawingType: Potree.NetworkEditor.CadDrawingType.POINT,
                 title: "Bod",
                 icon: "point",
-                hint: "Každým kliknutím vložíš bod. Esc kreslení ukončí."
+                hint: "Každým kliknutím vložíte bod. Esc kreslení ukončí."
             },
             {
                 drawingType: Potree.NetworkEditor.CadDrawingType.POLYLINE,
                 title: "Délka",
                 icon: "ruler-2",
-                hint: "Kliknutím přidáš vrchol, Backspace vrátí poslední, Esc měření dokončí."
+                hint: "Kliknutím přidáte vrchol, Backspace vrátí poslední, Esc měření dokončí."
             },
             {
                 drawingType: Potree.NetworkEditor.CadDrawingType.POLYGON,
                 title: "Polygon",
                 icon: "polygon",
-                hint: "Kliknutím přidáš vrchol, Backspace vrátí poslední. Polygon uzavřeš kliknutím na první vrchol nebo Esc."
+                hint: "Kliknutím přidáte vrchol, Backspace vrátí poslední. Polygon uzavřete kliknutím na první vrchol nebo Esc."
             },
             {
                 drawingType: Potree.NetworkEditor.CadDrawingType.RECTANGLE,
@@ -679,7 +683,7 @@
                 drawingType: Potree.NetworkEditor.CadDrawingType.CIRCLE,
                 title: "Kružnice",
                 icon: "circle",
-                hint: "Prvním kliknutím určíš střed, druhým bod na obvodu. Esc kreslení zruší."
+                hint: "Prvním kliknutím určíte střed, druhým bod na obvodu. Esc kreslení zruší."
             }
         ];
         const editorTabs = [
@@ -928,9 +932,15 @@
             return origin[0] < -300000 && origin[0] > -950000 && origin[1] < -900000 && origin[1] > -1350000;
         }
 
+        function removePointCloud(pointCloud) {
+            const pointClouds = viewer.scene.pointclouds;
+            pointClouds.splice(pointClouds.indexOf(pointCloud), 1);
+            viewer.scene.scenePointCloud.remove(pointCloud);
+        }
+
         function replacePointCloud(pointCloud) {
             for (const previousPointCloud of [...viewer.scene.pointclouds]) {
-                viewer.scene.removePointCloud(previousPointCloud);
+                removePointCloud(previousPointCloud);
                 disposePointCloud(previousPointCloud);
             }
             addPointCloud(pointCloud);
@@ -1076,7 +1086,7 @@
         function createInfoToolButton() {
             const button = createButton({
                 icon: "info-circle",
-                title: "Klikni do mapy a zjisti údaje o síti",
+                title: "Klikněte do mapy a zjistěte údaje o síti",
                 text: "Info o síti",
                 identifier: "network_editor_info_tool",
                 onClick: () => {
@@ -1088,9 +1098,9 @@
                 }
             });
             dtmInfoTool.addEventListener("activation_changed", (event) => {
-                button.toggleClass("is-active", event.active).find("span").text(event.active ? "Info o síti: klikni do mapy (Esc)" : "Info o síti");
+                button.toggleClass("is-active", event.active).find("span").text(event.active ? "Info o síti: klikněte do mapy (Esc)" : "Info o síti");
                 if (event.active) {
-                    showInfoMessage("Klikni na síť v mapě.");
+                    showInfoMessage("Klikněte na síť v mapě.");
                     isInfoPromptShown = true;
                 } else if (isInfoPromptShown) {
                     closeInfoPanel();
@@ -1161,7 +1171,7 @@
                 layerList.empty().append(cadDocument.layers.map(createLayerRow));
                 featureList.empty();
                 if (cadDocument.features.length === 0) {
-                    featureList.append(createNote("Zatím žádné prvky. Nakresli je nástroji v liště nad mapou."));
+                    featureList.append(createNote("Zatím žádné prvky. Nakreslete je nástroji v liště nad mapou."));
                     return;
                 }
                 for (const layer of cadDocument.layers) {
@@ -1283,7 +1293,7 @@
             cadHistory.addEventListener("history_changed", () => undoButton.prop("disabled", !cadHistory.canUndo));
             const mapPanButton = createToggleButton({
                 icon: "hand-stop",
-                title: "Posun mapy: levým tlačítkem táhneš mapu, pravým otáčíš pohled",
+                title: "Posun mapy: levým tlačítkem táhnete mapu, pravým otáčíte pohled",
                 identifier: "network_editor_map_pan",
                 isOn: false,
                 onToggle: (isOn) => mapPanTool.setEnabled(isOn)
@@ -1639,6 +1649,16 @@
             terrainHeightSampler.start();
         }
 
+        function translateProfileWindow() {
+            for (const [translationKey, text] of Object.entries(profileWindowTexts)) {
+                $(`#profile_window [data-i18n="${translationKey}"]`).removeAttr("data-i18n").text(text);
+            }
+        }
+
+        function disconnectPotreeMapView() {
+            viewer.scene.removeEventListener("pointcloud_added", viewer.mapView.onPointcloudAdded);
+        }
+
         function createEditorInterface() {
             $("#potree_sidebar_container").append(createEditorPanel());
             $("#potree_render_area").append(
@@ -1671,7 +1691,9 @@
 
         const pointCloudLoaded = loadPointCloud(datasetName);
         await viewer.loadGUI();
+        disconnectPotreeMapView();
         viewer.setLanguage("cs");
+        translateProfileWindow();
         viewer.toggleSidebar();
         createEditorInterface();
         restoreStoredDrawing();
@@ -1679,7 +1701,7 @@
         if (pointCloud) {
             replacePointCloud(pointCloud);
         } else {
-            showPointCloudStatus(`Mračno „${datasetName}“ se nepodařilo načíst ze složky examples/data. Otevři vlastní LAS.`);
+            showPointCloudStatus(`Mračno „${datasetName}“ se nepodařilo načíst ze složky examples/data. Otevřete vlastní LAS.`);
         }
     </script>
 </body>
