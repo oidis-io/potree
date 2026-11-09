@@ -72,6 +72,7 @@ import { DimensionKind } from "./modules/NetworkEditor/FeatureDimensions.js";
 import { CadAutosave } from "./modules/NetworkEditor/CadAutosave.js";
 import { LasLoadStage, loadLasPointCloud } from "./modules/NetworkEditor/LasPointCloudLoader.js";
 import { LasReadErrorCode } from "./modules/NetworkEditor/LasFileReader.js";
+import { MapPanTool } from "./modules/NetworkEditor/MapPanTool.js";
 
 const Potree = {
     OrbitControls,
@@ -138,7 +139,8 @@ const Potree = {
         CadAutosave,
         LasLoadStage,
         LasReadErrorCode,
-        loadLasPointCloud
+        loadLasPointCloud,
+        MapPanTool
     },
     pointBudget: PotreeConfig.pointBudget,
     framenumber: PotreeConfig.framenumber,

@@ -351,6 +351,12 @@
             background: none;
             cursor: pointer;
         }
+        #potree_render_area canvas.map-pan-enabled {
+            cursor: grab;
+        }
+        #potree_render_area canvas.map-pan-active {
+            cursor: grabbing;
+        }
         .editor-separator {
             align-self: stretch;
             width: 1px;
@@ -561,6 +567,7 @@
         surfacePicker.setSnapper(cadSnapper);
         const cadTool = new Potree.NetworkEditor.CadTool(viewer, surfacePicker, cadDocument, cadView);
         const cadEditTool = new Potree.NetworkEditor.CadEditTool(viewer, cadDocument, surfacePicker);
+        const mapPanTool = new Potree.NetworkEditor.MapPanTool(viewer, mapPlane, surfacePicker);
         const cadHistory = new Potree.NetworkEditor.CadHistory(cadDocument);
         const featureProfile = new Potree.NetworkEditor.FeatureProfile(viewer);
         const cadAutosave = new Potree.NetworkEditor.CadAutosave(cadDocument, cadHistory, `oidis-network-editor:${datasetName}`);
@@ -601,6 +608,7 @@
         const loadedCadastreLayers = new Set();
 
         const drawingHelp = "Pohled: levé tlačítko otáčí, pravé posouvá, kolečko přibližuje. "
+            + "Se zapnutou ručičkou v liště levé tlačítko táhne mapu a pravé otáčí. "
             + "Kreslení: vyber nástroj v liště a klikej do mapy, Esc kreslení ukončí. Žlutý čtvereček ukazuje přichycení. "
             + "Úpravy: klikni na prvek, tažením vrcholu ho upravíš, tažením za hranu nebo plochu posuneš celý prvek, "
             + "kliknutím na hranu přidáš vrchol. U kružnice tažením středu posuneš kružnici a tažením bodu na obvodu změníš poloměr. "
@@ -1273,8 +1281,17 @@
             const undoButton = createButton({ icon: "arrow-back-up", title: "Zpět (Ctrl+Z)", identifier: "network_editor_undo", onClick: () => cadHistory.undo() })
                 .prop("disabled", !cadHistory.canUndo);
             cadHistory.addEventListener("history_changed", () => undoButton.prop("disabled", !cadHistory.canUndo));
+            const mapPanButton = createToggleButton({
+                icon: "hand-stop",
+                title: "Posun mapy: levým tlačítkem táhneš mapu, pravým otáčíš pohled",
+                identifier: "network_editor_map_pan",
+                isOn: false,
+                onToggle: (isOn) => mapPanTool.setEnabled(isOn)
+            });
             updateActiveTool();
             return $("<div id=\"network_editor_toolbar\" class=\"editor-floating\" role=\"toolbar\" aria-label=\"Nástroje\"></div>").append(
+                mapPanButton,
+                $("<span class=\"editor-separator\"></span>"),
                 selectButton,
                 ...toolButtons,
                 $("<span class=\"editor-separator\"></span>"),
