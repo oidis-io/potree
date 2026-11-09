@@ -10,33 +10,11 @@
 
 import { CadFeatureType } from "./CadFeature.js";
 
-const TERRAIN_SAMPLE_SPACING_METRES = 1;
-const MAXIMUM_SAMPLES_PER_SEGMENT = 2000;
 const RECTANGLE_CORNER_COUNT = 4;
 const RIGHT_ANGLE_TOLERANCE_COSINE = 0.005;
 
 function findTerrainHeight(terrainHeightSampler, x, y, fallbackHeight) {
     return terrainHeightSampler?.measuredHeightAt(x, y) ?? fallbackHeight;
-}
-
-function measureTerrainSegment(start, end, terrainHeightSampler) {
-    const horizontalLength = Math.hypot(end.x - start.x, end.y - start.y);
-    const sampleCount = Math.min(MAXIMUM_SAMPLES_PER_SEGMENT, Math.max(1, Math.ceil(horizontalLength / TERRAIN_SAMPLE_SPACING_METRES)));
-    const sampleSpacing = horizontalLength / sampleCount;
-    let length = 0;
-    let previousHeight = null;
-    for (let index = 0; index <= sampleCount; index++) {
-        const share = index / sampleCount;
-        const height = findTerrainHeight(terrainHeightSampler, start.x + (end.x - start.x) * share, start.y + (end.y - start.y) * share, null);
-        if (index > 0) {
-            const climb = height !== null && previousHeight !== null ? height - previousHeight : 0;
-            length += Math.hypot(sampleSpacing, climb);
-        }
-        if (height !== null) {
-            previousHeight = height;
-        }
-    }
-    return previousHeight === null ? start.distanceTo(end) : length;
 }
 
 function measurePolyline(feature, terrainHeightSampler) {
@@ -46,8 +24,7 @@ function measurePolyline(feature, terrainHeightSampler) {
     const heightDifference = findTerrainHeight(terrainHeightSampler, last.x, last.y, last.z)
         - findTerrainHeight(terrainHeightSampler, first.x, first.y, first.z);
     return {
-        horizontalLength: horizontalLength,
-        terrainLength: feature.computeEdgeSegments().reduce((sum, [start, end]) => sum + measureTerrainSegment(start, end, terrainHeightSampler), 0),
+        length: feature.computeEdgeSegments().reduce((sum, [start, end]) => sum + start.distanceTo(end), 0),
         heightDifference: heightDifference,
         slopePercent: horizontalLength > 0 ? heightDifference / horizontalLength * 100 : null
     };

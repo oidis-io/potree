@@ -18,10 +18,10 @@ export const DimensionKind = Object.freeze({
     HEIGHT: "height"
 });
 
-function createSegmentDimension(kind, start, end) {
+function createSegmentDimension(kind, start, end, isSpatial = false) {
     return {
         kind: kind,
-        value: Math.hypot(end.x - start.x, end.y - start.y),
+        value: isSpatial ? start.distanceTo(end) : Math.hypot(end.x - start.x, end.y - start.y),
         position: start.clone().lerp(end, 0.5),
         segment: [start, end]
     };
@@ -31,10 +31,11 @@ function computeEdgeDimensions(feature) {
     const edges = feature.computeEdgeSegments();
     const isRectangle = feature.featureType === CadFeatureType.POLYGON && feature.isClosed() && findRectangleSides(feature.points) !== null;
     const dimensionEdges = isRectangle ? edges.slice(0, 2) : edges;
-    const dimensions = dimensionEdges.map(([start, end]) => createSegmentDimension(DimensionKind.LENGTH, start, end));
+    const isSpatial = feature.featureType === CadFeatureType.POLYLINE;
+    const dimensions = dimensionEdges.map(([start, end]) => createSegmentDimension(DimensionKind.LENGTH, start, end, isSpatial));
     const lastPoint = feature.points[feature.points.length - 1];
     if (feature.isDrawing && feature.trailingPoint && lastPoint) {
-        dimensions.push(createSegmentDimension(DimensionKind.LENGTH, lastPoint, feature.trailingPoint));
+        dimensions.push(createSegmentDimension(DimensionKind.LENGTH, lastPoint, feature.trailingPoint, isSpatial));
     }
     const area = feature.isClosed() ? feature.computeArea() : null;
     if (area !== null) {
