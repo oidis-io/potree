@@ -20,44 +20,452 @@
     <link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
     <link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
     <link rel="stylesheet" type="text/css" href="../libs/Cesium/Widgets/CesiumWidget/CesiumWidget.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
     <style>
+        :root {
+            --editor-panel: #1c2026;
+            --editor-surface: #252a32;
+            --editor-surface-hover: #2f3541;
+            --editor-border: rgba(255, 255, 255, 0.1);
+            --editor-border-strong: rgba(255, 255, 255, 0.24);
+            --editor-text: #e6e8eb;
+            --editor-muted: #98a2ad;
+            --editor-accent: #4c9aff;
+            --editor-accent-soft: rgba(76, 154, 255, 0.2);
+            --editor-danger: #ff7a7a;
+            --editor-radius: 6px;
+            --editor-font: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+        }
+        #sidebar_root {
+            display: none;
+        }
+        #potree_sidebar_container {
+            width: 300px;
+            overflow-y: auto;
+            border-right: 1px solid var(--editor-border);
+            background: var(--editor-panel);
+        }
+        #network_editor_panel {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 12px;
+            color: var(--editor-text);
+            font: 13px/1.4 var(--editor-font);
+        }
+        .editor-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 2px;
+            font-size: 15px;
+            font-weight: 600;
+        }
+        .editor-header .ti {
+            color: var(--editor-accent);
+            font-size: 20px;
+        }
+        .editor-tabs,
+        .editor-segmented {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2px;
+            padding: 3px;
+            border-radius: 8px;
+            background: var(--editor-surface);
+        }
+        .editor-tab,
+        .editor-segment {
+            padding: 5px 0;
+            border: 0;
+            border-radius: var(--editor-radius);
+            background: none;
+            color: var(--editor-muted);
+            font: inherit;
+            text-align: center;
+            cursor: pointer;
+        }
+        .editor-tab:hover,
+        .editor-segment:hover {
+            color: var(--editor-text);
+        }
+        .editor-tab.is-active,
+        .editor-segment:has(input:checked) {
+            background: var(--editor-panel);
+            color: var(--editor-text);
+            box-shadow: 0 0 0 1px var(--editor-border);
+        }
+        .editor-segment input {
+            display: none;
+        }
+        .editor-pane {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .editor-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 26px;
+            margin-top: 6px;
+            color: var(--editor-muted);
+            font-size: 11px;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+        .editor-note,
+        .editor-status {
+            color: var(--editor-muted);
+            font-size: 11px;
+        }
+        .editor-status {
+            white-space: nowrap;
+        }
+        .editor-row {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .editor-grow {
+            flex: 1;
+            min-width: 0;
+        }
+        .editor-button {
+            display: inline-flex;
+            flex: none;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            height: 30px;
+            padding: 0 10px;
+            border: 1px solid var(--editor-border);
+            border-radius: var(--editor-radius);
+            background: var(--editor-surface);
+            color: var(--editor-text);
+            font: inherit;
+            cursor: pointer;
+        }
+        .editor-button:hover:not(:disabled) {
+            background: var(--editor-surface-hover);
+        }
+        .editor-button:disabled {
+            opacity: 0.4;
+            cursor: default;
+        }
+        .editor-button .ti {
+            font-size: 17px;
+        }
+        .editor-icon-button {
+            width: 30px;
+            padding: 0;
+        }
+        .editor-button.is-active {
+            border-color: var(--editor-accent);
+            background: var(--editor-accent-soft);
+        }
+        .editor-button.is-danger {
+            color: var(--editor-danger);
+        }
+        .editor-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .editor-toggle span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        #network_editor_panel input[type=checkbox],
+        #network_editor_panel input[type=radio] {
+            margin: 0;
+            accent-color: var(--editor-accent);
+        }
+        .editor-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .editor-chip-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+        .editor-chip {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border: 1px solid var(--editor-border);
+            border-radius: 999px;
+            color: var(--editor-muted);
+            cursor: pointer;
+            user-select: none;
+        }
+        .editor-chip input {
+            display: none;
+        }
+        .editor-chip.is-on {
+            border-color: var(--editor-border-strong);
+            background: var(--editor-surface-hover);
+            color: var(--editor-text);
+        }
+        .editor-chip:has(input:disabled) {
+            opacity: 0.4;
+            cursor: default;
+        }
+        .editor-chip:not(.is-on) .editor-dot {
+            opacity: 0.35;
+        }
+        .editor-chip-status {
+            color: var(--editor-muted);
+            font-size: 11px;
+        }
+        .editor-dot,
+        .editor-swatch {
+            flex: none;
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+        }
+        .editor-swatch {
+            width: 10px;
+            height: 10px;
+            border-radius: 3px;
+        }
+        .editor-details {
+            padding: 6px 10px;
+            border: 1px solid var(--editor-border);
+            border-radius: 8px;
+        }
+        .editor-details summary {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--editor-muted);
+            list-style: none;
+            cursor: pointer;
+        }
+        .editor-details summary::-webkit-details-marker {
+            display: none;
+        }
+        .editor-details[open] summary {
+            color: var(--editor-text);
+        }
+        .editor-details > :not(summary) {
+            margin-top: 10px;
+        }
+        .editor-range {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 2px 8px;
+        }
+        .editor-range input {
+            grid-column: 1 / -1;
+            width: 100%;
+            accent-color: var(--editor-accent);
+        }
+        .editor-range-value {
+            color: var(--editor-muted);
+        }
+        .editor-list-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 30px;
+            padding: 2px 6px;
+            border-radius: var(--editor-radius);
+        }
+        .editor-list-row:hover {
+            background: var(--editor-surface);
+        }
+        .editor-feature {
+            cursor: pointer;
+        }
+        .editor-feature.is-active {
+            background: var(--editor-accent-soft);
+        }
+        .editor-list-title {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .editor-list-value {
+            color: var(--editor-muted);
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        .editor-group-title {
+            margin-top: 4px;
+            color: var(--editor-muted);
+            font-size: 11px;
+        }
+        .editor-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .editor-stack .editor-button {
+            justify-content: flex-start;
+        }
+        .editor-floating {
+            position: absolute;
+            z-index: 5000;
+            box-sizing: border-box;
+            border: 1px solid var(--editor-border);
+            border-radius: 10px;
+            background: rgba(28, 32, 38, 0.94);
+            color: var(--editor-text);
+            font: 13px/1.4 var(--editor-font);
+        }
+        #network_editor_toolbar {
+            top: 10px;
+            left: 50%;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            padding: 4px;
+            transform: translateX(-50%);
+        }
+        #network_editor_toolbar .editor-button {
+            border-color: transparent;
+            background: none;
+        }
+        #network_editor_toolbar .editor-button:hover:not(:disabled) {
+            background: var(--editor-surface-hover);
+        }
+        #network_editor_toolbar .editor-button.is-active {
+            border-color: var(--editor-accent);
+            background: var(--editor-accent-soft);
+        }
+        #network_editor_toolbar input[type=color] {
+            width: 30px;
+            height: 26px;
+            padding: 0 2px;
+            border: 0;
+            background: none;
+            cursor: pointer;
+        }
+        .editor-separator {
+            align-self: stretch;
+            width: 1px;
+            margin: 4px;
+            background: var(--editor-border);
+        }
+        #network_editor_hint {
+            top: 58px;
+            left: 50%;
+            max-width: clamp(240px, calc(100% - 672px), 560px);
+            padding: 8px 12px;
+            font-size: 12px;
+            transform: translateX(-50%);
+        }
+        #network_editor_selection_card {
+            top: 56px;
+            left: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 300px;
+            max-height: calc(100% - 68px);
+            overflow-y: auto;
+            padding: 10px 12px;
+        }
+        .editor-card-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+        .editor-card-measurement {
+            color: var(--editor-muted);
+            font-size: 12px;
+        }
+        .editor-card-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .editor-field {
+            display: grid;
+            grid-template-columns: 64px 1fr;
+            align-items: center;
+            gap: 8px;
+        }
+        .editor-field label {
+            color: var(--editor-muted);
+        }
+        .editor-field input[type=text],
+        .editor-field select {
+            height: 28px;
+            padding: 0 8px;
+            border: 1px solid var(--editor-border);
+            border-radius: var(--editor-radius);
+            background: var(--editor-surface);
+            color: var(--editor-text);
+            font: inherit;
+        }
+        .editor-field input[type=color] {
+            width: 40px;
+            height: 26px;
+            padding: 0;
+            border: 0;
+            background: none;
+        }
+        #network_editor_attribution {
+            right: 8px;
+            bottom: 6px;
+            padding: 2px 8px;
+            border: 0;
+            border-radius: 6px;
+            background: rgba(28, 32, 38, 0.7);
+            color: var(--editor-muted);
+            font-size: 11px;
+        }
         #network_info_panel {
             display: none;
             position: absolute;
-            top: 10px;
+            top: 60px;
             right: 10px;
             z-index: 10000;
             width: 340px;
-            max-height: calc(100% - 40px);
+            max-height: calc(100% - 90px);
             overflow-y: auto;
             padding: 10px 12px;
-            border-radius: 4px;
-            background: rgba(0, 0, 0, 0.8);
-            color: #ffffff;
-            font: 12px/1.4 Arial, sans-serif;
+            border: 1px solid var(--editor-border);
+            border-radius: 10px;
+            background: rgba(28, 32, 38, 0.94);
+            color: var(--editor-text);
+            font: 12px/1.4 var(--editor-font);
         }
         #network_info_panel .network-info-header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
             margin-bottom: 6px;
-            font-weight: bold;
+            font-size: 13px;
+            font-weight: 600;
         }
         #network_info_panel .network-info-close {
             border: none;
             background: none;
-            color: #ffffff;
-            font-size: 16px;
+            color: var(--editor-text);
+            font-size: 18px;
             cursor: pointer;
         }
         #network_info_panel .network-info-feature {
             padding: 6px 0;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            border-top: 1px solid var(--editor-border);
         }
         #network_info_panel .network-info-title {
             margin-bottom: 2px;
             color: #ffcc66;
-            font-weight: bold;
+            font-weight: 600;
         }
         #network_info_panel table {
             width: 100%;
@@ -69,71 +477,12 @@
         }
         #network_info_panel td:first-child {
             width: 45%;
-            color: #aab4be;
+            color: var(--editor-muted);
         }
         #network_info_panel .network-info-footer {
             margin-top: 6px;
-            color: #aab4be;
+            color: var(--editor-muted);
             font-size: 11px;
-        }
-        .network-editor-status {
-            margin-left: 4px;
-            color: #aab4be;
-        }
-        .network-editor-note {
-            color: #aab4be;
-            font-size: 11px;
-        }
-        .network-editor-active {
-            outline: 2px solid #ffcc66;
-        }
-        .network-editor-field {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .network-editor-field input[type=text] {
-            flex: 1;
-        }
-        .network-editor-layer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .network-editor-feature-group {
-            margin-top: 4px;
-            font-weight: bold;
-        }
-        .network-editor-feature {
-            display: flex;
-            align-items: baseline;
-            gap: 6px;
-            padding: 2px 4px;
-            cursor: pointer;
-        }
-        .network-editor-feature:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-        .network-editor-swatch {
-            flex: none;
-            width: 10px;
-            height: 10px;
-            border-radius: 2px;
-        }
-        .network-editor-subitem {
-            padding-left: 18px;
-        }
-        .network-editor-options {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px 10px;
-        }
-        .network-editor-option {
-            white-space: nowrap;
-        }
-        .network-editor-subitem .network-editor-swatch {
-            display: inline-block;
-            margin-right: 4px;
         }
     </style>
 </head>
@@ -174,12 +523,6 @@
         const defaultDatasetName = "litovel";
         const requestedDatasetName = new URLSearchParams(window.location.search).get("data") ?? "";
         const datasetName = requestedDatasetName.replace(/[^a-zA-Z0-9_-]/g, "") || defaultDatasetName;
-
-        const litovelCentreBookmark = {
-            title: "Litovel – centrum",
-            position: [-558516, -1108474, 850],
-            target: [-558516, -1108324, 250]
-        };
 
         const dtmPropertyLabels = {
             nazevvlastnika: "Vlastník",
@@ -235,8 +578,8 @@
         const drawingFileErrorMessages = {
             [Potree.NetworkEditor.CadFileErrorCode.TOO_LARGE]: "Soubor je příliš velký (max. 20 MB).",
             [Potree.NetworkEditor.CadFileErrorCode.INVALID_JSON]: "Soubor není platný JSON.",
-            [Potree.NetworkEditor.CadFileErrorCode.UNSUPPORTED_FORMAT]: "Soubor není kresba síťového editoru, nebo má jinou verzi či souřadnicový systém.",
-            [Potree.NetworkEditor.CadFileErrorCode.INVALID_CONTENT]: "Kresba obsahuje neplatná data."
+            [Potree.NetworkEditor.CadFileErrorCode.UNSUPPORTED_FORMAT]: "Soubor neobsahuje měření ze síťového editoru, nebo má jinou verzi či souřadnicový systém.",
+            [Potree.NetworkEditor.CadFileErrorCode.INVALID_CONTENT]: "Soubor s měřeními obsahuje neplatná data."
         };
         const flyToMinimumDistanceMetres = 40;
         const flyToMaximumPitch = -Math.PI / 4;
@@ -245,40 +588,43 @@
         let isFeatureViewRenderScheduled = false;
         let isDrawingHelpShown = false;
         let terrainHeightSampler = null;
+        let pointSize = 1;
+        let selectedBaseMapProvider = "orto";
+        let isMapStarted = false;
 
         const cadastreExtentMetres = 1500;
         const cadastreLayers = [
-            { layerId: Potree.NetworkEditor.CadastreLayer.PARCELS, title: "Parcely" },
-            { layerId: Potree.NetworkEditor.CadastreLayer.BUILDINGS, title: "Budovy" },
-            { layerId: Potree.NetworkEditor.CadastreLayer.ROADS, title: "Cesty (ZABAGED)" }
+            { layerId: Potree.NetworkEditor.CadastreLayer.PARCELS, title: "Parcely", description: "Parcely (RÚIAN)" },
+            { layerId: Potree.NetworkEditor.CadastreLayer.BUILDINGS, title: "Budovy", description: "Budovy (RÚIAN)" },
+            { layerId: Potree.NetworkEditor.CadastreLayer.ROADS, title: "Cesty", description: "Cesty (ZABAGED, orientační)" }
         ];
         const loadedCadastreLayers = new Set();
 
         const drawingHelp = "Pohled: levé tlačítko otáčí, pravé posouvá, kolečko přibližuje. "
-            + "Kreslení: vyber tvar a klikej do mapy, Esc kreslení ukončí. Žlutý čtvereček ukazuje přichycení. "
+            + "Kreslení: vyber nástroj v liště a klikej do mapy, Esc kreslení ukončí. Žlutý čtvereček ukazuje přichycení. "
             + "Úpravy: klikni na prvek, tažením vrcholu ho upravíš, tažením za hranu nebo plochu posuneš celý prvek, "
             + "kliknutím na hranu přidáš vrchol. U kružnice tažením středu posuneš kružnici a tažením bodu na obvodu změníš poloměr. "
-            + "Delete smaže vybraný vrchol, jinak celý prvek. Esc zruší výběr, Ctrl+Z vrátí poslední změnu. "
-            + "Popisek, barva a vrstva se mění u vybraného prvku, jinak platí pro nově kreslené.";
+            + "Delete smaže vybraný vrchol, jinak celý prvek. Esc zruší výběr, Ctrl+Z vrátí poslední změnu.";
         const baseMaps = [
-            { provider: "orto", title: "Ortofoto" },
-            { provider: "cuzk", title: "Základní mapa" },
-            { provider: "openStreetMap", title: "OpenStreetMap" },
-            { provider: null, title: "Bez mapy" }
+            { provider: "orto", title: "Ortofoto ČÚZK", shortTitle: "Orto", attribution: "Mapa © ČÚZK, CC BY 4.0" },
+            { provider: "cuzk", title: "Základní mapa ČÚZK", shortTitle: "Mapa", attribution: "Mapa © ČÚZK, CC BY 4.0" },
+            { provider: "openStreetMap", title: "OpenStreetMap", shortTitle: "OSM", attribution: "Mapa © OpenStreetMap contributors" },
+            { provider: null, title: "Bez mapy", shortTitle: "Žádná", attribution: "" }
         ];
         const vertexDeleteRefusedHint = "Vrchol nejde smazat: délka potřebuje aspoň 2 vrcholy, polygon 3 a kružnice má vždy střed "
             + "a bod na obvodu. Celý prvek smažeš, když vrchol odznačíš a stiskneš Delete.";
         const dtmNetworkLayer = Potree.NetworkEditor.DtmNetworkLayer;
         const dtmNetworkGroups = [
-            { title: "Elektrické vedení", color: "#e60000", layerIds: [dtmNetworkLayer.ELECTRIC_LINE] },
-            { title: "Elektronické komunikace", color: "#c300fd", layerIds: [dtmNetworkLayer.ELECTRONIC_COMMUNICATION] },
-            { title: "Plynovod", color: "#4ce600", layerIds: [dtmNetworkLayer.GAS_PIPELINE] },
-            { title: "Vodovod", color: "#005be5", layerIds: [dtmNetworkLayer.WATER_PIPELINE] },
-            { title: "Kanalizace", color: "#905803", layerIds: [dtmNetworkLayer.SEWER] },
-            { title: "Teplovod", color: "#ff7d00", layerIds: [dtmNetworkLayer.HEATING_PIPELINE] },
-            { title: "Produktovod", color: "#73004c", layerIds: [dtmNetworkLayer.PRODUCT_PIPELINE] },
+            { title: "Elektrické vedení", shortTitle: "Elektro", color: "#e60000", layerIds: [dtmNetworkLayer.ELECTRIC_LINE] },
+            { title: "Elektronické komunikace", shortTitle: "Komunikace", color: "#c300fd", layerIds: [dtmNetworkLayer.ELECTRONIC_COMMUNICATION] },
+            { title: "Plynovod", shortTitle: "Plyn", color: "#4ce600", layerIds: [dtmNetworkLayer.GAS_PIPELINE] },
+            { title: "Vodovod", shortTitle: "Voda", color: "#005be5", layerIds: [dtmNetworkLayer.WATER_PIPELINE] },
+            { title: "Kanalizace", shortTitle: "Kanalizace", color: "#905803", layerIds: [dtmNetworkLayer.SEWER] },
+            { title: "Teplovod", shortTitle: "Teplo", color: "#ff7d00", layerIds: [dtmNetworkLayer.HEATING_PIPELINE] },
+            { title: "Produktovod", shortTitle: "Produktovod", color: "#73004c", layerIds: [dtmNetworkLayer.PRODUCT_PIPELINE] },
             {
                 title: "Ostatní stavby (sdílené, vodní, dopravní, protipovodňové, meliorace)",
+                shortTitle: "Ostatní",
                 color: "#686868",
                 layerIds: [
                     dtmNetworkLayer.SHARED_STRUCTURE,
@@ -300,37 +646,53 @@
             {
                 drawingType: Potree.NetworkEditor.CadDrawingType.POINT,
                 title: "Bod",
+                icon: "point",
                 hint: "Každým kliknutím vložíš bod. Esc kreslení ukončí."
             },
             {
                 drawingType: Potree.NetworkEditor.CadDrawingType.POLYLINE,
                 title: "Délka",
+                icon: "ruler-2",
                 hint: "Kliknutím přidáš vrchol, Backspace vrátí poslední, Esc měření dokončí."
             },
             {
                 drawingType: Potree.NetworkEditor.CadDrawingType.POLYGON,
                 title: "Polygon",
+                icon: "polygon",
                 hint: "Kliknutím přidáš vrchol, Backspace vrátí poslední. Polygon uzavřeš kliknutím na první vrchol nebo Esc."
             },
             {
                 drawingType: Potree.NetworkEditor.CadDrawingType.RECTANGLE,
                 title: "Obdélník",
+                icon: "square",
                 hint: "První dvě kliknutí určí jednu stranu, třetí kliknutí šířku obdélníku. Backspace vrátí poslední roh, Esc kreslení zruší."
             },
             {
                 drawingType: Potree.NetworkEditor.CadDrawingType.CIRCLE,
                 title: "Kružnice",
+                icon: "circle",
                 hint: "Prvním kliknutím určíš střed, druhým bod na obvodu. Esc kreslení zruší."
             }
+        ];
+        const editorTabs = [
+            { key: "sources", title: "Podklady", createContent: createSourcesTab },
+            { key: "networks", title: "Sítě", createContent: createNetworksTab },
+            { key: "features", title: "Prvky", createContent: createFeaturesTab },
+            { key: "file", title: "Soubor", createContent: createFileTab }
         ];
 
         const infoPanel = $("#network_info_panel");
         const infoPanelBody = infoPanel.find(".network-info-body");
         let isInfoPromptShown = false;
 
-        function loadPointCloud(name) {
+        async function loadPointCloud(name) {
+            const url = `./data/${name}/ept/ept.json`;
+            const response = await fetch(url).catch(() => null);
+            if (!response?.ok) {
+                return null;
+            }
             return new Promise((resolve) => {
-                Potree.loadPointCloud(`./data/${name}/ept/ept.json`, name, (event) => resolve(event.pointcloud));
+                Potree.loadPointCloud(url, name, (event) => resolve(event.pointcloud));
             });
         }
 
@@ -339,7 +701,7 @@
             const pointCloudCheckbox = $("#network_editor_point_cloud");
             material.activeAttributeName = "rgba";
             material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-            material.size = 1;
+            material.size = pointSize;
             material.minSize = 2;
             pointCloud.visible = pointCloudCheckbox.prop("checked");
             pointCloud.addEventListener("visibility_changed", () => pointCloudCheckbox.prop("checked", pointCloud.visible));
@@ -353,7 +715,15 @@
             }
         }
 
+        function setPointSize(size) {
+            pointSize = size;
+            for (const pointCloud of viewer.scene.pointclouds) {
+                pointCloud.material.size = size;
+            }
+        }
+
         function setBaseMap(provider) {
+            selectedBaseMapProvider = provider;
             viewer.cesiumRender.init();
             viewer.setShowCesium(provider !== null);
             $("#show_cesium").prop("checked", provider !== null);
@@ -363,34 +733,27 @@
                 });
                 $(`#show_cesium_map_provider input[value=${provider}]`).trigger("change");
             }
+            updateAttribution();
         }
 
-        function createBaseMapItem() {
-            const options = baseMaps.map((baseMap, index) => {
-                const radio = $("<input type=\"radio\" name=\"network_editor_base_map\">")
-                    .attr("id", `network_editor_base_map_${index}`)
-                    .prop("checked", index === 0)
-                    .on("change", () => setBaseMap(baseMap.provider));
-                return $("<label class=\"network-editor-option\"></label>").attr("for", `network_editor_base_map_${index}`).append(radio, ` ${baseMap.title}`);
-            });
-            return $("<li class=\"network-editor-options\"></li>").append($("<span>Mapa:</span>"), ...options);
+        function startMapAndNetworks() {
+            if (isMapStarted) {
+                return;
+            }
+            isMapStarted = true;
+            setBaseMap(selectedBaseMapProvider);
+            dtmOverlay.setVisible($("#network_editor_dtm").prop("checked"));
         }
 
-        function createEdlItem() {
-            return createCheckboxItem("network_editor_edl", "Zvýraznit tvary mračna (EDL)", viewer.getEDLEnabled(), (checked) => viewer.setEDLEnabled(checked));
-        }
-
-        function hidePotreeMenuSections() {
-            $("#potree_menu > h3").not(".network-editor-section").each((index, element) => {
-                $(element).hide().next().hide();
-            });
-        }
-
-        function createMenuSection(identifier, title, items, isExpanded) {
-            const header = $("<h3 class=\"network-editor-section\"></h3>").attr("id", identifier).append($("<span></span>").text(title));
-            const content = $("<div></div>").append($("<ul class=\"pv-menu-list\"></ul>").append(items)).toggle(isExpanded);
-            header.on("click", () => content.slideToggle());
-            return [header, content];
+        function updateAttribution() {
+            const baseMap = baseMaps.find((map) => map.provider === selectedBaseMapProvider);
+            const isCadastreShown = cadastreLayers.some((cadastreLayer) => $(`#network_editor_cadastre_${cadastreLayer.layerId}`).prop("checked"));
+            const parts = [
+                baseMap?.attribution ?? "",
+                isCadastreShown ? "Katastr © ČÚZK, CC BY 4.0" : "",
+                $("#network_editor_dtm").prop("checked") ? "Sítě: ČÚZK – IS DMVS, orientační" : ""
+            ].filter((part) => part !== "");
+            $("#network_editor_attribution").text(parts.join(" · ")).toggle(parts.length > 0);
         }
 
         function formatPropertyValue(value) {
@@ -425,7 +788,7 @@
             }
             infoPanelBody.empty();
             if (result.region) {
-                infoPanelBody.append($("<div class=\"network-editor-note\"></div>").text(`DTM: ${result.region}`));
+                infoPanelBody.append($("<div class=\"editor-note\"></div>").text(`DTM: ${result.region}`));
             }
             for (const properties of result.features) {
                 infoPanelBody.append(createFeatureElement(properties));
@@ -439,16 +802,100 @@
             dtmInfoTool.clearMarker();
         }
 
-        function createBookmarkButton(bookmark) {
-            return $("<input type=\"button\">")
-                .val(bookmark.title)
-                .on("click", () => viewer.scene.view.setView(bookmark.position, bookmark.target, 1000));
+        function createIcon(iconName) {
+            return $("<i aria-hidden=\"true\"></i>").addClass(`ti ti-${iconName}`);
         }
 
-        function createShowPointCloudButton() {
-            return $("<input type=\"button\">")
-                .val("Zobrazit mračno")
-                .on("click", () => viewer.fitToScreen(1, 1000));
+        function createButton(options) {
+            const button = $("<button type=\"button\" class=\"editor-button\"></button>")
+                .attr("title", options.title)
+                .append(createIcon(options.icon))
+                .on("click", options.onClick);
+            if (options.text) {
+                button.append($("<span></span>").text(options.text));
+            } else {
+                button.addClass("editor-icon-button").attr("aria-label", options.title);
+            }
+            if (options.identifier) {
+                button.attr("id", options.identifier);
+            }
+            return button;
+        }
+
+        function createToggleButton(options) {
+            const button = createButton({
+                ...options,
+                onClick: () => {
+                    const isOn = button.attr("aria-pressed") !== "true";
+                    setToggleButtonState(button, isOn);
+                    options.onToggle(isOn);
+                }
+            });
+            setToggleButtonState(button, options.isOn);
+            return button;
+        }
+
+        function setToggleButtonState(button, isOn) {
+            button.attr("aria-pressed", String(isOn)).toggleClass("is-active", isOn);
+        }
+
+        function createToggle(identifier, text, checked, onChange) {
+            const checkbox = $("<input type=\"checkbox\">")
+                .attr("id", identifier)
+                .prop("checked", checked)
+                .on("change", (event) => onChange(event.target.checked));
+            return $("<label class=\"editor-toggle\"></label>").attr("for", identifier).append(checkbox, $("<span></span>").text(text));
+        }
+
+        function createChip(options) {
+            const checkbox = $("<input type=\"checkbox\">").attr("id", options.identifier).prop("checked", options.checked);
+            const chip = $("<label class=\"editor-chip\"></label>").attr({ for: options.identifier, title: options.description ?? options.text });
+            const updateChip = () => chip.toggleClass("is-on", checkbox.prop("checked"));
+            checkbox.on("change", (event) => {
+                updateChip();
+                options.onChange(event.target.checked);
+            });
+            if (options.color) {
+                chip.append($("<span class=\"editor-dot\"></span>").css("background", options.color));
+            }
+            chip.append(checkbox, $("<span></span>").text(options.text));
+            updateChip();
+            return chip;
+        }
+
+        function createSegmentedControl(name, options, selectedIndex, onSelect) {
+            const control = $("<div class=\"editor-segmented\" role=\"radiogroup\"></div>");
+            options.forEach((option, index) => {
+                const identifier = `${name}_${index}`;
+                const radio = $("<input type=\"radio\">")
+                    .attr({ id: identifier, name: name })
+                    .prop("checked", index === selectedIndex)
+                    .on("change", () => onSelect(option));
+                control.append($("<label class=\"editor-segment\"></label>").attr({ for: identifier, title: option.title }).append(radio, $("<span></span>").text(option.shortTitle)));
+            });
+            return control;
+        }
+
+        function createLabel(text, actions = []) {
+            return $("<div class=\"editor-label\"></div>").append($("<span></span>").text(text), ...actions);
+        }
+
+        function createNote(text, identifier = null) {
+            const note = $("<div class=\"editor-note\"></div>").text(text);
+            return identifier ? note.attr("id", identifier) : note;
+        }
+
+        function createRange(options) {
+            const output = $("<span class=\"editor-range-value\"></span>").text(options.formatValue(options.value));
+            const input = $("<input type=\"range\">")
+                .attr({ id: options.identifier, min: options.minimum, max: options.maximum, step: options.step })
+                .val(options.value)
+                .on("input", (event) => {
+                    const value = Number(event.target.value);
+                    output.text(options.formatValue(value));
+                    options.onChange(value);
+                });
+            return $("<div class=\"editor-range\"></div>").append($("<label></label>").attr("for", options.identifier).text(options.title), output, input);
         }
 
         function showPointCloudStatus(text) {
@@ -480,7 +927,7 @@
             }
             addPointCloud(pointCloud);
             startTerrainHeightSampler(pointCloud);
-            $("#network_editor_bookmark").hide();
+            startMapAndNetworks();
         }
 
         async function openLasFile(file) {
@@ -497,12 +944,13 @@
             if (!result.hasColors) {
                 result.pointCloud.material.activeAttributeName = "elevation";
             }
+            $("#network_editor_point_cloud_name").text(file.name);
             const thinnedText = result.pointCount < result.sourcePointCount ? `, zředěno z ${formatNumber(result.sourcePointCount, 0)}` : "";
             const coordinateText = looksLikeKrovakCoordinates(result.origin) ? "" : " Souřadnice nevypadají jako S-JTSK (EPSG:5514), mapa, DTM a katastr nemusí sedět.";
-            showPointCloudStatus(`Načteno: ${file.name}, bodů ${formatNumber(result.pointCount, 0)}${thinnedText}.${coordinateText}`);
+            showPointCloudStatus(`Načteno bodů ${formatNumber(result.pointCount, 0)}${thinnedText}.${coordinateText}`);
         }
 
-        function createPointCloudItems() {
+        function createPointCloudRow() {
             const fileInput = $("<input type=\"file\" accept=\".las,.laz\" hidden>")
                 .on("change", (event) => {
                     const file = event.target.files[0];
@@ -511,36 +959,104 @@
                         openLasFile(file);
                     }
                 });
-            const openButton = $("<input type=\"button\">")
-                .val("Otevřít mračno (LAS)")
-                .on("click", () => fileInput[0].click());
-            const bookmarkButton = createBookmarkButton(litovelCentreBookmark)
-                .attr("id", "network_editor_bookmark")
-                .toggle(datasetName.startsWith(defaultDatasetName));
+            const visibilityToggle = createToggle("network_editor_point_cloud", datasetName, true, setPointCloudsVisible).addClass("editor-grow");
+            visibilityToggle.find("span").attr("id", "network_editor_point_cloud_name");
+            return $("<div class=\"editor-row\"></div>").append(
+                visibilityToggle,
+                createButton({ icon: "focus-2", title: "Zoom na mračno", identifier: "network_editor_show_point_cloud", onClick: () => viewer.fitToScreen(1, 1000) }),
+                createButton({ icon: "folder-open", title: "Otevřít mračno (LAS)", identifier: "network_editor_open_las", onClick: () => fileInput[0].click() }),
+                fileInput
+            );
+        }
+
+        function createDisplaySettings() {
+            return $("<details class=\"editor-details\"></details>").append(
+                $("<summary></summary>").append(createIcon("adjustments-horizontal"), $("<span>Vykreslování mračna</span>")),
+                createToggle("network_editor_edl", "Zvýraznit tvary (EDL)", viewer.getEDLEnabled(), (checked) => viewer.setEDLEnabled(checked)),
+                createRange({
+                    identifier: "network_editor_point_size",
+                    title: "Velikost bodů",
+                    minimum: 0.5,
+                    maximum: 3,
+                    step: 0.1,
+                    value: pointSize,
+                    formatValue: (value) => formatNumber(value, 1),
+                    onChange: setPointSize
+                }),
+                createRange({
+                    identifier: "network_editor_point_budget",
+                    title: "Počet zobrazených bodů",
+                    minimum: 1,
+                    maximum: 10,
+                    step: 1,
+                    value: viewer.getPointBudget() / 1000000,
+                    formatValue: (value) => `${value} mil.`,
+                    onChange: (value) => viewer.setPointBudget(value * 1000000)
+                })
+            );
+        }
+
+        function loadCadastreLayer(layerId) {
+            const extent = mapPlane.computeViewExtent(cadastreExtentMetres);
+            if (!extent) {
+                cadastreOverlay.dispatchEvent({ type: "layer_failed", layerId: layerId });
+                return;
+            }
+            loadedCadastreLayers.add(layerId);
+            cadastreOverlay.loadLayer(layerId, extent);
+        }
+
+        function onCadastreLayerToggled(layerId, checked) {
+            if (checked && !loadedCadastreLayers.has(layerId)) {
+                loadCadastreLayer(layerId);
+            }
+            cadastreOverlay.setLayerVisible(layerId, checked);
+            updateAttribution();
+        }
+
+        function createCadastreChip(cadastreLayer) {
+            const chip = createChip({
+                identifier: `network_editor_cadastre_${cadastreLayer.layerId}`,
+                text: cadastreLayer.title,
+                description: cadastreLayer.description,
+                checked: false,
+                onChange: (checked) => onCadastreLayerToggled(cadastreLayer.layerId, checked)
+            });
+            const status = $("<span class=\"editor-chip-status\" title=\"Počet načtených čar\"></span>");
+            const isThisLayer = (event) => event.layerId === cadastreLayer.layerId;
+            cadastreOverlay.addEventListener("layer_loading", (event) => isThisLayer(event) && status.text("…"));
+            cadastreOverlay.addEventListener("layer_loaded", (event) => isThisLayer(event) && status.text(event.isTruncated ? `${event.lineCount}+` : String(event.lineCount)));
+            cadastreOverlay.addEventListener("layer_failed", (event) => isThisLayer(event) && status.text("chyba"));
+            return chip.append(status);
+        }
+
+        function reloadVisibleCadastreLayers() {
+            for (const cadastreLayer of cadastreLayers) {
+                if ($(`#network_editor_cadastre_${cadastreLayer.layerId}`).prop("checked")) {
+                    loadCadastreLayer(cadastreLayer.layerId);
+                }
+            }
+        }
+
+        function createSourcesTab() {
+            const reloadCadastreButton = createButton({
+                icon: "refresh",
+                title: "Načíst katastr pro aktuální pohled",
+                identifier: "network_editor_reload_cadastre",
+                onClick: reloadVisibleCadastreLayers
+            });
             return [
-                $("<li></li>").append(createShowPointCloudButton(), openButton, bookmarkButton, fileInput),
-                $("<li class=\"network-editor-note\" id=\"network_editor_point_cloud_status\"></li>")
-                    .text("Vlastní mračno: nekomprimovaný LAS v S-JTSK, převede se v prohlížeči.")
+                createLabel("Mračno"),
+                createPointCloudRow(),
+                createNote("Vlastní mračno: nekomprimovaný LAS v S-JTSK, převede se v prohlížeči.", "network_editor_point_cloud_status"),
+                createNote("Výška terénu: čeká na mračno", "network_editor_terrain_status"),
+                createLabel("Mapa"),
+                createSegmentedControl("network_editor_base_map", baseMaps, 0, (baseMap) => setBaseMap(baseMap.provider)),
+                createLabel("Katastr", [reloadCadastreButton]),
+                $("<div class=\"editor-chips\"></div>").append(cadastreLayers.map(createCadastreChip)),
+                createNote("Načítá se pro okolí aktuálního pohledu, slouží i k přichytávání."),
+                createDisplaySettings()
             ];
-        }
-
-        function createCheckboxItem(identifier, text, checked, onChange) {
-            const checkbox = $("<input type=\"checkbox\">")
-                .attr("id", identifier)
-                .prop("checked", checked)
-                .on("change", (event) => onChange(event.target.checked));
-            const label = $("<label></label>").attr("for", identifier).text(text);
-            return $("<li></li>").append(checkbox, label);
-        }
-
-        function createDtmLayerItem() {
-            const status = $("<span class=\"network-editor-status\"></span>");
-            dtmOverlay.addEventListener("loading_changed", (event) => status.text(event.loading ? "načítám…" : ""));
-            dtmOverlay.addEventListener("load_failed", () => status.text("nepodařilo se načíst"));
-            return createCheckboxItem("network_editor_dtm", "DTM – technická infrastruktura", true, (checked) => {
-                dtmOverlay.setVisible(checked);
-                $(".network-editor-subitem input[type=checkbox]").prop("disabled", !checked);
-            }).append(status);
         }
 
         function collectVisibleDtmLayerIds() {
@@ -549,28 +1065,22 @@
                 .flatMap((group) => group.layerIds);
         }
 
-        function createDtmNetworkItems() {
-            return dtmNetworkGroups.map((group) => {
-                const item = createCheckboxItem(`network_editor_dtm_${group.layerIds[0]}`, group.title, true, () => {
-                    dtmOverlay.setLayerIds(collectVisibleDtmLayerIds());
-                });
-                item.addClass("network-editor-subitem");
-                item.find("label").prepend($("<span class=\"network-editor-swatch\"></span>").css("background", group.color));
-                return item;
-            });
-        }
-
         function createInfoToolButton() {
-            const button = $("<input type=\"button\">").val("Info o síti");
-            button.on("click", () => {
-                if (dtmInfoTool.active) {
-                    dtmInfoTool.deactivate();
-                } else {
-                    dtmInfoTool.activate();
+            const button = createButton({
+                icon: "info-circle",
+                title: "Klikni do mapy a zjisti údaje o síti",
+                text: "Info o síti",
+                identifier: "network_editor_info_tool",
+                onClick: () => {
+                    if (dtmInfoTool.active) {
+                        dtmInfoTool.deactivate();
+                    } else {
+                        dtmInfoTool.activate();
+                    }
                 }
             });
             dtmInfoTool.addEventListener("activation_changed", (event) => {
-                button.val(event.active ? "Info o síti: zapnuto (Esc vypne)" : "Info o síti");
+                button.toggleClass("is-active", event.active).find("span").text(event.active ? "Info o síti: klikni do mapy (Esc)" : "Info o síti");
                 if (event.active) {
                     showInfoMessage("Klikni na síť v mapě.");
                     isInfoPromptShown = true;
@@ -581,29 +1091,216 @@
             return button;
         }
 
-        function createDrawingButtonsItem() {
-            const item = $("<li></li>");
-            for (const drawingType of drawingTypes) {
-                const button = $("<input type=\"button\">").val(drawingType.title);
-                button.on("click", () => {
+        function createNetworksTab() {
+            const status = $("<span class=\"editor-status\"></span>");
+            dtmOverlay.addEventListener("loading_changed", (event) => status.text(event.loading ? "načítám…" : ""));
+            dtmOverlay.addEventListener("load_failed", () => status.text("nepodařilo se načíst"));
+            const dtmToggle = createToggle("network_editor_dtm", "DTM – technická infrastruktura", true, (checked) => {
+                dtmOverlay.setVisible(checked);
+                $(".editor-network-chip input").prop("disabled", !checked);
+                updateAttribution();
+            }).addClass("editor-grow");
+            const networkChips = dtmNetworkGroups.map((group) => createChip({
+                identifier: `network_editor_dtm_${group.layerIds[0]}`,
+                text: group.shortTitle,
+                description: group.title,
+                color: group.color,
+                checked: true,
+                onChange: () => dtmOverlay.setLayerIds(collectVisibleDtmLayerIds())
+            }).addClass("editor-network-chip"));
+            return [
+                createLabel("Náhled sítí"),
+                $("<div class=\"editor-row\"></div>").append(dtmToggle, status),
+                $("<div class=\"editor-chip-grid\"></div>").append(networkChips),
+                createInfoToolButton(),
+                createNote("ČÚZK – IS DMVS, přibližný zákres, jen orientačně. Nenahrazuje vyjádření vlastníků sítí.")
+            ];
+        }
+
+        function createLayerRow(layer) {
+            const featureCount = cadDocument.features.filter((feature) => feature.layerId === layer.id).length;
+            const activeRadio = $("<input type=\"radio\" name=\"network_editor_active_layer\" title=\"Kreslit do této vrstvy\">")
+                .prop("checked", layer.id === cadDocument.activeLayerId)
+                .on("change", () => cadDocument.setActiveLayer(layer.id));
+            const visibilityButton = createButton({
+                icon: layer.visible ? "eye" : "eye-off",
+                title: layer.visible ? "Skrýt vrstvu" : "Zobrazit vrstvu",
+                onClick: () => cadDocument.setLayerVisible(layer.id, !layer.visible)
+            });
+            return $("<div class=\"editor-list-row\"></div>").append(
+                activeRadio,
+                $("<span class=\"editor-list-title\"></span>").text(layer.name),
+                $("<span class=\"editor-list-value\"></span>").text(String(featureCount)),
+                visibilityButton
+            );
+        }
+
+        function createFeatureRow(feature) {
+            return $("<div class=\"editor-list-row editor-feature\"></div>")
+                .toggleClass("is-active", feature === cadEditTool.selectedFeature)
+                .append(
+                    $("<span class=\"editor-swatch\"></span>").css("background", `#${feature.color.getHexString()}`),
+                    $("<span class=\"editor-list-title\"></span>").text(describeFeature(feature)),
+                    $("<span class=\"editor-list-value\"></span>").text(describeFeatureSummary(feature))
+                )
+                .on("click", () => focusFeature(feature));
+        }
+
+        function createFeaturesTab() {
+            const layerList = $("<div></div>");
+            const featureList = $("<div></div>");
+            featureViewRenderers.push(() => {
+                layerList.empty().append(cadDocument.layers.map(createLayerRow));
+                featureList.empty();
+                if (cadDocument.features.length === 0) {
+                    featureList.append(createNote("Zatím žádné prvky. Nakresli je nástroji v liště nad mapou."));
+                    return;
+                }
+                for (const layer of cadDocument.layers) {
+                    const layerFeatures = cadDocument.features.filter((feature) => feature.layerId === layer.id);
+                    if (layerFeatures.length > 0) {
+                        const groupTitle = layer.visible ? layer.name : `${layer.name} (skrytá)`;
+                        featureList.append($("<div class=\"editor-group-title\"></div>").text(groupTitle), layerFeatures.map(createFeatureRow));
+                    }
+                }
+            });
+            const addLayerButton = createButton({
+                icon: "plus",
+                title: "Přidat vrstvu",
+                identifier: "network_editor_add_layer",
+                onClick: () => cadDocument.addLayer(`Vrstva ${cadDocument.layers.length + 1}`)
+            });
+            return [createLabel("Vrstvy", [addLayerButton]), layerList, createLabel("Nakreslené prvky"), featureList];
+        }
+
+        function createFileTab() {
+            const fileInput = $("<input type=\"file\" accept=\".json,application/json\" hidden>")
+                .on("change", (event) => {
+                    const file = event.target.files[0];
+                    event.target.value = "";
+                    if (file) {
+                        loadDrawingFile(file);
+                    }
+                });
+            const buttons = $("<div class=\"editor-stack\"></div>").append(
+                createButton({
+                    icon: "download",
+                    title: "Uložit všechna měření do souboru JSON",
+                    text: "Uložit měření (JSON)",
+                    identifier: "network_editor_save_drawing",
+                    onClick: () => {
+                        saveDrawing();
+                        showFileStatus(`Uloženo měření: ${cadDocument.features.length}.`);
+                    }
+                }),
+                createButton({ icon: "upload", title: "Načíst měření ze souboru JSON", text: "Načíst měření", identifier: "network_editor_load_drawing", onClick: () => fileInput[0].click() }),
+                createButton({ icon: "trash", title: "Smazat všechna měření i vrstvy a začít znovu", text: "Smazat všechna měření", identifier: "network_editor_new_drawing", onClick: startNewDrawing }),
+                fileInput
+            );
+            return [
+                createLabel("Měření"),
+                buttons,
+                createNote("Měření se průběžně ukládají v tomto prohlížeči. Soubor JSON je v souřadnicích S-JTSK.", "network_editor_file_status")
+            ];
+        }
+
+        function createEditorPanel() {
+            const tabBar = $("<div class=\"editor-tabs\" role=\"tablist\"></div>");
+            const panes = editorTabs.map((tab) => $("<div class=\"editor-pane\" role=\"tabpanel\"></div>")
+                .attr("id", `network_editor_tab_${tab.key}`)
+                .append(tab.createContent()));
+            const selectTab = (key) => {
+                tabBar.children().each((index, element) => {
+                    const isSelected = $(element).attr("data-tab") === key;
+                    $(element).toggleClass("is-active", isSelected).attr("aria-selected", String(isSelected));
+                });
+                panes.forEach((pane) => pane.toggle(pane.attr("id") === `network_editor_tab_${key}`));
+            };
+            for (const tab of editorTabs) {
+                tabBar.append($("<button type=\"button\" class=\"editor-tab\" role=\"tab\"></button>")
+                    .attr("data-tab", tab.key)
+                    .text(tab.title)
+                    .on("click", () => selectTab(tab.key)));
+            }
+            selectTab(editorTabs[0].key);
+            return $("<div id=\"network_editor_panel\"></div>").append(
+                $("<div class=\"editor-header\"></div>").append(createIcon("map-2"), $("<span>Síťový editor</span>")),
+                tabBar,
+                ...panes
+            );
+        }
+
+        function updateDrawingHint() {
+            const activeDrawingType = drawingTypes.find((drawingType) => drawingType.drawingType === cadTool.drawingType);
+            const text = activeDrawingType?.hint ?? (isDrawingHelpShown ? drawingHelp : "");
+            $("#network_editor_hint").text(text).toggle(text !== "");
+        }
+
+        function createToolbar() {
+            const selectButton = createButton({
+                icon: "pointer",
+                title: "Výběr a úpravy prvků (Esc)",
+                identifier: "network_editor_select_tool",
+                onClick: () => {
+                    if (cadTool.isDrawing) {
+                        cadTool.finishDrawing();
+                    }
+                    if (dtmInfoTool.active) {
+                        dtmInfoTool.deactivate();
+                    }
+                }
+            });
+            const toolButtons = drawingTypes.map((drawingType) => createButton({
+                icon: drawingType.icon,
+                title: drawingType.title,
+                onClick: () => {
                     if (cadTool.drawingType === drawingType.drawingType) {
                         cadTool.finishDrawing();
                     } else {
                         cadTool.startDrawing(drawingType.drawingType);
                     }
-                });
-                cadTool.addEventListener("drawing_changed", (event) => {
-                    button.toggleClass("network-editor-active", event.drawingType === drawingType.drawingType);
-                });
-                item.append(button);
-            }
-            const helpButton = $("<input type=\"button\" value=\"?\" title=\"Nápověda k ovládání\">")
-                .on("click", () => {
-                    isDrawingHelpShown = !isDrawingHelpShown;
-                    helpButton.toggleClass("network-editor-active", isDrawingHelpShown);
-                    updateDrawingHint();
-                });
-            return item.append(helpButton);
+                }
+            }).attr("data-drawing-type", drawingType.drawingType));
+            const updateActiveTool = () => {
+                selectButton.toggleClass("is-active", !cadTool.isDrawing && !dtmInfoTool.active);
+                toolButtons.forEach((button) => button.toggleClass("is-active", button.attr("data-drawing-type") === cadTool.drawingType));
+            };
+            cadTool.addEventListener("drawing_changed", updateActiveTool);
+            dtmInfoTool.addEventListener("activation_changed", updateActiveTool);
+            const colorInput = $("<input type=\"color\" id=\"network_editor_new_color\" title=\"Barva nových prvků\">")
+                .val(cadTool.style.color)
+                .on("input", (event) => cadTool.setStyle({ color: event.target.value }));
+            const undoButton = createButton({ icon: "arrow-back-up", title: "Zpět (Ctrl+Z)", identifier: "network_editor_undo", onClick: () => cadHistory.undo() })
+                .prop("disabled", !cadHistory.canUndo);
+            cadHistory.addEventListener("history_changed", () => undoButton.prop("disabled", !cadHistory.canUndo));
+            updateActiveTool();
+            return $("<div id=\"network_editor_toolbar\" class=\"editor-floating\" role=\"toolbar\" aria-label=\"Nástroje\"></div>").append(
+                selectButton,
+                ...toolButtons,
+                $("<span class=\"editor-separator\"></span>"),
+                colorInput,
+                createToggleButton({ icon: "magnet", title: "Přichytávání k vrcholům a hranám", identifier: "network_editor_snapping", isOn: true, onToggle: (isOn) => cadSnapper.setEnabled(isOn) }),
+                createToggleButton({ icon: "ruler-measure", title: "Zobrazit rozměry u prvků", identifier: "network_editor_dimensions", isOn: true, onToggle: (isOn) => cadView.setDimensionVisible(isOn) }),
+                $("<span class=\"editor-separator\"></span>"),
+                undoButton,
+                createToggleButton({
+                    icon: "help",
+                    title: "Nápověda k ovládání",
+                    identifier: "network_editor_help",
+                    isOn: false,
+                    onToggle: (isOn) => {
+                        isDrawingHelpShown = isOn;
+                        updateDrawingHint();
+                    }
+                })
+            );
+        }
+
+        function createDrawingHint() {
+            cadTool.addEventListener("drawing_changed", updateDrawingHint);
+            cadEditTool.addEventListener("selection_changed", updateDrawingHint);
+            cadEditTool.addEventListener("vertex_delete_refused", () => $("#network_editor_hint").text(vertexDeleteRefusedHint).show());
+            return $("<div id=\"network_editor_hint\" class=\"editor-floating\"></div>").hide();
         }
 
         function applyStyle(style) {
@@ -621,62 +1318,99 @@
             }
         }
 
-        function createStyleItems() {
+        function createStyleFields() {
             const labelInput = $("<input type=\"text\" id=\"network_editor_label\" placeholder=\"např. Kabel NN\">")
                 .on("input", (event) => applyStyle({ label: event.target.value }))
                 .on("change", captureSelectedFeatureChange);
             const colorInput = $("<input type=\"color\" id=\"network_editor_color\">")
-                .val(cadTool.style.color)
                 .on("input", (event) => applyStyle({ color: event.target.value }))
                 .on("change", captureSelectedFeatureChange);
-            cadEditTool.addEventListener("selection_changed", (event) => {
-                const feature = event.feature;
-                labelInput.val(feature ? feature.label : cadTool.style.label);
-                colorInput.val(feature ? `#${feature.color.getHexString()}` : cadTool.style.color);
-            });
-            return [
-                $("<li class=\"network-editor-field\"></li>").append($("<label for=\"network_editor_label\">Popisek</label>"), labelInput),
-                $("<li class=\"network-editor-field\"></li>").append($("<label for=\"network_editor_color\">Barva</label>"), colorInput),
-                createFeatureLayerItem()
-            ];
-        }
-
-        function createFeatureLayerItem() {
             const layerSelect = $("<select id=\"network_editor_feature_layer\"></select>")
                 .on("change", (event) => {
                     if (cadEditTool.selectedFeature) {
                         cadDocument.moveFeatureToLayer(cadEditTool.selectedFeature, event.target.value);
                     }
                 });
+            cadEditTool.addEventListener("selection_changed", (event) => {
+                if (event.feature) {
+                    labelInput.val(event.feature.label);
+                    colorInput.val(`#${event.feature.color.getHexString()}`);
+                }
+            });
             featureViewRenderers.push(() => {
                 const feature = cadEditTool.selectedFeature;
                 layerSelect.empty().append(cadDocument.layers.map((layer) => $("<option></option>").val(layer.id).text(layer.name)));
-                layerSelect.val(feature ? feature.layerId : cadDocument.activeLayerId).prop("disabled", !feature);
+                layerSelect.val(feature ? feature.layerId : cadDocument.activeLayerId);
             });
-            return $("<li class=\"network-editor-field\"></li>").append($("<label for=\"network_editor_feature_layer\">Vrstva</label>"), layerSelect);
+            const createField = (identifier, title, input) => $("<div class=\"editor-field\"></div>").append($("<label></label>").attr("for", identifier).text(title), input);
+            return $("<div class=\"editor-stack\"></div>").append(
+                createField("network_editor_label", "Popisek", labelInput),
+                createField("network_editor_color", "Barva", colorInput),
+                createField("network_editor_feature_layer", "Vrstva", layerSelect)
+            );
         }
 
-        function updateDrawingHint() {
-            const hint = $("#network_editor_drawing_hint");
-            const activeDrawingType = drawingTypes.find((drawingType) => drawingType.drawingType === cadTool.drawingType);
-            const text = activeDrawingType?.hint ?? (isDrawingHelpShown ? drawingHelp : "");
-            hint.text(text).toggle(text !== "");
-        }
-
-        function createDrawingHintItem() {
-            cadTool.addEventListener("drawing_changed", updateDrawingHint);
-            cadEditTool.addEventListener("selection_changed", updateDrawingHint);
-            cadEditTool.addEventListener("vertex_delete_refused", () => $("#network_editor_drawing_hint").text(vertexDeleteRefusedHint).show());
-            return $("<li class=\"network-editor-note\" id=\"network_editor_drawing_hint\"></li>").hide();
-        }
-
-        function createUndoItem() {
-            const undoButton = $("<input type=\"button\">")
-                .val("Zpět (Ctrl+Z)")
-                .prop("disabled", !cadHistory.canUndo)
-                .on("click", () => cadHistory.undo());
-            cadHistory.addEventListener("history_changed", () => undoButton.prop("disabled", !cadHistory.canUndo));
-            return $("<li></li>").append(undoButton);
+        function createSelectionCard() {
+            const swatch = $("<span class=\"editor-swatch\"></span>");
+            const title = $("<span class=\"editor-list-title\"></span>");
+            const measurement = $("<div class=\"editor-card-measurement\"></div>");
+            const styleFields = createStyleFields().hide();
+            const profileButton = createButton({
+                icon: "chart-line",
+                title: "Výškový profil: body mračna v pásu 1 m podél čáry nebo obvodu",
+                text: "Profil",
+                identifier: "network_editor_profile",
+                onClick: () => {
+                    featureProfile.show(cadEditTool.selectedFeature);
+                    scheduleFeatureViewRender();
+                }
+            });
+            const clearProfileButton = createButton({
+                icon: "chart-line",
+                title: "Zrušit výškový profil",
+                text: "Zrušit profil",
+                identifier: "network_editor_clear_profile",
+                onClick: () => {
+                    featureProfile.clear();
+                    viewer.profileWindow.hide();
+                    scheduleFeatureViewRender();
+                }
+            });
+            const styleButton = createToggleButton({
+                icon: "palette",
+                title: "Popisek, barva a vrstva",
+                text: "Styl",
+                identifier: "network_editor_style",
+                isOn: false,
+                onToggle: (isOn) => styleFields.toggle(isOn)
+            });
+            const deleteButton = createButton({
+                icon: "trash",
+                title: "Smazat prvek (Delete)",
+                text: "Smazat",
+                identifier: "network_editor_delete",
+                onClick: () => cadEditTool.deleteSelectedFeature()
+            }).addClass("is-danger");
+            const closeButton = createButton({ icon: "x", title: "Zrušit výběr (Esc)", onClick: () => cadEditTool.select(null) });
+            const card = $("<div id=\"network_editor_selection_card\" class=\"editor-floating\"></div>").append(
+                $("<div class=\"editor-card-header\"></div>").append(swatch, title, closeButton),
+                measurement,
+                $("<div class=\"editor-card-actions\"></div>").append(profileButton, clearProfileButton, styleButton, deleteButton),
+                styleFields
+            ).hide();
+            featureViewRenderers.push(() => {
+                const feature = cadEditTool.selectedFeature;
+                card.toggle(Boolean(feature));
+                if (!feature) {
+                    return;
+                }
+                swatch.css("background", `#${feature.color.getHexString()}`);
+                title.text(describeFeature(feature));
+                measurement.text(describeFeatureMeasurement(feature));
+                profileButton.prop("disabled", !featureProfile.canShow(feature));
+                clearProfileButton.toggle(featureProfile.profile !== null);
+            });
+            return card;
         }
 
         function isTextEditingTarget(event) {
@@ -691,30 +1425,6 @@
             }
             event.preventDefault();
             cadHistory.undo();
-        }
-
-        function createLayerRow(layer) {
-            const activeRadio = $("<input type=\"radio\" name=\"network_editor_active_layer\" title=\"Kreslit do této vrstvy\">")
-                .prop("checked", layer.id === cadDocument.activeLayerId)
-                .on("change", () => cadDocument.setActiveLayer(layer.id));
-            const visibleCheckbox = $("<input type=\"checkbox\">")
-                .prop("checked", layer.visible)
-                .on("change", (event) => cadDocument.setLayerVisible(layer.id, event.target.checked));
-            return $("<div class=\"network-editor-layer\"></div>").append(
-                $("<label></label>").append(activeRadio, $("<span></span>").text(` ${layer.name}`)),
-                $("<label></label>").append(visibleCheckbox, $("<span></span>").text(" zobrazit"))
-            );
-        }
-
-        function createLayerItems() {
-            const layerList = $("<li></li>");
-            const renderLayers = () => layerList.empty().append(cadDocument.layers.map(createLayerRow));
-            cadDocument.addEventListener("layers_changed", renderLayers);
-            renderLayers();
-            const addLayerButton = $("<input type=\"button\">")
-                .val("Přidat vrstvu")
-                .on("click", () => cadDocument.addLayer(`Vrstva ${cadDocument.layers.length + 1}`));
-            return [layerList, $("<li></li>").append(addLayerButton)];
         }
 
         function scheduleFeatureViewRender() {
@@ -754,10 +1464,10 @@
                 return `výška ${formatNumber(measurement.height, 2)} m`;
             }
             if (feature.featureType === Potree.NetworkEditor.CadFeatureType.POLYGON) {
-                return describeArea(measurement);
+                return measurement.area === null ? "kříží se" : `${formatNumber(measurement.area, 1)} m²`;
             }
             if (feature.featureType === Potree.NetworkEditor.CadFeatureType.CIRCLE) {
-                return `poloměr ${formatNumber(measurement.radius, 2)} m`;
+                return `r ${formatNumber(measurement.radius, 2)} m`;
             }
             return `${formatNumber(measurement.length, 2)} m`;
         }
@@ -812,67 +1522,15 @@
             flyToFeature(feature);
         }
 
-        function createSelectedFeatureItems() {
-            const summary = $("<li class=\"network-editor-note\"></li>");
-            const profileButton = $("<input type=\"button\" title=\"Body mračna v pásu 1 m podél čáry nebo obvodu\">")
-                .val("Výškový profil")
-                .on("click", () => {
-                    featureProfile.show(cadEditTool.selectedFeature);
-                    scheduleFeatureViewRender();
-                });
-            const clearProfileButton = $("<input type=\"button\">")
-                .val("Zrušit profil")
-                .on("click", () => {
-                    featureProfile.clear();
-                    viewer.profileWindow.hide();
-                    scheduleFeatureViewRender();
-                });
-            const deleteButton = $("<input type=\"button\">")
-                .val("Smazat")
-                .on("click", () => cadEditTool.deleteSelectedFeature());
-            featureViewRenderers.push(() => {
-                const feature = cadEditTool.selectedFeature;
-                summary.text(feature ? `${describeFeature(feature)} – ${describeFeatureMeasurement(feature)}` : "Klikni na prvek v mapě nebo v seznamu.");
-                profileButton.prop("disabled", !featureProfile.canShow(feature));
-                clearProfileButton.prop("disabled", featureProfile.profile === null);
-                deleteButton.prop("disabled", !feature);
-            });
-            return [summary, $("<li></li>").append(profileButton, clearProfileButton, deleteButton)];
-        }
-
-        function createFeatureRow(feature) {
-            const swatch = $("<span class=\"network-editor-swatch\"></span>").css("background", `#${feature.color.getHexString()}`);
-            const title = $("<span></span>").text(`${describeFeature(feature)} – ${describeFeatureSummary(feature)}`);
-            return $("<div class=\"network-editor-feature\"></div>")
-                .toggleClass("network-editor-active", feature === cadEditTool.selectedFeature)
-                .append(swatch, title)
-                .on("click", () => focusFeature(feature));
-        }
-
-        function createFeatureListItem() {
-            const featureList = $("<li></li>");
-            featureViewRenderers.push(() => {
-                featureList.empty();
-                if (cadDocument.features.length === 0) {
-                    featureList.append($("<div class=\"network-editor-note\"></div>").text("Zatím žádné prvky."));
-                    return;
-                }
-                for (const layer of cadDocument.layers) {
-                    const layerFeatures = cadDocument.features.filter((feature) => feature.layerId === layer.id);
-                    if (layerFeatures.length === 0) {
-                        continue;
-                    }
-                    const groupTitle = layer.visible ? layer.name : `${layer.name} (skrytá)`;
-                    featureList.append($("<div class=\"network-editor-feature-group\"></div>").text(groupTitle), layerFeatures.map(createFeatureRow));
-                }
-            });
-            return featureList;
+        function createMeasurementFileName() {
+            const pointCloudName = viewer.scene.pointclouds[0]?.name ?? datasetName;
+            return `mereni-${pointCloudName.replace(/\.la[sz]$/i, "")}.json`;
         }
 
         function saveDrawing() {
             const content = JSON.stringify(Potree.NetworkEditor.createCadFile(cadDocument), null, 2);
             const url = URL.createObjectURL(new Blob([content], { type: "application/json" }));
-            $("<a></a>").attr({ href: url, download: `kresba-${datasetName}.json` })[0].click();
+            $("<a></a>").attr({ href: url, download: createMeasurementFileName() })[0].click();
             setTimeout(() => URL.revokeObjectURL(url), 0);
         }
 
@@ -895,7 +1553,7 @@
                 showFileStatus(drawingFileErrorMessages[Potree.NetworkEditor.CadFileErrorCode.TOO_LARGE]);
                 return;
             }
-            if (cadDocument.features.length > 0 && !window.confirm("Načtení nahradí současnou kresbu. Pokračovat?")) {
+            if (cadDocument.features.length > 0 && !window.confirm("Načtení nahradí současná měření. Pokračovat?")) {
                 return;
             }
             let content;
@@ -906,7 +1564,7 @@
                 return;
             }
             replaceDrawing(content);
-            showFileStatus(`Načteno prvků: ${content.features.length}, vrstev: ${content.layers.length}.`);
+            showFileStatus(`Načteno měření: ${content.features.length}, vrstev: ${content.layers.length}.`);
         }
 
         function createEmptyDrawingContent() {
@@ -914,11 +1572,11 @@
         }
 
         function startNewDrawing() {
-            if (cadDocument.features.length > 0 && !window.confirm("Nová kresba smaže všechny nakreslené prvky. Pokračovat?")) {
+            if (cadDocument.features.length > 0 && !window.confirm("Smažou se všechna měření i vrstvy. Pokračovat?")) {
                 return;
             }
             replaceDrawing(createEmptyDrawingContent());
-            showFileStatus("Začala nová prázdná kresba.");
+            showFileStatus("Všechna měření jsou smazaná.");
         }
 
         function restoreStoredDrawing() {
@@ -926,109 +1584,17 @@
                 const content = cadAutosave.load();
                 if (content) {
                     replaceDrawing(content);
-                    showFileStatus(`Obnoveno z prohlížeče: prvků ${content.features.length}, vrstev ${content.layers.length}.`);
+                    showFileStatus(`Obnoveno z prohlížeče: měření ${content.features.length}, vrstev ${content.layers.length}.`);
                 }
             } catch (error) {
-                showFileStatus(`Uloženou kresbu se nepodařilo obnovit. ${drawingFileErrorMessages[error.code] ?? ""}`.trim());
+                showFileStatus(`Uložená měření se nepodařilo obnovit. ${drawingFileErrorMessages[error.code] ?? ""}`.trim());
             }
             cadAutosave.addEventListener("save_failed", () => showFileStatus("Automatické ukládání se nezdařilo: prohlížeč úložiště nepovolil, nebo je plné."));
             cadAutosave.start();
         }
 
-        function createDrawingFileItems() {
-            const fileInput = $("<input type=\"file\" accept=\".json,application/json\" hidden>")
-                .on("change", (event) => {
-                    const file = event.target.files[0];
-                    event.target.value = "";
-                    if (file) {
-                        loadDrawingFile(file);
-                    }
-                });
-            const saveButton = $("<input type=\"button\">")
-                .val("Uložit kresbu (JSON)")
-                .on("click", () => {
-                    saveDrawing();
-                    showFileStatus(`Uloženo prvků: ${cadDocument.features.length}.`);
-                });
-            const loadButton = $("<input type=\"button\">")
-                .val("Načíst kresbu")
-                .on("click", () => fileInput[0].click());
-            const newDrawingButton = $("<input type=\"button\">")
-                .val("Nová kresba")
-                .on("click", startNewDrawing);
-            return [
-                $("<li></li>").append(saveButton, loadButton, newDrawingButton, fileInput),
-                $("<li class=\"network-editor-note\" id=\"network_editor_file_status\"></li>")
-                    .text("Kresba se průběžně ukládá v tomto prohlížeči. Soubor JSON je v souřadnicích S-JTSK.")
-            ];
-        }
-
         function updateEditToolAvailability() {
             cadEditTool.setEnabled(!cadTool.isDrawing && !dtmInfoTool.active);
-        }
-
-        function loadCadastreLayer(layerId) {
-            const extent = mapPlane.computeViewExtent(cadastreExtentMetres);
-            if (!extent) {
-                cadastreOverlay.dispatchEvent({ type: "layer_failed", layerId: layerId });
-                return;
-            }
-            loadedCadastreLayers.add(layerId);
-            cadastreOverlay.loadLayer(layerId, extent);
-        }
-
-        function onCadastreLayerToggled(layerId, checked) {
-            if (checked && !loadedCadastreLayers.has(layerId)) {
-                loadCadastreLayer(layerId);
-            }
-            cadastreOverlay.setLayerVisible(layerId, checked);
-        }
-
-        function createCadastreLayerItem(cadastreLayer) {
-            const identifier = `network_editor_cadastre_${cadastreLayer.layerId}`;
-            const status = $("<span class=\"network-editor-status\"></span>");
-            cadastreOverlay.addEventListener("layer_loading", (event) => {
-                if (event.layerId === cadastreLayer.layerId) {
-                    status.text("načítám…");
-                }
-            });
-            cadastreOverlay.addEventListener("layer_loaded", (event) => {
-                if (event.layerId === cadastreLayer.layerId) {
-                    status.text(event.isTruncated ? `${event.lineCount} čar, neúplné` : `${event.lineCount} čar`);
-                }
-            });
-            cadastreOverlay.addEventListener("layer_failed", (event) => {
-                if (event.layerId === cadastreLayer.layerId) {
-                    status.text("nepodařilo se načíst");
-                }
-            });
-            return createCheckboxItem(identifier, cadastreLayer.title, false, (checked) => onCadastreLayerToggled(cadastreLayer.layerId, checked))
-                .append(status);
-        }
-
-        function createCadastreItems() {
-            const reloadButton = $("<input type=\"button\">")
-                .val("Načíst katastr pro aktuální pohled")
-                .on("click", () => {
-                    for (const cadastreLayer of cadastreLayers) {
-                        if ($(`#network_editor_cadastre_${cadastreLayer.layerId}`).prop("checked")) {
-                            loadCadastreLayer(cadastreLayer.layerId);
-                        }
-                    }
-                });
-            return [
-                ...cadastreLayers.map(createCadastreLayerItem),
-                $("<li></li>").append(reloadButton),
-                $("<li class=\"network-editor-note\"></li>").text("ČÚZK (RÚIAN, ZABAGED), CC BY 4.0. Načítá se pro aktuální pohled.")
-            ];
-        }
-
-        function createSnappingItem() {
-            return createCheckboxItem("network_editor_snapping", "Přichytávání k vrcholům a hranám", true, (checked) => cadSnapper.setEnabled(checked));
-        }
-
-        function createDimensionItem() {
-            return createCheckboxItem("network_editor_dimensions", "Zobrazit rozměry u prvků", true, (checked) => cadView.setDimensionVisible(checked));
         }
 
         function formatDimension(dimension) {
@@ -1039,10 +1605,6 @@
                 [Potree.NetworkEditor.DimensionKind.HEIGHT]: (value) => `v = ${formatNumber(value, 2)} m`
             };
             return dimensionFormats[dimension.kind](dimension.value);
-        }
-
-        function createTerrainStatusItem() {
-            return $("<li class=\"network-editor-note\" id=\"network_editor_terrain_status\"></li>").text("Výška terénu: čeká na mračno");
         }
 
         function startTerrainHeightSampler(pointCloud) {
@@ -1060,40 +1622,14 @@
             terrainHeightSampler.start();
         }
 
-        function addNetworkEditorSections() {
-            const sections = [
-                createMenuSection("menu_network_editor", "Podklady", [
-                    ...createPointCloudItems(),
-                    createCheckboxItem("network_editor_point_cloud", "Mračno bodů", true, setPointCloudsVisible),
-                    createEdlItem(),
-                    createBaseMapItem(),
-                    createTerrainStatusItem(),
-                    $("<div class=\"divider\"><span>Katastr</span></div>"),
-                    ...createCadastreItems()
-                ], true),
-                createMenuSection("menu_network_editor_networks", "Sítě (DTM)", [
-                    createDtmLayerItem(),
-                    ...createDtmNetworkItems(),
-                    $("<li></li>").append(createInfoToolButton()),
-                    $("<li class=\"network-editor-note\"></li>").text("ČÚZK – IS DMVS, přibližný zákres, jen orientačně.")
-                ], true),
-                createMenuSection("menu_network_editor_drawing", "Kreslení", [
-                    createDrawingButtonsItem(),
-                    createDrawingHintItem(),
-                    ...createStyleItems(),
-                    createSnappingItem(),
-                    createDimensionItem(),
-                    createUndoItem()
-                ], true),
-                createMenuSection("menu_network_editor_selection", "Vybraný prvek", createSelectedFeatureItems(), true),
-                createMenuSection("menu_network_editor_features", "Vrstvy a prvky", [
-                    ...createLayerItems(),
-                    $("<div class=\"divider\"><span>Nakreslené prvky</span></div>"),
-                    createFeatureListItem()
-                ], true),
-                createMenuSection("menu_network_editor_file", "Soubor", createDrawingFileItems(), false)
-            ];
-            $("#potree_menu").prepend(...sections.flat());
+        function createEditorInterface() {
+            $("#potree_sidebar_container").append(createEditorPanel());
+            $("#potree_render_area").append(
+                createToolbar(),
+                createDrawingHint(),
+                createSelectionCard(),
+                $("<div id=\"network_editor_attribution\" class=\"editor-floating\"></div>")
+            );
             for (const eventType of ["feature_added", "feature_removed", "layers_changed", "feature_layer_changed"]) {
                 cadDocument.addEventListener(eventType, scheduleFeatureViewRender);
             }
@@ -1120,14 +1656,14 @@
         await viewer.loadGUI();
         viewer.setLanguage("cs");
         viewer.toggleSidebar();
-        hidePotreeMenuSections();
-        addNetworkEditorSections();
+        createEditorInterface();
         restoreStoredDrawing();
         const pointCloud = await pointCloudLoaded;
-        addPointCloud(pointCloud);
-        startTerrainHeightSampler(pointCloud);
-        setBaseMap(baseMaps[0].provider);
-        dtmOverlay.setVisible($("#network_editor_dtm").prop("checked"));
+        if (pointCloud) {
+            replacePointCloud(pointCloud);
+        } else {
+            showPointCloudStatus(`Mračno „${datasetName}“ se nepodařilo načíst ze složky examples/data. Otevři vlastní LAS.`);
+        }
     </script>
 </body>
 </html>
