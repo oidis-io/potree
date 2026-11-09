@@ -16,7 +16,6 @@ export class SurfacePicker {
         this.mapPlane = mapPlane;
         this.snapper = null;
         this.lastSnap = null;
-        this.lastPickHeight = null;
     }
 
     setSnapper(snapper) {
@@ -34,10 +33,9 @@ export class SurfacePicker {
         const camera = this.viewer.scene.getActiveCamera();
         const intersection = Utils.getMousePointCloudIntersection(canvasPoint, camera, this.viewer, this.viewer.scene.pointclouds, { pickClipped: true });
         if (intersection && intersection.distance !== null) {
-            this.lastPickHeight = intersection.location.z;
             return intersection.location.clone();
         }
-        const height = referenceHeight ?? this.lastPickHeight ?? this.mapPlane.height;
+        const height = referenceHeight ?? this.mapPlane.height;
         return this.mapPlane.intersectScreenPointAtHeight(canvasPoint.x, canvasPoint.y, height);
     }
 

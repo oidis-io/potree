@@ -243,11 +243,9 @@ export class CadTool extends EventDispatcher {
     }
 
     pickSurface(event) {
-        const points = this.drawingType === CadDrawingType.RECTANGLE ? this.rectangleCorners : this.draftFeature?.points ?? [];
-        const referenceHeight = points[points.length - 1]?.z ?? null;
         const snapsToDraft = this.draftFeature && this.drawingType !== CadDrawingType.RECTANGLE;
         const snapOptions = { extraFeatures: snapsToDraft ? [this.draftFeature] : [] };
-        return this.surfacePicker.pick(this.toCanvasPoint(event), referenceHeight, snapOptions);
+        return this.surfacePicker.pick(this.toCanvasPoint(event), null, snapOptions);
     }
 
     toCanvasPoint(event) {

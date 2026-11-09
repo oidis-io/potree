@@ -220,7 +220,7 @@ export class CadEditTool extends EventDispatcher {
         const offset = position.sub(this.moveStartPosition);
         feature.setPoints(this.moveOriginalPoints.map((point) => {
             const movedPoint = point.clone().add(offset);
-            movedPoint.z = this.terrainHeightSampler?.measuredHeightAt(movedPoint.x, movedPoint.y) ?? movedPoint.z;
+            movedPoint.z = this.terrainHeightSampler?.measuredHeightAt(movedPoint.x, movedPoint.y) ?? this.surfacePicker.mapPlane.height;
             return movedPoint;
         }));
     }
@@ -276,9 +276,8 @@ export class CadEditTool extends EventDispatcher {
             return;
         }
         this.hasVertexMoved = true;
-        const referenceHeight = feature.points[this.draggedVertexIndex].z;
         const snapOptions = { excludedVertex: { feature: feature, index: this.draggedVertexIndex } };
-        const position = this.surfacePicker.pick(event.drag.end, referenceHeight, snapOptions);
+        const position = this.surfacePicker.pick(event.drag.end, null, snapOptions);
         if (position) {
             feature.setPointAt(this.draggedVertexIndex, position);
         }
