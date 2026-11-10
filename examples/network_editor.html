@@ -300,6 +300,15 @@
         .editor-primary-button:hover:not(:disabled) {
             background: var(--editor-accent-strong);
         }
+        .editor-reopen-button {
+            max-width: 100%;
+        }
+        .editor-reopen-button span {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
         #network_editor_scene_prompt {
             top: 50%;
             left: 50%;
@@ -618,6 +627,8 @@
         const featureProfile = new Potree.NetworkEditor.FeatureProfile(viewer);
         const autosaveKey = datasetName ? `oidis-network-editor:${datasetName}` : "oidis-network-editor";
         const cadAutosave = new Potree.NetworkEditor.CadAutosave(cadDocument, cadHistory, autosaveKey);
+        const recentPointCloudStore = new Potree.NetworkEditor.RecentFileStore("oidis-network-editor", "last-point-cloud");
+        const lasPickerOptions = { types: [{ description: "Mračno bodů LAS", accept: { "application/octet-stream": [".las", ".laz"] } }] };
         cadView.setDimensionFormatter((dimension) => formatDimension(dimension));
         cadDocument.addLayer("Vrstva 1");
 
@@ -645,6 +656,7 @@
         let pointSize = 1;
         let selectedBaseMapProvider = "orto";
         let isMapStarted = false;
+        let recentPointCloudHandle = null;
 
         const cadastreExtentMetres = 1500;
         const cadastreLayers = [
@@ -1002,7 +1014,7 @@
                 result = await Potree.NetworkEditor.loadLasPointCloud(file, maximumLasPointCount, (progress) => showPointCloudStatus(describeLasProgress(progress)));
             } catch (error) {
                 showPointCloudStatus(lasErrorMessages[error.code] ?? "Mračno se nepodařilo načíst.");
-                return;
+                return false;
             }
             result.pointCloud.setName(file.name);
             replacePointCloud(result.pointCloud);
@@ -1013,10 +1025,75 @@
             const thinnedText = result.pointCount < result.sourcePointCount ? `, zředěno z ${formatNumber(result.sourcePointCount, 0)}` : "";
             const coordinateText = looksLikeKrovakCoordinates(result.origin) ? "" : " Souřadnice nevypadají jako S-JTSK (EPSG:5514), mapa, DTM a katastr nemusí sedět.";
             showPointCloudStatus(`Načteno bodů ${formatNumber(result.pointCount, 0)}${thinnedText}.${coordinateText}`);
+            return true;
         }
 
-        function chooseLasFile() {
-            $("#network_editor_las_input")[0].click();
+        async function chooseLasFile() {
+            if (!Potree.NetworkEditor.RecentFileStore.isSupported()) {
+                $("#network_editor_las_input")[0].click();
+                return;
+            }
+            let fileHandles;
+            try {
+                fileHandles = await window.showOpenFilePicker(lasPickerOptions);
+            } catch {
+                return;
+            }
+            if (await openLasFile(await fileHandles[0].getFile())) {
+                rememberPointCloudFile(fileHandles[0]);
+            }
+        }
+
+        function rememberPointCloudFile(fileHandle) {
+            recentPointCloudHandle = fileHandle;
+            recentPointCloudStore.save(fileHandle).catch(() => null);
+            updateRecentPointCloudButtons();
+        }
+
+        function forgetRecentPointCloud() {
+            recentPointCloudHandle = null;
+            recentPointCloudStore.clear().catch(() => null);
+            updateRecentPointCloudButtons();
+        }
+
+        function updateRecentPointCloudButtons() {
+            const hasRecentPointCloud = recentPointCloudHandle !== null;
+            $(".editor-reopen-button").toggle(hasRecentPointCloud)
+                .find("span").text(hasRecentPointCloud ? `Znovu otevřít ${recentPointCloudHandle.name}` : "");
+            $(".editor-open-las-button").toggleClass("editor-primary-button", !hasRecentPointCloud);
+        }
+
+        async function reopenRecentPointCloud() {
+            const fileHandle = recentPointCloudHandle;
+            let file;
+            try {
+                file = await Potree.NetworkEditor.readFileFromHandle(fileHandle, true);
+            } catch {
+                forgetRecentPointCloud();
+                showPointCloudStatus(`Soubor ${fileHandle.name} už nejde otevřít, nejspíš byl přesunut nebo smazán. Otevřete mračno znovu.`);
+                return;
+            }
+            if (!file) {
+                showPointCloudStatus("Prohlížeč nepovolil přístup k souboru. Otevřete mračno přes tlačítko Otevřít mračno (LAS).");
+                return;
+            }
+            await openLasFile(file);
+        }
+
+        async function restoreRecentPointCloud() {
+            if (!Potree.NetworkEditor.RecentFileStore.isSupported()) {
+                return;
+            }
+            const fileHandle = await recentPointCloudStore.load().catch(() => null);
+            if (!fileHandle) {
+                return;
+            }
+            recentPointCloudHandle = fileHandle;
+            updateRecentPointCloudButtons();
+            const file = await Potree.NetworkEditor.readFileFromHandle(fileHandle, false).catch(() => null);
+            if (file) {
+                await openLasFile(file);
+            }
         }
 
         function createLasFileInput() {
@@ -1032,7 +1109,13 @@
 
         function createOpenLasButton(identifier) {
             return createButton({ icon: "folder-open", title: "Otevřít mračno (LAS)", text: "Otevřít mračno (LAS)", identifier: identifier, onClick: chooseLasFile })
-                .addClass("editor-primary-button");
+                .addClass("editor-primary-button editor-open-las-button");
+        }
+
+        function createReopenLasButton(identifier) {
+            return createButton({ icon: "history", title: "Znovu otevřít naposledy otevřené mračno", text: "Znovu otevřít", identifier: identifier, onClick: reopenRecentPointCloud })
+                .addClass("editor-primary-button editor-reopen-button")
+                .hide();
         }
 
         function createPointCloudEmptyState() {
@@ -1040,6 +1123,7 @@
                 createIcon("cloud-upload"),
                 $("<div class=\"editor-empty-title\">Otevřete mračno bodů</div>"),
                 createNote("Nekomprimovaný LAS v souřadnicích S-JTSK. Mapa a sítě se zapnou po načtení."),
+                createReopenLasButton("network_editor_reopen_las_empty"),
                 createOpenLasButton("network_editor_open_las_empty")
             );
         }
@@ -1048,6 +1132,7 @@
             return $("<div id=\"network_editor_scene_prompt\" class=\"editor-floating\"></div>").append(
                 createIcon("cloud-upload"),
                 $("<div class=\"editor-empty-title\">Otevřete mračno bodů</div>"),
+                createReopenLasButton("network_editor_reopen_las_scene"),
                 createOpenLasButton("network_editor_open_las_scene")
             );
         }
@@ -1791,6 +1876,8 @@
         } else if (datasetName) {
             updatePointCloudControls(false);
             showPointCloudStatus(`Mračno „${datasetName}“ se nepodařilo načíst ze složky examples/data. Otevřete vlastní LAS.`);
+        } else {
+            await restoreRecentPointCloud();
         }
     </script>
 </body>
