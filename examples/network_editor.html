@@ -32,6 +32,7 @@
             --editor-muted: #98a2ad;
             --editor-accent: #4c9aff;
             --editor-accent-soft: rgba(76, 154, 255, 0.2);
+            --editor-accent-strong: #3d87e6;
             --editor-danger: #ff7a7a;
             --editor-radius: 6px;
             --editor-font: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
@@ -118,6 +119,9 @@
         .editor-status {
             color: var(--editor-muted);
             font-size: 11px;
+        }
+        .editor-note:empty {
+            display: none;
         }
         .editor-status {
             white-space: nowrap;
@@ -258,6 +262,56 @@
         .editor-details > :not(summary) {
             margin-top: 10px;
         }
+        .editor-details-chevron {
+            margin-left: auto;
+            font-size: 16px;
+            transition: transform 0.15s;
+        }
+        .editor-details[open] .editor-details-chevron {
+            transform: rotate(180deg);
+        }
+        .editor-empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 16px 12px;
+            border: 1px dashed var(--editor-border-strong);
+            border-radius: 8px;
+            text-align: center;
+        }
+        .editor-empty-state > .ti,
+        #network_editor_scene_prompt > .ti {
+            color: var(--editor-accent);
+            font-size: 36px;
+        }
+        .editor-empty-title {
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .editor-primary-button {
+            height: 36px;
+            padding: 0 16px;
+            border-color: var(--editor-accent);
+            background: var(--editor-accent);
+            color: #fff;
+            font-weight: 600;
+        }
+        .editor-primary-button:hover:not(:disabled) {
+            background: var(--editor-accent-strong);
+        }
+        #network_editor_scene_prompt {
+            top: 50%;
+            left: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            max-width: calc(100% - 40px);
+            padding: 20px 28px;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
         .editor-range {
             display: grid;
             grid-template-columns: 1fr auto;
@@ -350,12 +404,6 @@
             border: 0;
             background: none;
             cursor: pointer;
-        }
-        #potree_render_area canvas.map-pan-enabled {
-            cursor: grab;
-        }
-        #potree_render_area canvas.map-pan-active {
-            cursor: grabbing;
         }
         .editor-separator {
             align-self: stretch;
@@ -526,9 +574,8 @@
     </div>
 
     <script type="module">
-        const defaultDatasetName = "litovel";
         const requestedDatasetName = new URLSearchParams(window.location.search).get("data") ?? "";
-        const datasetName = requestedDatasetName.replace(/[^a-zA-Z0-9_-]/g, "") || defaultDatasetName;
+        const datasetName = requestedDatasetName.replace(/[^a-zA-Z0-9_-]/g, "");
 
         const dtmPropertyLabels = {
             nazevvlastnika: "Vlastník",
@@ -567,10 +614,10 @@
         surfacePicker.setSnapper(cadSnapper);
         const cadTool = new Potree.NetworkEditor.CadTool(viewer, surfacePicker, cadDocument, cadView);
         const cadEditTool = new Potree.NetworkEditor.CadEditTool(viewer, cadDocument, surfacePicker);
-        const mapPanTool = new Potree.NetworkEditor.MapPanTool(viewer, mapPlane, surfacePicker);
         const cadHistory = new Potree.NetworkEditor.CadHistory(cadDocument);
         const featureProfile = new Potree.NetworkEditor.FeatureProfile(viewer);
-        const cadAutosave = new Potree.NetworkEditor.CadAutosave(cadDocument, cadHistory, `oidis-network-editor:${datasetName}`);
+        const autosaveKey = datasetName ? `oidis-network-editor:${datasetName}` : "oidis-network-editor";
+        const cadAutosave = new Potree.NetworkEditor.CadAutosave(cadDocument, cadHistory, autosaveKey);
         cadView.setDimensionFormatter((dimension) => formatDimension(dimension));
         cadDocument.addLayer("Vrstva 1");
 
@@ -608,7 +655,6 @@
         const loadedCadastreLayers = new Set();
 
         const drawingHelp = "Pohled: levé tlačítko otáčí, pravé posouvá, kolečko přibližuje. "
-            + "Se zapnutou ručičkou v liště levé tlačítko táhne mapu a pravé otáčí. "
             + "Kreslení: vyberte nástroj v liště a klikejte do mapy, Esc kreslení ukončí. Žlutý čtvereček ukazuje přichycení. "
             + "Úpravy: klikněte na prvek, tažením vrcholu ho upravíte, tažením za hranu nebo plochu posunete celý prvek, "
             + "kliknutím na hranu přidáte vrchol. U kružnice tažením středu posunete kružnici a tažením bodu na obvodu změníte poloměr. "
@@ -946,6 +992,7 @@
             addPointCloud(pointCloud);
             startTerrainHeightSampler(pointCloud);
             startMapAndNetworks();
+            updatePointCloudControls(true);
         }
 
         async function openLasFile(file) {
@@ -968,8 +1015,12 @@
             showPointCloudStatus(`Načteno bodů ${formatNumber(result.pointCount, 0)}${thinnedText}.${coordinateText}`);
         }
 
-        function createPointCloudRow() {
-            const fileInput = $("<input type=\"file\" accept=\".las,.laz\" hidden>")
+        function chooseLasFile() {
+            $("#network_editor_las_input")[0].click();
+        }
+
+        function createLasFileInput() {
+            return $("<input type=\"file\" id=\"network_editor_las_input\" accept=\".las,.laz\" hidden>")
                 .on("change", (event) => {
                     const file = event.target.files[0];
                     event.target.value = "";
@@ -977,19 +1028,53 @@
                         openLasFile(file);
                     }
                 });
+        }
+
+        function createOpenLasButton(identifier) {
+            return createButton({ icon: "folder-open", title: "Otevřít mračno (LAS)", text: "Otevřít mračno (LAS)", identifier: identifier, onClick: chooseLasFile })
+                .addClass("editor-primary-button");
+        }
+
+        function createPointCloudEmptyState() {
+            return $("<div id=\"network_editor_point_cloud_empty\" class=\"editor-empty-state\"></div>").append(
+                createIcon("cloud-upload"),
+                $("<div class=\"editor-empty-title\">Otevřete mračno bodů</div>"),
+                createNote("Nekomprimovaný LAS v souřadnicích S-JTSK. Mapa a sítě se zapnou po načtení."),
+                createOpenLasButton("network_editor_open_las_empty")
+            );
+        }
+
+        function createScenePrompt() {
+            return $("<div id=\"network_editor_scene_prompt\" class=\"editor-floating\"></div>").append(
+                createIcon("cloud-upload"),
+                $("<div class=\"editor-empty-title\">Otevřete mračno bodů</div>"),
+                createOpenLasButton("network_editor_open_las_scene")
+            );
+        }
+
+        function createPointCloudRow() {
             const visibilityToggle = createToggle("network_editor_point_cloud", datasetName, true, setPointCloudsVisible).addClass("editor-grow");
             visibilityToggle.find("span").attr("id", "network_editor_point_cloud_name");
-            return $("<div class=\"editor-row\"></div>").append(
+            return $("<div id=\"network_editor_point_cloud_row\" class=\"editor-row\"></div>").append(
                 visibilityToggle,
-                createButton({ icon: "focus-2", title: "Zoom na mračno", identifier: "network_editor_show_point_cloud", onClick: () => viewer.fitToScreen(1, 1000) }),
-                createButton({ icon: "folder-open", title: "Otevřít mračno (LAS)", identifier: "network_editor_open_las", onClick: () => fileInput[0].click() }),
-                fileInput
+                createButton({ icon: "folder-open", title: "Otevřít mračno (LAS)", identifier: "network_editor_open_las", onClick: chooseLasFile })
             );
+        }
+
+        function updatePointCloudControls(hasPointCloud) {
+            $("#network_editor_point_cloud_row").toggle(hasPointCloud);
+            $("#network_editor_point_cloud_empty").toggle(!hasPointCloud);
+            $("#network_editor_scene_prompt").toggle(!hasPointCloud);
+            $("#network_editor_show_point_cloud").prop("disabled", !hasPointCloud);
         }
 
         function createDisplaySettings() {
             return $("<details class=\"editor-details\"></details>").append(
-                $("<summary></summary>").append(createIcon("adjustments-horizontal"), $("<span>Vykreslování mračna</span>")),
+                $("<summary></summary>").append(
+                    createIcon("adjustments-horizontal"),
+                    $("<span>Vykreslování mračna</span>"),
+                    createIcon("chevron-down").addClass("editor-details-chevron")
+                ),
                 createToggle("network_editor_edl", "Zvýraznit tvary (EDL)", viewer.getEDLEnabled(), (checked) => viewer.setEDLEnabled(checked)),
                 createRange({
                     identifier: "network_editor_point_size",
@@ -1065,9 +1150,11 @@
             });
             return [
                 createLabel("Mračno"),
+                createPointCloudEmptyState(),
                 createPointCloudRow(),
-                createNote("Vlastní mračno: nekomprimovaný LAS v S-JTSK, převede se v prohlížeči.", "network_editor_point_cloud_status"),
-                createNote("Výška terénu: čeká na mračno", "network_editor_terrain_status"),
+                createLasFileInput(),
+                createNote(datasetName ? "Vlastní mračno: nekomprimovaný LAS v S-JTSK, převede se v prohlížeči." : "", "network_editor_point_cloud_status"),
+                createNote("", "network_editor_terrain_status"),
                 createLabel("Mapa"),
                 createSegmentedControl("network_editor_base_map", baseMaps, 0, (baseMap) => setBaseMap(baseMap.provider)),
                 createLabel("Katastr", [reloadCadastreButton]),
@@ -1291,16 +1378,15 @@
             const undoButton = createButton({ icon: "arrow-back-up", title: "Zpět (Ctrl+Z)", identifier: "network_editor_undo", onClick: () => cadHistory.undo() })
                 .prop("disabled", !cadHistory.canUndo);
             cadHistory.addEventListener("history_changed", () => undoButton.prop("disabled", !cadHistory.canUndo));
-            const mapPanButton = createToggleButton({
-                icon: "hand-stop",
-                title: "Posun mapy: levým tlačítkem táhnete mapu, pravým otáčíte pohled",
-                identifier: "network_editor_map_pan",
-                isOn: false,
-                onToggle: (isOn) => mapPanTool.setEnabled(isOn)
+            const zoomToPointCloudButton = createButton({
+                icon: "focus-2",
+                title: "Zoom na mračno",
+                identifier: "network_editor_show_point_cloud",
+                onClick: () => viewer.fitToScreen(1, 1000)
             });
             updateActiveTool();
             return $("<div id=\"network_editor_toolbar\" class=\"editor-floating\" role=\"toolbar\" aria-label=\"Nástroje\"></div>").append(
-                mapPanButton,
+                zoomToPointCloudButton,
                 $("<span class=\"editor-separator\"></span>"),
                 selectButton,
                 ...toolButtons,
@@ -1551,7 +1637,7 @@
 
         function createMeasurementFileName() {
             const pointCloudName = viewer.scene.pointclouds[0]?.name ?? datasetName;
-            return `mereni-${pointCloudName.replace(/\.la[sz]$/i, "")}.json`;
+            return pointCloudName ? `mereni-${pointCloudName.replace(/\.la[sz]$/i, "")}.json` : "mereni.json";
         }
 
         function saveDrawing() {
@@ -1665,8 +1751,10 @@
                 createToolbar(),
                 createDrawingHint(),
                 createSelectionCard(),
+                createScenePrompt(),
                 $("<div id=\"network_editor_attribution\" class=\"editor-floating\"></div>")
             );
+            updatePointCloudControls(Boolean(datasetName));
             for (const eventType of ["feature_added", "feature_removed", "layers_changed", "feature_layer_changed"]) {
                 cadDocument.addEventListener(eventType, scheduleFeatureViewRender);
             }
@@ -1689,7 +1777,7 @@
         cadEditTool.addEventListener("selection_changed", () => cadHistory.capture());
         document.addEventListener("keydown", onUndoShortcut);
 
-        const pointCloudLoaded = loadPointCloud(datasetName);
+        const pointCloudLoaded = datasetName ? loadPointCloud(datasetName) : Promise.resolve(null);
         await viewer.loadGUI();
         disconnectPotreeMapView();
         viewer.setLanguage("cs");
@@ -1700,7 +1788,8 @@
         const pointCloud = await pointCloudLoaded;
         if (pointCloud) {
             replacePointCloud(pointCloud);
-        } else {
+        } else if (datasetName) {
+            updatePointCloudControls(false);
             showPointCloudStatus(`Mračno „${datasetName}“ se nepodařilo načíst ze složky examples/data. Otevřete vlastní LAS.`);
         }
     </script>

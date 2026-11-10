@@ -34,13 +34,13 @@ export class MapPlane {
         return this.intersectScreenPointAtHeight(screenX, screenY, this.height);
     }
 
-    intersectScreenPointAtHeight(screenX, screenY, height, camera = this.viewer.scene.getActiveCamera()) {
+    intersectScreenPointAtHeight(screenX, screenY, height) {
         const size = this.getRenderSize();
         if (size.width === 0 || size.height === 0) {
             return null;
         }
         const pointer = new THREE.Vector2(screenX / size.width * 2 - 1, -screenY / size.height * 2 + 1);
-        this.raycaster.setFromCamera(pointer, camera);
+        this.raycaster.setFromCamera(pointer, this.viewer.scene.getActiveCamera());
         const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), -height);
         return this.raycaster.ray.intersectPlane(plane, new THREE.Vector3());
     }
