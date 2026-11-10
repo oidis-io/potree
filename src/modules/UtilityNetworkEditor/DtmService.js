@@ -13,7 +13,7 @@ const FEATURE_INFO_IMAGE_SIZE = 101;
 const FEATURE_INFO_FEATURE_COUNT = 10;
 const MINIMUM_FEATURE_INFO_METRES_PER_PIXEL = 0.01;
 
-export const DtmNetworkLayer = Object.freeze({
+export const DtmUtilityLayer = Object.freeze({
     ELECTRIC_LINE: "el_ved",
     ELECTRONIC_COMMUNICATION: "el_kom",
     GAS_PIPELINE: "plyn",

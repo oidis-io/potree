@@ -10,7 +10,7 @@
 
 import * as THREE from "../../../libs/three.js/build/three.module.js";
 import { EventDispatcher } from "../../EventDispatcher.js";
-import { DtmNetworkLayer, fetchDtmFeatureInfo } from "./DtmService.js";
+import { DtmUtilityLayer, fetchDtmFeatureInfo } from "./DtmService.js";
 
 const CLICK_TOLERANCE_PIXELS = 3;
 const MARKER_RADIUS_PIXELS = 8;
@@ -100,7 +100,7 @@ export class DtmInfoTool extends EventDispatcher {
         this.showMarker(position);
         const requestIndex = ++this.requestIndex;
         this.dispatchEvent({ type: "query_started", position: position });
-        const layerIds = this.dtmOverlay?.layerIds ?? Object.values(DtmNetworkLayer);
+        const layerIds = this.dtmOverlay?.layerIds ?? Object.values(DtmUtilityLayer);
         try {
             const result = layerIds.length > 0
                 ? await fetchDtmFeatureInfo(position.x, position.y, metresPerPixel, layerIds)

@@ -46,7 +46,7 @@
             border-right: 1px solid var(--editor-border);
             background: var(--editor-panel);
         }
-        #network_editor_panel {
+        #utility_network_editor_panel {
             display: flex;
             flex-direction: column;
             gap: 8px;
@@ -183,8 +183,8 @@
             text-overflow: ellipsis;
             white-space: nowrap;
         }
-        #network_editor_panel input[type=checkbox],
-        #network_editor_panel input[type=radio] {
+        #utility_network_editor_panel input[type=checkbox],
+        #utility_network_editor_panel input[type=radio] {
             margin: 0;
             accent-color: var(--editor-accent);
         }
@@ -281,7 +281,7 @@
             text-align: center;
         }
         .editor-empty-state > .ti,
-        #network_editor_scene_prompt > .ti {
+        #utility_network_editor_scene_prompt > .ti {
             color: var(--editor-accent);
             font-size: 36px;
         }
@@ -309,7 +309,7 @@
             text-overflow: ellipsis;
             white-space: nowrap;
         }
-        #network_editor_scene_prompt {
+        #utility_network_editor_scene_prompt {
             top: 50%;
             left: 50%;
             display: flex;
@@ -386,7 +386,7 @@
             color: var(--editor-text);
             font: 13px/1.4 var(--editor-font);
         }
-        #network_editor_toolbar {
+        #utility_network_editor_toolbar {
             top: 10px;
             left: 50%;
             display: flex;
@@ -395,18 +395,18 @@
             padding: 4px;
             transform: translateX(-50%);
         }
-        #network_editor_toolbar .editor-button {
+        #utility_network_editor_toolbar .editor-button {
             border-color: transparent;
             background: none;
         }
-        #network_editor_toolbar .editor-button:hover:not(:disabled) {
+        #utility_network_editor_toolbar .editor-button:hover:not(:disabled) {
             background: var(--editor-surface-hover);
         }
-        #network_editor_toolbar .editor-button.is-active {
+        #utility_network_editor_toolbar .editor-button.is-active {
             border-color: var(--editor-accent);
             background: var(--editor-accent-soft);
         }
-        #network_editor_toolbar input[type=color] {
+        #utility_network_editor_toolbar input[type=color] {
             width: 30px;
             height: 26px;
             padding: 0 2px;
@@ -420,7 +420,7 @@
             margin: 4px;
             background: var(--editor-border);
         }
-        #network_editor_hint {
+        #utility_network_editor_hint {
             top: 58px;
             left: 50%;
             max-width: clamp(240px, calc(100% - 672px), 560px);
@@ -428,7 +428,7 @@
             font-size: 12px;
             transform: translateX(-50%);
         }
-        #network_editor_selection_card {
+        #utility_network_editor_selection_card {
             top: 56px;
             left: 12px;
             display: flex;
@@ -480,7 +480,7 @@
             border: 0;
             background: none;
         }
-        #network_editor_attribution {
+        #utility_network_editor_attribution {
             right: 8px;
             bottom: 6px;
             padding: 2px 8px;
@@ -490,7 +490,7 @@
             color: var(--editor-muted);
             font-size: 11px;
         }
-        #network_info_panel {
+        #utility_info_panel {
             display: none;
             position: absolute;
             top: 60px;
@@ -506,7 +506,7 @@
             color: var(--editor-text);
             font: 12px/1.4 var(--editor-font);
         }
-        #network_info_panel .network-info-header {
+        #utility_info_panel .utility-info-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -514,35 +514,35 @@
             font-size: 13px;
             font-weight: 600;
         }
-        #network_info_panel .network-info-close {
+        #utility_info_panel .utility-info-close {
             border: none;
             background: none;
             color: var(--editor-text);
             font-size: 18px;
             cursor: pointer;
         }
-        #network_info_panel .network-info-feature {
+        #utility_info_panel .utility-info-feature {
             padding: 6px 0;
             border-top: 1px solid var(--editor-border);
         }
-        #network_info_panel .network-info-title {
+        #utility_info_panel .utility-info-title {
             margin-bottom: 2px;
             color: #ffcc66;
             font-weight: 600;
         }
-        #network_info_panel table {
+        #utility_info_panel table {
             width: 100%;
             border-collapse: collapse;
         }
-        #network_info_panel td {
+        #utility_info_panel td {
             padding: 1px 4px 1px 0;
             vertical-align: top;
         }
-        #network_info_panel td:first-child {
+        #utility_info_panel td:first-child {
             width: 45%;
             color: var(--editor-muted);
         }
-        #network_info_panel .network-info-footer {
+        #utility_info_panel .utility-info-footer {
             margin-top: 6px;
             color: var(--editor-muted);
             font-size: 11px;
@@ -573,13 +573,13 @@
         <div id="potree_sidebar_container"></div>
     </div>
 
-    <div id="network_info_panel">
-        <div class="network-info-header">
+    <div id="utility_info_panel">
+        <div class="utility-info-header">
             <span>Info o síti</span>
-            <button class="network-info-close" type="button" title="Zavřít">×</button>
+            <button class="utility-info-close" type="button" title="Zavřít">×</button>
         </div>
-        <div class="network-info-body"></div>
-        <div class="network-info-footer">Zdroj: ČÚZK – IS DMVS (DTM krajů). Přibližný zákres, pouze orientačně.</div>
+        <div class="utility-info-body"></div>
+        <div class="utility-info-footer">Zdroj: ČÚZK – IS DMVS (DTM krajů). Přibližný zákres, pouze orientačně.</div>
     </div>
 
     <script type="module">
@@ -612,39 +612,42 @@
         viewer.setBackground(null);
         viewer.useHQ = true;
 
-        const mapPlane = new Potree.NetworkEditor.MapPlane(viewer);
-        const dtmOverlay = new Potree.NetworkEditor.DtmOverlay(viewer, mapPlane);
-        const surfacePicker = new Potree.NetworkEditor.SurfacePicker(viewer, mapPlane);
-        const cadastreOverlay = new Potree.NetworkEditor.CadastreOverlay(viewer, mapPlane);
-        const dtmInfoTool = new Potree.NetworkEditor.DtmInfoTool(viewer, mapPlane, dtmOverlay);
-        const cadDocument = new Potree.NetworkEditor.CadDocument();
-        const cadView = new Potree.NetworkEditor.CadView(viewer, cadDocument);
-        const cadSnapper = new Potree.NetworkEditor.CadSnapper(viewer, mapPlane, cadDocument, cadastreOverlay);
+        const mapPlane = new Potree.UtilityNetworkEditor.MapPlane(viewer);
+        const dtmOverlay = new Potree.UtilityNetworkEditor.DtmOverlay(viewer, mapPlane);
+        const surfacePicker = new Potree.UtilityNetworkEditor.SurfacePicker(viewer, mapPlane);
+        const cadastreOverlay = new Potree.UtilityNetworkEditor.CadastreOverlay(viewer, mapPlane);
+        const dtmInfoTool = new Potree.UtilityNetworkEditor.DtmInfoTool(viewer, mapPlane, dtmOverlay);
+        const cadDocument = new Potree.UtilityNetworkEditor.CadDocument();
+        const cadView = new Potree.UtilityNetworkEditor.CadView(viewer, cadDocument);
+        const cadSnapper = new Potree.UtilityNetworkEditor.CadSnapper(viewer, mapPlane, cadDocument, cadastreOverlay);
         surfacePicker.setSnapper(cadSnapper);
-        const cadTool = new Potree.NetworkEditor.CadTool(viewer, surfacePicker, cadDocument, cadView);
-        const cadEditTool = new Potree.NetworkEditor.CadEditTool(viewer, cadDocument, surfacePicker);
-        const cadHistory = new Potree.NetworkEditor.CadHistory(cadDocument);
-        const featureProfile = new Potree.NetworkEditor.FeatureProfile(viewer);
-        const autosaveKey = datasetName ? `oidis-network-editor:${datasetName}` : "oidis-network-editor";
-        const cadAutosave = new Potree.NetworkEditor.CadAutosave(cadDocument, cadHistory, autosaveKey);
-        const recentPointCloudStore = new Potree.NetworkEditor.RecentFileStore("oidis-network-editor", "last-point-cloud");
+        const cadTool = new Potree.UtilityNetworkEditor.CadTool(viewer, surfacePicker, cadDocument, cadView);
+        const cadEditTool = new Potree.UtilityNetworkEditor.CadEditTool(viewer, cadDocument, surfacePicker);
+        const cadHistory = new Potree.UtilityNetworkEditor.CadHistory(cadDocument);
+        const featureProfile = new Potree.UtilityNetworkEditor.FeatureProfile(viewer);
+        const storagePrefix = "oidis-utility-network-editor";
+        const legacyStoragePrefix = "oidis-network-editor";
+        const autosaveKey = datasetName ? `${storagePrefix}:${datasetName}` : storagePrefix;
+        moveLegacyMeasurements();
+        const cadAutosave = new Potree.UtilityNetworkEditor.CadAutosave(cadDocument, cadHistory, autosaveKey);
+        const recentPointCloudStore = new Potree.UtilityNetworkEditor.RecentFileStore(storagePrefix, "last-point-cloud");
         const lasPickerOptions = { types: [{ description: "Mračno bodů LAS", accept: { "application/octet-stream": [".las", ".laz"] } }] };
         cadView.setDimensionFormatter((dimension) => formatDimension(dimension));
         cadDocument.addLayer("Vrstva 1");
 
         const maximumLasPointCount = 20000000;
         const lasErrorMessages = {
-            [Potree.NetworkEditor.LasReadErrorCode.NOT_LAS]: "Soubor není mračno ve formátu LAS.",
-            [Potree.NetworkEditor.LasReadErrorCode.COMPRESSED]: "Komprimovaný LAZ zatím neumíme načíst, použijte nekomprimovaný LAS.",
-            [Potree.NetworkEditor.LasReadErrorCode.UNSUPPORTED_FORMAT]: "Tento formát bodů v LAS neumíme načíst.",
-            [Potree.NetworkEditor.LasReadErrorCode.EMPTY]: "Soubor neobsahuje body, nebo je poškozený."
+            [Potree.UtilityNetworkEditor.LasReadErrorCode.NOT_LAS]: "Soubor není mračno ve formátu LAS.",
+            [Potree.UtilityNetworkEditor.LasReadErrorCode.COMPRESSED]: "Komprimovaný LAZ zatím neumíme načíst, použijte nekomprimovaný LAS.",
+            [Potree.UtilityNetworkEditor.LasReadErrorCode.UNSUPPORTED_FORMAT]: "Tento formát bodů v LAS neumíme načíst.",
+            [Potree.UtilityNetworkEditor.LasReadErrorCode.EMPTY]: "Soubor neobsahuje body, nebo je poškozený."
         };
         const maximumDrawingFileBytes = 20 * 1024 * 1024;
         const drawingFileErrorMessages = {
-            [Potree.NetworkEditor.CadFileErrorCode.TOO_LARGE]: "Soubor je příliš velký (max. 20 MB).",
-            [Potree.NetworkEditor.CadFileErrorCode.INVALID_JSON]: "Soubor není platný JSON.",
-            [Potree.NetworkEditor.CadFileErrorCode.UNSUPPORTED_FORMAT]: "Soubor neobsahuje měření ze síťového editoru, nebo má jinou verzi či souřadnicový systém.",
-            [Potree.NetworkEditor.CadFileErrorCode.INVALID_CONTENT]: "Soubor s měřeními obsahuje neplatná data."
+            [Potree.UtilityNetworkEditor.CadFileErrorCode.TOO_LARGE]: "Soubor je příliš velký (max. 20 MB).",
+            [Potree.UtilityNetworkEditor.CadFileErrorCode.INVALID_JSON]: "Soubor není platný JSON.",
+            [Potree.UtilityNetworkEditor.CadFileErrorCode.UNSUPPORTED_FORMAT]: "Soubor neobsahuje měření ze síťového editoru, nebo má jinou verzi či souřadnicový systém.",
+            [Potree.UtilityNetworkEditor.CadFileErrorCode.INVALID_CONTENT]: "Soubor s měřeními obsahuje neplatná data."
         };
         const flyToMinimumDistanceMetres = 40;
         const flyToMaximumPitch = -Math.PI / 4;
@@ -660,9 +663,9 @@
 
         const cadastreExtentMetres = 1500;
         const cadastreLayers = [
-            { layerId: Potree.NetworkEditor.CadastreLayer.PARCELS, title: "Parcely", description: "Parcely (RÚIAN)" },
-            { layerId: Potree.NetworkEditor.CadastreLayer.BUILDINGS, title: "Budovy", description: "Budovy (RÚIAN)" },
-            { layerId: Potree.NetworkEditor.CadastreLayer.ROADS, title: "Cesty", description: "Cesty (ZABAGED, orientační)" }
+            { layerId: Potree.UtilityNetworkEditor.CadastreLayer.PARCELS, title: "Parcely", description: "Parcely (RÚIAN)" },
+            { layerId: Potree.UtilityNetworkEditor.CadastreLayer.BUILDINGS, title: "Budovy", description: "Budovy (RÚIAN)" },
+            { layerId: Potree.UtilityNetworkEditor.CadastreLayer.ROADS, title: "Cesty", description: "Cesty (ZABAGED, orientační)" }
         ];
         const loadedCadastreLayers = new Set();
 
@@ -679,26 +682,26 @@
         ];
         const vertexDeleteRefusedHint = "Vrchol nejde smazat: délka potřebuje aspoň 2 vrcholy, polygon 3 a kružnice má vždy střed "
             + "a bod na obvodu. Celý prvek smažete, když vrchol odznačíte a stisknete Delete.";
-        const dtmNetworkLayer = Potree.NetworkEditor.DtmNetworkLayer;
-        const dtmNetworkGroups = [
-            { title: "Elektrické vedení", shortTitle: "Elektro", color: "#e60000", layerIds: [dtmNetworkLayer.ELECTRIC_LINE] },
-            { title: "Elektronické komunikace", shortTitle: "Komunikace", color: "#c300fd", layerIds: [dtmNetworkLayer.ELECTRONIC_COMMUNICATION] },
-            { title: "Plynovod", shortTitle: "Plyn", color: "#4ce600", layerIds: [dtmNetworkLayer.GAS_PIPELINE] },
-            { title: "Vodovod", shortTitle: "Voda", color: "#005be5", layerIds: [dtmNetworkLayer.WATER_PIPELINE] },
-            { title: "Kanalizace", shortTitle: "Kanalizace", color: "#905803", layerIds: [dtmNetworkLayer.SEWER] },
-            { title: "Teplovod", shortTitle: "Teplo", color: "#ff7d00", layerIds: [dtmNetworkLayer.HEATING_PIPELINE] },
-            { title: "Produktovod", shortTitle: "Produktovod", color: "#73004c", layerIds: [dtmNetworkLayer.PRODUCT_PIPELINE] },
+        const dtmUtilityLayer = Potree.UtilityNetworkEditor.DtmUtilityLayer;
+        const dtmUtilityGroups = [
+            { title: "Elektrické vedení", shortTitle: "Elektro", color: "#e60000", layerIds: [dtmUtilityLayer.ELECTRIC_LINE] },
+            { title: "Elektronické komunikace", shortTitle: "Komunikace", color: "#c300fd", layerIds: [dtmUtilityLayer.ELECTRONIC_COMMUNICATION] },
+            { title: "Plynovod", shortTitle: "Plyn", color: "#4ce600", layerIds: [dtmUtilityLayer.GAS_PIPELINE] },
+            { title: "Vodovod", shortTitle: "Voda", color: "#005be5", layerIds: [dtmUtilityLayer.WATER_PIPELINE] },
+            { title: "Kanalizace", shortTitle: "Kanalizace", color: "#905803", layerIds: [dtmUtilityLayer.SEWER] },
+            { title: "Teplovod", shortTitle: "Teplo", color: "#ff7d00", layerIds: [dtmUtilityLayer.HEATING_PIPELINE] },
+            { title: "Produktovod", shortTitle: "Produktovod", color: "#73004c", layerIds: [dtmUtilityLayer.PRODUCT_PIPELINE] },
             {
                 title: "Ostatní stavby (sdílené, vodní, dopravní, protipovodňové, meliorace)",
                 shortTitle: "Ostatní",
                 color: "#686868",
                 layerIds: [
-                    dtmNetworkLayer.SHARED_STRUCTURE,
-                    dtmNetworkLayer.SURFACE_WATER_SUPPLY,
-                    dtmNetworkLayer.TRANSPORT_EQUIPMENT,
-                    dtmNetworkLayer.FLOOD_PROTECTION,
-                    dtmNetworkLayer.LAND_DRAINAGE,
-                    dtmNetworkLayer.WATERCOURSE_STRUCTURE
+                    dtmUtilityLayer.SHARED_STRUCTURE,
+                    dtmUtilityLayer.SURFACE_WATER_SUPPLY,
+                    dtmUtilityLayer.TRANSPORT_EQUIPMENT,
+                    dtmUtilityLayer.FLOOD_PROTECTION,
+                    dtmUtilityLayer.LAND_DRAINAGE,
+                    dtmUtilityLayer.WATERCOURSE_STRUCTURE
                 ]
             }
         ];
@@ -707,38 +710,38 @@
             "profile.nb_points": "Počet bodů"
         };
         const featureTypeTitles = {
-            [Potree.NetworkEditor.CadFeatureType.POINT]: "Bod",
-            [Potree.NetworkEditor.CadFeatureType.POLYLINE]: "Délka",
-            [Potree.NetworkEditor.CadFeatureType.POLYGON]: "Polygon",
-            [Potree.NetworkEditor.CadFeatureType.CIRCLE]: "Kružnice"
+            [Potree.UtilityNetworkEditor.CadFeatureType.POINT]: "Bod",
+            [Potree.UtilityNetworkEditor.CadFeatureType.POLYLINE]: "Délka",
+            [Potree.UtilityNetworkEditor.CadFeatureType.POLYGON]: "Polygon",
+            [Potree.UtilityNetworkEditor.CadFeatureType.CIRCLE]: "Kružnice"
         };
         const drawingTypes = [
             {
-                drawingType: Potree.NetworkEditor.CadDrawingType.POINT,
+                drawingType: Potree.UtilityNetworkEditor.CadDrawingType.POINT,
                 title: "Bod",
                 icon: "point",
                 hint: "Každým kliknutím vložíte bod. Esc kreslení ukončí."
             },
             {
-                drawingType: Potree.NetworkEditor.CadDrawingType.POLYLINE,
+                drawingType: Potree.UtilityNetworkEditor.CadDrawingType.POLYLINE,
                 title: "Délka",
                 icon: "ruler-2",
                 hint: "Kliknutím přidáte vrchol, Backspace vrátí poslední, Esc měření dokončí."
             },
             {
-                drawingType: Potree.NetworkEditor.CadDrawingType.POLYGON,
+                drawingType: Potree.UtilityNetworkEditor.CadDrawingType.POLYGON,
                 title: "Polygon",
                 icon: "polygon",
                 hint: "Kliknutím přidáte vrchol, Backspace vrátí poslední. Polygon uzavřete kliknutím na první vrchol nebo Esc."
             },
             {
-                drawingType: Potree.NetworkEditor.CadDrawingType.RECTANGLE,
+                drawingType: Potree.UtilityNetworkEditor.CadDrawingType.RECTANGLE,
                 title: "Obdélník",
                 icon: "square",
                 hint: "První dvě kliknutí určí jednu stranu, třetí kliknutí šířku obdélníku. Backspace vrátí poslední roh, Esc kreslení zruší."
             },
             {
-                drawingType: Potree.NetworkEditor.CadDrawingType.CIRCLE,
+                drawingType: Potree.UtilityNetworkEditor.CadDrawingType.CIRCLE,
                 title: "Kružnice",
                 icon: "circle",
                 hint: "Prvním kliknutím určíte střed, druhým bod na obvodu. Esc kreslení zruší."
@@ -746,13 +749,13 @@
         ];
         const editorTabs = [
             { key: "sources", title: "Podklady", createContent: createSourcesTab },
-            { key: "networks", title: "Sítě", createContent: createNetworksTab },
+            { key: "utilities", title: "Sítě", createContent: createUtilitiesTab },
             { key: "features", title: "Prvky", createContent: createFeaturesTab },
             { key: "file", title: "Soubor", createContent: createFileTab }
         ];
 
-        const infoPanel = $("#network_info_panel");
-        const infoPanelBody = infoPanel.find(".network-info-body");
+        const infoPanel = $("#utility_info_panel");
+        const infoPanelBody = infoPanel.find(".utility-info-body");
         let isInfoPromptShown = false;
 
         async function loadPointCloud(name) {
@@ -768,7 +771,7 @@
 
         function addPointCloud(pointCloud) {
             const material = pointCloud.material;
-            const pointCloudCheckbox = $("#network_editor_point_cloud");
+            const pointCloudCheckbox = $("#utility_network_editor_point_cloud");
             material.activeAttributeName = "rgba";
             material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
             material.size = pointSize;
@@ -806,24 +809,24 @@
             updateAttribution();
         }
 
-        function startMapAndNetworks() {
+        function startMapAndUtilities() {
             if (isMapStarted) {
                 return;
             }
             isMapStarted = true;
             setBaseMap(selectedBaseMapProvider);
-            dtmOverlay.setVisible($("#network_editor_dtm").prop("checked"));
+            dtmOverlay.setVisible($("#utility_network_editor_dtm").prop("checked"));
         }
 
         function updateAttribution() {
             const baseMap = baseMaps.find((map) => map.provider === selectedBaseMapProvider);
-            const isCadastreShown = cadastreLayers.some((cadastreLayer) => $(`#network_editor_cadastre_${cadastreLayer.layerId}`).prop("checked"));
+            const isCadastreShown = cadastreLayers.some((cadastreLayer) => $(`#utility_network_editor_cadastre_${cadastreLayer.layerId}`).prop("checked"));
             const parts = [
                 baseMap?.attribution ?? "",
                 isCadastreShown ? "Katastr © ČÚZK, CC BY 4.0" : "",
-                $("#network_editor_dtm").prop("checked") ? "Sítě: ČÚZK – IS DMVS, orientační" : ""
+                $("#utility_network_editor_dtm").prop("checked") ? "Sítě: ČÚZK – IS DMVS, orientační" : ""
             ].filter((part) => part !== "");
-            $("#network_editor_attribution").text(parts.join(" · ")).toggle(parts.length > 0);
+            $("#utility_network_editor_attribution").text(parts.join(" · ")).toggle(parts.length > 0);
         }
 
         function formatPropertyValue(value) {
@@ -834,7 +837,7 @@
         }
 
         function createFeatureElement(properties) {
-            const title = $("<div class=\"network-info-title\"></div>").text(properties.objektovytypnazev ?? "Objekt DTM");
+            const title = $("<div class=\"utility-info-title\"></div>").text(properties.objektovytypnazev ?? "Objekt DTM");
             const table = $("<table></table>");
             for (const [key, label] of Object.entries(dtmPropertyLabels)) {
                 const value = properties[key];
@@ -843,7 +846,7 @@
                 }
                 table.append($("<tr></tr>").append($("<td></td>").text(label), $("<td></td>").text(formatPropertyValue(value))));
             }
-            return $("<div class=\"network-info-feature\"></div>").append(title, table);
+            return $("<div class=\"utility-info-feature\"></div>").append(title, table);
         }
 
         function showInfoMessage(message) {
@@ -969,12 +972,12 @@
         }
 
         function showPointCloudStatus(text) {
-            $("#network_editor_point_cloud_status").text(text);
+            $("#utility_network_editor_point_cloud_status").text(text);
         }
 
         function describeLasProgress(progress) {
             const percent = Math.round(progress.share * 100);
-            return progress.stage === Potree.NetworkEditor.LasLoadStage.READING ? `Čtu soubor… ${percent} %` : `Stavím mračno… ${percent} %`;
+            return progress.stage === Potree.UtilityNetworkEditor.LasLoadStage.READING ? `Čtu soubor… ${percent} %` : `Stavím mračno… ${percent} %`;
         }
 
         function disposePointCloud(pointCloud) {
@@ -1003,15 +1006,15 @@
             }
             addPointCloud(pointCloud);
             startTerrainHeightSampler(pointCloud);
-            startMapAndNetworks();
+            startMapAndUtilities();
             updatePointCloudControls(true);
         }
 
         async function openLasFile(file) {
-            showPointCloudStatus(describeLasProgress({ stage: Potree.NetworkEditor.LasLoadStage.READING, share: 0 }));
+            showPointCloudStatus(describeLasProgress({ stage: Potree.UtilityNetworkEditor.LasLoadStage.READING, share: 0 }));
             let result;
             try {
-                result = await Potree.NetworkEditor.loadLasPointCloud(file, maximumLasPointCount, (progress) => showPointCloudStatus(describeLasProgress(progress)));
+                result = await Potree.UtilityNetworkEditor.loadLasPointCloud(file, maximumLasPointCount, (progress) => showPointCloudStatus(describeLasProgress(progress)));
             } catch (error) {
                 showPointCloudStatus(lasErrorMessages[error.code] ?? "Mračno se nepodařilo načíst.");
                 return false;
@@ -1021,7 +1024,7 @@
             if (!result.hasColors) {
                 result.pointCloud.material.activeAttributeName = "elevation";
             }
-            $("#network_editor_point_cloud_name").text(file.name);
+            $("#utility_network_editor_point_cloud_name").text(file.name);
             const thinnedText = result.pointCount < result.sourcePointCount ? `, zředěno z ${formatNumber(result.sourcePointCount, 0)}` : "";
             const coordinateText = looksLikeKrovakCoordinates(result.origin) ? "" : " Souřadnice nevypadají jako S-JTSK (EPSG:5514), mapa, DTM a katastr nemusí sedět.";
             showPointCloudStatus(`Načteno bodů ${formatNumber(result.pointCount, 0)}${thinnedText}.${coordinateText}`);
@@ -1029,8 +1032,8 @@
         }
 
         async function chooseLasFile() {
-            if (!Potree.NetworkEditor.RecentFileStore.isSupported()) {
-                $("#network_editor_las_input")[0].click();
+            if (!Potree.UtilityNetworkEditor.RecentFileStore.isSupported()) {
+                $("#utility_network_editor_las_input")[0].click();
                 return;
             }
             let fileHandles;
@@ -1067,7 +1070,7 @@
             const fileHandle = recentPointCloudHandle;
             let file;
             try {
-                file = await Potree.NetworkEditor.readFileFromHandle(fileHandle, true);
+                file = await Potree.UtilityNetworkEditor.readFileFromHandle(fileHandle, true);
             } catch {
                 forgetRecentPointCloud();
                 showPointCloudStatus(`Soubor ${fileHandle.name} už nejde otevřít, nejspíš byl přesunut nebo smazán. Otevřete mračno znovu.`);
@@ -1081,7 +1084,7 @@
         }
 
         async function restoreRecentPointCloud() {
-            if (!Potree.NetworkEditor.RecentFileStore.isSupported()) {
+            if (!Potree.UtilityNetworkEditor.RecentFileStore.isSupported()) {
                 return;
             }
             const fileHandle = await recentPointCloudStore.load().catch(() => null);
@@ -1090,14 +1093,14 @@
             }
             recentPointCloudHandle = fileHandle;
             updateRecentPointCloudButtons();
-            const file = await Potree.NetworkEditor.readFileFromHandle(fileHandle, false).catch(() => null);
+            const file = await Potree.UtilityNetworkEditor.readFileFromHandle(fileHandle, false).catch(() => null);
             if (file) {
                 await openLasFile(file);
             }
         }
 
         function createLasFileInput() {
-            return $("<input type=\"file\" id=\"network_editor_las_input\" accept=\".las,.laz\" hidden>")
+            return $("<input type=\"file\" id=\"utility_network_editor_las_input\" accept=\".las,.laz\" hidden>")
                 .on("change", (event) => {
                     const file = event.target.files[0];
                     event.target.value = "";
@@ -1119,38 +1122,38 @@
         }
 
         function createPointCloudEmptyState() {
-            return $("<div id=\"network_editor_point_cloud_empty\" class=\"editor-empty-state\"></div>").append(
+            return $("<div id=\"utility_network_editor_point_cloud_empty\" class=\"editor-empty-state\"></div>").append(
                 createIcon("cloud-upload"),
                 $("<div class=\"editor-empty-title\">Otevřete mračno bodů</div>"),
                 createNote("Nekomprimovaný LAS v souřadnicích S-JTSK. Mapa a sítě se zapnou po načtení."),
-                createReopenLasButton("network_editor_reopen_las_empty"),
-                createOpenLasButton("network_editor_open_las_empty")
+                createReopenLasButton("utility_network_editor_reopen_las_empty"),
+                createOpenLasButton("utility_network_editor_open_las_empty")
             );
         }
 
         function createScenePrompt() {
-            return $("<div id=\"network_editor_scene_prompt\" class=\"editor-floating\"></div>").append(
+            return $("<div id=\"utility_network_editor_scene_prompt\" class=\"editor-floating\"></div>").append(
                 createIcon("cloud-upload"),
                 $("<div class=\"editor-empty-title\">Otevřete mračno bodů</div>"),
-                createReopenLasButton("network_editor_reopen_las_scene"),
-                createOpenLasButton("network_editor_open_las_scene")
+                createReopenLasButton("utility_network_editor_reopen_las_scene"),
+                createOpenLasButton("utility_network_editor_open_las_scene")
             );
         }
 
         function createPointCloudRow() {
-            const visibilityToggle = createToggle("network_editor_point_cloud", datasetName, true, setPointCloudsVisible).addClass("editor-grow");
-            visibilityToggle.find("span").attr("id", "network_editor_point_cloud_name");
-            return $("<div id=\"network_editor_point_cloud_row\" class=\"editor-row\"></div>").append(
+            const visibilityToggle = createToggle("utility_network_editor_point_cloud", datasetName, true, setPointCloudsVisible).addClass("editor-grow");
+            visibilityToggle.find("span").attr("id", "utility_network_editor_point_cloud_name");
+            return $("<div id=\"utility_network_editor_point_cloud_row\" class=\"editor-row\"></div>").append(
                 visibilityToggle,
-                createButton({ icon: "folder-open", title: "Otevřít mračno (LAS)", identifier: "network_editor_open_las", onClick: chooseLasFile })
+                createButton({ icon: "folder-open", title: "Otevřít mračno (LAS)", identifier: "utility_network_editor_open_las", onClick: chooseLasFile })
             );
         }
 
         function updatePointCloudControls(hasPointCloud) {
-            $("#network_editor_point_cloud_row").toggle(hasPointCloud);
-            $("#network_editor_point_cloud_empty").toggle(!hasPointCloud);
-            $("#network_editor_scene_prompt").toggle(!hasPointCloud);
-            $("#network_editor_show_point_cloud").prop("disabled", !hasPointCloud);
+            $("#utility_network_editor_point_cloud_row").toggle(hasPointCloud);
+            $("#utility_network_editor_point_cloud_empty").toggle(!hasPointCloud);
+            $("#utility_network_editor_scene_prompt").toggle(!hasPointCloud);
+            $("#utility_network_editor_show_point_cloud").prop("disabled", !hasPointCloud);
         }
 
         function createDisplaySettings() {
@@ -1160,9 +1163,9 @@
                     $("<span>Vykreslování mračna</span>"),
                     createIcon("chevron-down").addClass("editor-details-chevron")
                 ),
-                createToggle("network_editor_edl", "Zvýraznit tvary (EDL)", viewer.getEDLEnabled(), (checked) => viewer.setEDLEnabled(checked)),
+                createToggle("utility_network_editor_edl", "Zvýraznit tvary (EDL)", viewer.getEDLEnabled(), (checked) => viewer.setEDLEnabled(checked)),
                 createRange({
-                    identifier: "network_editor_point_size",
+                    identifier: "utility_network_editor_point_size",
                     title: "Velikost bodů",
                     minimum: 0.5,
                     maximum: 3,
@@ -1172,7 +1175,7 @@
                     onChange: setPointSize
                 }),
                 createRange({
-                    identifier: "network_editor_point_budget",
+                    identifier: "utility_network_editor_point_budget",
                     title: "Počet zobrazených bodů",
                     minimum: 1,
                     maximum: 10,
@@ -1204,7 +1207,7 @@
 
         function createCadastreChip(cadastreLayer) {
             const chip = createChip({
-                identifier: `network_editor_cadastre_${cadastreLayer.layerId}`,
+                identifier: `utility_network_editor_cadastre_${cadastreLayer.layerId}`,
                 text: cadastreLayer.title,
                 description: cadastreLayer.description,
                 checked: false,
@@ -1220,7 +1223,7 @@
 
         function reloadVisibleCadastreLayers() {
             for (const cadastreLayer of cadastreLayers) {
-                if ($(`#network_editor_cadastre_${cadastreLayer.layerId}`).prop("checked")) {
+                if ($(`#utility_network_editor_cadastre_${cadastreLayer.layerId}`).prop("checked")) {
                     loadCadastreLayer(cadastreLayer.layerId);
                 }
             }
@@ -1230,7 +1233,7 @@
             const reloadCadastreButton = createButton({
                 icon: "refresh",
                 title: "Načíst katastr pro aktuální pohled",
-                identifier: "network_editor_reload_cadastre",
+                identifier: "utility_network_editor_reload_cadastre",
                 onClick: reloadVisibleCadastreLayers
             });
             return [
@@ -1238,10 +1241,10 @@
                 createPointCloudEmptyState(),
                 createPointCloudRow(),
                 createLasFileInput(),
-                createNote(datasetName ? "Vlastní mračno: nekomprimovaný LAS v S-JTSK, převede se v prohlížeči." : "", "network_editor_point_cloud_status"),
-                createNote("", "network_editor_terrain_status"),
+                createNote(datasetName ? "Vlastní mračno: nekomprimovaný LAS v S-JTSK, převede se v prohlížeči." : "", "utility_network_editor_point_cloud_status"),
+                createNote("", "utility_network_editor_terrain_status"),
                 createLabel("Mapa"),
-                createSegmentedControl("network_editor_base_map", baseMaps, 0, (baseMap) => setBaseMap(baseMap.provider)),
+                createSegmentedControl("utility_network_editor_base_map", baseMaps, 0, (baseMap) => setBaseMap(baseMap.provider)),
                 createLabel("Katastr", [reloadCadastreButton]),
                 $("<div class=\"editor-chips\"></div>").append(cadastreLayers.map(createCadastreChip)),
                 createNote("Načítá se pro okolí aktuálního pohledu, slouží i k přichytávání."),
@@ -1250,8 +1253,8 @@
         }
 
         function collectVisibleDtmLayerIds() {
-            return dtmNetworkGroups
-                .filter((group) => $(`#network_editor_dtm_${group.layerIds[0]}`).prop("checked"))
+            return dtmUtilityGroups
+                .filter((group) => $(`#utility_network_editor_dtm_${group.layerIds[0]}`).prop("checked"))
                 .flatMap((group) => group.layerIds);
         }
 
@@ -1260,7 +1263,7 @@
                 icon: "info-circle",
                 title: "Klikněte do mapy a zjistěte údaje o síti",
                 text: "Info o síti",
-                identifier: "network_editor_info_tool",
+                identifier: "utility_network_editor_info_tool",
                 onClick: () => {
                     if (dtmInfoTool.active) {
                         dtmInfoTool.deactivate();
@@ -1281,27 +1284,27 @@
             return button;
         }
 
-        function createNetworksTab() {
+        function createUtilitiesTab() {
             const status = $("<span class=\"editor-status\"></span>");
             dtmOverlay.addEventListener("loading_changed", (event) => status.text(event.loading ? "načítám…" : ""));
             dtmOverlay.addEventListener("load_failed", () => status.text("nepodařilo se načíst"));
-            const dtmToggle = createToggle("network_editor_dtm", "DTM – technická infrastruktura", true, (checked) => {
+            const dtmToggle = createToggle("utility_network_editor_dtm", "DTM – technická infrastruktura", true, (checked) => {
                 dtmOverlay.setVisible(checked);
-                $(".editor-network-chip input").prop("disabled", !checked);
+                $(".editor-utility-chip input").prop("disabled", !checked);
                 updateAttribution();
             }).addClass("editor-grow");
-            const networkChips = dtmNetworkGroups.map((group) => createChip({
-                identifier: `network_editor_dtm_${group.layerIds[0]}`,
+            const utilityChips = dtmUtilityGroups.map((group) => createChip({
+                identifier: `utility_network_editor_dtm_${group.layerIds[0]}`,
                 text: group.shortTitle,
                 description: group.title,
                 color: group.color,
                 checked: true,
                 onChange: () => dtmOverlay.setLayerIds(collectVisibleDtmLayerIds())
-            }).addClass("editor-network-chip"));
+            }).addClass("editor-utility-chip"));
             return [
                 createLabel("Náhled sítí"),
                 $("<div class=\"editor-row\"></div>").append(dtmToggle, status),
-                $("<div class=\"editor-chip-grid\"></div>").append(networkChips),
+                $("<div class=\"editor-chip-grid\"></div>").append(utilityChips),
                 createInfoToolButton(),
                 createNote("ČÚZK – IS DMVS, přibližný zákres, jen orientačně. Nenahrazuje vyjádření vlastníků sítí.")
             ];
@@ -1309,7 +1312,7 @@
 
         function createLayerRow(layer) {
             const featureCount = cadDocument.features.filter((feature) => feature.layerId === layer.id).length;
-            const activeRadio = $("<input type=\"radio\" name=\"network_editor_active_layer\" title=\"Kreslit do této vrstvy\">")
+            const activeRadio = $("<input type=\"radio\" name=\"utility_network_editor_active_layer\" title=\"Kreslit do této vrstvy\">")
                 .prop("checked", layer.id === cadDocument.activeLayerId)
                 .on("change", () => cadDocument.setActiveLayer(layer.id));
             const visibilityButton = createButton({
@@ -1357,7 +1360,7 @@
             const addLayerButton = createButton({
                 icon: "plus",
                 title: "Přidat vrstvu",
-                identifier: "network_editor_add_layer",
+                identifier: "utility_network_editor_add_layer",
                 onClick: () => cadDocument.addLayer(`Vrstva ${cadDocument.layers.length + 1}`)
             });
             return [createLabel("Vrstvy", [addLayerButton]), layerList, createLabel("Nakreslené prvky"), featureList];
@@ -1377,34 +1380,34 @@
                     icon: "download",
                     title: "Uložit všechna měření do souboru JSON",
                     text: "Uložit měření (JSON)",
-                    identifier: "network_editor_save_drawing",
+                    identifier: "utility_network_editor_save_drawing",
                     onClick: () => {
                         saveDrawing();
                         showFileStatus(`Uloženo měření: ${cadDocument.features.length}.`);
                     }
                 }),
-                createButton({ icon: "upload", title: "Načíst měření ze souboru JSON", text: "Načíst měření", identifier: "network_editor_load_drawing", onClick: () => fileInput[0].click() }),
-                createButton({ icon: "trash", title: "Smazat všechna měření i vrstvy a začít znovu", text: "Smazat všechna měření", identifier: "network_editor_new_drawing", onClick: startNewDrawing }),
+                createButton({ icon: "upload", title: "Načíst měření ze souboru JSON", text: "Načíst měření", identifier: "utility_network_editor_load_drawing", onClick: () => fileInput[0].click() }),
+                createButton({ icon: "trash", title: "Smazat všechna měření i vrstvy a začít znovu", text: "Smazat všechna měření", identifier: "utility_network_editor_new_drawing", onClick: startNewDrawing }),
                 fileInput
             );
             return [
                 createLabel("Měření"),
                 buttons,
-                createNote("Měření se průběžně ukládají v tomto prohlížeči. Soubor JSON je v souřadnicích S-JTSK.", "network_editor_file_status")
+                createNote("Měření se průběžně ukládají v tomto prohlížeči. Soubor JSON je v souřadnicích S-JTSK.", "utility_network_editor_file_status")
             ];
         }
 
         function createEditorPanel() {
             const tabBar = $("<div class=\"editor-tabs\" role=\"tablist\"></div>");
             const panes = editorTabs.map((tab) => $("<div class=\"editor-pane\" role=\"tabpanel\"></div>")
-                .attr("id", `network_editor_tab_${tab.key}`)
+                .attr("id", `utility_network_editor_tab_${tab.key}`)
                 .append(tab.createContent()));
             const selectTab = (key) => {
                 tabBar.children().each((index, element) => {
                     const isSelected = $(element).attr("data-tab") === key;
                     $(element).toggleClass("is-active", isSelected).attr("aria-selected", String(isSelected));
                 });
-                panes.forEach((pane) => pane.toggle(pane.attr("id") === `network_editor_tab_${key}`));
+                panes.forEach((pane) => pane.toggle(pane.attr("id") === `utility_network_editor_tab_${key}`));
             };
             for (const tab of editorTabs) {
                 tabBar.append($("<button type=\"button\" class=\"editor-tab\" role=\"tab\"></button>")
@@ -1413,7 +1416,7 @@
                     .on("click", () => selectTab(tab.key)));
             }
             selectTab(editorTabs[0].key);
-            return $("<div id=\"network_editor_panel\"></div>").append(
+            return $("<div id=\"utility_network_editor_panel\"></div>").append(
                 $("<div class=\"editor-header\"></div>").append(createIcon("map-2"), $("<span>Síťový editor</span>")),
                 tabBar,
                 ...panes
@@ -1423,14 +1426,14 @@
         function updateDrawingHint() {
             const activeDrawingType = drawingTypes.find((drawingType) => drawingType.drawingType === cadTool.drawingType);
             const text = activeDrawingType?.hint ?? (isDrawingHelpShown ? drawingHelp : "");
-            $("#network_editor_hint").text(text).toggle(text !== "");
+            $("#utility_network_editor_hint").text(text).toggle(text !== "");
         }
 
         function createToolbar() {
             const selectButton = createButton({
                 icon: "pointer",
                 title: "Výběr a úpravy prvků (Esc)",
-                identifier: "network_editor_select_tool",
+                identifier: "utility_network_editor_select_tool",
                 onClick: () => {
                     if (cadTool.isDrawing) {
                         cadTool.finishDrawing();
@@ -1457,34 +1460,34 @@
             };
             cadTool.addEventListener("drawing_changed", updateActiveTool);
             dtmInfoTool.addEventListener("activation_changed", updateActiveTool);
-            const colorInput = $("<input type=\"color\" id=\"network_editor_new_color\" title=\"Barva nových prvků\">")
+            const colorInput = $("<input type=\"color\" id=\"utility_network_editor_new_color\" title=\"Barva nových prvků\">")
                 .val(cadTool.style.color)
                 .on("input", (event) => cadTool.setStyle({ color: event.target.value }));
-            const undoButton = createButton({ icon: "arrow-back-up", title: "Zpět (Ctrl+Z)", identifier: "network_editor_undo", onClick: () => cadHistory.undo() })
+            const undoButton = createButton({ icon: "arrow-back-up", title: "Zpět (Ctrl+Z)", identifier: "utility_network_editor_undo", onClick: () => cadHistory.undo() })
                 .prop("disabled", !cadHistory.canUndo);
             cadHistory.addEventListener("history_changed", () => undoButton.prop("disabled", !cadHistory.canUndo));
             const zoomToPointCloudButton = createButton({
                 icon: "focus-2",
                 title: "Zoom na mračno",
-                identifier: "network_editor_show_point_cloud",
+                identifier: "utility_network_editor_show_point_cloud",
                 onClick: () => viewer.fitToScreen(1, 1000)
             });
             updateActiveTool();
-            return $("<div id=\"network_editor_toolbar\" class=\"editor-floating\" role=\"toolbar\" aria-label=\"Nástroje\"></div>").append(
+            return $("<div id=\"utility_network_editor_toolbar\" class=\"editor-floating\" role=\"toolbar\" aria-label=\"Nástroje\"></div>").append(
                 zoomToPointCloudButton,
                 $("<span class=\"editor-separator\"></span>"),
                 selectButton,
                 ...toolButtons,
                 $("<span class=\"editor-separator\"></span>"),
                 colorInput,
-                createToggleButton({ icon: "magnet", title: "Přichytávání k vrcholům a hranám", identifier: "network_editor_snapping", isOn: true, onToggle: (isOn) => cadSnapper.setEnabled(isOn) }),
-                createToggleButton({ icon: "ruler-measure", title: "Zobrazit rozměry u prvků", identifier: "network_editor_dimensions", isOn: true, onToggle: (isOn) => cadView.setDimensionVisible(isOn) }),
+                createToggleButton({ icon: "magnet", title: "Přichytávání k vrcholům a hranám", identifier: "utility_network_editor_snapping", isOn: true, onToggle: (isOn) => cadSnapper.setEnabled(isOn) }),
+                createToggleButton({ icon: "ruler-measure", title: "Zobrazit rozměry u prvků", identifier: "utility_network_editor_dimensions", isOn: true, onToggle: (isOn) => cadView.setDimensionVisible(isOn) }),
                 $("<span class=\"editor-separator\"></span>"),
                 undoButton,
                 createToggleButton({
                     icon: "help",
                     title: "Nápověda k ovládání",
-                    identifier: "network_editor_help",
+                    identifier: "utility_network_editor_help",
                     isOn: false,
                     onToggle: (isOn) => {
                         isDrawingHelpShown = isOn;
@@ -1497,8 +1500,8 @@
         function createDrawingHint() {
             cadTool.addEventListener("drawing_changed", updateDrawingHint);
             cadEditTool.addEventListener("selection_changed", updateDrawingHint);
-            cadEditTool.addEventListener("vertex_delete_refused", () => $("#network_editor_hint").text(vertexDeleteRefusedHint).show());
-            return $("<div id=\"network_editor_hint\" class=\"editor-floating\"></div>").hide();
+            cadEditTool.addEventListener("vertex_delete_refused", () => $("#utility_network_editor_hint").text(vertexDeleteRefusedHint).show());
+            return $("<div id=\"utility_network_editor_hint\" class=\"editor-floating\"></div>").hide();
         }
 
         function applyStyle(style) {
@@ -1517,13 +1520,13 @@
         }
 
         function createStyleFields() {
-            const labelInput = $("<input type=\"text\" id=\"network_editor_label\" placeholder=\"např. Kabel NN\">")
+            const labelInput = $("<input type=\"text\" id=\"utility_network_editor_label\" placeholder=\"např. Kabel NN\">")
                 .on("input", (event) => applyStyle({ label: event.target.value }))
                 .on("change", captureSelectedFeatureChange);
-            const colorInput = $("<input type=\"color\" id=\"network_editor_color\">")
+            const colorInput = $("<input type=\"color\" id=\"utility_network_editor_color\">")
                 .on("input", (event) => applyStyle({ color: event.target.value }))
                 .on("change", captureSelectedFeatureChange);
-            const layerSelect = $("<select id=\"network_editor_feature_layer\"></select>")
+            const layerSelect = $("<select id=\"utility_network_editor_feature_layer\"></select>")
                 .on("change", (event) => {
                     if (cadEditTool.selectedFeature) {
                         cadDocument.moveFeatureToLayer(cadEditTool.selectedFeature, event.target.value);
@@ -1542,9 +1545,9 @@
             });
             const createField = (identifier, title, input) => $("<div class=\"editor-field\"></div>").append($("<label></label>").attr("for", identifier).text(title), input);
             return $("<div class=\"editor-stack\"></div>").append(
-                createField("network_editor_label", "Popisek", labelInput),
-                createField("network_editor_color", "Barva", colorInput),
-                createField("network_editor_feature_layer", "Vrstva", layerSelect)
+                createField("utility_network_editor_label", "Popisek", labelInput),
+                createField("utility_network_editor_color", "Barva", colorInput),
+                createField("utility_network_editor_feature_layer", "Vrstva", layerSelect)
             );
         }
 
@@ -1557,7 +1560,7 @@
                 icon: "chart-line",
                 title: "Výškový profil: body mračna v pásu 1 m podél čáry nebo obvodu",
                 text: "Profil",
-                identifier: "network_editor_profile",
+                identifier: "utility_network_editor_profile",
                 onClick: () => {
                     featureProfile.show(cadEditTool.selectedFeature);
                     scheduleFeatureViewRender();
@@ -1567,7 +1570,7 @@
                 icon: "chart-line",
                 title: "Zrušit výškový profil",
                 text: "Zrušit profil",
-                identifier: "network_editor_clear_profile",
+                identifier: "utility_network_editor_clear_profile",
                 onClick: () => {
                     featureProfile.clear();
                     viewer.profileWindow.hide();
@@ -1578,7 +1581,7 @@
                 icon: "palette",
                 title: "Popisek, barva a vrstva",
                 text: "Styl",
-                identifier: "network_editor_style",
+                identifier: "utility_network_editor_style",
                 isOn: false,
                 onToggle: (isOn) => styleFields.toggle(isOn)
             });
@@ -1586,11 +1589,11 @@
                 icon: "trash",
                 title: "Smazat prvek (Delete)",
                 text: "Smazat",
-                identifier: "network_editor_delete",
+                identifier: "utility_network_editor_delete",
                 onClick: () => cadEditTool.deleteSelectedFeature()
             }).addClass("is-danger");
             const closeButton = createButton({ icon: "x", title: "Zrušit výběr (Esc)", onClick: () => cadEditTool.select(null) });
-            const card = $("<div id=\"network_editor_selection_card\" class=\"editor-floating\"></div>").append(
+            const card = $("<div id=\"utility_network_editor_selection_card\" class=\"editor-floating\"></div>").append(
                 $("<div class=\"editor-card-header\"></div>").append(swatch, title, closeButton),
                 measurement,
                 $("<div class=\"editor-card-actions\"></div>").append(profileButton, clearProfileButton, styleButton, deleteButton),
@@ -1641,8 +1644,8 @@
         }
 
         function describeFeature(feature) {
-            const isRectangle = feature.featureType === Potree.NetworkEditor.CadFeatureType.POLYGON
-                && Potree.NetworkEditor.measureFeature(feature, null).rectangleSides !== null;
+            const isRectangle = feature.featureType === Potree.UtilityNetworkEditor.CadFeatureType.POLYGON
+                && Potree.UtilityNetworkEditor.measureFeature(feature, null).rectangleSides !== null;
             const typeTitle = isRectangle ? "Obdélník" : featureTypeTitles[feature.featureType];
             return feature.label !== "" ? `${typeTitle} „${feature.label}“` : typeTitle;
         }
@@ -1657,31 +1660,31 @@
         }
 
         function describeFeatureSummary(feature) {
-            const measurement = Potree.NetworkEditor.measureFeature(feature, terrainHeightSampler);
-            if (feature.featureType === Potree.NetworkEditor.CadFeatureType.POINT) {
+            const measurement = Potree.UtilityNetworkEditor.measureFeature(feature, terrainHeightSampler);
+            if (feature.featureType === Potree.UtilityNetworkEditor.CadFeatureType.POINT) {
                 return `výška ${formatNumber(measurement.height, 2)} m`;
             }
-            if (feature.featureType === Potree.NetworkEditor.CadFeatureType.POLYGON) {
+            if (feature.featureType === Potree.UtilityNetworkEditor.CadFeatureType.POLYGON) {
                 return measurement.area === null ? "kříží se" : `${formatNumber(measurement.area, 1)} m²`;
             }
-            if (feature.featureType === Potree.NetworkEditor.CadFeatureType.CIRCLE) {
+            if (feature.featureType === Potree.UtilityNetworkEditor.CadFeatureType.CIRCLE) {
                 return `r ${formatNumber(measurement.radius, 2)} m`;
             }
             return `${formatNumber(measurement.length, 2)} m`;
         }
 
         function describeFeatureMeasurement(feature) {
-            const measurement = Potree.NetworkEditor.measureFeature(feature, terrainHeightSampler);
-            if (feature.featureType === Potree.NetworkEditor.CadFeatureType.POINT) {
+            const measurement = Potree.UtilityNetworkEditor.measureFeature(feature, terrainHeightSampler);
+            if (feature.featureType === Potree.UtilityNetworkEditor.CadFeatureType.POINT) {
                 return `Y ${formatNumber(measurement.coordinateY, 2)}, X ${formatNumber(measurement.coordinateX, 2)}, výška ${formatNumber(measurement.height, 2)} m`;
             }
-            if (feature.featureType === Potree.NetworkEditor.CadFeatureType.POLYGON) {
+            if (feature.featureType === Potree.UtilityNetworkEditor.CadFeatureType.POLYGON) {
                 const sidesText = measurement.rectangleSides
                     ? `rozměry ${measurement.rectangleSides.map((side) => formatNumber(side, 2)).join(" × ")} m, `
                     : "";
                 return `${sidesText}${describeArea(measurement)}, obvod ${formatNumber(measurement.perimeter, 2)} m`;
             }
-            if (feature.featureType === Potree.NetworkEditor.CadFeatureType.CIRCLE) {
+            if (feature.featureType === Potree.UtilityNetworkEditor.CadFeatureType.CIRCLE) {
                 return `poloměr ${formatNumber(measurement.radius, 2)} m, průměr ${formatNumber(measurement.diameter, 2)} m, `
                     + `obvod ${formatNumber(measurement.circumference, 2)} m, plocha ${formatNumber(measurement.area, 1)} m²`;
             }
@@ -1726,7 +1729,7 @@
         }
 
         function saveDrawing() {
-            const content = JSON.stringify(Potree.NetworkEditor.createCadFile(cadDocument), null, 2);
+            const content = JSON.stringify(Potree.UtilityNetworkEditor.createCadFile(cadDocument), null, 2);
             const url = URL.createObjectURL(new Blob([content], { type: "application/json" }));
             $("<a></a>").attr({ href: url, download: createMeasurementFileName() })[0].click();
             setTimeout(() => URL.revokeObjectURL(url), 0);
@@ -1743,12 +1746,12 @@
         }
 
         function showFileStatus(text) {
-            $("#network_editor_file_status").text(text);
+            $("#utility_network_editor_file_status").text(text);
         }
 
         async function loadDrawingFile(file) {
             if (file.size > maximumDrawingFileBytes) {
-                showFileStatus(drawingFileErrorMessages[Potree.NetworkEditor.CadFileErrorCode.TOO_LARGE]);
+                showFileStatus(drawingFileErrorMessages[Potree.UtilityNetworkEditor.CadFileErrorCode.TOO_LARGE]);
                 return;
             }
             if (cadDocument.features.length > 0 && !window.confirm("Načtení nahradí současná měření. Pokračovat?")) {
@@ -1756,7 +1759,7 @@
             }
             let content;
             try {
-                content = Potree.NetworkEditor.parseCadFile(await file.text());
+                content = Potree.UtilityNetworkEditor.parseCadFile(await file.text());
             } catch (error) {
                 showFileStatus(drawingFileErrorMessages[error.code] ?? "Soubor se nepodařilo načíst.");
                 return;
@@ -1775,6 +1778,22 @@
             }
             replaceDrawing(createEmptyDrawingContent());
             showFileStatus("Všechna měření jsou smazaná.");
+        }
+
+        function moveLegacyMeasurements() {
+            try {
+                const storage = window.localStorage;
+                const legacyKeys = Object.keys(storage).filter((key) => key === legacyStoragePrefix || key.startsWith(`${legacyStoragePrefix}:`));
+                for (const legacyKey of legacyKeys) {
+                    const key = storagePrefix + legacyKey.slice(legacyStoragePrefix.length);
+                    if (storage.getItem(key) === null) {
+                        storage.setItem(key, storage.getItem(legacyKey));
+                    }
+                    storage.removeItem(legacyKey);
+                }
+            } catch {
+                return;
+            }
         }
 
         function restoreStoredDrawing() {
@@ -1797,17 +1816,17 @@
 
         function formatDimension(dimension) {
             const dimensionFormats = {
-                [Potree.NetworkEditor.DimensionKind.LENGTH]: (value) => `${formatNumber(value, 2)} m`,
-                [Potree.NetworkEditor.DimensionKind.AREA]: (value) => `${formatNumber(value, 1)} m²`,
-                [Potree.NetworkEditor.DimensionKind.RADIUS]: (value) => `r = ${formatNumber(value, 2)} m`,
-                [Potree.NetworkEditor.DimensionKind.HEIGHT]: (value) => `v = ${formatNumber(value, 2)} m`
+                [Potree.UtilityNetworkEditor.DimensionKind.LENGTH]: (value) => `${formatNumber(value, 2)} m`,
+                [Potree.UtilityNetworkEditor.DimensionKind.AREA]: (value) => `${formatNumber(value, 1)} m²`,
+                [Potree.UtilityNetworkEditor.DimensionKind.RADIUS]: (value) => `r = ${formatNumber(value, 2)} m`,
+                [Potree.UtilityNetworkEditor.DimensionKind.HEIGHT]: (value) => `v = ${formatNumber(value, 2)} m`
             };
             return dimensionFormats[dimension.kind](dimension.value);
         }
 
         function startTerrainHeightSampler(pointCloud) {
-            terrainHeightSampler = new Potree.NetworkEditor.TerrainHeightSampler(pointCloud);
-            const terrainStatus = $("#network_editor_terrain_status");
+            terrainHeightSampler = new Potree.UtilityNetworkEditor.TerrainHeightSampler(pointCloud);
+            const terrainStatus = $("#utility_network_editor_terrain_status");
             dtmOverlay.setTerrainHeightSampler(terrainHeightSampler);
             cadastreOverlay.setTerrainHeightSampler(terrainHeightSampler);
             cadEditTool.setTerrainHeightSampler(terrainHeightSampler);
@@ -1837,7 +1856,7 @@
                 createDrawingHint(),
                 createSelectionCard(),
                 createScenePrompt(),
-                $("<div id=\"network_editor_attribution\" class=\"editor-floating\"></div>")
+                $("<div id=\"utility_network_editor_attribution\" class=\"editor-floating\"></div>")
             );
             updatePointCloudControls(Boolean(datasetName));
             for (const eventType of ["feature_added", "feature_removed", "layers_changed", "feature_layer_changed"]) {
@@ -1849,7 +1868,7 @@
             scheduleFeatureViewRender();
         }
 
-        infoPanel.find(".network-info-close").on("click", closeInfoPanel);
+        infoPanel.find(".utility-info-close").on("click", closeInfoPanel);
         dtmInfoTool.addEventListener("query_started", () => {
             isInfoPromptShown = false;
             showInfoMessage("Načítám informace o síti…");

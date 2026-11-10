@@ -10,7 +10,8 @@
 
 import { CadFeatureType, MINIMUM_POINT_COUNTS } from "./CadFeature.js";
 
-const FILE_FORMAT = "oidis-network-editor";
+const FILE_FORMAT = "oidis-utility-network-editor";
+const READABLE_FILE_FORMATS = [FILE_FORMAT, "oidis-network-editor"];
 const FILE_VERSION = 1;
 const FILE_CRS = "EPSG:5514";
 const MAXIMUM_FILE_CHARACTERS = 20 * 1024 * 1024;
@@ -25,7 +26,7 @@ export const CadFileErrorCode = Object.freeze({
 });
 
 function createFileError(code) {
-    const error = new Error(`Invalid network editor file: ${code}`);
+    const error = new Error(`Invalid utility network editor file: ${code}`);
     error.code = code;
     return error;
 }
@@ -87,7 +88,7 @@ export function parseCadFile(text) {
     } catch (error) {
         throw createFileError(CadFileErrorCode.INVALID_JSON);
     }
-    if (!file || file.format !== FILE_FORMAT || file.version !== FILE_VERSION || file.crs !== FILE_CRS) {
+    if (!file || !READABLE_FILE_FORMATS.includes(file.format) || file.version !== FILE_VERSION || file.crs !== FILE_CRS) {
         throw createFileError(CadFileErrorCode.UNSUPPORTED_FORMAT);
     }
     requireValid(Array.isArray(file.layers) && file.layers.length > 0 && Array.isArray(file.features));

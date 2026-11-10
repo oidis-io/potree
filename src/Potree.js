@@ -50,29 +50,29 @@ import { AnimationPath } from "./AnimationPath.js";
 import { CameraAnimation } from "./modules/CameraAnimation/CameraAnimation.js";
 import { SpotLightHelper } from "./utils/SpotLightHelper.js";
 import { ShapefileLoader } from "./loader/ShapefileLoader.js";
-import { MapPlane } from "./modules/NetworkEditor/MapPlane.js";
-import { DtmOverlay } from "./modules/NetworkEditor/DtmOverlay.js";
-import { DtmInfoTool } from "./modules/NetworkEditor/DtmInfoTool.js";
-import { DtmNetworkLayer } from "./modules/NetworkEditor/DtmService.js";
-import { CadFeature, CadFeatureType } from "./modules/NetworkEditor/CadFeature.js";
-import { CadDocument } from "./modules/NetworkEditor/CadDocument.js";
-import { CadView } from "./modules/NetworkEditor/CadView.js";
-import { CadDrawingType, CadTool } from "./modules/NetworkEditor/CadTool.js";
-import { CadEditTool } from "./modules/NetworkEditor/CadEditTool.js";
-import { CadHistory } from "./modules/NetworkEditor/CadHistory.js";
-import { SurfacePicker } from "./modules/NetworkEditor/SurfacePicker.js";
-import { TerrainHeightSampler } from "./modules/NetworkEditor/TerrainHeightSampler.js";
-import { CadastreLayer } from "./modules/NetworkEditor/CadastreService.js";
-import { CadastreOverlay } from "./modules/NetworkEditor/CadastreOverlay.js";
-import { CadSnapper } from "./modules/NetworkEditor/CadSnapper.js";
-import { CadFileErrorCode, createCadFile, parseCadFile } from "./modules/NetworkEditor/CadFileFormat.js";
-import { FeatureProfile } from "./modules/NetworkEditor/FeatureProfile.js";
-import { measureFeature } from "./modules/NetworkEditor/FeatureMeasurement.js";
-import { DimensionKind } from "./modules/NetworkEditor/FeatureDimensions.js";
-import { CadAutosave } from "./modules/NetworkEditor/CadAutosave.js";
-import { LasLoadStage, loadLasPointCloud } from "./modules/NetworkEditor/LasPointCloudLoader.js";
-import { LasReadErrorCode } from "./modules/NetworkEditor/LasFileReader.js";
-import { RecentFileStore, readFileFromHandle } from "./modules/NetworkEditor/RecentFileStore.js";
+import { MapPlane } from "./modules/UtilityNetworkEditor/MapPlane.js";
+import { DtmOverlay } from "./modules/UtilityNetworkEditor/DtmOverlay.js";
+import { DtmInfoTool } from "./modules/UtilityNetworkEditor/DtmInfoTool.js";
+import { DtmUtilityLayer } from "./modules/UtilityNetworkEditor/DtmService.js";
+import { CadFeature, CadFeatureType } from "./modules/UtilityNetworkEditor/CadFeature.js";
+import { CadDocument } from "./modules/UtilityNetworkEditor/CadDocument.js";
+import { CadView } from "./modules/UtilityNetworkEditor/CadView.js";
+import { CadDrawingType, CadTool } from "./modules/UtilityNetworkEditor/CadTool.js";
+import { CadEditTool } from "./modules/UtilityNetworkEditor/CadEditTool.js";
+import { CadHistory } from "./modules/UtilityNetworkEditor/CadHistory.js";
+import { SurfacePicker } from "./modules/UtilityNetworkEditor/SurfacePicker.js";
+import { TerrainHeightSampler } from "./modules/UtilityNetworkEditor/TerrainHeightSampler.js";
+import { CadastreLayer } from "./modules/UtilityNetworkEditor/CadastreService.js";
+import { CadastreOverlay } from "./modules/UtilityNetworkEditor/CadastreOverlay.js";
+import { CadSnapper } from "./modules/UtilityNetworkEditor/CadSnapper.js";
+import { CadFileErrorCode, createCadFile, parseCadFile } from "./modules/UtilityNetworkEditor/CadFileFormat.js";
+import { FeatureProfile } from "./modules/UtilityNetworkEditor/FeatureProfile.js";
+import { measureFeature } from "./modules/UtilityNetworkEditor/FeatureMeasurement.js";
+import { DimensionKind } from "./modules/UtilityNetworkEditor/FeatureDimensions.js";
+import { CadAutosave } from "./modules/UtilityNetworkEditor/CadAutosave.js";
+import { LasLoadStage, loadLasPointCloud } from "./modules/UtilityNetworkEditor/LasPointCloudLoader.js";
+import { LasReadErrorCode } from "./modules/UtilityNetworkEditor/LasFileReader.js";
+import { RecentFileStore, readFileFromHandle } from "./modules/UtilityNetworkEditor/RecentFileStore.js";
 
 const Potree = {
     OrbitControls,
@@ -112,12 +112,12 @@ const Potree = {
     Embankment,
     EmbankmentTool,
     EmbankmentConfig: { DEFAULTS: EMBANKMENT_DEFAULTS },
-    NetworkEditor: {
+    UtilityNetworkEditor: {
         MapPlane,
         SurfacePicker,
         DtmOverlay,
         DtmInfoTool,
-        DtmNetworkLayer,
+        DtmUtilityLayer,
         CadFeature,
         CadFeatureType,
         CadDocument,

@@ -10,7 +10,7 @@
 
 import * as THREE from "../../../libs/three.js/build/three.module.js";
 import { EventDispatcher } from "../../EventDispatcher.js";
-import { createDtmMapUrl, DtmNetworkLayer } from "./DtmService.js";
+import { createDtmMapUrl, DtmUtilityLayer } from "./DtmService.js";
 
 const REFRESH_DELAY_MILLISECONDS = 400;
 const MAXIMUM_EXTENT_METRES = 3000;
@@ -29,7 +29,7 @@ export class DtmOverlay extends EventDispatcher {
         this.viewer = viewer;
         this.mapPlane = mapPlane;
         this.visible = false;
-        this.layerIds = Object.values(DtmNetworkLayer);
+        this.layerIds = Object.values(DtmUtilityLayer);
         this.loading = false;
         this.requestIndex = 0;
         this.refreshPending = false;
