@@ -108,6 +108,7 @@ function createAutomaticEntry(result, building, exception) {
         label: result.label,
         state: exception ? AlignmentEntryState.KEPT : AlignmentEntryState.MOVED,
         isEstimate: result.status === BuildingMatchStatus.INTERPOLATED,
+        referenceIdentifier: result.referenceIdentifier,
         blockSize: result.blockSize,
         neighbourCount: result.neighbourCount,
         transform: result.transform,
@@ -124,6 +125,7 @@ function createManualEntry(exception, building) {
         label: exception.label,
         state: AlignmentEntryState.MANUAL,
         isEstimate: false,
+        referenceIdentifier: null,
         blockSize: 1,
         neighbourCount: 0,
         transform: exception.transform,
@@ -151,7 +153,6 @@ export class CadastreAlignment extends EventDispatcher {
         this.surfaceExtent = null;
         this.surfaceRequestExtent = null;
         this.isSurfaceFailed = false;
-        this.renderedSurfaceBuildings = null;
         this.phase = AlignmentPhase.ORIGINAL_SHOWN;
         this.matchResults = [];
         this.matchSummary = null;
@@ -161,6 +162,7 @@ export class CadastreAlignment extends EventDispatcher {
         this.referenceExtent = null;
         this.referenceRequestExtent = null;
         this.isReferenceFailed = false;
+        this.movingIdentifier = null;
         this.shiftLabelFormatter = (entry) => `${entry.shiftLength.toFixed(1)} m`;
 
         cadastreOverlay.addEventListener("layer_loading", (event) => {
@@ -212,6 +214,28 @@ export class CadastreAlignment extends EventDispatcher {
 
     alignAgain(identifier) {
         this.alignmentExceptions.remove(identifier);
+    }
+
+    showMovePreview(identifier, transform) {
+        const building = this.cadastreOverlay.getLayerFeatures(CadastreLayer.BUILDINGS).find((feature) => String(feature.identifier) === String(identifier));
+        if (!building) {
+            return;
+        }
+        if (this.movingIdentifier !== String(identifier)) {
+            this.movingIdentifier = String(identifier);
+            this.render();
+        }
+        const previewFeature = { identifier: identifier, lines: building.lines.map((line) => transformRing(line, transform)) };
+        this.updateStaticLayer(CadastreOverlayLayer.MOVE_PREVIEW, [previewFeature], [], true);
+    }
+
+    clearMovePreview() {
+        if (this.movingIdentifier === null) {
+            return;
+        }
+        this.movingIdentifier = null;
+        this.updateStaticLayer(CadastreOverlayLayer.MOVE_PREVIEW, [], [], false);
+        this.render();
     }
 
     onLayerLoaded(event) {
@@ -391,7 +415,7 @@ export class CadastreAlignment extends EventDispatcher {
 
     render() {
         const entries = this.listEntries();
-        const shownEntries = entries.filter((entry) => entry.state !== AlignmentEntryState.KEPT);
+        const shownEntries = entries.filter((entry) => entry.state !== AlignmentEntryState.KEPT && String(entry.identifier) !== this.movingIdentifier);
         const areBuildingsShown = this.cadastreOverlay.isLayerVisible(CadastreLayer.BUILDINGS);
         const isAlignedShown = areBuildingsShown && this.displayMode !== AlignmentDisplayMode.ORIGINAL;
         const isComparisonShown = areBuildingsShown && this.displayMode === AlignmentDisplayMode.BOTH;
@@ -421,20 +445,22 @@ export class CadastreAlignment extends EventDispatcher {
             isComparisonShown
         );
         const hiddenIdentifiers = this.displayMode === AlignmentDisplayMode.ALIGNED ? shownEntries.map((entry) => entry.identifier) : [];
+        if (this.movingIdentifier !== null) {
+            hiddenIdentifiers.push(this.movingIdentifier);
+        }
         this.cadastreOverlay.setHiddenFeatures(CadastreLayer.BUILDINGS, hiddenIdentifiers);
-        this.renderSurfaceBuildings(isComparisonShown && this.reference === AlignmentReference.SURFACE);
+        this.renderReferenceOutlines(shownEntries, isComparisonShown);
         this.dispatchEvent({ type: "changed", entries: entries, phase: this.phase, summary: this.matchSummary });
     }
 
-    renderSurfaceBuildings(visible) {
-        if (this.renderedSurfaceBuildings !== this.surfaceBuildings) {
-            this.renderedSurfaceBuildings = this.surfaceBuildings;
-            this.cadastreOverlay.setStaticLayer(
-                CadastreOverlayLayer.SURFACE_BUILDINGS,
-                this.surfaceBuildings.map((building) => ({ identifier: building.identifier, lines: building.outerRings }))
-            );
-        }
-        this.cadastreOverlay.setLayerVisible(CadastreOverlayLayer.SURFACE_BUILDINGS, visible);
+    renderReferenceOutlines(entries, visible) {
+        const referenceIdentifiers = new Set(entries
+            .filter((entry) => entry.state === AlignmentEntryState.MOVED && entry.referenceIdentifier !== null)
+            .map((entry) => String(entry.referenceIdentifier)));
+        const outlines = this.getReferenceBuildings()
+            .filter((building) => referenceIdentifiers.has(String(building.identifier)))
+            .map((building) => ({ identifier: building.identifier, lines: building.lines ?? building.outerRings }));
+        this.updateStaticLayer(CadastreOverlayLayer.REFERENCE_OUTLINES, outlines, [], visible);
     }
 
     updateStaticLayer(layerId, features, labels, visible) {

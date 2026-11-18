@@ -21,8 +21,9 @@ export const CadastreOverlayLayer = Object.freeze({
     ALIGNED_BUILDINGS: "aligned_buildings",
     ESTIMATED_BUILDINGS: "estimated_buildings",
     MANUAL_BUILDINGS: "manual_buildings",
-    SURFACE_BUILDINGS: "surface_buildings",
-    SHIFT_ARROWS: "shift_arrows"
+    REFERENCE_OUTLINES: "reference_outlines",
+    SHIFT_ARROWS: "shift_arrows",
+    MOVE_PREVIEW: "move_preview"
 });
 
 const LAYER_STYLES = Object.freeze({
@@ -33,8 +34,9 @@ const LAYER_STYLES = Object.freeze({
     [CadastreOverlayLayer.ALIGNED_BUILDINGS]: { color: 0x39d353, lineWidth: 2.5, isSnappable: true },
     [CadastreOverlayLayer.ESTIMATED_BUILDINGS]: { color: 0x22d3ee, lineWidth: 2.5, isSnappable: true },
     [CadastreOverlayLayer.MANUAL_BUILDINGS]: { color: 0xc084fc, lineWidth: 2.5, isSnappable: true },
-    [CadastreOverlayLayer.SURFACE_BUILDINGS]: { color: 0x60a5fa, lineWidth: 1.5, isSnappable: true },
-    [CadastreOverlayLayer.SHIFT_ARROWS]: { color: 0xff4fd8, lineWidth: 1.5, isSnappable: false }
+    [CadastreOverlayLayer.REFERENCE_OUTLINES]: { color: 0x60a5fa, lineWidth: 1.5, isSnappable: true },
+    [CadastreOverlayLayer.SHIFT_ARROWS]: { color: 0xff4fd8, lineWidth: 1.5, isSnappable: false },
+    [CadastreOverlayLayer.MOVE_PREVIEW]: { color: 0xc084fc, lineWidth: 2.5, isSnappable: false }
 });
 const DENSIFY_STEP_METRES = 2;
 const LIFT_METRES = 0.15;
@@ -123,7 +125,13 @@ export class CadastreOverlay extends EventDispatcher {
         }
         layer.hiddenIdentifiers = new Set(identifiers.map((identifier) => String(identifier)));
         this.replaceLayerObject(layerId, layer);
-        this.dispatchEvent({ type: "snap_lines_changed" });
+        this.notifySnapLinesChanged(layerId);
+    }
+
+    notifySnapLinesChanged(layerId) {
+        if (LAYER_STYLES[layerId].isSnappable) {
+            this.dispatchEvent({ type: "snap_lines_changed" });
+        }
     }
 
     isLayerVisible(layerId) {
@@ -143,7 +151,7 @@ export class CadastreOverlay extends EventDispatcher {
         layer.labelSprites.forEach((sprite) => {
             sprite.visible = visible;
         });
-        this.dispatchEvent({ type: "snap_lines_changed" });
+        this.notifySnapLinesChanged(layerId);
         if (isChanged) {
             this.dispatchEvent({ type: "layer_visibility_changed", layerId: layerId, visible: visible });
         }
@@ -169,7 +177,7 @@ export class CadastreOverlay extends EventDispatcher {
         }));
         this.replaceLayerObject(layerId, layer);
         this.replaceLayerLabels(layer);
-        this.dispatchEvent({ type: "snap_lines_changed" });
+        this.notifySnapLinesChanged(layerId);
     }
 
     drapeLine(line) {

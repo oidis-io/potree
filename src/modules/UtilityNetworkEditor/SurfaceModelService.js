@@ -12,7 +12,8 @@ const SURFACE_EXPORT_URL = "https://ags.cuzk.gov.cz/arcgis2/rest/services/dmp/Im
 const TERRAIN_EXPORT_URL = "https://ags.cuzk.gov.cz/arcgis2/rest/services/dmr5g/ImageServer/exportImage";
 const ORTHOPHOTO_EXPORT_URL = "https://ags.cuzk.gov.cz/arcgis1/rest/services/ORTOFOTO/MapServer/export";
 const MINIMUM_CELL_METRES = 0.5;
-const MAXIMUM_RASTER_PIXELS = 2000;
+const CELL_STEP_METRES = 0.25;
+const MAXIMUM_RASTER_PIXELS = 2100;
 const MAXIMUM_TILE_PIXELS = 1000;
 const LITTLE_ENDIAN_MARK = 0x4949;
 const TIFF_SHORT_TYPE = 3;
@@ -168,13 +169,17 @@ async function fetchOrthophotoColors(grid) {
 
 export function createSurfaceGrid(extent) {
     const size = Math.max(extent.maximumX - extent.minimumX, extent.maximumY - extent.minimumY);
-    const cellSize = Math.max(MINIMUM_CELL_METRES, size / MAXIMUM_RASTER_PIXELS);
+    const cellSize = Math.max(MINIMUM_CELL_METRES, Math.ceil(size / MAXIMUM_RASTER_PIXELS / CELL_STEP_METRES) * CELL_STEP_METRES);
+    const minimumX = Math.floor(extent.minimumX / cellSize) * cellSize;
+    const minimumY = Math.floor(extent.minimumY / cellSize) * cellSize;
+    const maximumX = Math.ceil(extent.maximumX / cellSize) * cellSize;
+    const maximumY = Math.ceil(extent.maximumY / cellSize) * cellSize;
     return {
-        minimumX: extent.minimumX,
-        maximumY: extent.maximumY,
+        minimumX: minimumX,
+        maximumY: maximumY,
         cellSize: cellSize,
-        width: Math.max(1, Math.ceil((extent.maximumX - extent.minimumX) / cellSize)),
-        height: Math.max(1, Math.ceil((extent.maximumY - extent.minimumY) / cellSize))
+        width: Math.max(1, Math.round((maximumX - minimumX) / cellSize)),
+        height: Math.max(1, Math.round((maximumY - minimumY) / cellSize))
     };
 }
 

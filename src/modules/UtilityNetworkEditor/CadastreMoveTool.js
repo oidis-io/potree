@@ -8,6 +8,8 @@
  *
  * ********************************************************************************************************* */
 
+import * as THREE from "../../../libs/three.js/build/three.module.js";
+import { MOUSE } from "../../defines.js";
 import { EventDispatcher } from "../../EventDispatcher.js";
 import { composeTransforms } from "./BuildingFitting.js";
 
@@ -43,6 +45,11 @@ export class CadastreMoveTool extends EventDispatcher {
         this.firstTarget = null;
         this.secondCorner = null;
         this.pressPosition = null;
+        this.dragPosition = null;
+        this.hasDragMoved = false;
+        this.dragHandle = new THREE.Object3D();
+        this.dragHandle.addEventListener("drag", (event) => this.onDrag(event));
+        this.dragHandle.addEventListener("drop", () => this.onDrop());
 
         const canvas = viewer.renderer.domElement;
         canvas.addEventListener("mousedown", (event) => this.onMouseDown(event));
@@ -72,6 +79,12 @@ export class CadastreMoveTool extends EventDispatcher {
         this.firstTarget = null;
         this.secondCorner = null;
         this.pressPosition = null;
+        this.dragPosition = null;
+        this.hasDragMoved = false;
+        if (this.viewer.inputHandler.drag?.object === this.dragHandle) {
+            this.viewer.inputHandler.drag = null;
+        }
+        this.cadastreAlignment.clearMovePreview();
         this.surfacePicker.clearSnapIndicator();
         const canvasStyle = this.viewer.renderer.domElement.style;
         if (canvasStyle.cursor === MOVE_CURSOR) {
@@ -86,7 +99,15 @@ export class CadastreMoveTool extends EventDispatcher {
     }
 
     onMouseDown(event) {
-        this.pressPosition = this.active && event.button === 0 ? { x: event.clientX, y: event.clientY } : null;
+        this.pressPosition = null;
+        if (!this.active || event.button !== 0) {
+            return;
+        }
+        const position = this.pick(event);
+        if (position && this.startDragAt(position)) {
+            return;
+        }
+        this.pressPosition = { x: event.clientX, y: event.clientY };
     }
 
     onMouseUp(event) {
@@ -105,8 +126,52 @@ export class CadastreMoveTool extends EventDispatcher {
     }
 
     onMouseMove(event) {
-        if (this.active && event.buttons === 0) {
-            this.pick(event);
+        if (!this.active || event.buttons !== 0) {
+            return;
+        }
+        const position = this.pick(event);
+        if (position) {
+            this.previewAt(position);
+        }
+    }
+
+    startDragAt(position) {
+        if (this.step === CadastreMoveStep.PICK_CORNER && this.cadastreAlignment.findDisplayedBuildingAt(position)) {
+            this.pickCorner(position);
+        } else if (this.step === CadastreMoveStep.PICK_SECOND_CORNER && this.isOnMovedBuilding(position) && this.isFarFromPivot(position)) {
+            this.pickSecondCorner(position);
+        } else {
+            return false;
+        }
+        this.dragPosition = null;
+        this.hasDragMoved = false;
+        this.viewer.inputHandler.startDragging(this.dragHandle);
+        return true;
+    }
+
+    onDrag(event) {
+        if ((event.drag.mouse & MOUSE.LEFT) === 0) {
+            this.viewer.inputHandler.drag = null;
+            this.onDrop();
+            return;
+        }
+        if (event.drag.start.distanceTo(event.drag.end) > CLICK_TOLERANCE_PIXELS) {
+            this.hasDragMoved = true;
+        }
+        const position = this.surfacePicker.pick(event.drag.end, null, {});
+        if (position) {
+            this.dragPosition = position;
+            this.previewAt(position);
+        }
+    }
+
+    onDrop() {
+        const position = this.dragPosition;
+        const hasMoved = this.hasDragMoved;
+        this.dragPosition = null;
+        this.hasDragMoved = false;
+        if (this.active && hasMoved && position) {
+            this.handleClick(position);
         }
     }
 
@@ -127,6 +192,23 @@ export class CadastreMoveTool extends EventDispatcher {
         }
     }
 
+    previewAt(position) {
+        if (this.step === CadastreMoveStep.PICK_TARGET) {
+            this.cadastreAlignment.showMovePreview(this.building.identifier, this.createMoveTransform(position));
+        } else if (this.step === CadastreMoveStep.PICK_SECOND_TARGET && this.isFarFromPivot(position)) {
+            this.cadastreAlignment.showMovePreview(this.building.identifier, this.createRotationTransform(position));
+        }
+    }
+
+    isOnMovedBuilding(position) {
+        const building = this.cadastreAlignment.findDisplayedBuildingAt(position);
+        return building !== null && String(building.identifier) === String(this.building.identifier);
+    }
+
+    isFarFromPivot(position) {
+        return Math.hypot(position.x - this.firstTarget.x, position.y - this.firstTarget.y) >= MINIMUM_ROTATION_ARM_METRES;
+    }
+
     pickCorner(position) {
         const building = this.cadastreAlignment.findDisplayedBuildingAt(position);
         if (!building) {
@@ -138,15 +220,13 @@ export class CadastreMoveTool extends EventDispatcher {
     }
 
     moveCornerTo(position) {
-        const corner = this.building.corner;
-        const translation = { centerX: corner.x, centerY: corner.y, shiftX: position.x - corner.x, shiftY: position.y - corner.y, rotationDegrees: 0 };
-        this.applyTransform(composeTransforms(this.building.transform, translation));
+        this.applyTransform(this.createMoveTransform(position));
         this.firstTarget = position.clone();
         this.setStep(CadastreMoveStep.PICK_SECOND_CORNER);
     }
 
     pickSecondCorner(position) {
-        if (Math.hypot(position.x - this.firstTarget.x, position.y - this.firstTarget.y) < MINIMUM_ROTATION_ARM_METRES) {
+        if (!this.isFarFromPivot(position)) {
             this.setStep(CadastreMoveStep.PICK_SECOND_CORNER, CadastreMoveMessage.TOO_CLOSE);
             return;
         }
@@ -155,20 +235,31 @@ export class CadastreMoveTool extends EventDispatcher {
     }
 
     rotateSecondCornerTo(position) {
-        const pivot = this.firstTarget;
-        if (Math.hypot(position.x - pivot.x, position.y - pivot.y) < MINIMUM_ROTATION_ARM_METRES) {
+        if (!this.isFarFromPivot(position)) {
             this.setStep(CadastreMoveStep.PICK_SECOND_TARGET, CadastreMoveMessage.TOO_CLOSE);
             return;
         }
+        this.applyTransform(this.createRotationTransform(position));
+        this.deactivate();
+    }
+
+    createMoveTransform(position) {
+        const corner = this.building.corner;
+        const translation = { centerX: corner.x, centerY: corner.y, shiftX: position.x - corner.x, shiftY: position.y - corner.y, rotationDegrees: 0 };
+        return composeTransforms(this.building.transform, translation);
+    }
+
+    createRotationTransform(position) {
+        const pivot = this.firstTarget;
         const currentAngle = Math.atan2(this.secondCorner.y - pivot.y, this.secondCorner.x - pivot.x);
         const targetAngle = Math.atan2(position.y - pivot.y, position.x - pivot.x);
         const rotationDegrees = normalizeDegrees((targetAngle - currentAngle) * 180 / Math.PI);
-        this.applyTransform(composeTransforms(this.building.transform, { centerX: pivot.x, centerY: pivot.y, shiftX: 0, shiftY: 0, rotationDegrees: rotationDegrees }));
-        this.deactivate();
+        return composeTransforms(this.building.transform, { centerX: pivot.x, centerY: pivot.y, shiftX: 0, shiftY: 0, rotationDegrees: rotationDegrees });
     }
 
     applyTransform(transform) {
         this.building.transform = transform;
         this.cadastreAlignment.setManualTransform(this.building.identifier, this.building.label, transform);
+        this.cadastreAlignment.clearMovePreview();
     }
 }

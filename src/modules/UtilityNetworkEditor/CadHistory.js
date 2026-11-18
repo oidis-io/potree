@@ -13,14 +13,16 @@ import { EventDispatcher } from "../../EventDispatcher.js";
 const MAXIMUM_UNDO_STEPS = 50;
 
 export class CadHistory extends EventDispatcher {
-    constructor(cadDocument) {
+    constructor(cadDocument, alignmentExceptions = null) {
         super();
         this.cadDocument = cadDocument;
+        this.alignmentExceptions = alignmentExceptions;
         this.isRestoring = false;
         this.snapshots = [this.createSnapshot()];
         cadDocument.addEventListener("feature_added", () => this.capture());
         cadDocument.addEventListener("feature_removed", () => this.capture());
         cadDocument.addEventListener("feature_layer_changed", () => this.capture());
+        alignmentExceptions?.addEventListener("changed", () => this.capture());
     }
 
     get canUndo() {
@@ -33,7 +35,10 @@ export class CadHistory extends EventDispatcher {
     }
 
     createSnapshot() {
-        return JSON.stringify(this.cadDocument.toData());
+        return {
+            drawing: JSON.stringify(this.cadDocument.toData()),
+            alignmentExceptions: JSON.stringify(this.alignmentExceptions?.toData() ?? [])
+        };
     }
 
     capture() {
@@ -41,7 +46,8 @@ export class CadHistory extends EventDispatcher {
             return;
         }
         const snapshot = this.createSnapshot();
-        if (snapshot === this.snapshots[this.snapshots.length - 1]) {
+        const lastSnapshot = this.snapshots[this.snapshots.length - 1];
+        if (snapshot.drawing === lastSnapshot.drawing && snapshot.alignmentExceptions === lastSnapshot.alignmentExceptions) {
             return;
         }
         this.snapshots.push(snapshot);
@@ -56,10 +62,16 @@ export class CadHistory extends EventDispatcher {
         if (!this.canUndo) {
             return;
         }
-        this.snapshots.pop();
+        const undoneSnapshot = this.snapshots.pop();
+        const snapshot = this.snapshots[this.snapshots.length - 1];
         this.isRestoring = true;
         try {
-            this.cadDocument.loadData(JSON.parse(this.snapshots[this.snapshots.length - 1]));
+            if (snapshot.drawing !== undoneSnapshot.drawing) {
+                this.cadDocument.loadData(JSON.parse(snapshot.drawing));
+            }
+            if (this.alignmentExceptions && snapshot.alignmentExceptions !== undoneSnapshot.alignmentExceptions) {
+                this.alignmentExceptions.replace(JSON.parse(snapshot.alignmentExceptions));
+            }
         } finally {
             this.isRestoring = false;
         }

@@ -77,6 +77,7 @@ import { CadAutosave } from "./modules/UtilityNetworkEditor/CadAutosave.js";
 import { LasLoadStage, loadLasPointCloud } from "./modules/UtilityNetworkEditor/LasPointCloudLoader.js";
 import { LasReadErrorCode } from "./modules/UtilityNetworkEditor/LasFileReader.js";
 import { RecentFileStore, readFileFromHandle } from "./modules/UtilityNetworkEditor/RecentFileStore.js";
+import { ViewChangeDetector } from "./modules/UtilityNetworkEditor/ViewChangeDetector.js";
 
 const Potree = {
     OrbitControls,
@@ -155,7 +156,8 @@ const Potree = {
         LasReadErrorCode,
         loadLasPointCloud,
         RecentFileStore,
-        readFileFromHandle
+        readFileFromHandle,
+        ViewChangeDetector
     },
     pointBudget: PotreeConfig.pointBudget,
     framenumber: PotreeConfig.framenumber,

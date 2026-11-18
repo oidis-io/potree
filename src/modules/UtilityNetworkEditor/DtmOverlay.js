@@ -11,13 +11,12 @@
 import * as THREE from "../../../libs/three.js/build/three.module.js";
 import { EventDispatcher } from "../../EventDispatcher.js";
 import { createDtmMapUrl, DtmUtilityLayer } from "./DtmService.js";
+import { ViewChangeDetector } from "./ViewChangeDetector.js";
 
 const REFRESH_DELAY_MILLISECONDS = 400;
 const MAXIMUM_EXTENT_METRES = 3000;
 const MAXIMUM_IMAGE_SIZE = 4096;
 const MINIMUM_METRES_PER_PIXEL = 0.05;
-const VIEW_CHANGE_TOLERANCE = 0.001;
-const DIRECTION_SCALE = 1000;
 const TERRAIN_GRID_STEP_METRES = 4;
 const MAXIMUM_TERRAIN_GRID_SEGMENTS = 256;
 const TERRAIN_LIFT_METRES = 0.1;
@@ -34,7 +33,7 @@ export class DtmOverlay extends EventDispatcher {
         this.requestIndex = 0;
         this.refreshPending = false;
         this.lastViewChangeTime = 0;
-        this.lastViewSnapshot = null;
+        this.viewChangeDetector = new ViewChangeDetector(viewer, mapPlane);
         this.shownImage = null;
         this.terrainHeightSampler = null;
         this.textureLoader = new THREE.TextureLoader();
@@ -133,7 +132,7 @@ export class DtmOverlay extends EventDispatcher {
             return;
         }
         const now = performance.now();
-        if (this.hasViewChanged()) {
+        if (this.viewChangeDetector.hasChanged()) {
             this.lastViewChangeTime = now;
             this.refreshPending = true;
             return;
@@ -142,28 +141,6 @@ export class DtmOverlay extends EventDispatcher {
             this.refreshPending = false;
             this.refresh();
         }
-    }
-
-    hasViewChanged() {
-        const snapshot = this.createViewSnapshot();
-        const previousSnapshot = this.lastViewSnapshot;
-        const changed = previousSnapshot === null
-            || previousSnapshot.length !== snapshot.length
-            || snapshot.some((value, index) => Math.abs(value - previousSnapshot[index]) > VIEW_CHANGE_TOLERANCE);
-        if (changed) {
-            this.lastViewSnapshot = snapshot;
-        }
-        return changed;
-    }
-
-    createViewSnapshot() {
-        const camera = this.viewer.scene.getActiveCamera();
-        const direction = camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(DIRECTION_SCALE);
-        const projection = camera.isOrthographicCamera
-            ? [camera.left, camera.right, camera.top, camera.bottom, camera.zoom]
-            : [camera.fov, camera.aspect];
-        const { width, height } = this.mapPlane.getRenderSize();
-        return [...camera.position.toArray(), ...direction.toArray(), ...projection, width, height, this.mapPlane.height];
     }
 
     refresh() {

@@ -112,3 +112,24 @@ test("createSurfaceGrid keeps half-metre cells for a village and coarsens large 
     assert.equal(town.cellSize, 0.75);
     assert.equal(town.width, 2000);
 });
+
+test("createSurfaceGrid aligns cells to whole multiples so a building gets the same raster in any view", () => {
+    const first = createSurfaceGrid({ minimumX: 1000.3, minimumY: 2000.1, maximumX: 1300.3, maximumY: 2200.1 });
+    const second = createSurfaceGrid({ minimumX: 1000.1, minimumY: 2000.4, maximumX: 1300.6, maximumY: 2200.9 });
+    assert.equal(first.cellSize, 0.5);
+    assert.equal(second.cellSize, 0.5);
+    assert.equal(first.minimumX, 1000);
+    assert.equal(second.minimumX, 1000);
+    assert.equal(first.maximumY, 2200.5);
+    assert.equal(second.maximumY, 2201);
+    assert.equal(first.width, 601);
+    assert.equal(first.height, 401);
+});
+
+test("createSurfaceGrid uses only whole quarter-metre steps for larger areas", () => {
+    const wider = createSurfaceGrid({ minimumX: 0, minimumY: 0, maximumX: 1100, maximumY: 900 });
+    const widest = createSurfaceGrid({ minimumX: 0, minimumY: 0, maximumX: 1540, maximumY: 1540 });
+    assert.equal(wider.cellSize, 0.75);
+    assert.equal(widest.cellSize, 0.75);
+    assert.equal(widest.width, 2054);
+});
