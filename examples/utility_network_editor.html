@@ -376,6 +376,13 @@
         .editor-stack .editor-button {
             justify-content: flex-start;
         }
+        .editor-scroll-list {
+            max-height: 220px;
+            overflow-y: auto;
+        }
+        .editor-scroll-list:empty {
+            display: none;
+        }
         .editor-floating {
             position: absolute;
             z-index: 5000;
@@ -616,6 +623,9 @@
         const dtmOverlay = new Potree.UtilityNetworkEditor.DtmOverlay(viewer, mapPlane);
         const surfacePicker = new Potree.UtilityNetworkEditor.SurfacePicker(viewer, mapPlane);
         const cadastreOverlay = new Potree.UtilityNetworkEditor.CadastreOverlay(viewer, mapPlane);
+        const alignmentExceptions = new Potree.UtilityNetworkEditor.CadastreAlignmentExceptions();
+        const cadastreAlignment = new Potree.UtilityNetworkEditor.CadastreAlignment(cadastreOverlay, alignmentExceptions);
+        cadastreAlignment.setShiftLabelFormatter(describeShift);
         const dtmInfoTool = new Potree.UtilityNetworkEditor.DtmInfoTool(viewer, mapPlane, dtmOverlay);
         const cadDocument = new Potree.UtilityNetworkEditor.CadDocument();
         const cadView = new Potree.UtilityNetworkEditor.CadView(viewer, cadDocument);
@@ -623,13 +633,14 @@
         surfacePicker.setSnapper(cadSnapper);
         const cadTool = new Potree.UtilityNetworkEditor.CadTool(viewer, surfacePicker, cadDocument, cadView);
         const cadEditTool = new Potree.UtilityNetworkEditor.CadEditTool(viewer, cadDocument, surfacePicker);
+        const cadastreMoveTool = new Potree.UtilityNetworkEditor.CadastreMoveTool(viewer, surfacePicker, cadastreAlignment);
         const cadHistory = new Potree.UtilityNetworkEditor.CadHistory(cadDocument);
         const featureProfile = new Potree.UtilityNetworkEditor.FeatureProfile(viewer);
         const storagePrefix = "oidis-utility-network-editor";
         const legacyStoragePrefix = "oidis-network-editor";
         const autosaveKey = datasetName ? `${storagePrefix}:${datasetName}` : storagePrefix;
         moveLegacyMeasurements();
-        const cadAutosave = new Potree.UtilityNetworkEditor.CadAutosave(cadDocument, cadHistory, autosaveKey);
+        const cadAutosave = new Potree.UtilityNetworkEditor.CadAutosave(cadDocument, cadHistory, autosaveKey, alignmentExceptions);
         const recentPointCloudStore = new Potree.UtilityNetworkEditor.RecentFileStore(storagePrefix, "last-point-cloud");
         const lasPickerOptions = { types: [{ description: "Mračno bodů LAS", accept: { "application/octet-stream": [".las", ".laz"] } }] };
         cadView.setDimensionFormatter((dimension) => formatDimension(dimension));
@@ -665,9 +676,58 @@
         const cadastreLayers = [
             { layerId: Potree.UtilityNetworkEditor.CadastreLayer.PARCELS, title: "Parcely", description: "Parcely (RÚIAN)" },
             { layerId: Potree.UtilityNetworkEditor.CadastreLayer.BUILDINGS, title: "Budovy", description: "Budovy (RÚIAN)" },
+            {
+                layerId: Potree.UtilityNetworkEditor.CadastreLayer.REFERENCE_BUILDINGS,
+                title: "Budovy ZABAGED",
+                description: "Budovy ze Základní mapy (ZABAGED), podle nich se zarovnává katastr"
+            },
             { layerId: Potree.UtilityNetworkEditor.CadastreLayer.ROADS, title: "Cesty", description: "Cesty (ZABAGED, orientační)" }
         ];
         const loadedCadastreLayers = new Set();
+        const alignmentDisplayModes = [
+            { displayMode: Potree.UtilityNetworkEditor.AlignmentDisplayMode.ORIGINAL, title: "Původní katastr ČÚZK", shortTitle: "Originál" },
+            { displayMode: Potree.UtilityNetworkEditor.AlignmentDisplayMode.ALIGNED, title: "Posunuté budovy zarovnané podle Základní mapy nebo leteckých snímků", shortTitle: "Zarovnaný" },
+            { displayMode: Potree.UtilityNetworkEditor.AlignmentDisplayMode.BOTH, title: "Původní i zarovnané budovy s vyznačeným posunem", shortTitle: "Oba" }
+        ];
+        const defaultAlignmentDisplayMode = Potree.UtilityNetworkEditor.AlignmentDisplayMode.ALIGNED;
+        const alignmentDisplayModeKey = `${storagePrefix}:cadastre-alignment-mode`;
+        const alignmentPhaseTexts = {
+            [Potree.UtilityNetworkEditor.AlignmentPhase.ORIGINAL_SHOWN]: "Zobrazený je původní katastr ČÚZK.",
+            [Potree.UtilityNetworkEditor.AlignmentPhase.BUILDINGS_HIDDEN]: "Zapněte vrstvu Budovy, posunuté budovy se pak zarovnají samy.",
+            [Potree.UtilityNetworkEditor.AlignmentPhase.LOADING_BUILDINGS]: "Načítám budovy z katastru…",
+            [Potree.UtilityNetworkEditor.AlignmentPhase.BUILDINGS_FAILED]: "Budovy z katastru se nepodařilo načíst.",
+            [Potree.UtilityNetworkEditor.AlignmentPhase.LOADING_REFERENCE]: "Načítám budovy ze Základní mapy…",
+            [Potree.UtilityNetworkEditor.AlignmentPhase.NO_BUILDINGS]: "V katastru tu nejsou žádné budovy, není co zarovnat.",
+            [Potree.UtilityNetworkEditor.AlignmentPhase.NO_REFERENCE]: "V Základní mapě tu nejsou žádné budovy, není podle čeho zarovnat.",
+            [Potree.UtilityNetworkEditor.AlignmentPhase.REFERENCE_FAILED]: "Budovy ze Základní mapy se nepodařilo načíst.",
+            [Potree.UtilityNetworkEditor.AlignmentPhase.LOADING_SURFACE]: "Načítám model povrchu z leteckých snímků…",
+            [Potree.UtilityNetworkEditor.AlignmentPhase.NO_SURFACE_BUILDINGS]: "V modelu povrchu z leteckých snímků tu nejsou žádné budovy.",
+            [Potree.UtilityNetworkEditor.AlignmentPhase.SURFACE_FAILED]: "Model povrchu z leteckých snímků se nepodařilo načíst."
+        };
+        const alignmentEntryColors = { measured: "#39d353", estimated: "#22d3ee", manual: "#c084fc", kept: "#8a8f98" };
+        const alignmentInterpolationKey = `${storagePrefix}:cadastre-alignment-interpolation`;
+        const alignmentReferenceKey = `${storagePrefix}:cadastre-alignment-reference`;
+        const alignmentReferences = [
+            { reference: Potree.UtilityNetworkEditor.AlignmentReference.MAP, title: "Budovy ze Základní mapy ČÚZK (ZABAGED)", shortTitle: "Mapa", sourceText: "Základní mapy" },
+            {
+                reference: Potree.UtilityNetworkEditor.AlignmentReference.SURFACE,
+                title: "Budovy z modelu povrchu z leteckých snímků ČÚZK (DMP z obrazové korelace) a ortofota",
+                shortTitle: "Snímky",
+                sourceText: "leteckých snímků"
+            }
+        ];
+        const moveStepHints = {
+            [Potree.UtilityNetworkEditor.CadastreMoveStep.PICK_CORNER]: "Ruční posun: klikněte na roh budovy z katastru, kterou chcete posunout. Esc ukončí.",
+            [Potree.UtilityNetworkEditor.CadastreMoveStep.PICK_TARGET]: "Ruční posun: klikněte, kam tento roh patří. Přichytí se k obrysům v mapě, modře budovy ZABAGED.",
+            [Potree.UtilityNetworkEditor.CadastreMoveStep.PICK_SECOND_CORNER]: "Budova je posunutá. Pro otočení klikněte na její druhý roh, jinak Esc.",
+            [Potree.UtilityNetworkEditor.CadastreMoveStep.PICK_SECOND_TARGET]: "Klikněte, kam druhý roh patří. Budova se otočí kolem prvního rohu."
+        };
+        const moveMessageHints = {
+            [Potree.UtilityNetworkEditor.CadastreMoveMessage.NO_BUILDING]: "Tady žádná budova z katastru není, klikněte přímo na její obrys. ",
+            [Potree.UtilityNetworkEditor.CadastreMoveMessage.TOO_CLOSE]: "Bod je moc blízko prvního rohu, vyberte vzdálenější. "
+        };
+        let moveHint = "";
+        const flyToBuildingSizeMetres = 30;
 
         const drawingHelp = "Pohled: levé tlačítko otáčí, pravé posouvá, kolečko přibližuje. "
             + "Kreslení: vyberte nástroj v liště a klikejte do mapy, Esc kreslení ukončí. Žlutý čtvereček ukazuje přichycení. "
@@ -821,9 +881,12 @@
         function updateAttribution() {
             const baseMap = baseMaps.find((map) => map.provider === selectedBaseMapProvider);
             const isCadastreShown = cadastreLayers.some((cadastreLayer) => $(`#utility_network_editor_cadastre_${cadastreLayer.layerId}`).prop("checked"));
+            const cadastreAttribution = cadastreAlignment.isAlignmentShown()
+                ? `Katastr © ČÚZK, CC BY 4.0, zarovnáno podle ${findAlignmentReference().sourceText} (orientační)`
+                : "Katastr © ČÚZK, CC BY 4.0";
             const parts = [
                 baseMap?.attribution ?? "",
-                isCadastreShown ? "Katastr © ČÚZK, CC BY 4.0" : "",
+                isCadastreShown ? cadastreAttribution : "",
                 $("#utility_network_editor_dtm").prop("checked") ? "Sítě: ČÚZK – IS DMVS, orientační" : ""
             ].filter((part) => part !== "");
             $("#utility_network_editor_attribution").text(parts.join(" · ")).toggle(parts.length > 0);
@@ -1248,8 +1311,226 @@
                 createLabel("Katastr", [reloadCadastreButton]),
                 $("<div class=\"editor-chips\"></div>").append(cadastreLayers.map(createCadastreChip)),
                 createNote("Načítá se pro okolí aktuálního pohledu, slouží i k přichytávání."),
+                ...createAlignmentSection(),
                 createDisplaySettings()
             ];
+        }
+
+        function createAlignmentSection() {
+            const selectedIndex = alignmentDisplayModes.findIndex((option) => option.displayMode === cadastreAlignment.displayMode);
+            const moveButton = createButton({
+                icon: "hand-move",
+                title: "Posunout budovu z katastru ručně: klikněte na její roh a pak na místo, kam patří",
+                text: "Posunout ručně",
+                identifier: "utility_network_editor_manual_move",
+                onClick: toggleManualMove
+            }).addClass("editor-grow");
+            cadastreAlignment.addEventListener("changed", renderAlignment);
+            cadastreMoveTool.addEventListener("activation_changed", (event) => moveButton.toggleClass("is-active", event.active));
+            const referenceIndex = alignmentReferences.findIndex((option) => option.reference === cadastreAlignment.reference);
+            return [
+                createLabel("Zarovnání budov k mapě"),
+                createSegmentedControl("utility_network_editor_alignment_mode", alignmentDisplayModes, selectedIndex, (option) => setAlignmentDisplayMode(option.displayMode)),
+                createLabel("Zarovnat podle"),
+                createSegmentedControl("utility_network_editor_alignment_reference", alignmentReferences, referenceIndex, (option) => setAlignmentReference(option.reference)),
+                createToggle("utility_network_editor_alignment_interpolation", "Doplnit odhad podle okolních budov", cadastreAlignment.isInterpolationEnabled, setInterpolationEnabled),
+                $("<div class=\"editor-row\"></div>").append(moveButton),
+                createNote("", "utility_network_editor_alignment_status"),
+                $("<div id=\"utility_network_editor_alignment_list\" class=\"editor-scroll-list\"></div>"),
+                createNote("Zeleně zarovnané budovy, tyrkysově odhad podle okolních budov, fialově ruční posun, v režimu Oba modře budovy z leteckých snímků. "
+                    + "Je to orientační pomůcka, právně platí původní katastr ČÚZK.")
+            ];
+        }
+
+        function findAlignmentReference() {
+            return alignmentReferences.find((option) => option.reference === cadastreAlignment.reference) ?? alignmentReferences[0];
+        }
+
+        function loadAlignmentReference() {
+            try {
+                const storedReference = window.localStorage.getItem(alignmentReferenceKey);
+                return alignmentReferences.some((option) => option.reference === storedReference) ? storedReference : alignmentReferences[0].reference;
+            } catch {
+                return alignmentReferences[0].reference;
+            }
+        }
+
+        function setAlignmentReference(reference) {
+            cadastreAlignment.setReference(reference);
+            try {
+                window.localStorage.setItem(alignmentReferenceKey, reference);
+            } catch {
+                return;
+            }
+        }
+
+        function toggleManualMove() {
+            if (cadastreMoveTool.active) {
+                cadastreMoveTool.deactivate();
+                return;
+            }
+            if (cadastreAlignment.displayMode === Potree.UtilityNetworkEditor.AlignmentDisplayMode.ORIGINAL) {
+                const alignedIndex = alignmentDisplayModes.findIndex((option) => option.displayMode === Potree.UtilityNetworkEditor.AlignmentDisplayMode.ALIGNED);
+                $(`#utility_network_editor_alignment_mode_${alignedIndex}`).prop("checked", true);
+                setAlignmentDisplayMode(Potree.UtilityNetworkEditor.AlignmentDisplayMode.ALIGNED);
+            }
+            for (const layerId of [Potree.UtilityNetworkEditor.CadastreLayer.BUILDINGS, Potree.UtilityNetworkEditor.CadastreLayer.REFERENCE_BUILDINGS]) {
+                const checkbox = $(`#utility_network_editor_cadastre_${layerId}`);
+                if (!checkbox.prop("checked")) {
+                    checkbox.prop("checked", true).trigger("change");
+                }
+            }
+            cadastreMoveTool.activate();
+        }
+
+        function showMoveStep(event) {
+            moveHint = `${moveMessageHints[event.message] ?? ""}${moveStepHints[event.step]}`;
+            updateDrawingHint();
+        }
+
+        function loadInterpolationEnabled() {
+            try {
+                return window.localStorage.getItem(alignmentInterpolationKey) !== "false";
+            } catch {
+                return true;
+            }
+        }
+
+        function setInterpolationEnabled(isEnabled) {
+            cadastreAlignment.setInterpolationEnabled(isEnabled);
+            try {
+                window.localStorage.setItem(alignmentInterpolationKey, String(isEnabled));
+            } catch {
+                return;
+            }
+        }
+
+        function loadAlignmentDisplayMode() {
+            try {
+                const storedMode = window.localStorage.getItem(alignmentDisplayModeKey);
+                return alignmentDisplayModes.some((option) => option.displayMode === storedMode) ? storedMode : defaultAlignmentDisplayMode;
+            } catch {
+                return defaultAlignmentDisplayMode;
+            }
+        }
+
+        function setAlignmentDisplayMode(displayMode) {
+            cadastreAlignment.setDisplayMode(displayMode);
+            try {
+                window.localStorage.setItem(alignmentDisplayModeKey, displayMode);
+            } catch {
+                return;
+            }
+        }
+
+        function describeAlignmentStatus(event) {
+            const state = Potree.UtilityNetworkEditor.AlignmentEntryState;
+            const countEntries = (condition) => event.entries.filter(condition).length;
+            const manualCount = countEntries((entry) => entry.state === state.MANUAL);
+            const manualText = manualCount > 0 ? `ručně: ${manualCount}` : "";
+            if (event.phase !== Potree.UtilityNetworkEditor.AlignmentPhase.READY) {
+                return [alignmentPhaseTexts[event.phase], manualText].filter((part) => part !== "").join(" · ");
+            }
+            const status = Potree.UtilityNetworkEditor.BuildingMatchStatus;
+            const estimatedCount = countEntries((entry) => entry.state === state.MOVED && entry.isEstimate);
+            const keptCount = countEntries((entry) => entry.state === state.KEPT);
+            return [
+                `Zarovnáno: ${countEntries((entry) => entry.state === state.MOVED && !entry.isEstimate)}`,
+                estimatedCount > 0 ? `odhad: ${estimatedCount}` : "",
+                manualText,
+                keptCount > 0 ? `ponecháno: ${keptCount}` : "",
+                `sedí: ${event.summary[status.ALIGNED]}`,
+                `jiný tvar: ${event.summary[status.DIFFERENT_SHAPE]}`,
+                `bez páru: ${event.summary[status.UNMATCHED]}`
+            ].filter((part) => part !== "").join(" · ");
+        }
+
+        function describeAlignedBuilding(entry) {
+            return entry.label !== "" ? `Budova č. ${entry.label}` : "Budova bez čísla";
+        }
+
+        function describeShift(entry) {
+            const rotationText = Math.abs(entry.transform.rotationDegrees) >= 0.5 ? `, ${formatNumber(entry.transform.rotationDegrees, 1)}°` : "";
+            return `${entry.isEstimate ? "≈ " : ""}${formatNumber(entry.shiftLength, 1)} m${rotationText}`;
+        }
+
+        function isKeptEntry(entry) {
+            return entry.state === Potree.UtilityNetworkEditor.AlignmentEntryState.KEPT;
+        }
+
+        function isManualEntry(entry) {
+            return entry.state === Potree.UtilityNetworkEditor.AlignmentEntryState.MANUAL;
+        }
+
+        function chooseAlignmentEntryColor(entry) {
+            if (isKeptEntry(entry)) {
+                return alignmentEntryColors.kept;
+            }
+            if (isManualEntry(entry)) {
+                return alignmentEntryColors.manual;
+            }
+            return entry.isEstimate ? alignmentEntryColors.estimated : alignmentEntryColors.measured;
+        }
+
+        function describeAlignmentEntry(entry) {
+            if (isKeptEntry(entry)) {
+                return "Zarovnání je vypnuté, budova zůstává v poloze z katastru.";
+            }
+            if (isManualEntry(entry)) {
+                return "Posunuto ručně.";
+            }
+            if (entry.isEstimate) {
+                return `Odhad podle ${entry.neighbourCount} okolních budov, sama se podle ${findAlignmentReference().sourceText} zarovnat nedala.`;
+            }
+            const overlapText = `${formatNumber(entry.originalOverlap * 100, 0)} % → ${formatNumber(entry.fittedOverlap * 100, 0)} %`;
+            const blockText = entry.blockSize > 1 ? ` jako blok ${entry.blockSize} budov` : "";
+            return `Zarovnáno${blockText} podle ${findAlignmentReference().sourceText}, shoda obrysů ${overlapText}.`;
+        }
+
+        function describeAlignmentEntryValue(entry) {
+            if (isKeptEntry(entry)) {
+                return "původní poloha";
+            }
+            if (isManualEntry(entry)) {
+                return `ručně · ${describeShift(entry)}`;
+            }
+            return entry.blockSize > 1 ? `${describeShift(entry)} · blok` : describeShift(entry);
+        }
+
+        function createAlignmentEntryButton(entry) {
+            if (isKeptEntry(entry)) {
+                return createButton({ icon: "arrows-move", title: "Znovu zarovnat", onClick: () => cadastreAlignment.alignAgain(entry.identifier) });
+            }
+            if (isManualEntry(entry)) {
+                return createButton({ icon: "arrow-back-up", title: "Zrušit ruční posun", onClick: () => cadastreAlignment.alignAgain(entry.identifier) });
+            }
+            return createButton({ icon: "arrow-back-up", title: "Ponechat původní polohu z katastru", onClick: () => cadastreAlignment.keepOriginalPosition(entry.identifier, entry.label) });
+        }
+
+        function createAlignmentEntryRow(entry) {
+            const toggleButton = createAlignmentEntryButton(entry);
+            toggleButton.on("click", (event) => event.stopPropagation());
+            return $("<div class=\"editor-list-row editor-feature\"></div>")
+                .attr("title", describeAlignmentEntry(entry))
+                .append(
+                    $("<span class=\"editor-swatch\"></span>").css("background", chooseAlignmentEntryColor(entry)),
+                    $("<span class=\"editor-list-title\"></span>").text(describeAlignedBuilding(entry)),
+                    $("<span class=\"editor-list-value\"></span>").text(describeAlignmentEntryValue(entry)),
+                    toggleButton
+                )
+                .on("click", () => flyToAlignmentEntry(entry));
+        }
+
+        function renderAlignment(event) {
+            $("#utility_network_editor_alignment_status").text(describeAlignmentStatus(event));
+            $("#utility_network_editor_alignment_list").empty().append(event.entries.map(createAlignmentEntryRow));
+            updateAttribution();
+        }
+
+        function flyToAlignmentEntry(entry) {
+            const x = entry.transform.centerX + entry.transform.shiftX;
+            const y = entry.transform.centerY + entry.transform.shiftY;
+            flyToTarget([x, y, terrainHeightSampler?.heightAt(x, y) ?? mapPlane.height], flyToBuildingSizeMetres);
         }
 
         function collectVisibleDtmLayerIds() {
@@ -1425,7 +1706,8 @@
 
         function updateDrawingHint() {
             const activeDrawingType = drawingTypes.find((drawingType) => drawingType.drawingType === cadTool.drawingType);
-            const text = activeDrawingType?.hint ?? (isDrawingHelpShown ? drawingHelp : "");
+            const activeMoveHint = cadastreMoveTool.active ? moveHint : null;
+            const text = activeMoveHint ?? activeDrawingType?.hint ?? (isDrawingHelpShown ? drawingHelp : "");
             $("#utility_network_editor_hint").text(text).toggle(text !== "");
         }
 
@@ -1692,6 +1974,18 @@
             return `${formatNumber(measurement.length, 2)} m, převýšení ${formatSignedNumber(measurement.heightDifference, 2)} m${slopeText}`;
         }
 
+        function flyToTarget(target, size) {
+            const distance = Math.max(size * 1.5, flyToMinimumDistanceMetres);
+            const yaw = viewer.scene.view.yaw;
+            const pitch = Math.min(viewer.scene.view.pitch, flyToMaximumPitch);
+            const position = [
+                target[0] + Math.sin(yaw) * Math.cos(pitch) * distance,
+                target[1] - Math.cos(yaw) * Math.cos(pitch) * distance,
+                target[2] - Math.sin(pitch) * distance
+            ];
+            viewer.scene.view.setView(position, target, flyToDurationMilliseconds);
+        }
+
         function flyToFeature(feature) {
             const minimum = feature.points[0].clone();
             const maximum = feature.points[0].clone();
@@ -1700,15 +1994,7 @@
                 maximum.max(point);
             }
             const target = minimum.clone().add(maximum).multiplyScalar(0.5);
-            const distance = Math.max(minimum.distanceTo(maximum) * 1.5, flyToMinimumDistanceMetres);
-            const yaw = viewer.scene.view.yaw;
-            const pitch = Math.min(viewer.scene.view.pitch, flyToMaximumPitch);
-            const position = [
-                target.x + Math.sin(yaw) * Math.cos(pitch) * distance,
-                target.y - Math.cos(yaw) * Math.cos(pitch) * distance,
-                target.z - Math.sin(pitch) * distance
-            ];
-            viewer.scene.view.setView(position, target.toArray(), flyToDurationMilliseconds);
+            flyToTarget(target.toArray(), minimum.distanceTo(maximum));
         }
 
         function focusFeature(feature) {
@@ -1729,7 +2015,7 @@
         }
 
         function saveDrawing() {
-            const content = JSON.stringify(Potree.UtilityNetworkEditor.createCadFile(cadDocument), null, 2);
+            const content = JSON.stringify(Potree.UtilityNetworkEditor.createCadFile(cadDocument, alignmentExceptions), null, 2);
             const url = URL.createObjectURL(new Blob([content], { type: "application/json" }));
             $("<a></a>").attr({ href: url, download: createMeasurementFileName() })[0].click();
             setTimeout(() => URL.revokeObjectURL(url), 0);
@@ -1765,6 +2051,7 @@
                 return;
             }
             replaceDrawing(content);
+            alignmentExceptions.replace(content.cadastreAlignmentExceptions);
             showFileStatus(`Načteno měření: ${content.features.length}, vrstev: ${content.layers.length}.`);
         }
 
@@ -1801,6 +2088,7 @@
                 const content = cadAutosave.load();
                 if (content) {
                     replaceDrawing(content);
+                    alignmentExceptions.replace(content.cadastreAlignmentExceptions);
                     showFileStatus(`Obnoveno z prohlížeče: měření ${content.features.length}, vrstev ${content.layers.length}.`);
                 }
             } catch (error) {
@@ -1811,7 +2099,7 @@
         }
 
         function updateEditToolAvailability() {
-            cadEditTool.setEnabled(!cadTool.isDrawing && !dtmInfoTool.active);
+            cadEditTool.setEnabled(!cadTool.isDrawing && !dtmInfoTool.active && !cadastreMoveTool.active);
         }
 
         function formatDimension(dimension) {
@@ -1850,6 +2138,9 @@
         }
 
         function createEditorInterface() {
+            cadastreAlignment.setInterpolationEnabled(loadInterpolationEnabled());
+            cadastreAlignment.setReference(loadAlignmentReference());
+            cadastreAlignment.setDisplayMode(loadAlignmentDisplayMode());
             $("#potree_sidebar_container").append(createEditorPanel());
             $("#potree_render_area").append(
                 createToolbar(),
@@ -1866,6 +2157,7 @@
                 cadEditTool.addEventListener(eventType, scheduleFeatureViewRender);
             }
             scheduleFeatureViewRender();
+            cadastreAlignment.update();
         }
 
         infoPanel.find(".utility-info-close").on("click", closeInfoPanel);
@@ -1877,6 +2169,11 @@
         dtmInfoTool.addEventListener("query_failed", () => showInfoMessage("Dotaz na DTM se nezdařil."));
         cadTool.addEventListener("drawing_changed", updateEditToolAvailability);
         dtmInfoTool.addEventListener("activation_changed", updateEditToolAvailability);
+        cadastreMoveTool.addEventListener("activation_changed", () => {
+            updateEditToolAvailability();
+            updateDrawingHint();
+        });
+        cadastreMoveTool.addEventListener("step_changed", showMoveStep);
         cadEditTool.addEventListener("feature_changed", () => cadHistory.capture());
         cadEditTool.addEventListener("selection_changed", () => cadHistory.capture());
         document.addEventListener("keydown", onUndoShortcut);

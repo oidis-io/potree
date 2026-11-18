@@ -16,6 +16,8 @@ const FILE_VERSION = 1;
 const FILE_CRS = "EPSG:5514";
 const MAXIMUM_FILE_CHARACTERS = 20 * 1024 * 1024;
 const MAXIMUM_TEXT_LENGTH = 200;
+const MAXIMUM_MANUAL_SHIFT_METRES = 100;
+const TRANSFORM_KEYS = ["centerX", "centerY", "shiftX", "shiftY", "rotationDegrees"];
 const COLOR_PATTERN = /^#[0-9a-f]{6}$/i;
 
 export const CadFileErrorCode = Object.freeze({
@@ -67,14 +69,48 @@ function parseFeature(feature, layerIds) {
     };
 }
 
-export function createCadFile(cadDocument) {
+function isIdentifier(value) {
+    return (typeof value === "number" && Number.isFinite(value)) || (typeof value === "string" && value !== "" && value.length <= MAXIMUM_TEXT_LENGTH);
+}
+
+function parseAlignmentTransform(transform) {
+    if (transform === undefined || transform === null) {
+        return null;
+    }
+    requireValid(TRANSFORM_KEYS.every((key) => Number.isFinite(transform[key])));
+    requireValid(Math.hypot(transform.shiftX, transform.shiftY) <= MAXIMUM_MANUAL_SHIFT_METRES && Math.abs(transform.rotationDegrees) <= 360);
+    return Object.fromEntries(TRANSFORM_KEYS.map((key) => [key, transform[key]]));
+}
+
+function parseAlignmentException(exception) {
+    requireValid(exception && isIdentifier(exception.buildingIdentifier));
+    return {
+        buildingIdentifier: exception.buildingIdentifier,
+        label: typeof exception.label === "string" ? exception.label.slice(0, MAXIMUM_TEXT_LENGTH) : "",
+        transform: parseAlignmentTransform(exception.transform)
+    };
+}
+
+function parseAlignmentExceptions(exceptions) {
+    if (exceptions === undefined) {
+        return [];
+    }
+    requireValid(Array.isArray(exceptions));
+    const parsedExceptions = exceptions.map(parseAlignmentException);
+    const identifiers = parsedExceptions.map((exception) => String(exception.buildingIdentifier));
+    requireValid(new Set(identifiers).size === identifiers.length);
+    return parsedExceptions;
+}
+
+export function createCadFile(cadDocument, alignmentExceptions = null) {
     return {
         format: FILE_FORMAT,
         version: FILE_VERSION,
         crs: FILE_CRS,
         activeLayerId: cadDocument.activeLayerId,
         layers: cadDocument.layers.map((layer) => ({ id: layer.id, name: layer.name, visible: layer.visible })),
-        features: cadDocument.toData()
+        features: cadDocument.toData(),
+        cadastreAlignmentExceptions: alignmentExceptions ? alignmentExceptions.toData() : []
     };
 }
 
@@ -98,6 +134,7 @@ export function parseCadFile(text) {
     return {
         layers: layers,
         activeLayerId: layerIds.includes(file.activeLayerId) ? file.activeLayerId : layerIds[0],
-        features: file.features.map((feature) => parseFeature(feature, layerIds))
+        features: file.features.map((feature) => parseFeature(feature, layerIds)),
+        cadastreAlignmentExceptions: parseAlignmentExceptions(file.cadastreAlignmentExceptions)
     };
 }

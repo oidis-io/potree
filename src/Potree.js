@@ -64,6 +64,10 @@ import { SurfacePicker } from "./modules/UtilityNetworkEditor/SurfacePicker.js";
 import { TerrainHeightSampler } from "./modules/UtilityNetworkEditor/TerrainHeightSampler.js";
 import { CadastreLayer } from "./modules/UtilityNetworkEditor/CadastreService.js";
 import { CadastreOverlay } from "./modules/UtilityNetworkEditor/CadastreOverlay.js";
+import { CadastreAlignmentExceptions } from "./modules/UtilityNetworkEditor/CadastreAlignmentExceptions.js";
+import { AlignmentDisplayMode, AlignmentEntryState, AlignmentPhase, AlignmentReference, CadastreAlignment } from "./modules/UtilityNetworkEditor/CadastreAlignment.js";
+import { BuildingMatchStatus } from "./modules/UtilityNetworkEditor/BuildingMatcher.js";
+import { CadastreMoveMessage, CadastreMoveStep, CadastreMoveTool } from "./modules/UtilityNetworkEditor/CadastreMoveTool.js";
 import { CadSnapper } from "./modules/UtilityNetworkEditor/CadSnapper.js";
 import { CadFileErrorCode, createCadFile, parseCadFile } from "./modules/UtilityNetworkEditor/CadFileFormat.js";
 import { FeatureProfile } from "./modules/UtilityNetworkEditor/FeatureProfile.js";
@@ -129,6 +133,16 @@ const Potree = {
         TerrainHeightSampler,
         CadastreLayer,
         CadastreOverlay,
+        CadastreAlignmentExceptions,
+        CadastreAlignment,
+        AlignmentDisplayMode,
+        AlignmentEntryState,
+        AlignmentPhase,
+        AlignmentReference,
+        BuildingMatchStatus,
+        CadastreMoveTool,
+        CadastreMoveStep,
+        CadastreMoveMessage,
         CadSnapper,
         CadFileErrorCode,
         createCadFile,

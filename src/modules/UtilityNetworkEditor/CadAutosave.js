@@ -14,11 +14,12 @@ import { createCadFile, parseCadFile } from "./CadFileFormat.js";
 const SAVE_DELAY_MILLISECONDS = 300;
 
 export class CadAutosave extends EventDispatcher {
-    constructor(cadDocument, cadHistory, storageKey) {
+    constructor(cadDocument, cadHistory, storageKey, alignmentExceptions = null) {
         super();
         this.cadDocument = cadDocument;
         this.cadHistory = cadHistory;
         this.storageKey = storageKey;
+        this.alignmentExceptions = alignmentExceptions;
         this.saveTimeout = null;
         this.isStarted = false;
     }
@@ -35,6 +36,7 @@ export class CadAutosave extends EventDispatcher {
         this.isStarted = true;
         this.cadHistory.addEventListener("history_changed", () => this.scheduleSave());
         this.cadDocument.addEventListener("layers_changed", () => this.scheduleSave());
+        this.alignmentExceptions?.addEventListener("changed", () => this.scheduleSave());
         window.addEventListener("pagehide", () => this.flush());
     }
 
@@ -53,7 +55,7 @@ export class CadAutosave extends EventDispatcher {
         clearTimeout(this.saveTimeout);
         this.saveTimeout = null;
         try {
-            window.localStorage.setItem(this.storageKey, JSON.stringify(createCadFile(this.cadDocument)));
+            window.localStorage.setItem(this.storageKey, JSON.stringify(createCadFile(this.cadDocument, this.alignmentExceptions)));
             this.dispatchEvent({ type: "saved" });
         } catch (error) {
             this.dispatchEvent({ type: "save_failed", error: error });
