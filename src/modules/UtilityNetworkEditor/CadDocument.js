@@ -18,6 +18,22 @@ export class CadDocument extends EventDispatcher {
         this.layers = [];
         this.activeLayerId = null;
         this.layerCounter = 0;
+        this.isBulkUpdating = false;
+        this.isLayerRemovedWhenEmpty = () => false;
+    }
+
+    setEmptyLayerRemovalRule(rule) {
+        this.isLayerRemovedWhenEmpty = rule;
+    }
+
+    runBulkUpdate(action) {
+        const wasBulkUpdating = this.isBulkUpdating;
+        this.isBulkUpdating = true;
+        try {
+            return action();
+        } finally {
+            this.isBulkUpdating = wasBulkUpdating;
+        }
     }
 
     addLayer(name) {
@@ -30,11 +46,48 @@ export class CadDocument extends EventDispatcher {
         this.layers.push(layer);
         this.activeLayerId = layer.id;
         this.dispatchEvent({ type: "layers_changed" });
+        this.dispatchEvent({ type: "layer_added", layer: layer });
         return layer;
     }
 
     findLayer(layerId) {
         return this.layers.find((layer) => layer.id === layerId) ?? null;
+    }
+
+    countLayerFeatures(layerId) {
+        return this.features.filter((feature) => feature.layerId === layerId).length;
+    }
+
+    removeLayer(layerId) {
+        const layer = this.findLayer(layerId);
+        if (!layer || this.layers.length <= 1) {
+            return false;
+        }
+        this.runBulkUpdate(() => {
+            for (const feature of this.features.filter((candidate) => candidate.layerId === layerId)) {
+                this.removeFeature(feature);
+                feature.dispose();
+            }
+        });
+        this.detachLayer(layer);
+        return true;
+    }
+
+    removeLayerIfEmpty(layerId) {
+        const layer = this.findLayer(layerId);
+        if (this.isBulkUpdating || !layer || this.layers.length <= 1 || !this.isLayerRemovedWhenEmpty(layer) || this.countLayerFeatures(layerId) > 0) {
+            return;
+        }
+        this.detachLayer(layer);
+    }
+
+    detachLayer(layer) {
+        this.layers = this.layers.filter((candidate) => candidate !== layer);
+        if (this.activeLayerId === layer.id) {
+            this.activeLayerId = this.layers[0].id;
+        }
+        this.dispatchEvent({ type: "layers_changed" });
+        this.dispatchEvent({ type: "layer_removed", layer: layer });
     }
 
     setActiveLayer(layerId) {
@@ -69,9 +122,11 @@ export class CadDocument extends EventDispatcher {
         if (!this.findLayer(layerId) || feature.layerId === layerId) {
             return;
         }
+        const previousLayerId = feature.layerId;
         feature.layerId = layerId;
         this.setLayerVisible(layerId, true);
         feature.visible = true;
+        this.removeLayerIfEmpty(previousLayerId);
         this.dispatchEvent({ type: "feature_layer_changed", feature: feature });
     }
 
@@ -81,11 +136,33 @@ export class CadDocument extends EventDispatcher {
             return;
         }
         this.features.splice(index, 1);
+        this.removeLayerIfEmpty(feature.layerId);
         this.dispatchEvent({ type: "feature_removed", feature: feature });
     }
 
     toData() {
         return this.features.map((feature) => feature.toData());
+    }
+
+    toState() {
+        return { layers: this.layers.map((layer) => ({ id: layer.id, name: layer.name })), features: this.toData() };
+    }
+
+    restoreState(state) {
+        const previousLayers = this.layers;
+        const visibilityByLayer = new Map(previousLayers.map((layer) => [layer.id, layer.visible]));
+        this.layers = state.layers.map((layer) => ({ id: layer.id, name: layer.name, visible: visibilityByLayer.get(layer.id) ?? true }));
+        if (!this.findLayer(this.activeLayerId)) {
+            this.activeLayerId = this.layers[0]?.id ?? null;
+        }
+        this.loadData(state.features);
+        this.dispatchEvent({ type: "layers_changed" });
+        for (const layer of previousLayers.filter((previousLayer) => !this.findLayer(previousLayer.id))) {
+            this.dispatchEvent({ type: "layer_removed", layer: layer });
+        }
+        for (const layer of this.layers.filter((restoredLayer) => !visibilityByLayer.has(restoredLayer.id))) {
+            this.dispatchEvent({ type: "layer_added", layer: layer });
+        }
     }
 
     replaceContent(content) {
@@ -96,15 +173,17 @@ export class CadDocument extends EventDispatcher {
     }
 
     loadData(featureData) {
-        for (const feature of [...this.features]) {
-            this.removeFeature(feature);
-            feature.dispose();
-        }
-        for (const data of featureData) {
-            const feature = CadFeature.fromData(data);
-            feature.visible = this.findLayer(feature.layerId)?.visible !== false;
-            this.features.push(feature);
-            this.dispatchEvent({ type: "feature_added", feature: feature });
-        }
+        this.runBulkUpdate(() => {
+            for (const feature of [...this.features]) {
+                this.removeFeature(feature);
+                feature.dispose();
+            }
+            for (const data of featureData) {
+                const feature = CadFeature.fromData(data);
+                feature.visible = this.findLayer(feature.layerId)?.visible !== false;
+                this.features.push(feature);
+                this.dispatchEvent({ type: "feature_added", feature: feature });
+            }
+        });
     }
 }

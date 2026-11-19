@@ -18,12 +18,20 @@ export class MapPlane {
         this.viewer = viewer;
         this.raycaster = new THREE.Raycaster();
         this.renderSize = new THREE.Vector2();
+        this.groundHeight = null;
     }
 
     get height() {
+        if (this.groundHeight !== null) {
+            return this.groundHeight;
+        }
         const firstPointCloud = this.viewer.scene.pointclouds[0];
         const centerHeight = firstPointCloud?.boundingSphere?.center?.z;
         return Number.isFinite(centerHeight) ? centerHeight - MAP_PLANE_OFFSET : 0;
+    }
+
+    setGroundHeight(groundHeight) {
+        this.groundHeight = Number.isFinite(groundHeight) ? groundHeight : null;
     }
 
     getRenderSize() {

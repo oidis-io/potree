@@ -298,7 +298,7 @@
             background: rgba(57, 211, 83, 0.15);
             color: #39d353;
         }
-        .editor-details-badge + .editor-details-chevron {
+        .editor-details-badge:not(:empty) + .editor-details-chevron {
             margin-left: 0;
         }
         .editor-empty-state {
@@ -395,7 +395,7 @@
             flex-direction: column;
             gap: 6px;
         }
-        .editor-stack .editor-button {
+        .editor-stack .editor-button:not(.editor-icon-button) {
             justify-content: flex-start;
         }
         .editor-scroll-list {
@@ -604,6 +604,43 @@
             color: var(--editor-muted);
             font-size: 11px;
         }
+        .editor-dialog {
+            width: min(380px, calc(100vw - 32px));
+            padding: 16px;
+            border: 1px solid var(--editor-border-strong);
+            border-radius: 10px;
+            background: var(--editor-panel);
+            color: var(--editor-text);
+            font: 13px/1.45 var(--editor-font);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+        }
+        .editor-dialog::backdrop {
+            background: rgba(0, 0, 0, 0.5);
+        }
+        .editor-dialog-title {
+            margin-bottom: 6px;
+            font-size: 15px;
+            font-weight: 600;
+        }
+        .editor-dialog-message {
+            margin-bottom: 16px;
+            color: var(--editor-muted);
+            overflow-wrap: anywhere;
+        }
+        .editor-dialog-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+        .editor-danger-button {
+            border-color: var(--editor-danger);
+            background: var(--editor-danger);
+            color: var(--editor-panel);
+            font-weight: 600;
+        }
+        .editor-danger-button:hover:not(:disabled) {
+            background: #ff6161;
+        }
     </style>
 </head>
 
@@ -703,8 +740,11 @@
         const lastStoredPointCloudKey = `${storagePrefix}:last-stored-point-cloud`;
         const pointCloudDrawingKeyPrefix = `${storagePrefix}:point-cloud`;
         const hiddenDxfLayersKeyPrefix = `${storagePrefix}:dxf-hidden-layers`;
+        const convertedLayerNamePattern = /\.dxf\)$/i;
         cadView.setDimensionFormatter((dimension) => formatDimension(dimension));
+        cadDocument.setEmptyLayerRemovalRule((layer) => isConvertedLayerName(layer.name));
         cadDocument.addLayer("Vrstva 1");
+        cadHistory.reset();
 
         const maximumPointCount = 20000000;
         const pointCloudReadErrorCode = Potree.UtilityNetworkEditor.PointCloudReadErrorCode;
@@ -780,6 +820,7 @@
         let selectedBaseMapProvider = "orto";
         let isMapStarted = false;
         let pointCloudLoadController = null;
+        let openPointCloudStorageKey = null;
         let pointCloudAttributes = datasetPointCloudAttributes;
         let selectedColorMode = "rgba";
         let isRestoringDxfDocuments = false;
@@ -788,15 +829,17 @@
         const cadastreExtentMetres = 1500;
         const cadastreMarginShare = 0.25;
         const cadastreReloadDelayMilliseconds = 1000;
+        const cadastreLayerSource = Object.freeze({ CADASTRE: "cadastre", BASE_MAP: "base_map" });
         const cadastreLayers = [
-            { layerId: Potree.UtilityNetworkEditor.CadastreLayer.PARCELS, title: "Parcely", description: "Parcely (RÚIAN)" },
-            { layerId: Potree.UtilityNetworkEditor.CadastreLayer.BUILDINGS, title: "Budovy", description: "Budovy (RÚIAN)" },
+            { layerId: Potree.UtilityNetworkEditor.CadastreLayer.PARCELS, source: cadastreLayerSource.CADASTRE, title: "Parcely", description: "Parcely z katastru (RÚIAN)" },
+            { layerId: Potree.UtilityNetworkEditor.CadastreLayer.BUILDINGS, source: cadastreLayerSource.CADASTRE, title: "Budovy", description: "Budovy z katastru (RÚIAN)" },
             {
                 layerId: Potree.UtilityNetworkEditor.CadastreLayer.REFERENCE_BUILDINGS,
-                title: "Budovy z mapy",
+                source: cadastreLayerSource.BASE_MAP,
+                title: "Budovy",
                 description: "Budovy ze Základní mapy (ZABAGED), podle nich se zarovnává katastr"
             },
-            { layerId: Potree.UtilityNetworkEditor.CadastreLayer.ROADS, title: "Cesty", description: "Cesty (ZABAGED, orientační)" }
+            { layerId: Potree.UtilityNetworkEditor.CadastreLayer.ROADS, source: cadastreLayerSource.BASE_MAP, title: "Cesty", description: "Cesty ze Základní mapy (ZABAGED, orientační)" }
         ];
         const loadedCadastreExtents = new Map();
         const alignmentDisplayModes = [
@@ -1162,6 +1205,31 @@
             return button;
         }
 
+        function confirmAction(options) {
+            return new Promise((resolve) => {
+                const dialog = $("<dialog class=\"editor-dialog\"></dialog>");
+                const finish = (isConfirmed) => {
+                    dialog[0].close();
+                    dialog.remove();
+                    resolve(isConfirmed);
+                };
+                const cancelButton = createButton({ icon: "x", title: "Zrušit", text: "Zrušit", onClick: () => finish(false) });
+                const confirmButton = createButton({ icon: options.icon, title: options.confirmText, text: options.confirmText, onClick: () => finish(true) })
+                    .addClass(options.isDestructive ? "editor-danger-button" : "editor-primary-button");
+                dialog.append(
+                    $("<div class=\"editor-dialog-title\"></div>").text(options.title),
+                    $("<div class=\"editor-dialog-message\"></div>").text(options.message),
+                    $("<div class=\"editor-dialog-buttons\"></div>").append(cancelButton, confirmButton)
+                ).on("cancel", (event) => {
+                    event.preventDefault();
+                    finish(false);
+                });
+                $("body").append(dialog);
+                dialog[0].showModal();
+                confirmButton.trigger("focus");
+            });
+        }
+
         function createToggleButton(options) {
             const button = createButton({
                 ...options,
@@ -1321,6 +1389,7 @@
             replacePointCloud(result.pointCloud, result);
             $("#utility_network_editor_point_cloud_name").text(result.fileName);
             showPointCloudStatus(describeLoadedPointCloud(result));
+            openPointCloudStorageKey = result.storageKey;
             rememberStoredPointCloud(result.storageKey);
             if (result.isStored && !result.isFromStorage) {
                 Potree.UtilityNetworkEditor.PointCloudStore.requestPersistence().catch(() => false);
@@ -1449,7 +1518,7 @@
         }
 
         function switchDrawingToPointCloud(drawingKey) {
-            if (datasetName || cadAutosave.storageKey === drawingKey) {
+            if (cadAutosave.storageKey === drawingKey) {
                 return;
             }
             cadAutosave.setStorageKey(drawingKey);
@@ -1479,14 +1548,42 @@
         }
 
         async function removeStoredPointCloud(entry) {
-            if (!window.confirm(`Smazat mračno ${entry.fileName} z úložiště prohlížeče? Původní soubor ani měření se nesmažou.`)) {
+            const isConfirmed = await confirmAction({
+                title: "Smazat mračno z prohlížeče?",
+                message: `${entry.fileName} se smaže z úložiště prohlížeče. Původní soubor ani měření se nesmažou.`,
+                confirmText: "Smazat",
+                icon: "trash",
+                isDestructive: true
+            });
+            if (!isConfirmed) {
                 return;
             }
             await pointCloudStore.remove(entry.storageKey).catch(() => null);
             if (readLastStoredPointCloud() === entry.storageKey) {
                 rememberStoredPointCloud(null);
             }
+            if (openPointCloudStorageKey === entry.storageKey) {
+                closePointCloud();
+                showFileStatus(`Mračno ${entry.fileName} je zavřené. Jeho měření a výkresy zůstaly uložené.`);
+            }
             renderStoredPointClouds();
+        }
+
+        function closePointCloud() {
+            for (const pointCloud of [...viewer.scene.pointclouds]) {
+                removePointCloud(pointCloud);
+                disposePointCloud(pointCloud);
+            }
+            openPointCloudStorageKey = null;
+            pointCloudAttributes = datasetPointCloudAttributes;
+            updateColorModeControl();
+            buildingExtrusionLayer.setPointCloud(null);
+            $("#utility_network_editor_point_cloud_name").text("");
+            $("#utility_network_editor_terrain_status").text("");
+            showPointCloudStatus("");
+            updatePointCloudControls(false);
+            $("#utility_network_editor_scene_prompt").hide();
+            switchDrawingToPointCloud(autosaveKey);
         }
 
         function createStoredPointCloudRow(entry) {
@@ -1652,6 +1749,7 @@
                 identifier: `utility_network_editor_cadastre_${cadastreLayer.layerId}`,
                 text: cadastreLayer.title,
                 description: cadastreLayer.description,
+                color: cadastreOverlay.getLayerColor(cadastreLayer.layerId),
                 checked: false,
                 onChange: (checked) => onCadastreLayerToggled(cadastreLayer.layerId, checked)
             });
@@ -1661,6 +1759,10 @@
             cadastreOverlay.addEventListener("layer_loaded", (event) => isThisLayer(event) && status.text(event.isTruncated ? `${event.lineCount}+` : String(event.lineCount)));
             cadastreOverlay.addEventListener("layer_failed", (event) => isThisLayer(event) && status.text("chyba"));
             return chip.append(status);
+        }
+
+        function createCadastreChips(source) {
+            return $("<div class=\"editor-chips\"></div>").append(cadastreLayers.filter((cadastreLayer) => cadastreLayer.source === source).map(createCadastreChip));
         }
 
         function reloadVisibleCadastreLayers() {
@@ -1882,7 +1984,14 @@
         }
 
         async function removeDxfDocument(documentEntry) {
-            if (!window.confirm(`Odebrat výkres ${documentEntry.fileName}? Prvky převzaté do kresby zůstanou.`)) {
+            const isConfirmed = await confirmAction({
+                title: "Odebrat výkres?",
+                message: `${documentEntry.fileName} se odebere. Prvky převzaté do kresby zůstanou.`,
+                confirmText: "Odebrat",
+                icon: "trash",
+                isDestructive: true
+            });
+            if (!isConfirmed) {
                 return;
             }
             dxfOverlay.removeDocument(documentEntry.id);
@@ -1896,18 +2005,22 @@
             return `${layerName} (${fileName})`;
         }
 
-        function showConvertedDxfLayers() {
-            const drawingLayerNames = new Set(cadDocument.layers.map((layer) => layer.name));
-            let shownLayerCount = 0;
+        function isConvertedLayerName(layerName) {
+            return convertedLayerNamePattern.test(layerName);
+        }
+
+        function setDxfLayersConvertedIntoVisible(layerNames, visible) {
+            const drawingLayerNames = new Set(layerNames);
+            let changedLayerCount = 0;
             for (const documentEntry of dxfOverlay.listDocuments()) {
                 for (const layer of documentEntry.layers) {
-                    if (!layer.visible && drawingLayerNames.has(createConvertedLayerName(layer.name, documentEntry.fileName))) {
-                        dxfOverlay.setLayerVisible(documentEntry.id, layer.name, true);
-                        shownLayerCount++;
+                    if (layer.visible !== visible && drawingLayerNames.has(createConvertedLayerName(layer.name, documentEntry.fileName))) {
+                        dxfOverlay.setLayerVisible(documentEntry.id, layer.name, visible);
+                        changedLayerCount++;
                     }
                 }
             }
-            return shownLayerCount;
+            return changedLayerCount;
         }
 
         function convertDxfLayer(documentEntry, layerName) {
@@ -1921,18 +2034,27 @@
                 showDxfStatus(`Vrstva „${layerName}“ je na převzetí moc velká (${formatNumber(segmentCount, 0)} úseků, nejvýš ${formatNumber(maximumConvertedSegmentCount, 0)}).`);
                 return;
             }
+            const convertedLayerName = createConvertedLayerName(layerName, documentEntry.fileName);
+            const existingLayer = cadDocument.layers.find((layer) => layer.name === convertedLayerName) ?? null;
+            if (existingLayer && cadDocument.countLayerFeatures(existingLayer.id) > 0) {
+                showDxfStatus(`Vrstva „${layerName}“ už je převzatá v kresbě, ve vrstvě „${convertedLayerName}“.`);
+                return;
+            }
             const activeLayerId = cadDocument.activeLayerId;
-            const layer = cadDocument.addLayer(createConvertedLayerName(layerName, documentEntry.fileName));
             const isFlat = dxfOverlay.findDocument(documentEntry.id).document.isFlat;
             const resolveHeight = (point) => (isFlat ? dxfOverlay.getTerrainHeight(point.x, point.y) : point.z);
-            const featureData = Potree.UtilityNetworkEditor.convertDxfPrimitivesToFeatureData(primitives, layer.id, resolveHeight);
-            for (const data of featureData) {
-                cadDocument.addFeature(Potree.UtilityNetworkEditor.CadFeature.fromData(data));
-            }
-            cadDocument.setActiveLayer(activeLayerId);
+            const featureCount = cadDocument.runBulkUpdate(() => {
+                const layer = existingLayer ?? cadDocument.addLayer(convertedLayerName);
+                const featureData = Potree.UtilityNetworkEditor.convertDxfPrimitivesToFeatureData(primitives, layer.id, resolveHeight);
+                for (const data of featureData) {
+                    cadDocument.addFeature(Potree.UtilityNetworkEditor.CadFeature.fromData(data));
+                }
+                cadDocument.setActiveLayer(activeLayerId);
+                return featureData.length;
+            });
             cadHistory.capture();
             dxfOverlay.setLayerVisible(documentEntry.id, layerName, false);
-            showDxfStatus(`Převzato do kresby: ${featureData.length} prvků ve vrstvě „${layer.name}“. Značky a šrafy zůstaly v podkladu.`);
+            showDxfStatus(`Převzato do kresby: ${featureCount} prvků ve vrstvě „${convertedLayerName}“. Značky a šrafy zůstaly v podkladu.`);
         }
 
         function createDxfLayerRow(documentEntry, layer) {
@@ -1991,7 +2113,7 @@
         function createSourcesTab() {
             const reloadCadastreButton = createButton({
                 icon: "refresh",
-                title: "Načíst katastr pro aktuální pohled",
+                title: "Načíst katastr a Základní mapu pro aktuální pohled",
                 identifier: "utility_network_editor_reload_cadastre",
                 onClick: reloadVisibleCadastreLayers
             });
@@ -2002,11 +2124,15 @@
                 createPointCloudFileInput(),
                 createPointCloudStatusRow(),
                 createNote("", "utility_network_editor_terrain_status"),
+                ...createStoredPointCloudsSection(),
                 createLabel("Mapa"),
                 createSegmentedControl("utility_network_editor_base_map", baseMaps, 0, (baseMap) => setBaseMap(baseMap.provider)),
                 createLabel("Katastr", [reloadCadastreButton]),
-                $("<div class=\"editor-chips\"></div>").append(cadastreLayers.map(createCadastreChip)),
-                createNote("Načítá se pro okolí aktuálního pohledu, slouží i k přichytávání."),
+                createCadastreChips(cadastreLayerSource.CADASTRE),
+                createLabel("Základní mapa"),
+                createCadastreChips(cadastreLayerSource.BASE_MAP),
+                createNote("Budovy ze Základní mapy jsou z leteckých snímků a polohou přesnější, podle nich se katastr zarovnává."),
+                createNote("Obojí se načítá pro okolí aktuálního pohledu a slouží i k přichytávání."),
                 ...createBuildingsSection(),
                 createDisplaySettings()
             ];
@@ -2344,7 +2470,7 @@
         }
 
         function createLayerRow(layer) {
-            const featureCount = cadDocument.features.filter((feature) => feature.layerId === layer.id).length;
+            const featureCount = cadDocument.countLayerFeatures(layer.id);
             const activeRadio = $("<input type=\"radio\" name=\"utility_network_editor_active_layer\" title=\"Kreslit do této vrstvy\">")
                 .prop("checked", layer.id === cadDocument.activeLayerId)
                 .on("change", () => cadDocument.setActiveLayer(layer.id));
@@ -2353,12 +2479,38 @@
                 title: layer.visible ? "Skrýt vrstvu" : "Zobrazit vrstvu",
                 onClick: () => cadDocument.setLayerVisible(layer.id, !layer.visible)
             });
+            const deleteButton = createButton({ icon: "trash", title: "Smazat vrstvu", onClick: () => deleteLayer(layer) })
+                .prop("disabled", cadDocument.layers.length <= 1);
             return $("<div class=\"editor-list-row\"></div>").append(
                 activeRadio,
                 $("<span class=\"editor-list-title\"></span>").text(layer.name),
                 $("<span class=\"editor-list-value\"></span>").text(String(featureCount)),
-                visibilityButton
+                visibilityButton,
+                deleteButton
             );
+        }
+
+        function createNewLayerName() {
+            const layerNames = new Set(cadDocument.layers.map((layer) => layer.name));
+            let layerNumber = 1;
+            while (layerNames.has(`Vrstva ${layerNumber}`)) {
+                layerNumber++;
+            }
+            return `Vrstva ${layerNumber}`;
+        }
+
+        async function deleteLayer(layer) {
+            const featureCount = cadDocument.countLayerFeatures(layer.id);
+            const isConfirmed = featureCount === 0 || await confirmAction({
+                title: "Smazat vrstvu?",
+                message: `Smaže se vrstva „${layer.name}“ i s jejími měřeními (${featureCount}).`,
+                confirmText: "Smazat",
+                icon: "trash",
+                isDestructive: true
+            });
+            if (isConfirmed) {
+                cadDocument.removeLayer(layer.id);
+            }
         }
 
         function createFeatureRow(feature) {
@@ -2394,7 +2546,7 @@
                 icon: "plus",
                 title: "Přidat vrstvu",
                 identifier: "utility_network_editor_add_layer",
-                onClick: () => cadDocument.addLayer(`Vrstva ${cadDocument.layers.length + 1}`)
+                onClick: () => cadDocument.addLayer(createNewLayerName())
             });
             return [createLabel("Vrstvy", [addLayerButton]), layerList, createLabel("Nakreslené prvky"), featureList];
         }
@@ -2433,7 +2585,12 @@
             return [
                 createLabel("Měření"),
                 buttons,
-                createNote("Měření se průběžně ukládají v tomto prohlížeči, ke každému mračnu zvlášť. Soubor JSON je v souřadnicích S-JTSK.", "utility_network_editor_file_status"),
+                createNote("Měření se průběžně ukládají v tomto prohlížeči, ke každému mračnu zvlášť. Soubor JSON je v souřadnicích S-JTSK.", "utility_network_editor_file_status")
+            ];
+        }
+
+        function createStoredPointCloudsSection() {
+            return [
                 createLabel("Mračna v prohlížeči"),
                 $("<div id=\"utility_network_editor_stored_point_clouds\"></div>"),
                 createNote("", "utility_network_editor_storage_usage")
@@ -2810,7 +2967,13 @@
                 showFileStatus(drawingFileErrorMessages[Potree.UtilityNetworkEditor.CadFileErrorCode.TOO_LARGE]);
                 return;
             }
-            if (cadDocument.features.length > 0 && !window.confirm("Načtení nahradí současná měření. Pokračovat?")) {
+            const isReplacementConfirmed = cadDocument.features.length === 0 || await confirmAction({
+                title: "Nahradit měření?",
+                message: "Načtení souboru nahradí současná měření.",
+                confirmText: "Načíst",
+                icon: "upload"
+            });
+            if (!isReplacementConfirmed) {
                 return;
             }
             let content;
@@ -2828,11 +2991,18 @@
             return { layers: [{ id: "layer-1", name: "Vrstva 1", visible: true }], activeLayerId: "layer-1", features: [] };
         }
 
-        function startNewDrawing() {
-            if (cadDocument.features.length > 0 && !window.confirm("Smažou se všechna měření i vrstvy. Pokračovat?")) {
+        async function startNewDrawing() {
+            const isConfirmed = cadDocument.features.length === 0 || await confirmAction({
+                title: "Smazat všechna měření?",
+                message: "Smažou se všechna měření i vrstvy.",
+                confirmText: "Smazat vše",
+                icon: "trash",
+                isDestructive: true
+            });
+            if (!isConfirmed) {
                 return;
             }
-            const shownLayerCount = showConvertedDxfLayers();
+            const shownLayerCount = setDxfLayersConvertedIntoVisible(cadDocument.layers.map((layer) => layer.name), true);
             replaceDrawing(createEmptyDrawingContent());
             showFileStatus(shownLayerCount > 0 ? "Všechna měření jsou smazaná. Převzaté vrstvy výkresů DXF jsou zase vidět." : "Všechna měření jsou smazaná.");
         }
@@ -2882,20 +3052,30 @@
         }
 
         function startTerrainHeightSampler(pointCloud) {
-            terrainHeightSampler = new Potree.UtilityNetworkEditor.TerrainHeightSampler(pointCloud);
+            const sampler = new Potree.UtilityNetworkEditor.TerrainHeightSampler(pointCloud);
+            terrainHeightSampler = sampler;
+            setMapGroundHeight(null);
             const terrainStatus = $("#utility_network_editor_terrain_status");
-            dtmOverlay.setTerrainHeightSampler(terrainHeightSampler);
-            cadastreOverlay.setTerrainHeightSampler(terrainHeightSampler);
-            cadEditTool.setTerrainHeightSampler(terrainHeightSampler);
-            buildingExtrusionLayer.setTerrainHeightSampler(terrainHeightSampler);
-            dxfOverlay.setTerrainHeightSampler(terrainHeightSampler);
-            terrainHeightSampler.addEventListener("ready", () => {
+            dtmOverlay.setTerrainHeightSampler(sampler);
+            cadastreOverlay.setTerrainHeightSampler(sampler);
+            cadEditTool.setTerrainHeightSampler(sampler);
+            buildingExtrusionLayer.setTerrainHeightSampler(sampler);
+            dxfOverlay.setTerrainHeightSampler(sampler);
+            sampler.addEventListener("ready", () => {
+                if (sampler === terrainHeightSampler) {
+                    setMapGroundHeight(sampler.fallbackHeight);
+                }
                 terrainStatus.text("Výška terénu z mračna: hotovo.");
                 scheduleFeatureViewRender();
             });
-            terrainHeightSampler.addEventListener("failed", () => terrainStatus.text("Výšku terénu se nepodařilo spočítat."));
+            sampler.addEventListener("failed", () => terrainStatus.text("Výšku terénu se nepodařilo spočítat."));
             terrainStatus.text("Výška terénu z mračna: počítám…");
-            terrainHeightSampler.start();
+            sampler.start();
+        }
+
+        function setMapGroundHeight(groundHeight) {
+            mapPlane.setGroundHeight(groundHeight);
+            viewer.cesiumRender?.setGroundHeight(groundHeight);
         }
 
         function translateProfileWindow() {
@@ -2947,6 +3127,8 @@
         });
         cadastreAlignment.addEventListener("changed", updateExtrudedBuildings);
         dxfOverlay.addEventListener("documents_changed", storeHiddenDxfLayers);
+        cadDocument.addEventListener("layer_removed", (event) => setDxfLayersConvertedIntoVisible([event.layer.name], true));
+        cadDocument.addEventListener("layer_added", (event) => setDxfLayersConvertedIntoVisible([event.layer.name], false));
         cadastreOverlay.addEventListener("layer_loaded", (event) => {
             if (event.layerId === Potree.UtilityNetworkEditor.CadastreLayer.BUILDINGS) {
                 updateExtrudedBuildings();

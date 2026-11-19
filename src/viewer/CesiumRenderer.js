@@ -34,6 +34,7 @@ export class CesiumRenderer {
 
         this._geoidOffset = 0;
         this._geoidOffsetDirty = false;
+        this._groundHeight = null;
         this._belowSurface = false;
         this._sceneListenersInstalled = false;
         this._renderErrorLog = { suppressed: 0, lastAt: 0, intervalMs: 5000 };
@@ -314,7 +315,17 @@ export class CesiumRenderer {
         this._sceneListenersInstalled = true;
     }
 
+    setGroundHeight(groundHeight) {
+        this._groundHeight = Number.isFinite(groundHeight) ? groundHeight : null;
+        this._refreshGeoidOffset();
+    }
+
     _refreshGeoidOffset() {
+        if (this._groundHeight !== null) {
+            this._geoidOffset = -this._groundHeight;
+            this._geoidOffsetDirty = false;
+            return;
+        }
         const firstCloud = this.viewer.scene.pointclouds[0];
         if (!firstCloud) {
             this._geoidOffset = 0;

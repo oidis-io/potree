@@ -30,7 +30,7 @@ const LAYER_STYLES = Object.freeze({
     [CadastreLayer.PARCELS]: { color: 0xffd400, lineWidth: 1.5, isSnappable: true },
     [CadastreLayer.BUILDINGS]: { color: 0xff7a1a, lineWidth: 2, isSnappable: true },
     [CadastreLayer.REFERENCE_BUILDINGS]: { color: 0x3b82f6, lineWidth: 2, isSnappable: true },
-    [CadastreLayer.ROADS]: { color: 0x5ec8ff, lineWidth: 2.5, isSnappable: true },
+    [CadastreLayer.ROADS]: { color: 0xc8ccd2, lineWidth: 2.5, isSnappable: true },
     [CadastreOverlayLayer.ALIGNED_BUILDINGS]: { color: 0x39d353, lineWidth: 2.5, isSnappable: true },
     [CadastreOverlayLayer.ESTIMATED_BUILDINGS]: { color: 0x22d3ee, lineWidth: 2.5, isSnappable: true },
     [CadastreOverlayLayer.MANUAL_BUILDINGS]: { color: 0xc084fc, lineWidth: 2.5, isSnappable: true },
@@ -68,6 +68,11 @@ export class CadastreOverlay extends EventDispatcher {
                 this.drapeLayer(layerId);
             }
         });
+    }
+
+    getLayerColor(layerId) {
+        const style = LAYER_STYLES[layerId];
+        return style ? `#${style.color.toString(16).padStart(6, "0")}` : null;
     }
 
     getOrCreateLayer(layerId) {

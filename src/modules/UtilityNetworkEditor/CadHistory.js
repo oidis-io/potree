@@ -19,9 +19,9 @@ export class CadHistory extends EventDispatcher {
         this.alignmentExceptions = alignmentExceptions;
         this.isRestoring = false;
         this.snapshots = [this.createSnapshot()];
-        cadDocument.addEventListener("feature_added", () => this.capture());
-        cadDocument.addEventListener("feature_removed", () => this.capture());
-        cadDocument.addEventListener("feature_layer_changed", () => this.capture());
+        for (const eventType of ["feature_added", "feature_removed", "feature_layer_changed", "layer_added", "layer_removed"]) {
+            cadDocument.addEventListener(eventType, () => this.capture());
+        }
         alignmentExceptions?.addEventListener("changed", () => this.capture());
     }
 
@@ -36,13 +36,13 @@ export class CadHistory extends EventDispatcher {
 
     createSnapshot() {
         return {
-            drawing: JSON.stringify(this.cadDocument.toData()),
+            drawing: JSON.stringify(this.cadDocument.toState()),
             alignmentExceptions: JSON.stringify(this.alignmentExceptions?.toData() ?? [])
         };
     }
 
     capture() {
-        if (this.isRestoring) {
+        if (this.isRestoring || this.cadDocument.isBulkUpdating) {
             return;
         }
         const snapshot = this.createSnapshot();
@@ -67,7 +67,7 @@ export class CadHistory extends EventDispatcher {
         this.isRestoring = true;
         try {
             if (snapshot.drawing !== undoneSnapshot.drawing) {
-                this.cadDocument.loadData(JSON.parse(snapshot.drawing));
+                this.cadDocument.restoreState(JSON.parse(snapshot.drawing));
             }
             if (this.alignmentExceptions && snapshot.alignmentExceptions !== undoneSnapshot.alignmentExceptions) {
                 this.alignmentExceptions.replace(JSON.parse(snapshot.alignmentExceptions));
