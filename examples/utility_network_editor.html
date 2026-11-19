@@ -513,7 +513,7 @@
         }
         .editor-field {
             display: grid;
-            grid-template-columns: 64px 1fr;
+            grid-template-columns: 64px minmax(0, 1fr);
             align-items: center;
             gap: 8px;
         }
@@ -522,6 +522,9 @@
         }
         .editor-field input[type=text],
         .editor-field select {
+            box-sizing: border-box;
+            width: 100%;
+            min-width: 0;
             height: 28px;
             padding: 0 8px;
             border: 1px solid var(--editor-border);
@@ -740,7 +743,7 @@
         const lastStoredPointCloudKey = `${storagePrefix}:last-stored-point-cloud`;
         const pointCloudDrawingKeyPrefix = `${storagePrefix}:point-cloud`;
         const hiddenDxfLayersKeyPrefix = `${storagePrefix}:dxf-hidden-layers`;
-        const convertedLayerNamePattern = /\.dxf\)$/i;
+        const convertedLayerSuffixPattern = / \((?:[^()]|\([^()]*\))*\.dxf\)$/i;
         cadView.setDimensionFormatter((dimension) => formatDimension(dimension));
         cadDocument.setEmptyLayerRemovalRule((layer) => isConvertedLayerName(layer.name));
         cadDocument.addLayer("Vrstva 1");
@@ -2001,12 +2004,22 @@
             showDxfStatus(`Výkres ${documentEntry.fileName} je odebraný.`);
         }
 
-        function createConvertedLayerName(layerName, fileName) {
-            return `${layerName} (${fileName})`;
+        function removeConvertedLayerSuffixes(layerName) {
+            let baseName = layerName;
+            while (convertedLayerSuffixPattern.test(baseName)) {
+                baseName = baseName.replace(convertedLayerSuffixPattern, "");
+            }
+            return baseName;
+        }
+
+        function createConvertedLayerName(documentEntry, layerName) {
+            const baseName = removeConvertedLayerSuffixes(layerName);
+            const isBaseNameShared = documentEntry.layers.some((layer) => layer.name !== layerName && removeConvertedLayerSuffixes(layer.name) === baseName);
+            return `${isBaseNameShared ? layerName : baseName} (${documentEntry.fileName})`;
         }
 
         function isConvertedLayerName(layerName) {
-            return convertedLayerNamePattern.test(layerName);
+            return convertedLayerSuffixPattern.test(layerName);
         }
 
         function setDxfLayersConvertedIntoVisible(layerNames, visible) {
@@ -2014,7 +2027,7 @@
             let changedLayerCount = 0;
             for (const documentEntry of dxfOverlay.listDocuments()) {
                 for (const layer of documentEntry.layers) {
-                    if (layer.visible !== visible && drawingLayerNames.has(createConvertedLayerName(layer.name, documentEntry.fileName))) {
+                    if (layer.visible !== visible && drawingLayerNames.has(createConvertedLayerName(documentEntry, layer.name))) {
                         dxfOverlay.setLayerVisible(documentEntry.id, layer.name, visible);
                         changedLayerCount++;
                     }
@@ -2034,7 +2047,7 @@
                 showDxfStatus(`Vrstva „${layerName}“ je na převzetí moc velká (${formatNumber(segmentCount, 0)} úseků, nejvýš ${formatNumber(maximumConvertedSegmentCount, 0)}).`);
                 return;
             }
-            const convertedLayerName = createConvertedLayerName(layerName, documentEntry.fileName);
+            const convertedLayerName = createConvertedLayerName(documentEntry, layerName);
             const existingLayer = cadDocument.layers.find((layer) => layer.name === convertedLayerName) ?? null;
             if (existingLayer && cadDocument.countLayerFeatures(existingLayer.id) > 0) {
                 showDxfStatus(`Vrstva „${layerName}“ už je převzatá v kresbě, ve vrstvě „${convertedLayerName}“.`);
@@ -2046,11 +2059,12 @@
             const featureCount = cadDocument.runBulkUpdate(() => {
                 const layer = existingLayer ?? cadDocument.addLayer(convertedLayerName);
                 const featureData = Potree.UtilityNetworkEditor.convertDxfPrimitivesToFeatureData(primitives, layer.id, resolveHeight);
-                for (const data of featureData) {
-                    cadDocument.addFeature(Potree.UtilityNetworkEditor.CadFeature.fromData(data));
+                const features = Potree.UtilityNetworkEditor.attachLabelTexts(featureData.map((data) => Potree.UtilityNetworkEditor.CadFeature.fromData(data)));
+                for (const feature of features) {
+                    cadDocument.addFeature(feature);
                 }
                 cadDocument.setActiveLayer(activeLayerId);
-                return featureData.length;
+                return features.length;
             });
             cadHistory.capture();
             dxfOverlay.setLayerVisible(documentEntry.id, layerName, false);

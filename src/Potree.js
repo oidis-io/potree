@@ -85,7 +85,7 @@ import { BuildingInfoTool } from "./modules/UtilityNetworkEditor/BuildingInfoToo
 import { DxfReadErrorCode, readDxfFile } from "./modules/UtilityNetworkEditor/DxfReader.js";
 import { createDxfDocument, DxfPrimitiveKind } from "./modules/UtilityNetworkEditor/DxfGeometry.js";
 import { DxfOverlay } from "./modules/UtilityNetworkEditor/DxfOverlay.js";
-import { convertDxfPrimitivesToFeatureData, countConvertibleSegments } from "./modules/UtilityNetworkEditor/DxfFeatureConverter.js";
+import { attachLabelTexts, convertDxfPrimitivesToFeatureData, countConvertibleSegments } from "./modules/UtilityNetworkEditor/DxfFeatureConverter.js";
 import { createDxfFile } from "./modules/UtilityNetworkEditor/CadDxfExporter.js";
 import { AttachmentStore } from "./modules/UtilityNetworkEditor/AttachmentStore.js";
 import { ViewChangeDetector } from "./modules/UtilityNetworkEditor/ViewChangeDetector.js";
@@ -178,6 +178,7 @@ const Potree = {
         DxfPrimitiveKind,
         DxfOverlay,
         convertDxfPrimitivesToFeatureData,
+        attachLabelTexts,
         countConvertibleSegments,
         createDxfFile,
         AttachmentStore,

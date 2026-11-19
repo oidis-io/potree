@@ -13,6 +13,7 @@ import { DxfPrimitiveKind } from "./DxfGeometry.js";
 
 const MAXIMUM_LABEL_LENGTH = 80;
 const DUPLICATE_POINT_TOLERANCE_METRES = 0.001;
+const LABEL_ANCHOR_TOLERANCE_METRES = 0.01;
 
 function toHexColor(color) {
     return `#${color.toString(16).padStart(6, "0")}`;
@@ -69,4 +70,36 @@ export function convertDxfPrimitivesToFeatureData(primitives, layerId, resolveHe
         .filter((primitive) => !primitive.isSymbol)
         .map((primitive) => convertPrimitive(primitive, toCoordinates, layerId))
         .filter(Boolean);
+}
+
+function isLabelText(feature) {
+    return feature.featureType === CadFeatureType.POINT && feature.label !== "";
+}
+
+function isSamePlanPosition(first, second) {
+    return Math.hypot(first.x - second.x, first.y - second.y) <= LABEL_ANCHOR_TOLERANCE_METRES;
+}
+
+function findLabelOwner(candidates, textPosition, textIndex) {
+    const matchingCandidates = candidates.filter((candidate) => candidate.feature.label === "" && isSamePlanPosition(candidate.labelAnchor, textPosition));
+    const precedingCandidates = matchingCandidates.filter((candidate) => candidate.index < textIndex);
+    return precedingCandidates[precedingCandidates.length - 1] ?? matchingCandidates[0] ?? null;
+}
+
+export function attachLabelTexts(features) {
+    const candidates = features
+        .map((feature, index) => ({ feature: feature, index: index }))
+        .filter((candidate) => candidate.feature.label === "")
+        .map((candidate) => ({ ...candidate, labelAnchor: candidate.feature.computeLabelAnchor() }));
+    const remainingFeatures = [];
+    features.forEach((feature, index) => {
+        const owner = isLabelText(feature) ? findLabelOwner(candidates, feature.points[0], index) : null;
+        if (owner) {
+            owner.feature.setLabel(feature.label);
+            feature.dispose();
+        } else {
+            remainingFeatures.push(feature);
+        }
+    });
+    return remainingFeatures;
 }
