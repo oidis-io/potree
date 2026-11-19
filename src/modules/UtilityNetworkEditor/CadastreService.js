@@ -18,9 +18,17 @@ export const CadastreLayer = Object.freeze({
     ROADS: "roads"
 });
 
+const BUILDING_ATTRIBUTE_FIELDS = Object.freeze({
+    floorCount: "pocetpodlazi",
+    usageCode: "zpusobvyuzitikod",
+    gasConnectionCode: "pripojeniplynkod",
+    waterConnectionCode: "pripojenivodovodkod",
+    sewerConnectionCode: "pripojenikanalizacekod"
+});
+
 const LAYER_SOURCES = Object.freeze({
     [CadastreLayer.PARCELS]: [{ url: `${RUIAN_SERVICE_URL}/5` }],
-    [CadastreLayer.BUILDINGS]: [{ url: `${RUIAN_SERVICE_URL}/3`, identifierField: "kod", labelField: "cisladomovni" }],
+    [CadastreLayer.BUILDINGS]: [{ url: `${RUIAN_SERVICE_URL}/3`, identifierField: "kod", labelField: "cisladomovni", attributeFields: BUILDING_ATTRIBUTE_FIELDS }],
     [CadastreLayer.REFERENCE_BUILDINGS]: [{ url: `${ZABAGED_SERVICE_URL}/99`, identifierField: "fid_zbg" }],
     [CadastreLayer.ROADS]: [{ url: `${ZABAGED_SERVICE_URL}/79` }, { url: `${ZABAGED_SERVICE_URL}/83` }, { url: `${ZABAGED_SERVICE_URL}/84` }]
 });
@@ -31,7 +39,7 @@ function createQueryUrl(source, extent) {
         "geometryType": "esriGeometryEnvelope",
         "inSR": "5514",
         "spatialRel": "esriSpatialRelIntersects",
-        "outFields": [source.identifierField, source.labelField].filter(Boolean).join(","),
+        "outFields": [source.identifierField, source.labelField, ...Object.values(source.attributeFields ?? {})].filter(Boolean).join(","),
         "returnGeometry": "true",
         "outSR": "5514",
         "f": "geojson"
@@ -64,11 +72,16 @@ function extractOuterRings(geometry) {
     }
 }
 
+function readAttributes(properties, attributeFields) {
+    return Object.fromEntries(Object.entries(attributeFields ?? {}).map(([name, field]) => [name, properties[field] ?? null]));
+}
+
 function readFeature(feature, source) {
     const properties = feature.properties ?? {};
     return {
         identifier: source.identifierField ? properties[source.identifierField] ?? null : null,
         label: source.labelField ? String(properties[source.labelField] ?? "") : "",
+        attributes: readAttributes(properties, source.attributeFields),
         lines: extractLines(feature.geometry).filter((line) => line.length >= 2),
         outerRings: extractOuterRings(feature.geometry).filter((ring) => ring.length >= 4)
     };

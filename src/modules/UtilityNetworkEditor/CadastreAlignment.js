@@ -390,10 +390,26 @@ export class CadastreAlignment extends EventDispatcher {
             && this.listEntries().some((entry) => entry.state !== AlignmentEntryState.KEPT);
     }
 
-    findDisplayedBuildingAt(position) {
-        const displayedTransforms = new Map(this.listEntries()
+    collectShiftedTransforms() {
+        return new Map(this.listEntries()
             .filter((entry) => entry.state !== AlignmentEntryState.KEPT)
             .map((entry) => [String(entry.identifier), entry.transform]));
+    }
+
+    listDisplayedBuildings() {
+        const transforms = this.displayMode === AlignmentDisplayMode.ORIGINAL ? new Map() : this.collectShiftedTransforms();
+        return this.cadastreOverlay.getLayerFeatures(CadastreLayer.BUILDINGS).map((feature) => {
+            const transform = transforms.get(String(feature.identifier)) ?? null;
+            return {
+                ...feature,
+                outerRings: transform ? feature.outerRings.map((ring) => transformRing(ring, transform)) : feature.outerRings,
+                isAligned: transform !== null
+            };
+        });
+    }
+
+    findDisplayedBuildingAt(position) {
+        const displayedTransforms = this.collectShiftedTransforms();
         let nearest = null;
         for (const feature of this.cadastreOverlay.getLayerFeatures(CadastreLayer.BUILDINGS)) {
             const transform = displayedTransforms.get(String(feature.identifier)) ?? null;

@@ -9,7 +9,10 @@
  *
  * ********************************************************************************************************* */
 
+import { readFileSync } from "node:fs";
 import commonjs from "@rollup/plugin-commonjs";
+
+const copcLibrary = readFileSync("libs/copc/index.js", "utf8");
 
 export default [
     {
@@ -67,5 +70,14 @@ export default [
             "libs/*",
             "pointclouds/*"
         ]
+    },
+    {
+        input: "src/modules/UtilityNetworkEditor/PointCloudConversionWorker.js",
+        output: {
+            file: "build/potree/workers/PointCloudConversionWorker.js",
+            format: "iife",
+            banner: copcLibrary,
+            sourcemap: false
+        }
     }
 ];

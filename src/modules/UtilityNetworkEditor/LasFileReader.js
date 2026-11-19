@@ -8,29 +8,24 @@
  *
  * ********************************************************************************************************* */
 
-const LAS_SIGNATURE = "LASF";
+import { computeThinningStep, PointCloudAccumulator } from "./PointCloudAccumulator.js";
+import { createReadError, PointCloudReadErrorCode } from "./PointCloudReadError.js";
+
+export const LAS_SIGNATURE = "LASF";
 const HEADER_READ_BYTES = 375;
 const MINIMUM_HEADER_BYTES = 227;
 const CHUNK_POINT_COUNT = 1000000;
+const PROGRESS_POINT_INTERVAL = 250000;
 const COMPRESSION_FLAG = 0x80;
 const POINT_FORMAT_MASK = 0x3f;
 const MAXIMUM_POINT_FORMAT = 10;
+const FIRST_EXTENDED_POINT_FORMAT = 6;
 const MINIMUM_RECORD_LENGTHS = [20, 28, 26, 34, 57, 63, 30, 36, 38, 59, 67];
 const RGB_OFFSETS = { 2: 20, 3: 28, 5: 28, 7: 30, 8: 30, 10: 30 };
-const EIGHT_BIT_COLOR_MAXIMUM = 255;
-
-export const LasReadErrorCode = Object.freeze({
-    NOT_LAS: "not_las",
-    COMPRESSED: "compressed",
-    UNSUPPORTED_FORMAT: "unsupported_format",
-    EMPTY: "empty"
-});
-
-function createReadError(code) {
-    const error = new Error(`Cannot read LAS file: ${code}`);
-    error.code = code;
-    return error;
-}
+const INTENSITY_OFFSET = 12;
+const LEGACY_CLASSIFICATION_OFFSET = 15;
+const EXTENDED_CLASSIFICATION_OFFSET = 16;
+const LEGACY_CLASSIFICATION_MASK = 0x1f;
 
 function readPointCount(view, versionMinor) {
     const legacyPointCount = view.getUint32(107, true);
@@ -43,30 +38,30 @@ function readPointCount(view, versionMinor) {
 
 export async function readLasHeader(file) {
     if (file.size < MINIMUM_HEADER_BYTES) {
-        throw createReadError(LasReadErrorCode.NOT_LAS);
+        throw createReadError(PointCloudReadErrorCode.UNSUPPORTED_FILE);
     }
     const view = new DataView(await file.slice(0, HEADER_READ_BYTES).arrayBuffer());
     const signature = String.fromCharCode(view.getUint8(0), view.getUint8(1), view.getUint8(2), view.getUint8(3));
     if (signature !== LAS_SIGNATURE) {
-        throw createReadError(LasReadErrorCode.NOT_LAS);
+        throw createReadError(PointCloudReadErrorCode.UNSUPPORTED_FILE);
     }
     const formatByte = view.getUint8(104);
-    if ((formatByte & COMPRESSION_FLAG) !== 0) {
-        throw createReadError(LasReadErrorCode.COMPRESSED);
-    }
+    const isCompressed = (formatByte & COMPRESSION_FLAG) !== 0;
     const pointFormat = formatByte & POINT_FORMAT_MASK;
     const recordLength = view.getUint16(105, true);
     if (pointFormat > MAXIMUM_POINT_FORMAT || recordLength < MINIMUM_RECORD_LENGTHS[pointFormat]) {
-        throw createReadError(LasReadErrorCode.UNSUPPORTED_FORMAT);
+        throw createReadError(PointCloudReadErrorCode.UNSUPPORTED_FORMAT);
     }
     const versionMinor = view.getUint8(25);
     const pointCount = readPointCount(view, versionMinor);
     const pointDataOffset = view.getUint32(96, true);
-    if (pointCount === 0 || pointDataOffset + pointCount * recordLength > file.size) {
-        throw createReadError(LasReadErrorCode.EMPTY);
+    const isTruncated = !isCompressed && pointDataOffset + pointCount * recordLength > file.size;
+    if (pointCount === 0 || isTruncated) {
+        throw createReadError(PointCloudReadErrorCode.EMPTY);
     }
     return {
         version: `${view.getUint8(24)}.${versionMinor}`,
+        isCompressed: isCompressed,
         pointFormat: pointFormat,
         recordLength: recordLength,
         pointCount: pointCount,
@@ -79,64 +74,109 @@ export async function readLasHeader(file) {
     };
 }
 
-function toHorizontalOrigin(minimum) {
-    return [minimum[0], minimum[1], 0];
-}
-
-function convertColors(wideColors) {
-    const isSixteenBit = wideColors.some((value) => value > EIGHT_BIT_COLOR_MAXIMUM);
-    const colors = new Uint8Array(wideColors.length);
-    for (let index = 0; index < wideColors.length; index++) {
-        colors[index] = isSixteenBit ? wideColors[index] >> 8 : wideColors[index];
-    }
-    return colors;
-}
-
-export async function readLasPoints(file, header, maximumPointCount, onProgress) {
-    const step = Math.max(1, Math.ceil(header.pointCount / maximumPointCount));
-    const keptCount = Math.ceil(header.pointCount / step);
-    const headerOrigin = toHorizontalOrigin(header.minimum);
-    const positions = new Float32Array(keptCount * 3);
-    const wideColors = header.hasColors ? new Uint16Array(keptCount * 3) : null;
+function createRecordParser(header) {
     const colorOffset = RGB_OFFSETS[header.pointFormat];
-    const minimum = [Infinity, Infinity, Infinity];
-    const maximum = [-Infinity, -Infinity, -Infinity];
-    let kept = 0;
+    const isExtended = header.pointFormat >= FIRST_EXTENDED_POINT_FORMAT;
+    const [scaleX, scaleY, scaleZ] = header.scale;
+    const [offsetX, offsetY, offsetZ] = header.offset;
+    return (view, base, accumulator) => {
+        const index = accumulator.addPoint(
+            view.getInt32(base, true) * scaleX + offsetX,
+            view.getInt32(base + 4, true) * scaleY + offsetY,
+            view.getInt32(base + 8, true) * scaleZ + offsetZ
+        );
+        accumulator.setIntensity(index, view.getUint16(base + INTENSITY_OFFSET, true));
+        accumulator.setClassification(index, isExtended
+            ? view.getUint8(base + EXTENDED_CLASSIFICATION_OFFSET)
+            : view.getUint8(base + LEGACY_CLASSIFICATION_OFFSET) & LEGACY_CLASSIFICATION_MASK);
+        if (colorOffset !== undefined) {
+            accumulator.setColor(index, view.getUint16(base + colorOffset, true), view.getUint16(base + colorOffset + 2, true), view.getUint16(base + colorOffset + 4, true));
+        }
+    };
+}
+
+async function readUncompressedPoints(file, header, step, parseRecord, accumulator, onProgress) {
     for (let chunkStart = 0; chunkStart < header.pointCount; chunkStart += CHUNK_POINT_COUNT) {
         const chunkEnd = Math.min(header.pointCount, chunkStart + CHUNK_POINT_COUNT);
         const byteStart = header.pointDataOffset + chunkStart * header.recordLength;
         const view = new DataView(await file.slice(byteStart, header.pointDataOffset + chunkEnd * header.recordLength).arrayBuffer());
-        for (let index = Math.ceil(chunkStart / step) * step; index < chunkEnd && kept < keptCount; index += step) {
-            const base = (index - chunkStart) * header.recordLength;
-            for (let axis = 0; axis < 3; axis++) {
-                const coordinate = view.getInt32(base + axis * 4, true) * header.scale[axis] + header.offset[axis];
-                positions[kept * 3 + axis] = coordinate - headerOrigin[axis];
-                minimum[axis] = Math.min(minimum[axis], coordinate);
-                maximum[axis] = Math.max(maximum[axis], coordinate);
-            }
-            if (wideColors) {
-                wideColors[kept * 3] = view.getUint16(base + colorOffset, true);
-                wideColors[kept * 3 + 1] = view.getUint16(base + colorOffset + 2, true);
-                wideColors[kept * 3 + 2] = view.getUint16(base + colorOffset + 4, true);
-            }
-            kept++;
+        for (let index = Math.ceil(chunkStart / step) * step; index < chunkEnd; index += step) {
+            parseRecord(view, (index - chunkStart) * header.recordLength, accumulator);
         }
         onProgress?.(chunkEnd / header.pointCount);
     }
-    const origin = toHorizontalOrigin(minimum);
-    const shift = origin.map((value, axis) => value - headerOrigin[axis]);
-    if (shift.some((value) => value !== 0)) {
-        for (let index = 0; index < kept * 3; index++) {
-            positions[index] -= shift[index % 3];
-        }
+}
+
+async function createLazDecoder() {
+    const createLazPerf = globalThis.Copc?.Las?.PointData?.createLazPerf;
+    if (typeof createLazPerf !== "function") {
+        throw createReadError(PointCloudReadErrorCode.FAILED);
     }
-    return {
-        pointCount: kept,
-        sourcePointCount: header.pointCount,
-        origin: origin,
-        minimum: minimum,
-        maximum: maximum,
-        positions: positions,
-        colors: wideColors ? convertColors(wideColors) : null
-    };
+    return createLazPerf();
+}
+
+function allocate(lazPerf, byteLength) {
+    let pointer = 0;
+    try {
+        pointer = lazPerf._malloc(byteLength);
+    } catch {
+        pointer = 0;
+    }
+    if (pointer === 0) {
+        throw createReadError(PointCloudReadErrorCode.TOO_LARGE);
+    }
+    return pointer;
+}
+
+async function readFileBytes(file) {
+    try {
+        return new Uint8Array(await file.arrayBuffer());
+    } catch {
+        throw createReadError(PointCloudReadErrorCode.TOO_LARGE);
+    }
+}
+
+async function readCompressedPoints(file, header, step, parseRecord, accumulator, onProgress) {
+    const lazPerf = await createLazDecoder();
+    const bytes = await readFileBytes(file);
+    const filePointer = allocate(lazPerf, bytes.byteLength);
+    const pointPointer = allocate(lazPerf, header.recordLength);
+    const reader = new lazPerf.LASZip();
+    try {
+        lazPerf.HEAPU8.set(bytes, filePointer);
+        reader.open(filePointer, bytes.byteLength);
+        let view = new DataView(lazPerf.HEAPU8.buffer, pointPointer, header.recordLength);
+        for (let index = 0; index < header.pointCount; index++) {
+            reader.getPoint(pointPointer);
+            if (index % step === 0) {
+                if (view.buffer !== lazPerf.HEAPU8.buffer) {
+                    view = new DataView(lazPerf.HEAPU8.buffer, pointPointer, header.recordLength);
+                }
+                parseRecord(view, 0, accumulator);
+            }
+            if ((index + 1) % PROGRESS_POINT_INTERVAL === 0) {
+                onProgress?.((index + 1) / header.pointCount);
+            }
+        }
+    } finally {
+        reader.delete();
+        lazPerf._free(pointPointer);
+        lazPerf._free(filePointer);
+    }
+    onProgress?.(1);
+}
+
+export async function readLasFile(file, maximumPointCount, onProgress) {
+    const header = await readLasHeader(file);
+    const step = computeThinningStep(header.pointCount, maximumPointCount);
+    const accumulator = new PointCloudAccumulator({
+        capacity: Math.ceil(header.pointCount / step),
+        origin: [header.minimum[0], header.minimum[1], 0],
+        hasColors: header.hasColors,
+        hasIntensities: true,
+        hasClassifications: true
+    });
+    const readPoints = header.isCompressed ? readCompressedPoints : readUncompressedPoints;
+    await readPoints(file, header, step, createRecordParser(header), accumulator, onProgress);
+    return accumulator.finish(header.pointCount);
 }

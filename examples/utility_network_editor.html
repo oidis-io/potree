@@ -102,6 +102,10 @@
         .editor-segment input {
             display: none;
         }
+        .editor-segment:has(input:disabled) {
+            opacity: 0.4;
+            cursor: default;
+        }
         .editor-pane {
             display: flex;
             flex-direction: column;
@@ -326,15 +330,6 @@
         }
         .editor-primary-button:hover:not(:disabled) {
             background: var(--editor-accent-strong);
-        }
-        .editor-reopen-button {
-            max-width: 100%;
-        }
-        .editor-reopen-button span {
-            min-width: 0;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
         }
         #utility_network_editor_scene_prompt {
             top: 50%;
@@ -627,6 +622,7 @@
     <script src="../libs/plasio/js/laslaz.js"></script>
     <script src="../libs/Cesium/Cesium.js"></script>
     <script src="../libs/copc/index.js"></script>
+    <script src="../libs/dxf-parser/dxf-parser.js"></script>
 
     <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px;">
         <div id="potree_render_area" style="background-color: #102030;">
@@ -681,10 +677,15 @@
         const alignmentExceptions = new Potree.UtilityNetworkEditor.CadastreAlignmentExceptions();
         const cadastreAlignment = new Potree.UtilityNetworkEditor.CadastreAlignment(cadastreOverlay, alignmentExceptions);
         cadastreAlignment.setShiftLabelFormatter(describeShift);
+        const buildingExtrusionLayer = new Potree.UtilityNetworkEditor.BuildingExtrusionLayer(viewer, mapPlane);
+        const buildingInfoTool = new Potree.UtilityNetworkEditor.BuildingInfoTool(viewer, buildingExtrusionLayer);
         const dtmInfoTool = new Potree.UtilityNetworkEditor.DtmInfoTool(viewer, mapPlane, dtmOverlay);
         const cadDocument = new Potree.UtilityNetworkEditor.CadDocument();
         const cadView = new Potree.UtilityNetworkEditor.CadView(viewer, cadDocument);
         const cadSnapper = new Potree.UtilityNetworkEditor.CadSnapper(viewer, mapPlane, cadDocument, cadastreOverlay);
+        const dxfOverlay = new Potree.UtilityNetworkEditor.DxfOverlay(viewer, mapPlane);
+        const attachmentStore = new Potree.UtilityNetworkEditor.AttachmentStore();
+        cadSnapper.addSnapSource(dxfOverlay);
         surfacePicker.setSnapper(cadSnapper);
         const cadTool = new Potree.UtilityNetworkEditor.CadTool(viewer, surfacePicker, cadDocument, cadView);
         const cadEditTool = new Potree.UtilityNetworkEditor.CadEditTool(viewer, cadDocument, surfacePicker);
@@ -697,18 +698,70 @@
         const autosaveKey = datasetName ? `${storagePrefix}:${datasetName}` : storagePrefix;
         moveLegacyMeasurements();
         const cadAutosave = new Potree.UtilityNetworkEditor.CadAutosave(cadDocument, cadHistory, autosaveKey, alignmentExceptions);
-        const recentPointCloudStore = new Potree.UtilityNetworkEditor.RecentFileStore(storagePrefix, "last-point-cloud");
-        const lasPickerOptions = { types: [{ description: "Mračno bodů LAS", accept: { "application/octet-stream": [".las", ".laz"] } }] };
+        const pointCloudStore = new Potree.UtilityNetworkEditor.PointCloudStore();
+        const pointCloudFileExtensions = Potree.UtilityNetworkEditor.POINT_CLOUD_FILE_EXTENSIONS;
+        const lastStoredPointCloudKey = `${storagePrefix}:last-stored-point-cloud`;
+        const pointCloudDrawingKeyPrefix = `${storagePrefix}:point-cloud`;
+        const hiddenDxfLayersKeyPrefix = `${storagePrefix}:dxf-hidden-layers`;
         cadView.setDimensionFormatter((dimension) => formatDimension(dimension));
         cadDocument.addLayer("Vrstva 1");
 
-        const maximumLasPointCount = 20000000;
-        const lasErrorMessages = {
-            [Potree.UtilityNetworkEditor.LasReadErrorCode.NOT_LAS]: "Soubor není mračno ve formátu LAS.",
-            [Potree.UtilityNetworkEditor.LasReadErrorCode.COMPRESSED]: "Komprimovaný LAZ zatím neumíme načíst, použijte nekomprimovaný LAS.",
-            [Potree.UtilityNetworkEditor.LasReadErrorCode.UNSUPPORTED_FORMAT]: "Tento formát bodů v LAS neumíme načíst.",
-            [Potree.UtilityNetworkEditor.LasReadErrorCode.EMPTY]: "Soubor neobsahuje body, nebo je poškozený."
+        const maximumPointCount = 20000000;
+        const pointCloudReadErrorCode = Potree.UtilityNetworkEditor.PointCloudReadErrorCode;
+        const pointCloudLoadStage = Potree.UtilityNetworkEditor.PointCloudLoadStage;
+        const pointCloudErrorMessages = {
+            [pointCloudReadErrorCode.UNSUPPORTED_FILE]: "Soubor není podporované mračno bodů. Otevřete LAS, LAZ, PLY, XYZ, TXT, PTS nebo CSV.",
+            [pointCloudReadErrorCode.UNSUPPORTED_FORMAT]: "Tuto variantu formátu zatím neumíme načíst.",
+            [pointCloudReadErrorCode.EMPTY]: "Soubor neobsahuje body, nebo je poškozený.",
+            [pointCloudReadErrorCode.TOO_LARGE]: "Soubor je na zpracování v prohlížeči příliš velký.",
+            [pointCloudReadErrorCode.NOT_STORED]: "Mračno už v prohlížeči uložené není, otevřete soubor znovu.",
+            [pointCloudReadErrorCode.CANCELED]: "Načítání mračna je zrušené."
         };
+        const pointCloudStageTexts = {
+            [pointCloudLoadStage.READING]: "Čtu soubor",
+            [pointCloudLoadStage.BUILDING]: "Stavím mračno",
+            [pointCloudLoadStage.STORING]: "Ukládám do prohlížeče",
+            [pointCloudLoadStage.RESTORING]: "Načítám z prohlížeče"
+        };
+        const pointCloudColorModes = [
+            { attributeName: "rgba", title: "Skutečné barvy z mračna", shortTitle: "Barvy", isAvailable: (attributes) => attributes.hasColors },
+            { attributeName: "elevation", title: "Barva podle výšky", shortTitle: "Výška", isAvailable: () => true },
+            { attributeName: "intensity", title: "Intenzita odrazu", shortTitle: "Intenzita", isAvailable: (attributes) => attributes.hasIntensities },
+            { attributeName: "classification", title: "Třídy bodů: terén, vegetace, budovy a další", shortTitle: "Třídy", isAvailable: (attributes) => attributes.hasClassifications }
+        ];
+        const datasetPointCloudAttributes = { hasColors: true, hasIntensities: true, hasClassifications: true };
+        const defaultIntensityRange = [0, 65535];
+        const buildingHeightSource = Potree.UtilityNetworkEditor.BuildingHeightSource;
+        const buildingBlockColors = { measured: "#ffb74d", surface: "#6fd6c6", estimated: "#b0bec5" };
+        const dtmInfoFooter = "Zdroj: ČÚZK – IS DMVS (DTM krajů). Přibližný zákres, pouze orientačně.";
+        const buildingInfoFooter = "Zdroj: katastr ČÚZK (RÚIAN). Výška z bodů mračna, jinak z modelu povrchu ČÚZK (DMP a DMR 5G), jinak odhad z počtu podlaží. Pouze orientačně.";
+        const buildingUsageTitles = {
+            1: "průmyslový objekt", 2: "zemědělská usedlost", 3: "objekt k bydlení", 4: "objekt lesního hospodářství", 5: "objekt občanské vybavenosti",
+            6: "bytový dům", 7: "rodinný dům", 8: "stavba pro rodinnou rekreaci", 9: "stavba pro shromažďování většího počtu osob", 10: "stavba pro obchod",
+            11: "stavba ubytovacího zařízení", 12: "stavba pro výrobu a skladování", 13: "zemědělská stavba", 14: "stavba pro administrativu",
+            15: "stavba občanského vybavení", 16: "stavba technického vybavení", 17: "stavba pro dopravu", 18: "garáž", 19: "jiná stavba",
+            20: "víceúčelová stavba", 21: "skleník", 22: "přehrada", 23: "hráz přehrazující vodní tok nebo údolí", 24: "hráz k ochraně před povodní",
+            25: "hráz umělé vodní nádrže", 26: "jez", 27: "stavba k plavebním účelům", 28: "vodní elektrárna", 29: "stavba odkaliště", 30: "rozestavěné jednotky"
+        };
+        const buildingGasConnectionTitles = {
+            1: "plyn z veřejné sítě", 2: "plyn z domovního zásobníku", 3: "bez plynu", 21: "zásobník LPG", 22: "zásobník CNG",
+            23: "zásobník bioplynu", 24: "zásobník důlního plynu", 25: "jiný domovní zásobník", 51: "plyn v domě"
+        };
+        const buildingWaterConnectionTitles = { 1: "s vodovodem", 2: "bez vodovodu" };
+        const maximumDxfFileBytes = 50 * 1024 * 1024;
+        const maximumConvertedSegmentCount = 20000;
+        const dxfReadErrorCode = Potree.UtilityNetworkEditor.DxfReadErrorCode;
+        const dxfErrorMessages = {
+            [dxfReadErrorCode.UNAVAILABLE]: "Knihovna pro čtení DXF se nenačetla.",
+            [dxfReadErrorCode.BINARY]: "Binární DXF neumíme, uložte výkres jako textový (ASCII) DXF.",
+            [dxfReadErrorCode.INVALID]: "Soubor není platný výkres DXF."
+        };
+        const dxfAxisTransformTexts = {
+            negated: " Souřadnice byly bez minusu, převedeno na S-JTSK.",
+            swapped: " Osy X a Y byly prohozené, převedeno na S-JTSK.",
+            swapped_negated: " Osy byly prohozené a bez minusu, převedeno na S-JTSK."
+        };
+        const buildingSewerConnectionTitles = { 1: "přípoj na kanalizační síť", 2: "vlastní čistička odpadních vod", 3: "žumpa, jímka, septik", 4: "bez kanalizace a jímky" };
         const maximumDrawingFileBytes = 20 * 1024 * 1024;
         const drawingFileErrorMessages = {
             [Potree.UtilityNetworkEditor.CadFileErrorCode.TOO_LARGE]: "Soubor je příliš velký (max. 20 MB).",
@@ -726,7 +779,10 @@
         let pointSize = 1;
         let selectedBaseMapProvider = "orto";
         let isMapStarted = false;
-        let recentPointCloudHandle = null;
+        let pointCloudLoadController = null;
+        let pointCloudAttributes = datasetPointCloudAttributes;
+        let selectedColorMode = "rgba";
+        let isRestoringDxfDocuments = false;
         let cadastreViewChangeTime = null;
 
         const cadastreExtentMetres = 1500;
@@ -890,7 +946,7 @@
         const infoPanelBody = infoPanel.find(".utility-info-body");
         let isInfoPromptShown = false;
 
-        async function loadPointCloud(name) {
+        async function loadDatasetPointCloud(name) {
             const url = `./data/${name}/ept/ept.json`;
             const response = await fetch(url).catch(() => null);
             if (!response?.ok) {
@@ -901,10 +957,35 @@
             });
         }
 
+        function applyColorMode(pointCloud) {
+            const material = pointCloud.material;
+            if (selectedColorMode === "intensity" && !Number.isFinite(material.intensityRange[0])) {
+                material.intensityRange = defaultIntensityRange;
+            }
+            material.activeAttributeName = selectedColorMode;
+        }
+
+        function setColorMode(attributeName) {
+            selectedColorMode = attributeName;
+            viewer.scene.pointclouds.forEach(applyColorMode);
+        }
+
+        function updateColorModeControl() {
+            pointCloudColorModes.forEach((colorMode, index) => {
+                $(`#utility_network_editor_color_mode_${index}`).prop("disabled", !colorMode.isAvailable(pointCloudAttributes));
+            });
+            const selectedMode = pointCloudColorModes.find((colorMode) => colorMode.attributeName === selectedColorMode);
+            if (!selectedMode?.isAvailable(pointCloudAttributes)) {
+                selectedColorMode = pointCloudAttributes.hasColors ? "rgba" : "elevation";
+            }
+            const selectedIndex = pointCloudColorModes.findIndex((colorMode) => colorMode.attributeName === selectedColorMode);
+            $(`#utility_network_editor_color_mode_${selectedIndex}`).prop("checked", true);
+        }
+
         function addPointCloud(pointCloud) {
             const material = pointCloud.material;
             const pointCloudCheckbox = $("#utility_network_editor_point_cloud");
-            material.activeAttributeName = "rgba";
+            applyColorMode(pointCloud);
             material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
             material.size = pointSize;
             material.minSize = 2;
@@ -952,13 +1033,15 @@
 
         function updateAttribution() {
             const baseMap = baseMaps.find((map) => map.provider === selectedBaseMapProvider);
-            const isCadastreShown = cadastreLayers.some((cadastreLayer) => $(`#utility_network_editor_cadastre_${cadastreLayer.layerId}`).prop("checked"));
+            const isCadastreShown = buildingExtrusionLayer.visible
+                || cadastreLayers.some((cadastreLayer) => $(`#utility_network_editor_cadastre_${cadastreLayer.layerId}`).prop("checked"));
             const cadastreAttribution = cadastreAlignment.isAlignmentShown()
                 ? `Katastr © ČÚZK, CC BY 4.0, zarovnáno podle ${findAlignmentReference().sourceText} (orientační)`
                 : "Katastr © ČÚZK, CC BY 4.0";
             const parts = [
                 baseMap?.attribution ?? "",
                 isCadastreShown ? cadastreAttribution : "",
+                buildingExtrusionLayer.visible ? "Výšky budov: ČÚZK – DMP a DMR 5G, orientační" : "",
                 $("#utility_network_editor_dtm").prop("checked") ? "Sítě: ČÚZK – IS DMVS, orientační" : ""
             ].filter((part) => part !== "");
             $("#utility_network_editor_attribution").text(parts.join(" · ")).toggle(parts.length > 0);
@@ -984,9 +1067,15 @@
             return $("<div class=\"utility-info-feature\"></div>").append(title, table);
         }
 
-        function showInfoMessage(message) {
-            infoPanelBody.empty().append($("<div></div>").text(message));
+        function showInfoPanel(title, content, footer) {
+            infoPanel.find(".utility-info-header span").text(title);
+            infoPanel.find(".utility-info-footer").text(footer);
+            infoPanelBody.empty().append(content);
             infoPanel.show();
+        }
+
+        function showInfoMessage(message) {
+            showInfoPanel("Info o síti", $("<div></div>").text(message), dtmInfoFooter);
         }
 
         function showInfoResult(result) {
@@ -994,20 +1083,63 @@
                 showInfoMessage("V místě kliknutí není žádná síť.");
                 return;
             }
-            infoPanelBody.empty();
-            if (result.region) {
-                infoPanelBody.append($("<div class=\"editor-note\"></div>").text(`DTM: ${result.region}`));
-            }
-            for (const properties of result.features) {
-                infoPanelBody.append(createFeatureElement(properties));
-            }
-            infoPanel.show();
+            const regionNote = result.region ? [$("<div class=\"editor-note\"></div>").text(`DTM: ${result.region}`)] : [];
+            showInfoPanel("Info o síti", [...regionNote, ...result.features.map(createFeatureElement)], dtmInfoFooter);
         }
 
         function closeInfoPanel() {
             isInfoPromptShown = false;
             infoPanel.hide();
             dtmInfoTool.clearMarker();
+            buildingExtrusionLayer.setSelectedIdentifier(null);
+        }
+
+        function describeCode(titles, code) {
+            return titles[code] ?? "nezjištěno";
+        }
+
+        function describeBuildingHeightSource(building) {
+            if (building.source === buildingHeightSource.POINT_CLOUD) {
+                return `z mračna (${formatNumber(building.sampleCount, 0)} bodů)`;
+            }
+            if (building.source === buildingHeightSource.SURFACE_MODEL) {
+                return `z modelu povrchu ČÚZK (${formatNumber(building.sampleCount, 0)} buněk)`;
+            }
+            if (building.source === buildingHeightSource.FLOORS) {
+                return `odhad z počtu podlaží (${building.attributes.floorCount} × 3 m)`;
+            }
+            return "není z čeho určit";
+        }
+
+        function describeBuildingRows(building) {
+            const isMeasured = building.source === buildingHeightSource.POINT_CLOUD;
+            const heightText = building.roofHeight === null
+                ? "neznámá"
+                : `${isMeasured ? "" : "≈ "}${formatNumber(building.roofHeight - building.baseHeight, 1)} m`;
+            const attributes = building.attributes;
+            return [
+                ["Výška budovy", heightText],
+                ["Zdroj výšky", describeBuildingHeightSource(building)],
+                isMeasured ? ["Střecha", `${formatNumber(building.roofHeight, 2)} m`] : null,
+                isMeasured ? ["Terén u budovy", `${formatNumber(building.baseHeight, 2)} m`] : null,
+                ["Počet podlaží", attributes.floorCount ? `${attributes.floorCount} (nadzemní i podzemní)` : "nezjištěno"],
+                ["Způsob využití", describeCode(buildingUsageTitles, attributes.usageCode)],
+                ["Plyn", describeCode(buildingGasConnectionTitles, attributes.gasConnectionCode)],
+                ["Vodovod", describeCode(buildingWaterConnectionTitles, attributes.waterConnectionCode)],
+                ["Kanalizace", describeCode(buildingSewerConnectionTitles, attributes.sewerConnectionCode)],
+                ["Obrys", building.isAligned ? "zarovnaný podle mapy (orientačně)" : "z katastru ČÚZK"],
+                ["Kód stavebního objektu", String(building.identifier)]
+            ].filter(Boolean);
+        }
+
+        function showBuildingInfo(building) {
+            if (!building) {
+                showInfoPanel("Info o budově", $("<div></div>").text("Tady žádná budova 3D není, klikněte přímo na blok budovy."), buildingInfoFooter);
+                return;
+            }
+            const table = $("<table></table>").append(describeBuildingRows(building).map(([label, value]) => $("<tr></tr>").append($("<td></td>").text(label), $("<td></td>").text(value))));
+            const title = building.label !== "" ? `Budova č. ${building.label}` : "Budova bez čísla";
+            showInfoPanel(title, $("<div class=\"utility-info-feature\"></div>").append(table), buildingInfoFooter);
         }
 
         function createIcon(iconName) {
@@ -1110,9 +1242,15 @@
             $("#utility_network_editor_point_cloud_status").text(text);
         }
 
-        function describeLasProgress(progress) {
-            const percent = Math.round(progress.share * 100);
-            return progress.stage === Potree.UtilityNetworkEditor.LasLoadStage.READING ? `Čtu soubor… ${percent} %` : `Stavím mračno… ${percent} %`;
+        function describePointCloudProgress(progress) {
+            return `${pointCloudStageTexts[progress.stage]}… ${Math.round(progress.share * 100)} %`;
+        }
+
+        function describeLoadedPointCloud(result) {
+            const thinnedText = result.pointCount < result.sourcePointCount ? `, zředěno z ${formatNumber(result.sourcePointCount, 0)}` : "";
+            const storageText = result.isFromStorage ? " Otevřeno z úložiště prohlížeče." : (result.isStored ? " Uloženo v prohlížeči, příště se otevře hned." : "");
+            const coordinateText = looksLikeKrovakCoordinates(result.origin) ? "" : " Souřadnice nevypadají jako S-JTSK (EPSG:5514), mapa, DTM a katastr nemusí sedět.";
+            return `Načteno bodů ${formatNumber(result.pointCount, 0)}${thinnedText}.${storageText}${coordinateText}`;
         }
 
         function disposePointCloud(pointCloud) {
@@ -1134,135 +1272,131 @@
             viewer.scene.scenePointCloud.remove(pointCloud);
         }
 
-        function replacePointCloud(pointCloud) {
+        function replacePointCloud(pointCloud, attributes) {
             for (const previousPointCloud of [...viewer.scene.pointclouds]) {
                 removePointCloud(previousPointCloud);
                 disposePointCloud(previousPointCloud);
             }
+            pointCloudAttributes = attributes;
+            updateColorModeControl();
             addPointCloud(pointCloud);
             startTerrainHeightSampler(pointCloud);
             startMapAndUtilities();
             updatePointCloudControls(true);
+            buildingExtrusionLayer.setPointCloud(pointCloud);
         }
 
-        async function openLasFile(file) {
-            showPointCloudStatus(describeLasProgress({ stage: Potree.UtilityNetworkEditor.LasLoadStage.READING, share: 0 }));
-            let result;
+        function setPointCloudLoading(isLoading) {
+            $("#utility_network_editor_cancel_point_cloud").toggle(isLoading);
+        }
+
+        async function runPointCloudLoad(startLoad) {
+            pointCloudLoadController?.abort();
+            const controller = new AbortController();
+            pointCloudLoadController = controller;
+            setPointCloudLoading(true);
             try {
-                result = await Potree.UtilityNetworkEditor.loadLasPointCloud(file, maximumLasPointCount, (progress) => showPointCloudStatus(describeLasProgress(progress)));
+                const result = await startLoad({
+                    maximumPointCount: maximumPointCount,
+                    signal: controller.signal,
+                    onProgress: (progress) => showPointCloudStatus(describePointCloudProgress(progress))
+                });
+                applyLoadedPointCloud(result);
+                return result;
             } catch (error) {
-                showPointCloudStatus(lasErrorMessages[error.code] ?? "Mračno se nepodařilo načíst.");
-                return false;
+                if (controller === pointCloudLoadController) {
+                    showPointCloudStatus(pointCloudErrorMessages[error.code] ?? "Mračno se nepodařilo načíst.");
+                }
+                return null;
+            } finally {
+                if (controller === pointCloudLoadController) {
+                    pointCloudLoadController = null;
+                    setPointCloudLoading(false);
+                }
             }
-            result.pointCloud.setName(file.name);
-            replacePointCloud(result.pointCloud);
-            if (!result.hasColors) {
-                result.pointCloud.material.activeAttributeName = "elevation";
-            }
-            $("#utility_network_editor_point_cloud_name").text(file.name);
-            const thinnedText = result.pointCount < result.sourcePointCount ? `, zředěno z ${formatNumber(result.sourcePointCount, 0)}` : "";
-            const coordinateText = looksLikeKrovakCoordinates(result.origin) ? "" : " Souřadnice nevypadají jako S-JTSK (EPSG:5514), mapa, DTM a katastr nemusí sedět.";
-            showPointCloudStatus(`Načteno bodů ${formatNumber(result.pointCount, 0)}${thinnedText}.${coordinateText}`);
-            return true;
         }
 
-        async function chooseLasFile() {
-            if (!Potree.UtilityNetworkEditor.RecentFileStore.isSupported()) {
-                $("#utility_network_editor_las_input")[0].click();
-                return;
+        function applyLoadedPointCloud(result) {
+            result.pointCloud.setName(result.fileName);
+            replacePointCloud(result.pointCloud, result);
+            $("#utility_network_editor_point_cloud_name").text(result.fileName);
+            showPointCloudStatus(describeLoadedPointCloud(result));
+            rememberStoredPointCloud(result.storageKey);
+            if (result.isStored && !result.isFromStorage) {
+                Potree.UtilityNetworkEditor.PointCloudStore.requestPersistence().catch(() => false);
             }
-            let fileHandles;
+            switchDrawingToPointCloud(createPointCloudDrawingKey(result));
+            renderStoredPointClouds();
+        }
+
+        function openPointCloudFile(file) {
+            showPointCloudStatus(describePointCloudProgress({ stage: pointCloudLoadStage.READING, share: 0 }));
+            return runPointCloudLoad((options) => Potree.UtilityNetworkEditor.loadPointCloudFile(file, options));
+        }
+
+        function openStoredPointCloud(storageKey) {
+            showPointCloudStatus(describePointCloudProgress({ stage: pointCloudLoadStage.RESTORING, share: 0 }));
+            return runPointCloudLoad((options) => Potree.UtilityNetworkEditor.loadStoredPointCloud(storageKey, options));
+        }
+
+        function rememberStoredPointCloud(storageKey) {
             try {
-                fileHandles = await window.showOpenFilePicker(lasPickerOptions);
+                if (storageKey) {
+                    window.localStorage.setItem(lastStoredPointCloudKey, storageKey);
+                } else {
+                    window.localStorage.removeItem(lastStoredPointCloudKey);
+                }
             } catch {
                 return;
             }
-            if (await openLasFile(await fileHandles[0].getFile())) {
-                rememberPointCloudFile(fileHandles[0]);
-            }
         }
 
-        function rememberPointCloudFile(fileHandle) {
-            recentPointCloudHandle = fileHandle;
-            recentPointCloudStore.save(fileHandle).catch(() => null);
-            updateRecentPointCloudButtons();
-        }
-
-        function forgetRecentPointCloud() {
-            recentPointCloudHandle = null;
-            recentPointCloudStore.clear().catch(() => null);
-            updateRecentPointCloudButtons();
-        }
-
-        function updateRecentPointCloudButtons() {
-            const hasRecentPointCloud = recentPointCloudHandle !== null;
-            $(".editor-reopen-button").toggle(hasRecentPointCloud)
-                .find("span").text(hasRecentPointCloud ? `Znovu otevřít ${recentPointCloudHandle.name}` : "");
-            $(".editor-open-las-button").toggleClass("editor-primary-button", !hasRecentPointCloud);
-        }
-
-        async function reopenRecentPointCloud() {
-            const fileHandle = recentPointCloudHandle;
-            let file;
+        function readLastStoredPointCloud() {
             try {
-                file = await Potree.UtilityNetworkEditor.readFileFromHandle(fileHandle, true);
+                return window.localStorage.getItem(lastStoredPointCloudKey);
             } catch {
-                forgetRecentPointCloud();
-                showPointCloudStatus(`Soubor ${fileHandle.name} už nejde otevřít, nejspíš byl přesunut nebo smazán. Otevřete mračno znovu.`);
-                return;
-            }
-            if (!file) {
-                showPointCloudStatus("Prohlížeč nepovolil přístup k souboru. Otevřete mračno přes tlačítko Otevřít mračno (LAS).");
-                return;
-            }
-            await openLasFile(file);
-        }
-
-        async function restoreRecentPointCloud() {
-            if (!Potree.UtilityNetworkEditor.RecentFileStore.isSupported()) {
-                return;
-            }
-            const fileHandle = await recentPointCloudStore.load().catch(() => null);
-            if (!fileHandle) {
-                return;
-            }
-            recentPointCloudHandle = fileHandle;
-            updateRecentPointCloudButtons();
-            const file = await Potree.UtilityNetworkEditor.readFileFromHandle(fileHandle, false).catch(() => null);
-            if (file) {
-                await openLasFile(file);
+                return null;
             }
         }
 
-        function createLasFileInput() {
-            return $("<input type=\"file\" id=\"utility_network_editor_las_input\" accept=\".las,.laz\" hidden>")
+        async function restoreLastStoredPointCloud() {
+            const storageKey = readLastStoredPointCloud();
+            if (!storageKey || !Potree.UtilityNetworkEditor.PointCloudStore.isSupported()) {
+                return;
+            }
+            if (!(await openStoredPointCloud(storageKey))) {
+                rememberStoredPointCloud(null);
+                showPointCloudStatus("");
+            }
+        }
+
+        function choosePointCloudFile() {
+            $("#utility_network_editor_point_cloud_input")[0].click();
+        }
+
+        function createPointCloudFileInput() {
+            return $("<input type=\"file\" id=\"utility_network_editor_point_cloud_input\" hidden>")
+                .attr("accept", pointCloudFileExtensions.join(","))
                 .on("change", (event) => {
                     const file = event.target.files[0];
                     event.target.value = "";
                     if (file) {
-                        openLasFile(file);
+                        openPointCloudFile(file);
                     }
                 });
         }
 
-        function createOpenLasButton(identifier) {
-            return createButton({ icon: "folder-open", title: "Otevřít mračno (LAS)", text: "Otevřít mračno (LAS)", identifier: identifier, onClick: chooseLasFile })
-                .addClass("editor-primary-button editor-open-las-button");
-        }
-
-        function createReopenLasButton(identifier) {
-            return createButton({ icon: "history", title: "Znovu otevřít naposledy otevřené mračno", text: "Znovu otevřít", identifier: identifier, onClick: reopenRecentPointCloud })
-                .addClass("editor-primary-button editor-reopen-button")
-                .hide();
+        function createOpenPointCloudButton(identifier) {
+            return createButton({ icon: "folder-open", title: "Otevřít mračno bodů", text: "Otevřít mračno", identifier: identifier, onClick: choosePointCloudFile })
+                .addClass("editor-primary-button");
         }
 
         function createPointCloudEmptyState() {
             return $("<div id=\"utility_network_editor_point_cloud_empty\" class=\"editor-empty-state\"></div>").append(
                 createIcon("cloud-upload"),
                 $("<div class=\"editor-empty-title\">Otevřete mračno bodů</div>"),
-                createNote("Nekomprimovaný LAS v souřadnicích S-JTSK. Mapa a sítě se zapnou po načtení."),
-                createReopenLasButton("utility_network_editor_reopen_las_empty"),
-                createOpenLasButton("utility_network_editor_open_las_empty")
+                createNote("LAS, LAZ, PLY, XYZ, TXT, PTS nebo CSV v souřadnicích S-JTSK. Převede se v prohlížeči a uloží se tu pro příští otevření."),
+                createOpenPointCloudButton("utility_network_editor_open_point_cloud_empty")
             );
         }
 
@@ -1270,8 +1404,7 @@
             return $("<div id=\"utility_network_editor_scene_prompt\" class=\"editor-floating\"></div>").append(
                 createIcon("cloud-upload"),
                 $("<div class=\"editor-empty-title\">Otevřete mračno bodů</div>"),
-                createReopenLasButton("utility_network_editor_reopen_las_scene"),
-                createOpenLasButton("utility_network_editor_open_las_scene")
+                createOpenPointCloudButton("utility_network_editor_open_point_cloud_scene")
             );
         }
 
@@ -1280,8 +1413,108 @@
             visibilityToggle.find("span").attr("id", "utility_network_editor_point_cloud_name");
             return $("<div id=\"utility_network_editor_point_cloud_row\" class=\"editor-row\"></div>").append(
                 visibilityToggle,
-                createButton({ icon: "folder-open", title: "Otevřít mračno (LAS)", identifier: "utility_network_editor_open_las", onClick: chooseLasFile })
+                createButton({ icon: "folder-open", title: "Otevřít mračno bodů", identifier: "utility_network_editor_open_point_cloud", onClick: choosePointCloudFile })
             );
+        }
+
+        function createPointCloudStatusRow() {
+            const cancelButton = createButton({
+                icon: "x",
+                title: "Zrušit načítání mračna",
+                text: "Zrušit",
+                identifier: "utility_network_editor_cancel_point_cloud",
+                onClick: () => pointCloudLoadController?.abort()
+            }).hide();
+            return $("<div class=\"editor-row\"></div>").append(
+                createNote(datasetName ? "Mračno ze složky examples/data." : "", "utility_network_editor_point_cloud_status").addClass("editor-grow"),
+                cancelButton
+            );
+        }
+
+        function createPointCloudDrawingKey(source) {
+            return `${pointCloudDrawingKeyPrefix}:${source.fileName}|${source.fileSize}|${source.fileLastModified}`;
+        }
+
+        function moveSharedDrawingTo(drawingKey) {
+            try {
+                const storage = window.localStorage;
+                const sharedDrawing = storage.getItem(storagePrefix);
+                if (sharedDrawing !== null && storage.getItem(drawingKey) === null) {
+                    storage.setItem(drawingKey, sharedDrawing);
+                    storage.removeItem(storagePrefix);
+                }
+            } catch {
+                return;
+            }
+        }
+
+        function switchDrawingToPointCloud(drawingKey) {
+            if (datasetName || cadAutosave.storageKey === drawingKey) {
+                return;
+            }
+            cadAutosave.setStorageKey(drawingKey);
+            moveSharedDrawingTo(drawingKey);
+            let content = null;
+            try {
+                content = cadAutosave.load();
+            } catch {
+                content = null;
+            }
+            replaceDrawing(content ?? createEmptyDrawingContent());
+            showFileStatus(content ? `Měření k tomuto mračnu: ${content.features.length}, vrstev ${content.layers.length}.` : "K tomuto mračnu zatím nejsou žádná měření.");
+            restoreDxfDocuments(drawingKey);
+        }
+
+        function formatBytes(byteCount) {
+            const kilobytes = byteCount / 1024;
+            const megabytes = kilobytes / 1024;
+            if (megabytes >= 1024) {
+                return `${formatNumber(megabytes / 1024, 1)} GB`;
+            }
+            return megabytes >= 1 ? `${formatNumber(megabytes, 0)} MB` : `${formatNumber(Math.max(1, kilobytes), 0)} kB`;
+        }
+
+        function formatDate(timestamp) {
+            return new Date(timestamp).toLocaleString("cs-CZ", { day: "numeric", month: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" });
+        }
+
+        async function removeStoredPointCloud(entry) {
+            if (!window.confirm(`Smazat mračno ${entry.fileName} z úložiště prohlížeče? Původní soubor ani měření se nesmažou.`)) {
+                return;
+            }
+            await pointCloudStore.remove(entry.storageKey).catch(() => null);
+            if (readLastStoredPointCloud() === entry.storageKey) {
+                rememberStoredPointCloud(null);
+            }
+            renderStoredPointClouds();
+        }
+
+        function createStoredPointCloudRow(entry) {
+            const description = `${formatNumber(entry.pointCount, 0)} bodů, naposledy otevřeno ${formatDate(entry.lastOpenedAt)}`;
+            return $("<div class=\"editor-list-row\"></div>").attr("title", description).append(
+                createIcon("cloud"),
+                $("<span class=\"editor-list-title\"></span>").text(entry.fileName),
+                $("<span class=\"editor-list-value\"></span>").text(formatBytes(entry.byteSize)),
+                createButton({ icon: "folder-open", title: "Otevřít z úložiště prohlížeče", onClick: () => openStoredPointCloud(entry.storageKey) }),
+                createButton({ icon: "trash", title: "Smazat z úložiště prohlížeče", onClick: () => removeStoredPointCloud(entry) })
+            );
+        }
+
+        async function renderStoredPointClouds() {
+            const list = $("#utility_network_editor_stored_point_clouds");
+            const usageNote = $("#utility_network_editor_storage_usage");
+            if (!Potree.UtilityNetworkEditor.PointCloudStore.isSupported()) {
+                list.empty();
+                usageNote.text("Tento prohlížeč neumí mračna ukládat.");
+                return;
+            }
+            const entries = await pointCloudStore.list().catch(() => []);
+            const usage = await pointCloudStore.estimateUsage().catch(() => null);
+            list.empty().append(entries.map(createStoredPointCloudRow));
+            const usageText = usage ? ` Obsazeno ${formatBytes(usage.usage)} z ${formatBytes(usage.quota)}.` : "";
+            usageNote.text(entries.length === 0
+                ? "Zatím žádné. Každé otevřené mračno se sem samo uloží, prohlížeč si pamatuje poslední 3."
+                : `Prohlížeč si pamatuje poslední 3 otevřená mračna.${usageText}`);
         }
 
         function updatePointCloudControls(hasPointCloud) {
@@ -1304,7 +1537,10 @@
         }
 
         function createDisplaySettings() {
+            const selectedColorModeIndex = pointCloudColorModes.findIndex((colorMode) => colorMode.attributeName === selectedColorMode);
             return createDetails("adjustments-horizontal", "Vykreslování mračna", [
+                createLabel("Barvy bodů"),
+                createSegmentedControl("utility_network_editor_color_mode", pointCloudColorModes, selectedColorModeIndex, (colorMode) => setColorMode(colorMode.attributeName)),
                 createToggle("utility_network_editor_edl", "Zvýraznit tvary (EDL)", viewer.getEDLEnabled(), (checked) => viewer.setEDLEnabled(checked)),
                 createRange({
                     identifier: "utility_network_editor_point_size",
@@ -1367,6 +1603,10 @@
             return $(`#utility_network_editor_cadastre_${layerId}`).prop("checked");
         }
 
+        function isCadastreLayerNeeded(layerId) {
+            return isCadastreLayerChecked(layerId) || (layerId === Potree.UtilityNetworkEditor.CadastreLayer.BUILDINGS && buildingExtrusionLayer.visible);
+        }
+
         function isCadastreLayerLoadedForView(layerId) {
             const loadedExtent = loadedCadastreExtents.get(layerId);
             const viewExtent = mapPlane.computeViewExtent(cadastreExtentMetres);
@@ -1378,7 +1618,7 @@
                 return;
             }
             for (const cadastreLayer of cadastreLayers) {
-                if (isCadastreLayerChecked(cadastreLayer.layerId) && !isCadastreLayerLoadedForView(cadastreLayer.layerId)) {
+                if (isCadastreLayerNeeded(cadastreLayer.layerId) && !isCadastreLayerLoadedForView(cadastreLayer.layerId)) {
                     loadCadastreLayer(cadastreLayer.layerId);
                 }
             }
@@ -1425,10 +1665,327 @@
 
         function reloadVisibleCadastreLayers() {
             for (const cadastreLayer of cadastreLayers) {
-                if (isCadastreLayerChecked(cadastreLayer.layerId)) {
+                if (isCadastreLayerNeeded(cadastreLayer.layerId)) {
                     loadCadastreLayer(cadastreLayer.layerId);
                 }
             }
+        }
+
+        function updateExtrudedBuildings() {
+            buildingExtrusionLayer.setBuildings(cadastreAlignment.listDisplayedBuildings());
+        }
+
+        function setExtrudedBuildingsVisible(visible) {
+            const buildingsLayerId = Potree.UtilityNetworkEditor.CadastreLayer.BUILDINGS;
+            buildingExtrusionLayer.setVisible(visible);
+            if (visible && !isCadastreLayerLoadedForView(buildingsLayerId)) {
+                loadCadastreLayer(buildingsLayerId);
+            } else if (visible) {
+                updateExtrudedBuildings();
+            } else {
+                buildingInfoTool.deactivate();
+            }
+            $("#utility_network_editor_building_info").prop("disabled", !visible);
+            updateAttribution();
+        }
+
+        function toggleBuildingInfoTool() {
+            if (buildingInfoTool.active) {
+                buildingInfoTool.deactivate();
+            } else {
+                buildingInfoTool.activate();
+            }
+        }
+
+        function describeBuildingProgress(event) {
+            if (!buildingExtrusionLayer.visible || event.buildingCount === 0) {
+                return "";
+            }
+            if (event.isWaitingForTerrain) {
+                return "čekám na terén…";
+            }
+            if (event.isLoadingSurfaceModel) {
+                return "načítám model povrchu…";
+            }
+            if (event.pendingCount > 0) {
+                return `počítám ${event.buildingCount - event.pendingCount}/${event.buildingCount}`;
+            }
+            return `${event.measuredCount + event.surfaceCount + event.estimatedCount} z ${event.buildingCount}`;
+        }
+
+        function createBuildingLegend() {
+            const items = [
+                { color: buildingBlockColors.measured, text: "z mračna" },
+                { color: buildingBlockColors.surface, text: "z modelu povrchu ČÚZK" },
+                { color: buildingBlockColors.estimated, text: "odhad z podlaží" }
+            ];
+            return $("<div class=\"editor-legend\"></div>").append(items.map((item) => $("<span></span>")
+                .append($("<span class=\"editor-swatch\"></span>").css("background", item.color), $("<span></span>").text(item.text))));
+        }
+
+        function createBuildingsSection() {
+            const status = $("<span class=\"editor-chip-status\" title=\"Budovy s výškou z celkového počtu\"></span>");
+            buildingExtrusionLayer.addEventListener("progress", (event) => status.text(describeBuildingProgress(event)));
+            const infoButton = createButton({
+                icon: "info-circle",
+                title: "Klikněte na budovu a zobrazí se její výška a údaje z katastru",
+                text: "Info o budově",
+                identifier: "utility_network_editor_building_info",
+                onClick: toggleBuildingInfoTool
+            }).prop("disabled", true);
+            buildingInfoTool.addEventListener("activation_changed", (event) => {
+                infoButton.toggleClass("is-active", event.active).find("span").text(event.active ? "Info o budově: klikněte na budovu (Esc)" : "Info o budově");
+                if (event.active) {
+                    showInfoPanel("Info o budově", $("<div></div>").text("Klikněte na budovu v mapě."), buildingInfoFooter);
+                    isInfoPromptShown = true;
+                } else if (isInfoPromptShown) {
+                    closeInfoPanel();
+                }
+            });
+            const extrusionToggle = createToggle("utility_network_editor_buildings_3d", "Vytáhnout do výšky (3D)", false, setExtrudedBuildingsVisible)
+                .addClass("editor-grow")
+                .attr("title", "Obrysy budov z katastru vytažené do výšky. Se zapnutým zarovnáním se použijí zarovnané obrysy.");
+            return [
+                createLabel("Budovy"),
+                $("<div class=\"editor-row\"></div>").append(extrusionToggle, status),
+                createBuildingLegend(),
+                infoButton,
+                createNote("Výška z mračna, mimo mračno z modelu povrchu ČÚZK, jinak odhad z počtu podlaží."),
+                createAlignmentSection()
+            ];
+        }
+
+        function showDxfStatus(text) {
+            $("#utility_network_editor_dxf_status").text(text);
+        }
+
+        function describeDxfDocument(fileName, document, isStored) {
+            const coordinateText = document.isKrovak
+                ? dxfAxisTransformTexts[document.axisTransform] ?? ""
+                : " Souřadnice nevypadají jako S-JTSK, výkres nemusí sedět na mapu.";
+            const shapeText = document.isFlat ? " Výkres je 2D, je položený na terén." : " Výkres je 3D, má vlastní výšky.";
+            const unsupportedText = document.unsupportedEntityCount > 0 ? ` Nepodporovaných objektů: ${document.unsupportedEntityCount}.` : "";
+            const truncatedText = document.isTruncated ? " Výkres je zkrácený na prvních 200 000 objektů." : "";
+            const storedText = isStored ? " Uloženo k tomuto mračnu." : "";
+            return `${fileName}: vrstev ${document.layers.length}, objektů ${document.primitives.length}.${shapeText}${coordinateText}${unsupportedText}${truncatedText}${storedText}`;
+        }
+
+        function flyToDxfDocument(documentEntry) {
+            const bounds = documentEntry.bounds;
+            const centerX = (bounds.minimumX + bounds.maximumX) / 2;
+            const centerY = (bounds.minimumY + bounds.maximumY) / 2;
+            const height = documentEntry.isFlat ? dxfOverlay.getTerrainHeight(centerX, centerY) : (bounds.minimumZ + bounds.maximumZ) / 2;
+            flyToTarget([centerX, centerY, height], Math.max(bounds.maximumX - bounds.minimumX, bounds.maximumY - bounds.minimumY));
+        }
+
+        async function storeDxfFile(file) {
+            if (!Potree.UtilityNetworkEditor.AttachmentStore.isSupported()) {
+                return null;
+            }
+            try {
+                return await attachmentStore.save(cadAutosave.storageKey, file.name, new Uint8Array(await file.arrayBuffer()));
+            } catch {
+                return null;
+            }
+        }
+
+        async function readDxfDocument(file) {
+            return Potree.UtilityNetworkEditor.createDxfDocument(await Potree.UtilityNetworkEditor.readDxfFile(file));
+        }
+
+        function replaceDxfDocument(previousDocument, document, storedName) {
+            dxfOverlay.removeDocument(previousDocument.id);
+            const documentId = dxfOverlay.addDocument(previousDocument.fileName, document, storedName);
+            for (const layer of previousDocument.layers.filter((layer) => !layer.visible)) {
+                dxfOverlay.setLayerVisible(documentId, layer.name, false);
+            }
+            return documentId;
+        }
+
+        async function addDxfFile(file) {
+            if (file.size > maximumDxfFileBytes) {
+                showDxfStatus("Výkres je příliš velký (max. 50 MB).");
+                return;
+            }
+            showDxfStatus(`Načítám ${file.name}…`);
+            let document;
+            try {
+                document = await readDxfDocument(file);
+            } catch (error) {
+                showDxfStatus(dxfErrorMessages[error.code] ?? "Výkres DXF se nepodařilo načíst.");
+                return;
+            }
+            if (document.primitives.length === 0) {
+                showDxfStatus("Výkres neobsahuje nic, co umíme zobrazit.");
+                return;
+            }
+            const storedName = await storeDxfFile(file);
+            const previousDocument = dxfOverlay.listDocuments().find((documentEntry) => documentEntry.fileName === file.name);
+            const documentId = previousDocument
+                ? replaceDxfDocument(previousDocument, document, storedName)
+                : dxfOverlay.addDocument(file.name, document, storedName);
+            const replacedText = previousDocument ? " Předchozí výkres se stejným názvem je nahrazený." : "";
+            showDxfStatus(`${describeDxfDocument(file.name, document, storedName !== null)}${replacedText}`);
+            if (viewer.scene.pointclouds.length === 0) {
+                startMapAndUtilities();
+            }
+            flyToDxfDocument(dxfOverlay.listDocuments().find((documentEntry) => documentEntry.id === documentId));
+        }
+
+        function readHiddenDxfLayers(drawingKey) {
+            try {
+                return JSON.parse(window.localStorage.getItem(`${hiddenDxfLayersKeyPrefix}:${drawingKey}`) ?? "{}");
+            } catch {
+                return {};
+            }
+        }
+
+        function storeHiddenDxfLayers() {
+            if (isRestoringDxfDocuments) {
+                return;
+            }
+            const hiddenLayers = {};
+            for (const documentEntry of dxfOverlay.listDocuments()) {
+                if (documentEntry.storedName) {
+                    hiddenLayers[documentEntry.storedName] = documentEntry.layers.filter((layer) => !layer.visible).map((layer) => layer.name);
+                }
+            }
+            try {
+                window.localStorage.setItem(`${hiddenDxfLayersKeyPrefix}:${cadAutosave.storageKey}`, JSON.stringify(hiddenLayers));
+            } catch {
+                return;
+            }
+        }
+
+        async function restoreDxfDocuments(drawingKey) {
+            isRestoringDxfDocuments = true;
+            dxfOverlay.clear();
+            const attachments = Potree.UtilityNetworkEditor.AttachmentStore.isSupported() ? await attachmentStore.list(drawingKey).catch(() => []) : [];
+            const hiddenLayers = readHiddenDxfLayers(drawingKey);
+            for (const attachment of attachments) {
+                try {
+                    const file = await attachmentStore.load(drawingKey, attachment.name);
+                    if (file && cadAutosave.storageKey === drawingKey) {
+                        const documentId = dxfOverlay.addDocument(attachment.name, await readDxfDocument(file), attachment.name);
+                        for (const layerName of hiddenLayers[attachment.name] ?? []) {
+                            dxfOverlay.setLayerVisible(documentId, layerName, false);
+                        }
+                    }
+                } catch {
+                    continue;
+                }
+            }
+            isRestoringDxfDocuments = false;
+            if (attachments.length > 0) {
+                showDxfStatus(`Obnoveno výkresů DXF k tomuto mračnu: ${attachments.length}.`);
+            }
+        }
+
+        async function removeDxfDocument(documentEntry) {
+            if (!window.confirm(`Odebrat výkres ${documentEntry.fileName}? Prvky převzaté do kresby zůstanou.`)) {
+                return;
+            }
+            dxfOverlay.removeDocument(documentEntry.id);
+            if (documentEntry.storedName) {
+                await attachmentStore.remove(cadAutosave.storageKey, documentEntry.storedName).catch(() => null);
+            }
+            showDxfStatus(`Výkres ${documentEntry.fileName} je odebraný.`);
+        }
+
+        function createConvertedLayerName(layerName, fileName) {
+            return `${layerName} (${fileName})`;
+        }
+
+        function showConvertedDxfLayers() {
+            const drawingLayerNames = new Set(cadDocument.layers.map((layer) => layer.name));
+            let shownLayerCount = 0;
+            for (const documentEntry of dxfOverlay.listDocuments()) {
+                for (const layer of documentEntry.layers) {
+                    if (!layer.visible && drawingLayerNames.has(createConvertedLayerName(layer.name, documentEntry.fileName))) {
+                        dxfOverlay.setLayerVisible(documentEntry.id, layer.name, true);
+                        shownLayerCount++;
+                    }
+                }
+            }
+            return shownLayerCount;
+        }
+
+        function convertDxfLayer(documentEntry, layerName) {
+            const primitives = dxfOverlay.listLayerPrimitives(documentEntry.id, layerName);
+            const segmentCount = Potree.UtilityNetworkEditor.countConvertibleSegments(primitives);
+            if (primitives.every((primitive) => primitive.isSymbol)) {
+                showDxfStatus(`Vrstva „${layerName}“ obsahuje jen značky a šrafy, ty zůstávají v podkladu.`);
+                return;
+            }
+            if (segmentCount > maximumConvertedSegmentCount) {
+                showDxfStatus(`Vrstva „${layerName}“ je na převzetí moc velká (${formatNumber(segmentCount, 0)} úseků, nejvýš ${formatNumber(maximumConvertedSegmentCount, 0)}).`);
+                return;
+            }
+            const activeLayerId = cadDocument.activeLayerId;
+            const layer = cadDocument.addLayer(createConvertedLayerName(layerName, documentEntry.fileName));
+            const isFlat = dxfOverlay.findDocument(documentEntry.id).document.isFlat;
+            const resolveHeight = (point) => (isFlat ? dxfOverlay.getTerrainHeight(point.x, point.y) : point.z);
+            const featureData = Potree.UtilityNetworkEditor.convertDxfPrimitivesToFeatureData(primitives, layer.id, resolveHeight);
+            for (const data of featureData) {
+                cadDocument.addFeature(Potree.UtilityNetworkEditor.CadFeature.fromData(data));
+            }
+            cadDocument.setActiveLayer(activeLayerId);
+            cadHistory.capture();
+            dxfOverlay.setLayerVisible(documentEntry.id, layerName, false);
+            showDxfStatus(`Převzato do kresby: ${featureData.length} prvků ve vrstvě „${layer.name}“. Značky a šrafy zůstaly v podkladu.`);
+        }
+
+        function createDxfLayerRow(documentEntry, layer) {
+            const identifier = `utility_network_editor_dxf_${documentEntry.id}_${layer.name.replace(/[^a-zA-Z0-9_-]/g, "_")}`;
+            const toggle = createToggle(identifier, layer.name, layer.visible, (checked) => dxfOverlay.setLayerVisible(documentEntry.id, layer.name, checked)).addClass("editor-grow");
+            toggle.find("input").after($("<span class=\"editor-dot\"></span>").css("background", `#${layer.color.toString(16).padStart(6, "0")}`));
+            return $("<div class=\"editor-list-row\"></div>").append(
+                toggle,
+                $("<span class=\"editor-list-value\"></span>").text(String(layer.primitiveCount)),
+                createButton({ icon: "file-import", title: "Převzít vrstvu do kresby, kde ji jde upravovat", onClick: () => convertDxfLayer(documentEntry, layer.name) })
+            );
+        }
+
+        function createDxfDocumentElement(documentEntry) {
+            const header = $("<div class=\"editor-list-row\"></div>").append(
+                createIcon("file-vector"),
+                $("<span class=\"editor-list-title\"></span>").text(documentEntry.fileName).attr("title", documentEntry.fileName),
+                createButton({ icon: "focus-2", title: "Zobrazit výkres", onClick: () => flyToDxfDocument(documentEntry) }),
+                createButton({ icon: "trash", title: "Odebrat výkres", onClick: () => removeDxfDocument(documentEntry) })
+            );
+            return $("<div class=\"editor-stack\"></div>").append(header, $("<div class=\"editor-scroll-list\"></div>").append(documentEntry.layers.map((layer) => createDxfLayerRow(documentEntry, layer))));
+        }
+
+        function renderDxfDocuments() {
+            const documents = dxfOverlay.listDocuments();
+            $("#utility_network_editor_dxf_documents").empty().append(documents.map(createDxfDocumentElement));
+        }
+
+        function createDxfSection() {
+            const fileInput = $("<input type=\"file\" accept=\".dxf\" multiple hidden>")
+                .on("change", async (event) => {
+                    const files = [...event.target.files];
+                    event.target.value = "";
+                    for (const file of files) {
+                        await addDxfFile(file);
+                    }
+                });
+            const addButton = createButton({ icon: "plus", title: "Přidat výkres DXF", identifier: "utility_network_editor_add_dxf", onClick: () => fileInput[0].click() });
+            dxfOverlay.addEventListener("documents_changed", renderDxfDocuments);
+            return [
+                createLabel("Výkresy DXF", [addButton]),
+                fileInput,
+                $("<div id=\"utility_network_editor_dxf_documents\" class=\"editor-stack\"></div>"),
+                createNote("Dokumentace sítí, projekt nebo zaměření. 2D výkres se položí na terén. Vrstvu jde převzít do kresby a upravit.", "utility_network_editor_dxf_status")
+            ];
+        }
+
+        function exportDrawingToDxf() {
+            const content = Potree.UtilityNetworkEditor.createDxfFile(cadDocument);
+            const url = URL.createObjectURL(new Blob([content], { type: "application/dxf" }));
+            $("<a></a>").attr({ href: url, download: createDrawingFileName("kresba", "dxf") })[0].click();
+            setTimeout(() => URL.revokeObjectURL(url), 0);
+            showFileStatus(`Vyexportováno do DXF: ${cadDocument.features.length} prvků.`);
         }
 
         function createSourcesTab() {
@@ -1442,15 +1999,15 @@
                 createLabel("Mračno"),
                 createPointCloudEmptyState(),
                 createPointCloudRow(),
-                createLasFileInput(),
-                createNote(datasetName ? "Vlastní mračno: nekomprimovaný LAS v S-JTSK, převede se v prohlížeči." : "", "utility_network_editor_point_cloud_status"),
+                createPointCloudFileInput(),
+                createPointCloudStatusRow(),
                 createNote("", "utility_network_editor_terrain_status"),
                 createLabel("Mapa"),
                 createSegmentedControl("utility_network_editor_base_map", baseMaps, 0, (baseMap) => setBaseMap(baseMap.provider)),
                 createLabel("Katastr", [reloadCadastreButton]),
                 $("<div class=\"editor-chips\"></div>").append(cadastreLayers.map(createCadastreChip)),
                 createNote("Načítá se pro okolí aktuálního pohledu, slouží i k přichytávání."),
-                createAlignmentSection(),
+                ...createBuildingsSection(),
                 createDisplaySettings()
             ];
         }
@@ -1781,7 +2338,8 @@
                 $("<div class=\"editor-row\"></div>").append(dtmToggle, status),
                 $("<div class=\"editor-chip-grid\"></div>").append(utilityChips),
                 createInfoToolButton(),
-                createNote("ČÚZK – IS DMVS, přibližný zákres, jen orientačně. Nenahrazuje vyjádření vlastníků sítí.")
+                createNote("ČÚZK – IS DMVS, přibližný zákres, jen orientačně. Nenahrazuje vyjádření vlastníků sítí."),
+                ...createDxfSection()
             ];
         }
 
@@ -1862,13 +2420,23 @@
                     }
                 }),
                 createButton({ icon: "upload", title: "Načíst měření ze souboru JSON", text: "Načíst měření", identifier: "utility_network_editor_load_drawing", onClick: () => fileInput[0].click() }),
+                createButton({
+                    icon: "file-export",
+                    title: "Uložit všechny prvky kresby do výkresu DXF pro CAD, s vrstvami, barvami a výškami",
+                    text: "Exportovat kresbu do DXF",
+                    identifier: "utility_network_editor_export_dxf",
+                    onClick: exportDrawingToDxf
+                }),
                 createButton({ icon: "trash", title: "Smazat všechna měření i vrstvy a začít znovu", text: "Smazat všechna měření", identifier: "utility_network_editor_new_drawing", onClick: startNewDrawing }),
                 fileInput
             );
             return [
                 createLabel("Měření"),
                 buttons,
-                createNote("Měření se průběžně ukládají v tomto prohlížeči. Soubor JSON je v souřadnicích S-JTSK.", "utility_network_editor_file_status")
+                createNote("Měření se průběžně ukládají v tomto prohlížeči, ke každému mračnu zvlášť. Soubor JSON je v souřadnicích S-JTSK.", "utility_network_editor_file_status"),
+                createLabel("Mračna v prohlížeči"),
+                $("<div id=\"utility_network_editor_stored_point_clouds\"></div>"),
+                createNote("", "utility_network_editor_storage_usage")
             ];
         }
 
@@ -1914,9 +2482,8 @@
                     if (cadTool.isDrawing) {
                         cadTool.finishDrawing();
                     }
-                    if (dtmInfoTool.active) {
-                        dtmInfoTool.deactivate();
-                    }
+                    dtmInfoTool.deactivate();
+                    buildingInfoTool.deactivate();
                 }
             });
             const toolButtons = drawingTypes.map((drawingType) => createButton({
@@ -1931,11 +2498,12 @@
                 }
             }).attr("data-drawing-type", drawingType.drawingType));
             const updateActiveTool = () => {
-                selectButton.toggleClass("is-active", !cadTool.isDrawing && !dtmInfoTool.active);
+                selectButton.toggleClass("is-active", !cadTool.isDrawing && !dtmInfoTool.active && !buildingInfoTool.active);
                 toolButtons.forEach((button) => button.toggleClass("is-active", button.attr("data-drawing-type") === cadTool.drawingType));
             };
             cadTool.addEventListener("drawing_changed", updateActiveTool);
             dtmInfoTool.addEventListener("activation_changed", updateActiveTool);
+            buildingInfoTool.addEventListener("activation_changed", updateActiveTool);
             const colorInput = $("<input type=\"color\" id=\"utility_network_editor_new_color\" title=\"Barva nových prvků\">")
                 .val(cadTool.style.color)
                 .on("input", (event) => cadTool.setStyle({ color: event.target.value }));
@@ -2208,15 +2776,15 @@
             flyToFeature(feature);
         }
 
-        function createMeasurementFileName() {
+        function createDrawingFileName(prefix, extension) {
             const pointCloudName = viewer.scene.pointclouds[0]?.name ?? datasetName;
-            return pointCloudName ? `mereni-${pointCloudName.replace(/\.la[sz]$/i, "")}.json` : "mereni.json";
+            return pointCloudName ? `${prefix}-${pointCloudName.replace(/\.[^.]+$/, "")}.${extension}` : `${prefix}.${extension}`;
         }
 
         function saveDrawing() {
             const content = JSON.stringify(Potree.UtilityNetworkEditor.createCadFile(cadDocument, alignmentExceptions), null, 2);
             const url = URL.createObjectURL(new Blob([content], { type: "application/json" }));
-            $("<a></a>").attr({ href: url, download: createMeasurementFileName() })[0].click();
+            $("<a></a>").attr({ href: url, download: createDrawingFileName("mereni", "json") })[0].click();
             setTimeout(() => URL.revokeObjectURL(url), 0);
         }
 
@@ -2264,8 +2832,9 @@
             if (cadDocument.features.length > 0 && !window.confirm("Smažou se všechna měření i vrstvy. Pokračovat?")) {
                 return;
             }
+            const shownLayerCount = showConvertedDxfLayers();
             replaceDrawing(createEmptyDrawingContent());
-            showFileStatus("Všechna měření jsou smazaná.");
+            showFileStatus(shownLayerCount > 0 ? "Všechna měření jsou smazaná. Převzaté vrstvy výkresů DXF jsou zase vidět." : "Všechna měření jsou smazaná.");
         }
 
         function moveLegacyMeasurements() {
@@ -2299,7 +2868,7 @@
         }
 
         function updateEditToolAvailability() {
-            cadEditTool.setEnabled(!cadTool.isDrawing && !dtmInfoTool.active && !cadastreMoveTool.active);
+            cadEditTool.setEnabled(!cadTool.isDrawing && !dtmInfoTool.active && !buildingInfoTool.active && !cadastreMoveTool.active);
         }
 
         function formatDimension(dimension) {
@@ -2318,6 +2887,8 @@
             dtmOverlay.setTerrainHeightSampler(terrainHeightSampler);
             cadastreOverlay.setTerrainHeightSampler(terrainHeightSampler);
             cadEditTool.setTerrainHeightSampler(terrainHeightSampler);
+            buildingExtrusionLayer.setTerrainHeightSampler(terrainHeightSampler);
+            dxfOverlay.setTerrainHeightSampler(terrainHeightSampler);
             terrainHeightSampler.addEventListener("ready", () => {
                 terrainStatus.text("Výška terénu z mračna: hotovo.");
                 scheduleFeatureViewRender();
@@ -2369,6 +2940,18 @@
         dtmInfoTool.addEventListener("query_failed", () => showInfoMessage("Dotaz na DTM se nezdařil."));
         cadTool.addEventListener("drawing_changed", updateEditToolAvailability);
         dtmInfoTool.addEventListener("activation_changed", updateEditToolAvailability);
+        buildingInfoTool.addEventListener("activation_changed", updateEditToolAvailability);
+        buildingInfoTool.addEventListener("building_picked", (event) => {
+            isInfoPromptShown = false;
+            showBuildingInfo(event.building);
+        });
+        cadastreAlignment.addEventListener("changed", updateExtrudedBuildings);
+        dxfOverlay.addEventListener("documents_changed", storeHiddenDxfLayers);
+        cadastreOverlay.addEventListener("layer_loaded", (event) => {
+            if (event.layerId === Potree.UtilityNetworkEditor.CadastreLayer.BUILDINGS) {
+                updateExtrudedBuildings();
+            }
+        });
         cadastreMoveTool.addEventListener("activation_changed", (event) => {
             updateEditToolAvailability();
             updateDrawingHint();
@@ -2382,7 +2965,7 @@
         cadEditTool.addEventListener("selection_changed", () => cadHistory.capture());
         document.addEventListener("keydown", onUndoShortcut);
 
-        const pointCloudLoaded = datasetName ? loadPointCloud(datasetName) : Promise.resolve(null);
+        const pointCloudLoaded = datasetName ? loadDatasetPointCloud(datasetName) : Promise.resolve(null);
         await viewer.loadGUI();
         disconnectPotreeMapView();
         viewer.setLanguage("cs");
@@ -2390,14 +2973,16 @@
         viewer.toggleSidebar();
         createEditorInterface();
         restoreStoredDrawing();
+        restoreDxfDocuments(cadAutosave.storageKey);
+        renderStoredPointClouds();
         const pointCloud = await pointCloudLoaded;
         if (pointCloud) {
-            replacePointCloud(pointCloud);
+            replacePointCloud(pointCloud, datasetPointCloudAttributes);
         } else if (datasetName) {
             updatePointCloudControls(false);
-            showPointCloudStatus(`Mračno „${datasetName}“ se nepodařilo načíst ze složky examples/data. Otevřete vlastní LAS.`);
+            showPointCloudStatus(`Mračno „${datasetName}“ se nepodařilo načíst ze složky examples/data. Otevřete vlastní mračno.`);
         } else {
-            await restoreRecentPointCloud();
+            await restoreLastStoredPointCloud();
         }
     </script>
 </body>

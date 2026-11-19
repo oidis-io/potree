@@ -152,3 +152,41 @@ export async function buildMemoryOctree(cloud, onProgress) {
         nodeCount: nodeCount
     };
 }
+
+function reorderTriples(values, order) {
+    const reordered = new values.constructor(values.length);
+    for (let index = 0; index < order.length; index++) {
+        const source = order[index] * 3;
+        const target = index * 3;
+        reordered[target] = values[source];
+        reordered[target + 1] = values[source + 1];
+        reordered[target + 2] = values[source + 2];
+    }
+    return reordered;
+}
+
+function reorderValues(values, order) {
+    const reordered = new values.constructor(values.length);
+    for (let index = 0; index < order.length; index++) {
+        reordered[index] = values[order[index]];
+    }
+    return reordered;
+}
+
+export function sortCloudByOctree(cloud, octree) {
+    return {
+        cloud: {
+            ...cloud,
+            positions: reorderTriples(cloud.positions, octree.order),
+            colors: cloud.colors ? reorderTriples(cloud.colors, octree.order) : null,
+            intensities: cloud.intensities ? reorderValues(cloud.intensities, octree.order) : null,
+            classifications: cloud.classifications ? reorderValues(cloud.classifications, octree.order) : null
+        },
+        octree: {
+            root: octree.root,
+            cubeSize: octree.cubeSize,
+            spacing: octree.spacing,
+            nodeCount: octree.nodeCount
+        }
+    };
+}

@@ -183,12 +183,21 @@ export function createSurfaceGrid(extent) {
     };
 }
 
+async function fetchGridHeights(grid) {
+    const [surfaceHeights, terrainHeights] = await Promise.all([
+        fetchHeights(SURFACE_EXPORT_URL, grid),
+        fetchHeights(TERRAIN_EXPORT_URL, grid)
+    ]);
+    return { surfaceHeights: surfaceHeights, terrainHeights: terrainHeights };
+}
+
 export async function fetchSurfaceRaster(extent) {
     const grid = createSurfaceGrid(extent);
-    const [surfaceHeights, terrainHeights, colors] = await Promise.all([
-        fetchHeights(SURFACE_EXPORT_URL, grid),
-        fetchHeights(TERRAIN_EXPORT_URL, grid),
-        fetchOrthophotoColors(grid)
-    ]);
-    return { ...grid, surfaceHeights: surfaceHeights, terrainHeights: terrainHeights, colors: colors };
+    const [heights, colors] = await Promise.all([fetchGridHeights(grid), fetchOrthophotoColors(grid)]);
+    return { ...grid, ...heights, colors: colors };
+}
+
+export async function fetchHeightRasters(extent) {
+    const grid = createSurfaceGrid(extent);
+    return { ...grid, ...(await fetchGridHeights(grid)) };
 }

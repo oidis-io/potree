@@ -29,6 +29,11 @@ export class CadAutosave extends EventDispatcher {
         return text === null ? null : parseCadFile(text);
     }
 
+    setStorageKey(storageKey) {
+        this.flush();
+        this.storageKey = storageKey;
+    }
+
     start() {
         if (this.isStarted) {
             return;

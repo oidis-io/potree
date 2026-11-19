@@ -32,19 +32,25 @@ export class CadSnapper {
         this.viewer = viewer;
         this.mapPlane = mapPlane;
         this.cadDocument = cadDocument;
-        this.cadastreOverlay = cadastreOverlay;
+        this.snapSources = [];
         this.screenProjector = new ScreenProjector(viewer);
         this.enabled = true;
-        this.cadastreIndex = null;
-        this.cadastreBounds = null;
+        this.overlayIndex = null;
+        this.overlayBounds = null;
         this.indicator = this.createIndicator();
         this.scene = new THREE.Scene();
         this.scene.add(this.indicator);
 
-        cadastreOverlay.addEventListener("snap_lines_changed", () => {
-            this.cadastreIndex = null;
-        });
+        this.addSnapSource(cadastreOverlay);
         viewer.addEventListener("render.pass.perspective_overlay", () => this.render());
+    }
+
+    addSnapSource(snapSource) {
+        this.snapSources.push(snapSource);
+        this.overlayIndex = null;
+        snapSource.addEventListener("snap_lines_changed", () => {
+            this.overlayIndex = null;
+        });
     }
 
     createIndicator() {
@@ -129,7 +135,7 @@ export class CadSnapper {
         for (const feature of features) {
             this.addFeatureCandidates(candidates, feature, options.excludedVertex);
         }
-        this.addCadastreCandidates(candidates, canvasPoint);
+        this.addOverlayCandidates(candidates, canvasPoint);
         return candidates;
     }
 
@@ -174,9 +180,9 @@ export class CadSnapper {
         return neighbourIndices;
     }
 
-    addCadastreCandidates(candidates, canvasPoint) {
-        const index = this.getCadastreIndex();
-        const bounds = this.cadastreBounds;
+    addOverlayCandidates(candidates, canvasPoint) {
+        const index = this.getOverlayIndex();
+        const bounds = this.overlayBounds;
         if (!bounds) {
             return;
         }
@@ -229,9 +235,9 @@ export class CadSnapper {
         return THREE.MathUtils.clamp(metresPerPixel * SEARCH_MARGIN_PIXELS, MINIMUM_SEARCH_MARGIN_METRES, MAXIMUM_SEARCH_MARGIN_METRES);
     }
 
-    getCadastreIndex() {
-        if (this.cadastreIndex) {
-            return this.cadastreIndex;
+    getOverlayIndex() {
+        if (this.overlayIndex) {
+            return this.overlayIndex;
         }
         let bounds = null;
         const includeInBounds = (point) => {
@@ -253,7 +259,7 @@ export class CadSnapper {
             }
             return index.get(key);
         };
-        for (const line of this.cadastreOverlay.getVisibleSnapLines()) {
+        for (const line of this.snapSources.flatMap((snapSource) => snapSource.getVisibleSnapLines())) {
             line.points.forEach(includeInBounds);
             for (const corner of line.corners) {
                 getCell(this.toCell(corner.x), this.toCell(corner.y)).vertices.push(corner);
@@ -271,8 +277,8 @@ export class CadSnapper {
                 }
             }
         }
-        this.cadastreIndex = index;
-        this.cadastreBounds = bounds;
+        this.overlayIndex = index;
+        this.overlayBounds = bounds;
         return index;
     }
 

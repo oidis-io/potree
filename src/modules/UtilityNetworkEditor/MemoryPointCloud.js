@@ -20,17 +20,16 @@ const DEFAULT_COLOR_VALUE = 255;
 const POINT_CLOUD_PROJECTION = "EPSG:5514";
 
 class MemoryPointLoader {
-    constructor(cloud, order) {
+    constructor(cloud) {
         this.version = new Version(MEMORY_FORMAT_VERSION);
         this.cloud = cloud;
-        this.order = order;
     }
 
     load(node) {
         if (node.loaded) {
             return;
         }
-        const { positions, colors } = this.cloud;
+        const { positions, colors, intensities, classifications } = this.cloud;
         const { start, pointCount } = node.memoryRange;
         const minimum = node.boundingBox.min;
         const nodePositions = new Float32Array(pointCount * 3);
@@ -41,7 +40,7 @@ class MemoryPointLoader {
         const mean = new THREE.Vector3();
         const position = new THREE.Vector3();
         for (let index = 0; index < pointCount; index++) {
-            const point = this.order[start + index];
+            const point = start + index;
             position.set(positions[point * 3] - minimum.x, positions[point * 3 + 1] - minimum.y, positions[point * 3 + 2] - minimum.z);
             position.toArray(nodePositions, index * 3);
             tightMinimum.min(position);
@@ -57,6 +56,12 @@ class MemoryPointLoader {
         geometry.setAttribute("position", new THREE.BufferAttribute(nodePositions, 3));
         geometry.setAttribute("rgba", new THREE.BufferAttribute(nodeColors, 4, true));
         geometry.setAttribute("indices", new THREE.BufferAttribute(new Uint8Array(indices.buffer), 4, true));
+        if (intensities) {
+            geometry.setAttribute("intensity", new THREE.BufferAttribute(intensities.slice(start, start + pointCount), 1));
+        }
+        if (classifications) {
+            geometry.setAttribute("classification", new THREE.BufferAttribute(classifications.slice(start, start + pointCount), 1));
+        }
         node.geometry = geometry;
         node.numPoints = pointCount;
         node.mean = pointCount > 0 ? mean.divideScalar(pointCount) : mean;
@@ -67,10 +72,16 @@ class MemoryPointLoader {
     }
 }
 
-function createPointAttributes() {
+function createPointAttributes(cloud) {
     const attributes = new PointAttributes();
     attributes.add(PointAttribute.POSITION_CARTESIAN);
     attributes.add(new PointAttribute("rgba", PointAttributeTypes.DATA_TYPE_UINT8, 4));
+    if (cloud.intensities) {
+        attributes.add(new PointAttribute("intensity", PointAttributeTypes.DATA_TYPE_UINT16, 1));
+    }
+    if (cloud.classifications) {
+        attributes.add(new PointAttribute("classification", PointAttributeTypes.DATA_TYPE_UINT8, 1));
+    }
     return attributes;
 }
 
@@ -101,10 +112,14 @@ export function createMemoryPointCloud(cloud, octree) {
     geometry.tightBoundingBox = new THREE.Box3(new THREE.Vector3(...localMinimum), new THREE.Vector3(...localMaximum));
     geometry.boundingSphere = geometry.boundingBox.getBoundingSphere(new THREE.Sphere());
     geometry.tightBoundingSphere = geometry.tightBoundingBox.getBoundingSphere(new THREE.Sphere());
-    geometry.pointAttributes = createPointAttributes();
+    geometry.pointAttributes = createPointAttributes(cloud);
     geometry.projection = POINT_CLOUD_PROJECTION;
-    geometry.loader = new MemoryPointLoader(cloud, octree.order);
+    geometry.loader = new MemoryPointLoader(cloud);
     geometry.root = createGeometryNode(octree.root, geometry, octree.spacing);
     geometry.root.load();
-    return new PointCloudOctree(geometry);
+    const pointCloud = new PointCloudOctree(geometry);
+    if (cloud.intensityRange) {
+        pointCloud.material.intensityRange = cloud.intensityRange;
+    }
+    return pointCloud;
 }

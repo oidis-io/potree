@@ -153,19 +153,32 @@ export class DtmOverlay extends EventDispatcher {
         }
         const image = this.computeImageSize(extent);
         this.setLoading(true);
-        this.textureLoader.load(createDtmMapUrl(extent, image.width, image.height, this.layerIds), (texture) => {
+        this.loadTexture(createDtmMapUrl(extent, image.width, image.height, this.layerIds)).then((texture) => {
             if (requestIndex !== this.requestIndex) {
                 texture.dispose();
                 return;
             }
             this.applyTexture(texture, extent, image.metresPerPixel);
             this.setLoading(false);
-        }, undefined, () => {
+        }, () => {
             if (requestIndex === this.requestIndex) {
                 this.setLoading(false);
                 this.dispatchEvent({ type: "load_failed" });
             }
         });
+    }
+
+    async loadTexture(url) {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`DTM map request failed with status ${response.status}`);
+        }
+        const objectUrl = URL.createObjectURL(await response.blob());
+        try {
+            return await this.textureLoader.loadAsync(objectUrl);
+        } finally {
+            URL.revokeObjectURL(objectUrl);
+        }
     }
 
     computeViewExtent() {

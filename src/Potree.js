@@ -74,9 +74,20 @@ import { FeatureProfile } from "./modules/UtilityNetworkEditor/FeatureProfile.js
 import { measureFeature } from "./modules/UtilityNetworkEditor/FeatureMeasurement.js";
 import { DimensionKind } from "./modules/UtilityNetworkEditor/FeatureDimensions.js";
 import { CadAutosave } from "./modules/UtilityNetworkEditor/CadAutosave.js";
-import { LasLoadStage, loadLasPointCloud } from "./modules/UtilityNetworkEditor/LasPointCloudLoader.js";
-import { LasReadErrorCode } from "./modules/UtilityNetworkEditor/LasFileReader.js";
-import { RecentFileStore, readFileFromHandle } from "./modules/UtilityNetworkEditor/RecentFileStore.js";
+import { loadPointCloudFile, loadStoredPointCloud } from "./modules/UtilityNetworkEditor/PointCloudFileLoader.js";
+import { PointCloudLoadStage } from "./modules/UtilityNetworkEditor/PointCloudConversionProtocol.js";
+import { PointCloudReadErrorCode } from "./modules/UtilityNetworkEditor/PointCloudReadError.js";
+import { POINT_CLOUD_FILE_EXTENSIONS } from "./modules/UtilityNetworkEditor/PointCloudFileReader.js";
+import { PointCloudStore } from "./modules/UtilityNetworkEditor/PointCloudStore.js";
+import { BuildingHeightSource } from "./modules/UtilityNetworkEditor/BuildingHeightEstimator.js";
+import { BuildingExtrusionLayer } from "./modules/UtilityNetworkEditor/BuildingExtrusionLayer.js";
+import { BuildingInfoTool } from "./modules/UtilityNetworkEditor/BuildingInfoTool.js";
+import { DxfReadErrorCode, readDxfFile } from "./modules/UtilityNetworkEditor/DxfReader.js";
+import { createDxfDocument, DxfPrimitiveKind } from "./modules/UtilityNetworkEditor/DxfGeometry.js";
+import { DxfOverlay } from "./modules/UtilityNetworkEditor/DxfOverlay.js";
+import { convertDxfPrimitivesToFeatureData, countConvertibleSegments } from "./modules/UtilityNetworkEditor/DxfFeatureConverter.js";
+import { createDxfFile } from "./modules/UtilityNetworkEditor/CadDxfExporter.js";
+import { AttachmentStore } from "./modules/UtilityNetworkEditor/AttachmentStore.js";
 import { ViewChangeDetector } from "./modules/UtilityNetworkEditor/ViewChangeDetector.js";
 
 const Potree = {
@@ -152,11 +163,24 @@ const Potree = {
         measureFeature,
         DimensionKind,
         CadAutosave,
-        LasLoadStage,
-        LasReadErrorCode,
-        loadLasPointCloud,
-        RecentFileStore,
-        readFileFromHandle,
+        PointCloudLoadStage,
+        PointCloudReadErrorCode,
+        POINT_CLOUD_FILE_EXTENSIONS,
+        PointCloudStore,
+        loadPointCloudFile,
+        loadStoredPointCloud,
+        BuildingHeightSource,
+        BuildingExtrusionLayer,
+        BuildingInfoTool,
+        DxfReadErrorCode,
+        readDxfFile,
+        createDxfDocument,
+        DxfPrimitiveKind,
+        DxfOverlay,
+        convertDxfPrimitivesToFeatureData,
+        countConvertibleSegments,
+        createDxfFile,
+        AttachmentStore,
         ViewChangeDetector
     },
     pointBudget: PotreeConfig.pointBudget,
