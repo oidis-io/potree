@@ -18,16 +18,17 @@ class FakeDocument extends EventDispatcher {
     constructor() {
         super();
         this.features = [];
-        this.loadCount = 0;
+        this.isBulkUpdating = false;
+        this.restoreCount = 0;
     }
 
-    toData() {
-        return { features: [...this.features] };
+    toState() {
+        return { layers: [], features: [...this.features] };
     }
 
-    loadData(data) {
-        this.features = [...data.features];
-        this.loadCount++;
+    restoreState(state) {
+        this.features = [...state.features];
+        this.restoreCount++;
     }
 
     addFeature(name) {
@@ -46,7 +47,7 @@ test("undo takes back a manual move of a building without reloading the drawing"
     assert.equal(history.canUndo, true);
     history.undo();
     assert.equal(exceptions.has(65), false);
-    assert.equal(cadDocument.loadCount, 0);
+    assert.equal(cadDocument.restoreCount, 0);
     assert.equal(history.canUndo, false);
 });
 
