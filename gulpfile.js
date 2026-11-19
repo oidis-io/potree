@@ -263,14 +263,12 @@ gulp.task("workers", function () {
     return merge(...workerStreams, wasmStream);
 });
 
-gulp.task("lazylibs", async () => {
-    for (let libname of Object.keys(lazyLibs)) {
-        const libpath = lazyLibs[libname];
+function copyLazyLibrary(libraryName) {
+    return () => gulp.src([`${lazyLibs[libraryName]}/**/*`], { encoding: false })
+        .pipe(gulp.dest(`build/potree/lazylibs/${libraryName}`));
+}
 
-        gulp.src([`${libpath}/**/*`])
-            .pipe(gulp.dest(`build/potree/lazylibs/${libname}`));
-    }
-});
+gulp.task("lazylibs", gulp.parallel(...Object.keys(lazyLibs).map(copyLazyLibrary)));
 
 gulp.task("shaders", async () => {
     const components = [
@@ -332,13 +330,11 @@ gulp.task("pack-min", async () => {
 gulp.task("build",
     gulp.series(
         gulp.parallel("workers", "lazylibs", "shaders", "icons_viewer", "examples_page"),
-        async () => {
-            gulp.src(paths.html).pipe(gulp.dest("build/potree"));
-
-            gulp.src(paths.resources).pipe(gulp.dest("build/potree/resources"));
-
-            gulp.src(["LICENSE"]).pipe(gulp.dest("build/potree"));
-        }
+        gulp.parallel(
+            () => gulp.src(paths.html).pipe(gulp.dest("build/potree")),
+            () => gulp.src(paths.resources, { encoding: false }).pipe(gulp.dest("build/potree/resources")),
+            () => gulp.src(["LICENSE"]).pipe(gulp.dest("build/potree"))
+        )
     )
 );
 

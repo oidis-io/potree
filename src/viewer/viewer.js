@@ -956,7 +956,7 @@ export class Viewer extends EventDispatcher {
     }
 
     moveToGpsTimeVicinity(time) {
-        const result = Utils.findClosestGpsTime(time, this.viewer);
+        const result = Utils.findClosestGpsTime(time, this);
 
         const box = result.node.pointcloud.deepestNodeAt(result.position).getBoundingBox();
         const diameter = box.min.distanceTo(box.max);
@@ -1169,7 +1169,7 @@ export class Viewer extends EventDispatcher {
         const json = JSON5.parse(text);
 
         if (json.type === "Potree") {
-            await loadProject(this.viewer, json);
+            await loadProject(this, json);
         }
     }
 
@@ -1491,22 +1491,22 @@ export class Viewer extends EventDispatcher {
                         const json = JSON5.parse(text);
 
                         if (json.type === "Potree") {
-                            await loadProject(this.viewer, json);
+                            await loadProject(this, json);
                         }
                     } catch (e) {
                         console.error("failed to parse the dropped file as JSON");
                         console.error(e);
                     }
                 } else if (isGeoPackage) {
-                    const hasPointcloud = this.viewer.scene.pointclouds.length > 0;
+                    const projection = this.getProjection();
 
-                    if (!hasPointcloud) {
+                    if (!projection) {
                         let msg = "At least one point cloud is needed that specifies the ";
                         msg += "coordinate reference system before loading vector data.";
-                        console.error(msg);
+                        this.postError(msg);
                     } else {
                         proj4.defs("WGS84", "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs");
-                        proj4.defs("pointcloud", this.getProjection());
+                        proj4.defs("pointcloud", proj4.defs(projection) ?? projection);
                         let transform = proj4("WGS84", "pointcloud");
 
                         const buffer = await file.arrayBuffer();
@@ -1517,7 +1517,7 @@ export class Viewer extends EventDispatcher {
                         };
 
                         const geo = await GeoPackageLoader.loadBuffer(buffer, params);
-                        this.viewer.scene.addGeopackage(geo);
+                        this.scene.addGeopackage(geo);
                     }
                 }
             }
@@ -1976,13 +1976,13 @@ export class Viewer extends EventDispatcher {
         let makeCam = this.vrControls.getCamera.bind(this.vrControls);
 
         { // clear framebuffer
-            if (this.viewer.background === "skybox") {
+            if (this.background === "skybox") {
                 renderer.setClearColor(0xff0000, 1);
-            } else if (this.viewer.background === "gradient") {
+            } else if (this.background === "gradient") {
                 renderer.setClearColor(0x112233, 1);
-            } else if (this.viewer.background === "black") {
+            } else if (this.background === "black") {
                 renderer.setClearColor(0x000000, 1);
-            } else if (this.viewer.background === "white") {
+            } else if (this.background === "white") {
                 renderer.setClearColor(0xFFFFFF, 1);
             } else {
                 renderer.setClearColor(0x000000, 0);
@@ -2034,8 +2034,8 @@ export class Viewer extends EventDispatcher {
             cam.position.z -= 0.8 * cam.scale.x;
             cam.parent = null;
             // cam.near = 0.05;
-            cam.near = this.viewer.scene.getActiveCamera().near;
-            cam.far = this.viewer.scene.getActiveCamera().far;
+            cam.near = this.scene.getActiveCamera().near;
+            cam.far = this.scene.getActiveCamera().far;
             cam.updateMatrix();
             cam.updateMatrixWorld();
 
